@@ -1,0 +1,12 @@
+Source: ros-crystal-shared-queues-vendor
+Section: misc
+Priority: extra
+Maintainer: Karsten Knese <karsten.knese@googlemail.com>
+Build-Depends: debhelper (>= 9.0.0), ros-crystal-ament-cmake, ros-crystal-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-crystal-shared-queues-vendor
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-crystal-ros-workspace
+Description: Vendor package for concurrent queues from moodycamel
