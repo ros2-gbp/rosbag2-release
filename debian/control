@@ -1,0 +1,12 @@
+Source: ros-crystal-rosbag2-storage-default-plugins
+Section: misc
+Priority: extra
+Maintainer: Karsten Knese <karsten.knese@googlemail.com>
+Build-Depends: debhelper (>= 9.0.0), ros-crystal-ament-cmake, ros-crystal-ament-cmake-gmock, ros-crystal-ament-lint-auto, ros-crystal-ament-lint-common, ros-crystal-pluginlib, ros-crystal-rcutils, ros-crystal-rosbag2-storage, ros-crystal-rosbag2-test-common, ros-crystal-sqlite3-vendor, ros-crystal-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-crystal-rosbag2-storage-default-plugins
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-crystal-pluginlib, ros-crystal-rcutils, ros-crystal-rosbag2-storage, ros-crystal-sqlite3-vendor, ros-crystal-ros-workspace
+Description: ROSBag2 SQLite3 storage plugin
