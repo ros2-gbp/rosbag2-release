@@ -2,6 +2,11 @@
 Changelog for package rosbag2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.2 (2018-12-12)
+------------------
+* update maintainer email
+* Contributors: Karsten Knese
+
 0.0.1 (2018-12-11)
 ------------------
 * Split converters (`#70 <https://github.com/ros2/rosbag2/issues/70>`_)
