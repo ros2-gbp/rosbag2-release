@@ -1,0 +1,30 @@
+ros-crystal-rosbag2 (0.0.1-1bionic) bionic; urgency=high
+
+  * Split converters (#70 <https://github.com/ros2/rosbag2/issues/70>)
+  * GH-144 Add missing pop for warning pragma (#68 <https://github.com/ros2/rosbag2/issues/68>)
+  * Fix master build and small renamings (#67 <https://github.com/ros2/rosbag2/issues/67>)
+  * rename topic_with_types to topic_metadata
+  * use converter options
+  * GH-142 replace map with unordered map where possible (#65 <https://github.com/ros2/rosbag2/issues/65>)
+  * Use converters when recording a bag file (#57 <https://github.com/ros2/rosbag2/issues/57>)
+  * Renaming struct members for consistency (#64 <https://github.com/ros2/rosbag2/issues/64>)
+  * Use converters when playing back files (#56 <https://github.com/ros2/rosbag2/issues/56>)
+  * Implement converter plugin for CDR format and add converter plugins package (#48 <https://github.com/ros2/rosbag2/issues/48>)
+  * Display bag summary using ros2 bag info (#45 <https://github.com/ros2/rosbag2/issues/45>)
+  * Add entry point for converter plugins (#47 <https://github.com/ros2/rosbag2/issues/47>)
+  * Extract recorder from rosbag2_transport, fix test naming (#44 <https://github.com/ros2/rosbag2/issues/44>)
+  * Introduce rosbag2_transport layer and CLI (#38 <https://github.com/ros2/rosbag2/issues/38>)
+  * Add correct timing behaviour for rosbag play (#32 <https://github.com/ros2/rosbag2/issues/32>)
+  * Improve sqlite usage and test stability (#31 <https://github.com/ros2/rosbag2/issues/31>)
+  * Record and play multiple topics (#27 <https://github.com/ros2/rosbag2/issues/27>)
+  * Allow an arbitrary topic to be recorded (#26 <https://github.com/ros2/rosbag2/issues/26>)
+  * Use serialized message directly (#24 <https://github.com/ros2/rosbag2/issues/24>)
+  * initial version of plugin based storage api (#7 <https://github.com/ros2/rosbag2/issues/7>)
+  * add visibility macro (#22 <https://github.com/ros2/rosbag2/issues/22>)
+  * (demo, sqlite3) First working rosbag2 implementation (#6 <https://github.com/ros2/rosbag2/issues/6>)
+  * initial setup
+  * Contributors: Alessandro Bottero, Andreas Greimel, Andreas Holzner, Karsten Knese, Martin Idel
+
+ -- Karsten Knese <karsten.knese@googlemail.com>  Tue, 11 Dec 2018 08:00:00 -0000
+
+
