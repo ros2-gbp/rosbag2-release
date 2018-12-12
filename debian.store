@@ -1,1 +1,1 @@
-{"base": "dcaf91a", "parent": "debian/crystal/rosbag2_transport", "previous": "abdf1f4", "trim": "", "trimbase": ""}
+{"trim": "", "base": "dd11a80", "trimbase": "", "parent": "debian/crystal/rosbag2_transport", "previous": "eb4ee92"}
