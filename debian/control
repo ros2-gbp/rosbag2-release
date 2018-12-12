@@ -1,0 +1,12 @@
+Source: ros-crystal-rosbag2
+Section: misc
+Priority: extra
+Maintainer: Karsten Knese <karsten.knese@googlemail.com>
+Build-Depends: debhelper (>= 9.0.0), ros-crystal-ament-cmake, ros-crystal-ament-cmake-gmock, ros-crystal-ament-index-cpp, ros-crystal-ament-lint-auto, ros-crystal-ament-lint-common, ros-crystal-pluginlib, ros-crystal-poco-vendor, ros-crystal-rcutils, ros-crystal-rosbag2-storage, ros-crystal-rosbag2-test-common, ros-crystal-rosidl-generator-cpp, ros-crystal-rosidl-typesupport-cpp, ros-crystal-rosidl-typesupport-introspection-cpp, ros-crystal-shared-queues-vendor, ros-crystal-test-msgs, ros-crystal-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-crystal-rosbag2
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-crystal-ament-index-cpp, ros-crystal-pluginlib, ros-crystal-poco-vendor, ros-crystal-rcutils, ros-crystal-rosbag2-storage, ros-crystal-rosidl-generator-cpp, ros-crystal-rosidl-typesupport-cpp, ros-crystal-rosidl-typesupport-introspection-cpp, ros-crystal-shared-queues-vendor, ros-crystal-ros-workspace
+Description: ROSBag2 client library
