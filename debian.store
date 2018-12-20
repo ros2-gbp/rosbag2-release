@@ -1,1 +1,1 @@
-{"trim": "", "base": "6c88b00", "trimbase": "", "parent": "debian/crystal/sqlite3_vendor", "previous": "4459855"}
+{"base": "b61a521", "parent": "debian/crystal/sqlite3_vendor", "previous": "ac0d752", "trim": "", "trimbase": ""}
