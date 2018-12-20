@@ -1,0 +1,12 @@
+Source: ros-crystal-rosbag2-transport
+Section: misc
+Priority: extra
+Maintainer: Karsten Knese <karsten@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), ros-crystal-ament-cmake-gmock, ros-crystal-ament-cmake-ros, ros-crystal-ament-lint-auto, ros-crystal-ament-lint-common, ros-crystal-rclcpp, ros-crystal-rmw, ros-crystal-rosbag2, ros-crystal-rosbag2-test-common, ros-crystal-shared-queues-vendor, ros-crystal-test-msgs, ros-crystal-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-crystal-rosbag2-transport
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-crystal-rclcpp, ros-crystal-rmw, ros-crystal-rosbag2, ros-crystal-shared-queues-vendor, ros-crystal-ros-workspace
+Description: Layer encapsulating ROS middleware to allow rosbag2 to be used with or without middleware
