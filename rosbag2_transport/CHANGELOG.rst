@@ -2,6 +2,9 @@
 Changelog for package rosbag2_transport
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.5 (2018-12-27)
+------------------
+
 0.0.4 (2018-12-19)
 ------------------
 * Improve queue usage (`#75 <https://github.com/bsinno/rosbag2/issues/75>`_)
