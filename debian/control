@@ -1,0 +1,12 @@
+Source: ros-crystal-ros2bag
+Section: misc
+Priority: extra
+Maintainer: Karsten Knese <karsten@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), python3-pytest, ros-crystal-ament-copyright, ros-crystal-ament-flake8, ros-crystal-ament-pep257, ros-crystal-ros2cli, ros-crystal-rosbag2-transport, ros-crystal-ros-workspace, python3-all, python3-setuptools
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-crystal-ros2bag
+Architecture: any
+Depends: ${python3:Depends}, ${misc:Depends}, ros-crystal-ros2cli, ros-crystal-rosbag2-transport, ros-crystal-ros-workspace
+Description: Entry point for rosbag in ROS 2
