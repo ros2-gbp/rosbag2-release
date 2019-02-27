@@ -1,70 +1,150 @@
-# The plugin for rosbags from ROS 1
+# rosbag2
 
-It is possible to read old bag files with `ros2`.
-This requires translating ROS 1 messages into ROS 2 messages similar to the `ros1_bridge`.
-If your rosbags contain custom message formats which can be translated into ROS 2 messages, the plugins need to be built from source.
+THIS IS WORK IN PROGRESS AND SHOULD BE USED WITH CARE
 
-## Building the ROS 1 plugin
+Repository for implementing rosbag2 as described in its corresponding [design article](https://github.com/ros2/design/blob/f69fbbd11848e3dd6866b71a158a1902e31e92f1/articles/rosbags.md)
 
-You need to have the `ros1_bridge` built (see <https://index.ros.org/p/ros1_bridge/github-ros2-ros1_bridge/#bouncy>).
-Secondly, this plugin is part of the `rosbag2` plugin architecture.
-It is thus required that `rosbag2` is correctly installed, see <https://index.ros.org/r/rosbag2/github-ros2-rosbag2/#crystal>.
+## Installation instructions
 
-We assume that the ROS 2 as well as the rosbag2 environment is correctly built and sourced.
-Then, in a fresh terminal:
+## Debian packages
 
-* Source your ROS 1 installation
-* Source your ROS 2 installation (including the `ros1_bridge`)
-* Build the workspace using `colcon build --merge-install`
-
-This will automatically match all ROS 1 messages to their ROS 2 counterpart using the same logic as the `ros1_bridge`.
-
-**N.B:** The ROS 1 installation must be sourced first to avoid problems with the `class_loader`.
-It happens to occur that cyclic dependencies are detected when compiling this plugin.
-The reason for this is that some packages which contain message definitions in ROS 1 also depend on class loader.
-It is therefore very important to source the ROS 2 installation after ROS 1 in order to guarantee that the ROS 2 class loader is correctly found and linked.
-There is an open issue for this stating that the ROS 1 and ROS 2 class loader API should be provide some basic interoperability.
-See https://github.com/ros/class_loader/issues/109
-
-## Using the plugins
-
-In order to use the plugins, again, the ROS 1 installation must be sourced **before** sourcing the ROS 2 installation.
-
-You can then just use the plugin through the regular interface.
-For instance, on the command line write:
+rosbag2 packages are available via debian packages and thus can be installed via
 
 ```
-ros2 bag info -s rosbag_v2 <path_to_bagfile>
-```
-Here, `-s rosbag_v2` tells rosbag2 to use the plugin to read rosbags (version 2) to query the bagfile.
-For old rosbags, the storage format must be added to the info call as rosbag does not have the necessary information to read the plugin otherwise.
-
-The command above should print something like the following:
-
-```
-Files:             test_bag.bag
-Bag size:          8.8 KiB
-Storage id:        rosbag_v2
-Duration:          0.268s
-Start:             Nov 29 2018 16:43:33.298 (1543509813.298)
-End                Nov 29 2018 16:43:33.567 (1543509813.567)
-Messages:          5
-Topic information: Topic: /rosout | Type: rosgraph_msgs/Log | Count: 3 | Serialization Format: rosbag_v2
-                   Topic: /test_topic | Type: std_msgs/String | Count: 1 | Serialization Format: rosbag_v2
-                   Topic: /test_topic2 | Type: std_msgs/String | Count: 1 | Serialization Format: rosbag_v2
+$ sudo apt-get install ros2bag rosbag2*
 ```
 
-For playing, one can similarly write:
+For other platforms than Linux, rosbag2 has to be built from source as it's currently not part of the latest (ros2.repos file)[https://github.com/ros2/ros2/blob/master/ros2.repos].
+
+## Build from source
+
+It is recommended to create a new overlay workspace on top of your current ROS 2 installation.
 
 ```
-ros2 bag play -s rosbag_v2 <path_to_bagfile>
+$ mkdir -p ~/rosbag_ws/src
+$ cd ~/rosbag_ws/src
 ```
 
-If there is ROS 1 data where no topic matching exists to ROS 2 these topics are ignored when replying.
-When calling `ros2 bag info`, one can see a list of mismatching topics:
+Clone this repository into the source folder:
 
 ```
-[INFO] [rosbag2_bag_v2_plugins]: ROS 1 to ROS 2 type mapping is not available for topic '/rosout' which is of type 'rosgraph_msgs/Log'. Skipping messages of this topic when replaying
+$ git clone https://github.com/ros2/rosbag2.git
 ```
 
-Currently, split bagfiles are unsupported.
+Then build all the packages with this command:
+
+```
+$ colcon build [--merge-install]
+```
+
+The `--merge-install` flag is optional and installs all packages into one folder rather than isolated folders for each package.
+
+#### Executing tests
+
+The tests can be run using the following commands:
+
+```
+$ colcon test [--merge-install]
+$ colcon test-result --verbose
+```
+
+The first command executes the test and the second command displays the errors (if any).
+
+## Using rosbag2
+
+rosbag2 is part of the ROS 2 command line interfaces.
+This repo introduces a new verb called `bag` and thus serves as the entry point of using rosbag2.
+As of the time of writing, there are three commands available for `ros2 bag`:
+
+* record
+* play
+* info
+
+### Recording data
+
+In order to record all topics currently available in the system:
+
+```
+$ ros2 bag record -a
+```
+
+The command above will record all available topics and discovers new topics as they appear while recording.
+This auto-discovery of new topics can be disabled by given the command line argument `--no-discovery`.
+
+To record a set of predefined topics, one can specify them on the command line explicitly.
+
+```
+$ ros2 bag record <topic1> <topic2> … <topicN>
+```
+
+The specified topics don't necessarily have to be present at start time.
+The discovery function will automatically recognize if one of the specified topics appeared.
+In the same fashion, this auto discovery can be disabled with `--no-discovery`.
+
+If not further specified, `ros2 bag record` will create a new folder named to the current time stamp and stores all data within this folder.
+A user defined name can be given with `-o, --output`.
+
+### Replaying data
+
+After recording data, the next logical step is to replay this data:
+
+```
+$ ros2 bag play <bag_file>
+```
+
+The bag file is by default set to the folder name where the data was previously recorded in.
+
+### Analyzing data
+
+The recorded data can be analyzed by displaying some meta information about it:
+
+```
+$ ros2 bag info <bag_file>
+```
+
+You should see something along these lines:
+
+```
+Files:             demo_strings.db3
+Bag size:          44.5 KiB
+Storage id:        sqlite3
+Duration:          8.501s
+Start:             Nov 28 2018 18:02:18.600 (1543456938.600)
+End                Nov 28 2018 18:02:27.102 (1543456947.102)
+Messages:          27
+Topic information: Topic: /chatter | Type: std_msgs/String | Count: 9 | Serialization Format: cdr
+                   Topic: /my_chatter | Type: std_msgs/String | Count: 18 | Serialization Format: cdr
+```
+
+## Storage format plugin architecture
+
+Looking at the output of the `ros2 bag info` command, we can see a field called `storage id:`.
+rosbag2 specifically was designed to support multiple storage formats.
+This allows a flexible adaptation of various storage formats depending on individual use cases.
+As of now, this repository comes with two storage plugins.
+The first plugin, sqlite3 is chosen by default.
+If not specified otherwise, rosbag2 will store and replay all recorded data in an SQLite3 database.
+Secondly, rosbag2 provides support for legacy ROS 1 bag data. __TODO(karsten1987) Add link when rosindex ran__.
+
+In order to use a specified (non-default) storage format plugin, rosbag2 has a command line argument for it:
+
+```
+$ ros2 bag <record> | <play> | <info> -s <sqlite3> | <rosbag2_v2> | <custom_plugin>
+```
+
+Have a look at each of the individual plugins for further information.
+
+## Serialization format plugin architecture
+
+Looking further at the output of `ros2 bag info`, we can see another field attached to each topic called `Serialization Format`.
+By design, ROS 2 is middleware agnostic and thus can leverage multiple communication frameworks.
+The default middleware for ROS 2 is DDS which has `cdr` as its default binary serialization format.
+However, other middleware implementation might have different formats.
+If not specified, `ros2 bag record -a` will record all data in the middleware specific format.
+This however also means that such a bag file can't easily be replayed with another middleware format.
+
+rosbag2 implements a serialization format plugin architecture which allows the user the specify a certain serialization format.
+When specified, rosbag2 looks for a suitable converter to transform the native middleware protocol to the target format.
+This also allows to record data in a native format to optimize for speed, but to convert or transform the recorded data into a middleware agnostic serialization format.
+
+By default, rosbag2 can convert from and to CDR as it's the default serialization format for ROS 2.
