@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="2">
   <name>rosbag2_tests</name>
-  <version>0.0.6</version>
+  <version>0.0.7</version>
   <description>Tests package for rosbag2</description>
   <maintainer email="karsten@openrobotics.org">Karsten Knese</maintainer>
   <license>Apache License 2.0</license>
@@ -20,6 +20,7 @@
   <test_depend>rosbag2_test_common</test_depend>
   <test_depend>rosbag2_storage</test_depend>
   <test_depend>rosbag2</test_depend>
+  <test_depend>ros1_bridge</test_depend>
   <test_depend>ros2bag</test_depend>
   <test_depend>rclcpp</test_depend>
   <test_depend>std_msgs</test_depend>
