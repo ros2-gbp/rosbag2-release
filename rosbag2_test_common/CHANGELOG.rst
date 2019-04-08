@@ -2,6 +2,9 @@
 Changelog for package rosbag2_test_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.7 (2019-04-08)
+------------------
+
 0.0.6 (2019-02-27)
 ------------------
 * enforce unique node names (`#86 <https://github.com/ros2/rosbag2/issues/86>`_)
