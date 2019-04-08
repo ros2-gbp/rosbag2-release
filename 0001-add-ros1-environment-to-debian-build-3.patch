@@ -1,0 +1,84 @@
+From 6632f75568079640df02af5648d28be6d10b5175 Mon Sep 17 00:00:00 2001
+From: Karsten Knese <Karsten1987@users.noreply.github.com>
+Date: Mon, 25 Mar 2019 14:00:07 -0700
+Subject: [PATCH] add ros1 environment to debian build (#3)
+
+Signed-off-by: Karsten Knese <karsten@openrobotics.org>
+---
+ debian/control.em |  4 ++--
+ debian/rules.em   | 10 ++++++++++
+ 2 files changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/debian/control.em b/debian/control.em
+index 7cbf65a..e8bcc8c 100644
+--- a/debian/control.em
++++ b/debian/control.em
+@@ -2,13 +2,13 @@ Source: @(Package)
+ Section: misc
+ Priority: extra
+ Maintainer: @(Maintainer)
+-Build-Depends: debhelper (>= @(debhelper_version).0.0), @(', '.join(BuildDepends))
++Build-Depends: debhelper (>= @(debhelper_version).0.0), python-rospkg, ros-melodic-actionlib-msgs, ros-melodic-catkin, ros-melodic-common-msgs, ros-melodic-geometry-msgs, ros-melodic-nav-msgs, ros-melodic-rosbash, ros-melodic-roscpp, ros-melodic-roscpp-tutorials, ros-melodic-roslaunch, ros-melodic-rosmsg, ros-melodic-rospy-tutorials, ros-melodic-sensor-msgs, ros-melodic-std-msgs, ros-melodic-std-srvs, ros-melodic-stereo-msgs, ros-melodic-tf2-msgs, ros-melodic-trajectory-msgs, ros-melodic-visualization-msgs, @(', '.join(BuildDepends))
+ Homepage: @(Homepage)
+ Standards-Version: 3.9.2
+ 
+ Package: @(Package)
+ Architecture: any
+-Depends: ${shlibs:Depends}, ${misc:Depends}, @(', '.join(Depends))
++Depends: ${shlibs:Depends}, ${misc:Depends}, python-rospkg, ros-melodic-actionlib-msgs, ros-melodic-catkin, ros-melodic-common-msgs, ros-melodic-geometry-msgs, ros-melodic-nav-msgs, ros-melodic-rosbash, ros-melodic-roscpp, ros-melodic-roscpp-tutorials, ros-melodic-roslaunch, ros-melodic-rosmsg, ros-melodic-rospy-tutorials, ros-melodic-sensor-msgs, ros-melodic-std-msgs, ros-melodic-std-srvs, ros-melodic-stereo-msgs, ros-melodic-tf2-msgs, ros-melodic-trajectory-msgs, ros-melodic-visualization-msgs, @(', '.join(Depends))
+ @[if Conflicts]Conflicts: @(', '.join(Conflicts))@\n@[end if]@
+ @[if Replaces]Replaces: @(', '.join(Replaces))@\n@[end if]@
+ Description: @(Description)
+diff --git a/debian/rules.em b/debian/rules.em
+index 9c9604d..74c04f6 100755
+--- a/debian/rules.em
++++ b/debian/rules.em
+@@ -25,7 +25,9 @@ override_dh_auto_configure:
+ 	# In case we're installing to a non-standard location, look for a setup.sh
+ 	# in the install tree that was dropped by catkin, and source it.  It will
+ 	# set things like CMAKE_PREFIX_PATH, PKG_CONFIG_PATH, and PYTHONPATH.
++	if [ -f "/opt/ros/melodic/setup.sh" ]; then . "/opt/ros/melodic/setup.sh"; fi && \
+ 	if [ -f "@(InstallationPrefix)/setup.sh" ]; then . "@(InstallationPrefix)/setup.sh"; fi && \
++	export CMAKE_PREFIX_PATH=${AMENT_PREFIX_PATH}:${CMAKE_PREFIX_PATH} && \
+ 	dh_auto_configure -- \
+ 		-DCMAKE_INSTALL_PREFIX="@(InstallationPrefix)" \
+ 		-DAMENT_PREFIX_PATH="@(InstallationPrefix)"
+@@ -34,7 +36,9 @@ override_dh_auto_build:
+ 	# In case we're installing to a non-standard location, look for a setup.sh
+ 	# in the install tree that was dropped by catkin, and source it.  It will
+ 	# set things like CMAKE_PREFIX_PATH, PKG_CONFIG_PATH, and PYTHONPATH.
++	if [ -f "/opt/ros/melodic/setup.sh" ]; then . "/opt/ros/melodic/setup.sh"; fi && \
+ 	if [ -f "@(InstallationPrefix)/setup.sh" ]; then . "@(InstallationPrefix)/setup.sh"; fi && \
++	export CMAKE_PREFIX_PATH=${AMENT_PREFIX_PATH}:${CMAKE_PREFIX_PATH} && \
+ 	dh_auto_build
+ 
+ override_dh_auto_test:
+@@ -42,19 +46,25 @@ override_dh_auto_test:
+ 	# in the install tree that was dropped by catkin, and source it.  It will
+ 	# set things like CMAKE_PREFIX_PATH, PKG_CONFIG_PATH, and PYTHONPATH.
+ 	echo -- Running tests. Even if one of them fails the build is not canceled.
++	if [ -f "/opt/ros/melodic/setup.sh" ]; then . "/opt/ros/melodic/setup.sh"; fi && \
+ 	if [ -f "@(InstallationPrefix)/setup.sh" ]; then . "@(InstallationPrefix)/setup.sh"; fi && \
++	export CMAKE_PREFIX_PATH=${AMENT_PREFIX_PATH}:${CMAKE_PREFIX_PATH} && \
+ 	dh_auto_test || true
+ 
+ override_dh_shlibdeps:
+ 	# In case we're installing to a non-standard location, look for a setup.sh
+ 	# in the install tree that was dropped by catkin, and source it.  It will
+ 	# set things like CMAKE_PREFIX_PATH, PKG_CONFIG_PATH, and PYTHONPATH.
++	if [ -f "/opt/ros/melodic/setup.sh" ]; then . "/opt/ros/melodic/setup.sh"; fi && \
+ 	if [ -f "@(InstallationPrefix)/setup.sh" ]; then . "@(InstallationPrefix)/setup.sh"; fi && \
++	export CMAKE_PREFIX_PATH=${AMENT_PREFIX_PATH}:${CMAKE_PREFIX_PATH} && \
+ 	dh_shlibdeps -l$(CURDIR)/debian/@(Package)/@(InstallationPrefix)/lib/
+ 
+ override_dh_auto_install:
+ 	# In case we're installing to a non-standard location, look for a setup.sh
+ 	# in the install tree that was dropped by catkin, and source it.  It will
+ 	# set things like CMAKE_PREFIX_PATH, PKG_CONFIG_PATH, and PYTHONPATH.
++	if [ -f "/opt/ros/melodic/setup.sh" ]; then . "/opt/ros/melodic/setup.sh"; fi && \
+ 	if [ -f "@(InstallationPrefix)/setup.sh" ]; then . "@(InstallationPrefix)/setup.sh"; fi && \
++	export CMAKE_PREFIX_PATH=${AMENT_PREFIX_PATH}:${CMAKE_PREFIX_PATH} && \
+ 	dh_auto_install
+-- 
+2.12.0
+
