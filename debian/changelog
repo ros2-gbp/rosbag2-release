@@ -1,0 +1,59 @@
+ros-crystal-rosbag2-bag-v2-plugins (0.0.7-0bionic) bionic; urgency=high
+
+  * [backport] ros1 dependency handling (#98 <https://github.com/ros2/rosbag2/issues/98>)
+    * removed dependency to ros1_bridge package (#90 <https://github.com/ros2/rosbag2/issues/90>)
+    * removed dependency to ros1_bridge package:
+    * checking if package is available
+    * if not skipping (with warnings)
+    * now rosbag2_tests builds on systems without ros1
+    * check ros1 deps correctly on all packages
+    * add ros1_bridge to test package
+    * silently try to find the bridge
+    * correct missing linter errors (#96 <https://github.com/ros2/rosbag2/issues/96>)
+    Signed-off-by: Karsten Knese <mailto:karsten@openrobotics.org>
+  * Contributors: Karsten Knese
+
+ -- Karsten Knese <karsten@openrobotics.org>  Mon, 08 Apr 2019 07:00:00 -0000
+
+ros-crystal-rosbag2-bag-v2-plugins (0.0.6-0bionic) bionic; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Wed, 27 Feb 2019 08:00:00 -0000
+
+ros-crystal-rosbag2-bag-v2-plugins (0.0.5-0bionic) bionic; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Thu, 27 Dec 2018 08:00:00 -0000
+
+ros-crystal-rosbag2-bag-v2-plugins (0.0.4-0bionic) bionic; urgency=high
+
+  * 0.0.3
+  * manually bump version number as catkin_prepare_release complains
+  * generate changelog
+  * Contributors: Karsten Knese, Martin Idel
+
+ -- Karsten Knese <karsten@openrobotics.org>  Wed, 19 Dec 2018 08:00:00 -0000
+
+ros-crystal-rosbag2-bag-v2-plugins (0.0.3-0bionic) bionic; urgency=high
+
+  * Release fixes (#73 <https://github.com/ros2/rosbag2/issues/73>)
+  * Play old bagfiles (#69 <https://github.com/ros2/rosbag2/issues/69>)
+  * Contributors: Karsten Knese, Martin Idel
+
+ -- Karsten Knese <karsten@openrobotics.org>  Fri, 14 Dec 2018 08:00:00 -0000
+
+ros-crystal-rosbag2-bag-v2-plugins (0.0.2-0bionic) bionic; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Wed, 12 Dec 2018 08:00:00 -0000
+
+ros-crystal-rosbag2-bag-v2-plugins (0.0.1-0bionic) bionic; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Tue, 11 Dec 2018 08:00:00 -0000
+
+
