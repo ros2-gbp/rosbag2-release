@@ -1,0 +1,12 @@
+Source: ros-crystal-rosbag2-tests
+Section: misc
+Priority: extra
+Maintainer: Karsten Knese <karsten@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), python-rospkg, ros-melodic-actionlib-msgs, ros-melodic-catkin, ros-melodic-common-msgs, ros-melodic-geometry-msgs, ros-melodic-nav-msgs, ros-melodic-rosbash, ros-melodic-roscpp, ros-melodic-roscpp-tutorials, ros-melodic-roslaunch, ros-melodic-rosmsg, ros-melodic-rospy-tutorials, ros-melodic-sensor-msgs, ros-melodic-std-msgs, ros-melodic-std-srvs, ros-melodic-stereo-msgs, ros-melodic-tf2-msgs, ros-melodic-trajectory-msgs, ros-melodic-visualization-msgs, ros-crystal-ament-cmake, ros-crystal-ament-cmake-gmock, ros-crystal-ament-index-cpp, ros-crystal-ament-lint-auto, ros-crystal-ament-lint-common, ros-crystal-rclcpp, ros-crystal-ros1-bridge, ros-crystal-ros2bag, ros-crystal-rosbag2, ros-crystal-rosbag2-bag-v2-plugins, ros-crystal-rosbag2-converter-default-plugins, ros-crystal-rosbag2-storage, ros-crystal-rosbag2-storage-default-plugins, ros-crystal-rosbag2-test-common, ros-crystal-std-msgs, ros-crystal-test-msgs, ros-crystal-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-crystal-rosbag2-tests
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-rospkg, ros-melodic-actionlib-msgs, ros-melodic-catkin, ros-melodic-common-msgs, ros-melodic-geometry-msgs, ros-melodic-nav-msgs, ros-melodic-rosbash, ros-melodic-roscpp, ros-melodic-roscpp-tutorials, ros-melodic-roslaunch, ros-melodic-rosmsg, ros-melodic-rospy-tutorials, ros-melodic-sensor-msgs, ros-melodic-std-msgs, ros-melodic-std-srvs, ros-melodic-stereo-msgs, ros-melodic-tf2-msgs, ros-melodic-trajectory-msgs, ros-melodic-visualization-msgs, ros-crystal-ament-index-cpp, ros-crystal-ros-workspace
+Description: Tests package for rosbag2
