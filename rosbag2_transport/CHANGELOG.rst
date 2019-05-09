@@ -2,21 +2,19 @@
 Changelog for package rosbag2_transport
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.0.7 (2019-04-08)
-------------------
 
-0.0.6 (2019-02-27)
+0.1.0 (2019-05-08)
 ------------------
+* ignore cast function type warning (`#116 <https://github.com/ros2/rosbag2/issues/116>`_)
+* changes to avoid deprecated API's (`#115 <https://github.com/ros2/rosbag2/issues/115>`_)
+* Handle message type name with multiple namespace parts (`#114 <https://github.com/ros2/rosbag2/issues/114>`_)
+* fix compilation against master (`#111 <https://github.com/ros2/rosbag2/issues/111>`_)
+* fix logging signature (`#107 <https://github.com/ros2/rosbag2/issues/107>`_)
+* use fastrtps static instead of dynamic (`#104 <https://github.com/ros2/rosbag2/issues/104>`_)
 * enforce unique node names (`#86 <https://github.com/ros2/rosbag2/issues/86>`_)
-  * enforce unique node names
-  * fix cppcheck
 * disable cppcheck (`#91 <https://github.com/ros2/rosbag2/issues/91>`_)
 * Consistent node naming across ros2cli tools (`#60 <https://github.com/ros2/rosbag2/issues/60>`_)
-  * Passing CLI_NODE_NAME_PREFIX from ros2cli and using it to start the nodes with appropriate naming.
-  * Passing CLI_NODE_NAME_PREFIX from ros2cli and using it to start the nodes with appropriate naming.
-  * Fixing linter errors.
-  * Renaming CLI_NODE_NAME_PREFIX -> NODE_NAME_PREFIX
-* Contributors: AAlon, Karsten Knese
+* Contributors: AAlon, Dirk Thomas, Jacob Perron, Karsten Knese, William Woodall
 
 0.0.5 (2018-12-27)
 ------------------

@@ -2,15 +2,13 @@
 Changelog for package rosbag2_test_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.0.7 (2019-04-08)
+0.1.0 (2019-05-08)
 ------------------
-
-0.0.6 (2019-02-27)
-------------------
+* changes to avoid deprecated API's (`#115 <https://github.com/ros2/rosbag2/issues/115>`_)
+* fix compilation against master (`#111 <https://github.com/ros2/rosbag2/issues/111>`_)
+* Compile tests (`#103 <https://github.com/ros2/rosbag2/issues/103>`_)
 * enforce unique node names (`#86 <https://github.com/ros2/rosbag2/issues/86>`_)
-  * enforce unique node names
-  * fix cppcheck
-* Contributors: Karsten Knese
+* Contributors: Dirk Thomas, Karsten Knese, William Woodall
 
 0.0.5 (2018-12-27)
 ------------------

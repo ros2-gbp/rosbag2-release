@@ -2,11 +2,11 @@
 Changelog for package rosbag2_storage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.0.7 (2019-04-08)
-------------------
 
-0.0.6 (2019-02-27)
+0.1.0 (2019-05-08)
 ------------------
+* fix logging signature (`#107 <https://github.com/ros2/rosbag2/issues/107>`_)
+* Contributors: Dirk Thomas
 
 0.0.5 (2018-12-27)
 ------------------
