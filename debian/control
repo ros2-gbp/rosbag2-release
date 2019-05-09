@@ -1,0 +1,12 @@
+Source: ros-dashing-shared-queues-vendor
+Section: misc
+Priority: extra
+Maintainer: Karsten Knese <karsten@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), ros-dashing-ament-cmake
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-dashing-shared-queues-vendor
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, 
+Description: Vendor package for concurrent queues from moodycamel
