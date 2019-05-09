@@ -1,0 +1,12 @@
+Source: ros-dashing-sqlite3-vendor
+Section: misc
+Priority: extra
+Maintainer: Karsten Knese <karsten@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), cmake, libsqlite3-dev
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-dashing-sqlite3-vendor
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libsqlite3-dev
+Description: SQLite 3 vendor package
