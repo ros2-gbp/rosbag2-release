@@ -1,1 +1,1 @@
-{"base": "12c054d", "parent": "debian/dashing/rosbag2_storage_default_plugins", "previous": "70f72dc", "trim": "", "trimbase": ""}
+{"trim": "", "base": "017ed94", "trimbase": "", "parent": "debian/dashing/rosbag2_storage_default_plugins", "previous": "e2b585d"}
