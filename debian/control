@@ -1,0 +1,12 @@
+Source: ros-dashing-rosbag2-test-common
+Section: misc
+Priority: extra
+Maintainer: Karsten Knese <karsten@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), ros-dashing-ament-cmake, ros-dashing-ament-lint-auto, ros-dashing-ament-lint-common, ros-dashing-rclcpp, ros-dashing-rcutils, ros-dashing-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-dashing-rosbag2-test-common
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-dashing-rclcpp, ros-dashing-rcutils, ros-dashing-ros-workspace
+Description: Commonly used test helper classes and fixtures for rosbag2
