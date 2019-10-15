@@ -3,11 +3,22 @@ Changelog for package rosbag2_storage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-0.2.0 (2019-09-26)
+0.1.7 (2019-10-14)
 ------------------
-* Fix test failures on armhf (`#135 <https://github.com/ros2/rosbag2/issues/135>`_)
-* Export pluginlib to downstream packages (`#113 <https://github.com/ros2/rosbag2/issues/113>`_)
-* Contributors: Esteve Fernandez, Prajakta Gokhale
+
+0.1.6 (2019-09-20)
+------------------
+
+0.1.5 (2019-09-09)
+------------------
+
+0.1.4 (2019-07-31)
+------------------
+* Exported pluginlib dependency to downstream packages (`#144 <https://github.com/ros2/rosbag2/issues/144>`_)
+* Contributors: Esteve Fernandez, Michel Hidalgo
+
+0.1.3 (2019-06-12)
+------------------
 
 0.1.2 (2019-05-20)
 ------------------

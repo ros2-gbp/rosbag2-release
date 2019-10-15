@@ -3,10 +3,22 @@ Changelog for package rosbag2_converter_default_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-0.2.0 (2019-09-26)
+0.1.7 (2019-10-14)
 ------------------
-* disable plugins/tests which need rmw_fastrtps_cpp if unavailable (`#137 <https://github.com/ros2/rosbag2/issues/137>`_)
-* Contributors: ivanpauno
+
+0.1.6 (2019-09-20)
+------------------
+
+0.1.5 (2019-09-09)
+------------------
+* disable fastrtps dependent tests when unavailable (`#137 <https://github.com/ros2/rosbag2/issues/137>`_) (`#148 <https://github.com/ros2/rosbag2/issues/148>`_)
+* Contributors: Karsten Knese
+
+0.1.4 (2019-07-31)
+------------------
+
+0.1.3 (2019-06-12)
+------------------
 
 0.1.2 (2019-05-20)
 ------------------

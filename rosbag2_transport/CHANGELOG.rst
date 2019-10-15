@@ -4,13 +4,25 @@ Changelog for package rosbag2_transport
 
 
 
-0.2.0 (2019-09-26)
+0.1.7 (2019-10-14)
 ------------------
-* fixup after API changes to Subscription in rclcpp (`#166 <https://github.com/ros2/rosbag2/issues/166>`_)
-* disable some tests for connext (`#145 <https://github.com/ros2/rosbag2/issues/145>`_)
-* disable plugins/tests which need rmw_fastrtps_cpp if unavailable (`#137 <https://github.com/ros2/rosbag2/issues/137>`_)
-* Fix test failures on armhf (`#135 <https://github.com/ros2/rosbag2/issues/135>`_)
-* Contributors: Karsten Knese, Prajakta Gokhale, William Woodall, ivanpauno
+
+0.1.6 (2019-09-20)
+------------------
+
+0.1.5 (2019-09-09)
+------------------
+* disable some tests for connext (`#145 <https://github.com/ros2/rosbag2/issues/145>`_) (`#151 <https://github.com/ros2/rosbag2/issues/151>`_)
+  Signed-off-by: Karsten Knese <karsten@openrobotics.org>
+* disable plugins/tests which need rmw_fastrtps_cpp if unavailable (`#137 <https://github.com/ros2/rosbag2/issues/137>`_) (`#148 <https://github.com/ros2/rosbag2/issues/148>`_)
+  Signed-off-by: ivanpauno <ivanpauno@ekumenlabs.com>
+* Contributors: Karsten Knese
+
+0.1.4 (2019-07-31)
+------------------
+
+0.1.3 (2019-06-12)
+------------------
 
 0.1.2 (2019-05-20)
 ------------------

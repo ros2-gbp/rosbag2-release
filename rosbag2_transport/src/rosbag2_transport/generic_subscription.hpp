@@ -40,13 +40,13 @@ public:
    * Constructor. In order to properly subscribe to a topic, this subscription needs to be added to
    * the node_topic_interface of the node passed into this constructor.
    *
-   * \param node_base NodeBaseInterface pointer used in parts of the setup.
+   * \param node_handle Node handle to the node to create the subscription to
    * \param ts Type support handle
    * \param topic_name Topic name
    * \param callback Callback for new messages of serialized form
    */
   GenericSubscription(
-    rclcpp::node_interfaces::NodeBaseInterface * node_base,
+    std::shared_ptr<rcl_node_t> node_handle,
     const rosidl_message_type_support_t & ts,
     const std::string & topic_name,
     std::function<void(std::shared_ptr<rmw_serialized_message_t>)> callback);

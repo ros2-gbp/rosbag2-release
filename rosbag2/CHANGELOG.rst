@@ -3,12 +3,25 @@ Changelog for package rosbag2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-0.2.0 (2019-09-26)
+0.1.7 (2019-10-14)
 ------------------
-* enable address sanitizers only on 64bit machines (`#149 <https://github.com/ros2/rosbag2/issues/149>`_)
-* Export pluginlib to downstream packages (`#113 <https://github.com/ros2/rosbag2/issues/113>`_)
+
+0.1.6 (2019-09-20)
+------------------
+* enable address sanitizers only on 64bit machines (`#149 <https://github.com/ros2/rosbag2/issues/149>`_) (`#162 <https://github.com/ros2/rosbag2/issues/162>`_)
+
+0.1.5 (2019-09-09)
+------------------
+
+0.1.4 (2019-07-31)
+------------------
+* Exported pluginlib dependency to downstream packages (`#144 <https://github.com/ros2/rosbag2/issues/144>`_)
+* Contributors: Esteve Fernandez, Michel Hidalgo
+
+0.1.3 (2019-06-12)
+------------------
 * Add support for parsing middle module name from type (`#128 <https://github.com/ros2/rosbag2/issues/128>`_)
-* Contributors: David Hodo, Esteve Fernandez, Karsten Knese
+* Contributors: David Hodo
 
 0.1.2 (2019-05-20)
 ------------------
