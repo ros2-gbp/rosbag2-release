@@ -5,10 +5,12 @@ package_name = 'ros2bag'
 
 setup(
     name=package_name,
-    version='0.1.3',
+    version='0.1.8',
     packages=find_packages(exclude=['test']),
     data_files=[
         ('share/' + package_name, ['package.xml']),
+        ('share/ament_index/resource_index/packages',
+            ['resource/' + package_name]),
     ],
     install_requires=['ros2cli'],
     zip_safe=True,
