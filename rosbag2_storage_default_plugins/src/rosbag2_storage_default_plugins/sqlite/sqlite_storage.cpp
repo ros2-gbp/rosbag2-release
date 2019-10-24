@@ -33,16 +33,17 @@
 
 #include "../logging.hpp"
 
+namespace
+{
+bool database_exists(const std::string & uri)
+{
+  std::ifstream database(uri);
+  return database.good();
+}
+}
+
 namespace rosbag2_storage_plugins
 {
-
-SqliteStorage::SqliteStorage()
-: database_(),
-  write_statement_(nullptr),
-  read_statement_(nullptr),
-  message_result_(nullptr),
-  current_message_row_(nullptr, SqliteStatementWrapper::QueryResult<>::Iterator::POSITION_END)
-{}
 
 void SqliteStorage::open(
   const std::string & uri, rosbag2_storage::storage_interfaces::IOFlag io_flag)
@@ -82,6 +83,7 @@ void SqliteStorage::open(
     initialize();
   }
 
+  uri_ = uri;
   ROSBAG2_STORAGE_DEFAULT_PLUGINS_LOG_INFO_STREAM("Opened database '" << uri << "'.");
 }
 
@@ -131,6 +133,12 @@ std::vector<rosbag2_storage::TopicMetadata> SqliteStorage::get_all_topics_and_ty
   }
 
   return all_topics_and_types_;
+}
+
+uint64_t SqliteStorage::get_bagfile_size() const
+{
+  return rosbag2_storage::FilesystemHelper::get_file_size(
+    rosbag2_storage::FilesystemHelper::concat({uri_, database_name_}));
 }
 
 void SqliteStorage::initialize()
@@ -215,21 +223,20 @@ std::unique_ptr<rosbag2_storage::BagMetadata> SqliteStorage::load_metadata(const
   }
 }
 
-bool SqliteStorage::database_exists(const std::string & uri)
-{
-  std::ifstream database(uri);
-  return database.good();
-}
-
 bool SqliteStorage::is_read_only(const rosbag2_storage::storage_interfaces::IOFlag & io_flag) const
 {
   return io_flag == rosbag2_storage::storage_interfaces::IOFlag::READ_ONLY;
 }
 
+std::string SqliteStorage::get_storage_identifier() const
+{
+  return "sqlite3";
+}
+
 rosbag2_storage::BagMetadata SqliteStorage::get_metadata()
 {
   rosbag2_storage::BagMetadata metadata;
-  metadata.storage_identifier = "sqlite3";
+  metadata.storage_identifier = get_storage_identifier();
   metadata.relative_file_paths = {database_name_};
 
   metadata.message_count = 0;
