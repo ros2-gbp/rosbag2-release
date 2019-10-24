@@ -1,3 +1,36 @@
+## rosbag2 (eloquent) - 0.2.1-1
+
+The packages in the `rosbag2` repository were released into the `eloquent` distro by running `/Users/karsten/.pyenv/versions/3.7.4/bin/bloom-release --rosdistro eloquent --track eloquent rosbag2` on `Thu, 24 Oct 2019 05:16:48 -0000`
+
+These packages were released:
+- `ros2bag`
+- `rosbag2`
+- `rosbag2_converter_default_plugins`
+- `rosbag2_storage`
+- `rosbag2_storage_default_plugins`
+- `rosbag2_test_common`
+- `rosbag2_tests`
+- `rosbag2_transport`
+- `shared_queues_vendor`
+- `sqlite3_vendor`
+
+Version of package(s) in repository `rosbag2`:
+
+- upstream repository: https://github.com/ros2/rosbag2.git
+- release repository: https://github.com/ros2-gbp/rosbag2-release.git
+- rosdistro version: `0.2.0-1`
+- old version: `0.2.0-1`
+- new version: `0.2.1-1`
+
+Versions of tools used:
+
+- bloom version: `0.9.0`
+- catkin_pkg version: `0.4.14`
+- rosdep version: `0.17.1`
+- rosdistro version: `0.7.5`
+- vcstools version: `0.1.42`
+
+
 ## rosbag2 (dashing) - 0.1.8-1
 
 The packages in the `rosbag2` repository were released into the `dashing` distro by running `/usr/bin/bloom-release -r dashing -t dashing rosbag2` on `Wed, 16 Oct 2019 16:44:46 -0000`
