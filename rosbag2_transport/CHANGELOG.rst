@@ -4,28 +4,24 @@ Changelog for package rosbag2_transport
 
 
 
-0.1.8 (2019-10-16)
+0.2.1 (2019-10-23)
 ------------------
+* Disable parameter event publishers on test nodes. (`#180 <https://github.com/ros2/rosbag2/issues/180>`_)
+* Narrow down tests for topic discovery. (`#178 <https://github.com/ros2/rosbag2/issues/178>`_)
+* Fix API for new Intra-Process communication. (`#143 <https://github.com/ros2/rosbag2/issues/143>`_)
+* Add dependency on python_cmake_module. (`#188 <https://github.com/ros2/rosbag2/issues/188>`_)
+* Add bagfile splitting support to storage_options. (`#182 <https://github.com/ros2/rosbag2/issues/182>`_)
+* Fix the test failure of wrong messages count. (`#165 <https://github.com/ros2/rosbag2/issues/165>`_)
+* Support for zero-copy message transport. (`#168 <https://github.com/ros2/rosbag2/issues/168>`_)
+* Contributors: Alberto Soragna, ChenYing Kuo, Dan Rose, Karsten Knese, Mikael Arguedas, Zachary Michaels
 
-0.1.7 (2019-10-14)
+0.2.0 (2019-09-26)
 ------------------
-
-0.1.6 (2019-09-20)
-------------------
-
-0.1.5 (2019-09-09)
-------------------
-* disable some tests for connext (`#145 <https://github.com/ros2/rosbag2/issues/145>`_) (`#151 <https://github.com/ros2/rosbag2/issues/151>`_)
-  Signed-off-by: Karsten Knese <karsten@openrobotics.org>
-* disable plugins/tests which need rmw_fastrtps_cpp if unavailable (`#137 <https://github.com/ros2/rosbag2/issues/137>`_) (`#148 <https://github.com/ros2/rosbag2/issues/148>`_)
-  Signed-off-by: ivanpauno <ivanpauno@ekumenlabs.com>
-* Contributors: Karsten Knese
-
-0.1.4 (2019-07-31)
-------------------
-
-0.1.3 (2019-06-12)
-------------------
+* fixup after API changes to Subscription in rclcpp (`#166 <https://github.com/ros2/rosbag2/issues/166>`_)
+* disable some tests for connext (`#145 <https://github.com/ros2/rosbag2/issues/145>`_)
+* disable plugins/tests which need rmw_fastrtps_cpp if unavailable (`#137 <https://github.com/ros2/rosbag2/issues/137>`_)
+* Fix test failures on armhf (`#135 <https://github.com/ros2/rosbag2/issues/135>`_)
+* Contributors: Karsten Knese, Prajakta Gokhale, William Woodall, ivanpauno
 
 0.1.2 (2019-05-20)
 ------------------

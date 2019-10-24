@@ -2,22 +2,13 @@
 Changelog for package rosbag2_test_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.1.8 (2019-10-16)
+0.2.1 (2019-10-23)
 ------------------
+* Disable parameter event publishers on test nodes. (`#180 <https://github.com/ros2/rosbag2/issues/180>`_)
+* Fix API for new Intra-Process communication. (`#143 <https://github.com/ros2/rosbag2/issues/143>`_)
+* Contributors: Alberto Soragna, Dan Rose
 
-0.1.7 (2019-10-14)
-------------------
-
-0.1.6 (2019-09-20)
-------------------
-
-0.1.5 (2019-09-09)
-------------------
-
-0.1.4 (2019-07-31)
-------------------
-
-0.1.3 (2019-06-12)
+0.2.0 (2019-09-26)
 ------------------
 
 0.1.2 (2019-05-20)

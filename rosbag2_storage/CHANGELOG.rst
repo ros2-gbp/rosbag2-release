@@ -3,25 +3,18 @@ Changelog for package rosbag2_storage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-0.1.8 (2019-10-16)
+0.2.1 (2019-10-23)
 ------------------
+* Add get_identifier to base io-interfaces for support in bagfile splitting (`#183 <https://github.com/ros2/rosbag2/issues/183>`_)
+* Add bagfile splitting support to storage_options (`#182 <https://github.com/ros2/rosbag2/issues/182>`_)
+* Change storage interfaces for bagfile splitting feature (`#170 <https://github.com/ros2/rosbag2/issues/170>`_)
+* Contributors: Zachary Michaels
 
-0.1.7 (2019-10-14)
+0.2.0 (2019-09-26)
 ------------------
-
-0.1.6 (2019-09-20)
-------------------
-
-0.1.5 (2019-09-09)
-------------------
-
-0.1.4 (2019-07-31)
-------------------
-* Exported pluginlib dependency to downstream packages (`#144 <https://github.com/ros2/rosbag2/issues/144>`_)
-* Contributors: Esteve Fernandez, Michel Hidalgo
-
-0.1.3 (2019-06-12)
-------------------
+* Fix test failures on armhf (`#135 <https://github.com/ros2/rosbag2/issues/135>`_)
+* Export pluginlib to downstream packages (`#113 <https://github.com/ros2/rosbag2/issues/113>`_)
+* Contributors: Esteve Fernandez, Prajakta Gokhale
 
 0.1.2 (2019-05-20)
 ------------------

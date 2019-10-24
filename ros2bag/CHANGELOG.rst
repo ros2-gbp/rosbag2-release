@@ -2,26 +2,17 @@
 Changelog for package ros2bag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.1.8 (2019-10-16)
+0.2.1 (2019-10-23)
 ------------------
-* install resource marker file for package (`#177 <https://github.com/ros2/rosbag2/issues/177>`_)
+* Fix flake8 errors and add missing lint tests. (`#194 <https://github.com/ros2/rosbag2/issues/194>`_)
+* Import rosbag2_transport Python module on demand. (`#190 <https://github.com/ros2/rosbag2/issues/190>`_)
+* Contributors: Michel Hidalgo, Thomas Moulard
 
-0.1.7 (2019-10-14)
+0.2.0 (2019-09-26)
 ------------------
-* Install package manifest. (`#161 <https://github.com/ros2/rosbag2/issues/161>`_) (`#175 <https://github.com/ros2/rosbag2/issues/175>`_)
-* Contributors: Dirk Thomas
-
-0.1.6 (2019-09-20)
-------------------
-
-0.1.5 (2019-09-09)
-------------------
-
-0.1.4 (2019-07-31)
-------------------
-
-0.1.3 (2019-06-12)
-------------------
+* install resource marker file for package (`#167 <https://github.com/ros2/rosbag2/issues/167>`_)
+* install package manifest (`#161 <https://github.com/ros2/rosbag2/issues/161>`_)
+* Contributors: Dirk Thomas, Ruffin
 
 0.1.2 (2019-05-20)
 ------------------
