@@ -58,6 +58,13 @@ void GenericSubscription::handle_message(
   callback_(typed_message);
 }
 
+void GenericSubscription::handle_loaned_message(
+  void * message, const rmw_message_info_t & message_info)
+{
+  (void) message;
+  (void) message_info;
+}
+
 void GenericSubscription::return_message(std::shared_ptr<void> & message)
 {
   auto typed_message = std::static_pointer_cast<rmw_serialized_message_t>(message);
@@ -68,21 +75,6 @@ void GenericSubscription::return_serialized_message(
   std::shared_ptr<rmw_serialized_message_t> & message)
 {
   message.reset();
-}
-
-void GenericSubscription::handle_intra_process_message(
-  rcl_interfaces::msg::IntraProcessMessage & ipm,
-  const rmw_message_info_t & message_info)
-{
-  (void) ipm;
-  (void) message_info;
-  throw std::runtime_error("Intra process is not supported");
-}
-
-const std::shared_ptr<rcl_subscription_t>
-GenericSubscription::get_intra_process_subscription_handle() const
-{
-  return nullptr;
 }
 
 std::shared_ptr<rmw_serialized_message_t>
