@@ -1,0 +1,12 @@
+Source: ros-eloquent-sqlite3-vendor
+Section: misc
+Priority: optional
+Maintainer: Karsten Knese <karsten@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), cmake, libsqlite3-dev, ros-eloquent-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-eloquent-sqlite3-vendor
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libsqlite3-dev, ros-eloquent-ros-workspace
+Description: SQLite 3 vendor package
