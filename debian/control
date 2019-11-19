@@ -1,0 +1,12 @@
+Source: ros-eloquent-rosbag2-converter-default-plugins
+Section: misc
+Priority: optional
+Maintainer: Karsten Knese <karsten@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), ros-eloquent-ament-cmake, ros-eloquent-ament-cmake-gmock, ros-eloquent-ament-index-cpp, ros-eloquent-ament-lint-auto, ros-eloquent-ament-lint-common, ros-eloquent-pluginlib, ros-eloquent-poco-vendor, ros-eloquent-rcutils, ros-eloquent-rmw, ros-eloquent-rmw-fastrtps-cpp, ros-eloquent-rosbag2, ros-eloquent-rosbag2-test-common, ros-eloquent-rosidl-generator-cpp, ros-eloquent-test-msgs, ros-eloquent-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-eloquent-rosbag2-converter-default-plugins
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-eloquent-ament-index-cpp, ros-eloquent-pluginlib, ros-eloquent-poco-vendor, ros-eloquent-rcutils, ros-eloquent-rmw, ros-eloquent-rmw-fastrtps-cpp, ros-eloquent-rosbag2, ros-eloquent-rosidl-generator-cpp, ros-eloquent-ros-workspace
+Description: Package containing default plugins for format converters
