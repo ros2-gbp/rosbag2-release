@@ -12,12 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from argparse import FileType
 import datetime
 import os
 
+from rclpy.qos import InvalidQoSProfileException
+from ros2bag.api import convert_yaml_to_qos_profile
+from ros2bag.api import create_bag_directory
+from ros2bag.api import print_error
 from ros2bag.verb import VerbExtension
-
 from ros2cli.node import NODE_NAME_PREFIX
+import yaml
 
 
 class RecordVerb(VerbExtension):
@@ -55,24 +60,55 @@ class RecordVerb(VerbExtension):
                   'Default it is zero, recording written in single bagfile and splitting '
                   'is disabled.'
         )
+        parser.add_argument(
+            '--max-cache-size', type=int, default=0,
+            help='maximum amount of messages to hold in cache before writing to disk. '
+                 'Default it is zero, writing every message directly to disk.'
+        )
+        parser.add_argument(
+            '--compression-mode', type=str, default='none',
+            choices=['none', 'file', 'message'],
+            help='Determine whether to compress by file or message. Default is "none".'
+        )
+        parser.add_argument(
+            '--compression-format', type=str, default='', choices=['zstd'],
+            help='Specify the compression format/algorithm. Default is none.'
+        )
+        parser.add_argument(
+            '--include-hidden-topics', action='store_true',
+            help='record also hidden topics.'
+        )
+        parser.add_argument(
+            '--qos-profile-overrides-path', type=FileType('r'),
+            help='Path to a yaml file defining overrides of the QoS profile for specific topics.'
+        )
         self._subparser = parser
-
-    def create_bag_directory(self, uri):
-        try:
-            os.makedirs(uri)
-        except OSError:
-            return "[ERROR] [ros2bag]: Could not create bag folder '{}'.".format(uri)
 
     def main(self, *, args):  # noqa: D102
         if args.all and args.topics:
-            return 'Invalid choice: Can not specify topics and -a at the same time.'
+            return print_error('Invalid choice: Can not specify topics and -a at the same time.')
 
         uri = args.output or datetime.datetime.now().strftime('rosbag2_%Y_%m_%d-%H_%M_%S')
 
         if os.path.isdir(uri):
-            return "[ERROR] [ros2bag]: Output folder '{}' already exists.".format(uri)
+            return print_error("Output folder '{}' already exists.".format(uri))
 
-        self.create_bag_directory(uri)
+        if args.compression_format and args.compression_mode == 'none':
+            return print_error('Invalid choice: Cannot specify compression format '
+                               'without a compression mode.')
+
+        args.compression_mode = args.compression_mode.upper()
+
+        qos_profile_overrides = {}  # Specify a valid default
+        if args.qos_profile_overrides_path:
+            qos_profile_dict = yaml.safe_load(args.qos_profile_overrides_path)
+            try:
+                qos_profile_overrides = convert_yaml_to_qos_profile(
+                    qos_profile_dict)
+            except (InvalidQoSProfileException, ValueError) as e:
+                return print_error(str(e))
+
+        create_bag_directory(uri)
 
         if args.all:
             # NOTE(hidmic): in merged install workspaces on Windows, Python entrypoint lookups
@@ -87,10 +123,15 @@ class RecordVerb(VerbExtension):
                 storage_id=args.storage,
                 serialization_format=args.serialization_format,
                 node_prefix=NODE_NAME_PREFIX,
+                compression_mode=args.compression_mode,
+                compression_format=args.compression_format,
                 all=True,
                 no_discovery=args.no_discovery,
                 polling_interval=args.polling_interval,
-                max_bagfile_size=args.max_bag_size)
+                max_bagfile_size=args.max_bag_size,
+                max_cache_size=args.max_cache_size,
+                include_hidden_topics=args.include_hidden_topics,
+                qos_profile_overrides=qos_profile_overrides)
         elif args.topics and len(args.topics) > 0:
             # NOTE(hidmic): in merged install workspaces on Windows, Python entrypoint lookups
             #               combined with constrained environments (as imposed by colcon test)
@@ -104,10 +145,15 @@ class RecordVerb(VerbExtension):
                 storage_id=args.storage,
                 serialization_format=args.serialization_format,
                 node_prefix=NODE_NAME_PREFIX,
+                compression_mode=args.compression_mode,
+                compression_format=args.compression_format,
                 no_discovery=args.no_discovery,
                 polling_interval=args.polling_interval,
                 max_bagfile_size=args.max_bag_size,
-                topics=args.topics)
+                max_cache_size=args.max_cache_size,
+                topics=args.topics,
+                include_hidden_topics=args.include_hidden_topics,
+                qos_profile_overrides=qos_profile_overrides)
         else:
             self._subparser.print_help()
 

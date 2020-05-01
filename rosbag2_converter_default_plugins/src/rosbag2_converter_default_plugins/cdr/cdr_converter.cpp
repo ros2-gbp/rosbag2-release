@@ -20,11 +20,12 @@
 #include "ament_index_cpp/get_resources.hpp"
 #include "ament_index_cpp/get_package_prefix.hpp"
 
-#include "Poco/SharedLibrary.h"
-
+#include "rcpputils/shared_library.hpp"
 #include "rcutils/strdup.h"
-#include "rosbag2/types/introspection_message.hpp"
-#include "rosidl_generator_cpp/message_type_support_decl.hpp"
+
+#include "rosbag2_cpp/types.hpp"
+
+#include "rosidl_runtime_cpp/message_type_support_decl.hpp"
 
 #include "../logging.hpp"
 
@@ -61,46 +62,45 @@ std::string get_package_library_path(const std::string & package_name)
 CdrConverter::CdrConverter()
 {
   auto library_path = get_package_library_path("rmw_fastrtps_cpp");
-  std::shared_ptr<Poco::SharedLibrary> library;
   try {
-    library = std::make_shared<Poco::SharedLibrary>(library_path);
-  } catch (Poco::LibraryLoadException &) {
+    library = std::make_shared<rcpputils::SharedLibrary>(library_path);
+  } catch (std::runtime_error &) {
     throw std::runtime_error(
-            std::string("poco exception: library could not be found:") + library_path);
+            std::string("rcpputils exception: library could not be found:") + library_path);
   }
 
   std::string serialize_symbol = "rmw_serialize";
   std::string deserialize_symbol = "rmw_deserialize";
 
-  if (!library->hasSymbol(serialize_symbol)) {
-    throw std::runtime_error(
-            std::string("poco exception: symbol not found: ") + serialize_symbol);
+  if (!library->has_symbol(serialize_symbol.c_str())) {
+    throw std::runtime_error{std::string("rcutils exception: symbol not found: ") +
+            serialize_symbol};
   }
 
-  if (!library->hasSymbol(deserialize_symbol)) {
-    throw std::runtime_error(
-            std::string("poco exception: symbol not found: ") + deserialize_symbol);
+  if (!library->has_symbol(deserialize_symbol.c_str())) {
+    throw std::runtime_error{
+            std::string("rcutils exception: symbol not found: ") + deserialize_symbol};
   }
 
-  serialize_fcn_ = (decltype(serialize_fcn_))library->getSymbol(serialize_symbol);
+  serialize_fcn_ = (decltype(serialize_fcn_))library->get_symbol(serialize_symbol.c_str());
   if (!serialize_fcn_) {
-    throw std::runtime_error(
-            std::string("poco exception: symbol of wrong type: ") + serialize_symbol);
+    throw std::runtime_error{
+            std::string("rcutils exception: symbol of wrong type: ") + serialize_symbol};
   }
 
-  deserialize_fcn_ = (decltype(deserialize_fcn_))library->getSymbol(deserialize_symbol);
+  deserialize_fcn_ = (decltype(deserialize_fcn_))library->get_symbol(deserialize_symbol.c_str());
   if (!deserialize_fcn_) {
-    throw std::runtime_error(
-            std::string("poco exception: symbol of wrong type: ") + deserialize_symbol);
+    throw std::runtime_error{
+            std::string("rcutils exception: symbol of wrong type: ") + deserialize_symbol};
   }
 }
 
 void CdrConverter::deserialize(
-  const std::shared_ptr<const rosbag2::SerializedBagMessage> serialized_message,
+  const std::shared_ptr<const rosbag2_storage::SerializedBagMessage> serialized_message,
   const rosidl_message_type_support_t * type_support,
-  std::shared_ptr<rosbag2_introspection_message_t> introspection_message)
+  std::shared_ptr<rosbag2_cpp::rosbag2_introspection_message_t> introspection_message)
 {
-  rosbag2::introspection_message_set_topic_name(
+  rosbag2_cpp::introspection_message_set_topic_name(
     introspection_message.get(), serialized_message->topic_name.c_str());
   introspection_message->time_stamp = serialized_message->time_stamp;
 
@@ -112,9 +112,9 @@ void CdrConverter::deserialize(
 }
 
 void CdrConverter::serialize(
-  const std::shared_ptr<const rosbag2_introspection_message_t> introspection_message,
+  const std::shared_ptr<const rosbag2_cpp::rosbag2_introspection_message_t> introspection_message,
   const rosidl_message_type_support_t * type_support,
-  std::shared_ptr<rosbag2::SerializedBagMessage> serialized_message)
+  std::shared_ptr<rosbag2_storage::SerializedBagMessage> serialized_message)
 {
   serialized_message->topic_name = std::string(introspection_message->topic_name);
   serialized_message->time_stamp = introspection_message->time_stamp;
@@ -129,5 +129,6 @@ void CdrConverter::serialize(
 }  // namespace rosbag2_converter_default_plugins
 
 #include "pluginlib/class_list_macros.hpp"  // NOLINT
-PLUGINLIB_EXPORT_CLASS(rosbag2_converter_default_plugins::CdrConverter,
-  rosbag2::converter_interfaces::SerializationFormatConverter)
+PLUGINLIB_EXPORT_CLASS(
+  rosbag2_converter_default_plugins::CdrConverter,
+  rosbag2_cpp::converter_interfaces::SerializationFormatConverter)

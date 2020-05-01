@@ -23,16 +23,19 @@
 #include <unordered_map>
 
 #include "moodycamel/readerwriterqueue.h"
-#include "replayable_message.hpp"
-#include "rosbag2/types.hpp"
+
+#include "rclcpp/qos.hpp"
+
 #include "rosbag2_transport/play_options.hpp"
+
+#include "replayable_message.hpp"
 
 using TimePoint = std::chrono::time_point<std::chrono::high_resolution_clock>;
 
-namespace rosbag2
+namespace rosbag2_cpp
 {
 class Reader;
-}  // namespace rosbag2
+}  // namespace rosbag2_cpp
 
 namespace rosbag2_transport
 {
@@ -44,7 +47,7 @@ class Player
 {
 public:
   explicit Player(
-    std::shared_ptr<rosbag2::Reader> reader,
+    std::shared_ptr<rosbag2_cpp::Reader> reader,
     std::shared_ptr<Rosbag2Node> rosbag2_transport);
 
   void play(const PlayOptions & options);
@@ -54,19 +57,19 @@ private:
   bool is_storage_completely_loaded() const;
   void enqueue_up_to_boundary(const TimePoint & time_first_message, uint64_t boundary);
   void wait_for_filled_queue(const PlayOptions & options) const;
-  void play_messages_from_queue();
-  void play_messages_until_queue_empty();
-  void prepare_publishers();
-
+  void play_messages_from_queue(const PlayOptions & options);
+  void play_messages_until_queue_empty(const PlayOptions & options);
+  void prepare_publishers(const PlayOptions & options);
   static constexpr double read_ahead_lower_bound_percentage_ = 0.9;
   static const std::chrono::milliseconds queue_read_wait_period_;
 
-  std::shared_ptr<rosbag2::Reader> reader_;
+  std::shared_ptr<rosbag2_cpp::Reader> reader_;
   moodycamel::ReaderWriterQueue<ReplayableMessage> message_queue_;
   std::chrono::time_point<std::chrono::system_clock> start_time_;
   mutable std::future<void> storage_loading_future_;
   std::shared_ptr<Rosbag2Node> rosbag2_transport_;
   std::unordered_map<std::string, std::shared_ptr<GenericPublisher>> publishers_;
+  std::unordered_map<std::string, rclcpp::QoS> topic_qos_profile_overrides_;
 };
 
 }  // namespace rosbag2_transport

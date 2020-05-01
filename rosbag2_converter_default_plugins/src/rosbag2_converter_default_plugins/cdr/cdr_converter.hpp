@@ -20,27 +20,33 @@
 
 #include "rmw/types.h"
 
-#include "rosidl_generator_cpp/message_type_support_decl.hpp"
-#include "rosbag2/converter_interfaces/serialization_format_converter.hpp"
-#include "rosbag2/types/introspection_message.hpp"
+#include "rosidl_runtime_cpp/message_type_support_decl.hpp"
+
+#include "rcpputils/shared_library.hpp"
+
+#include "rosbag2_cpp/converter_interfaces/serialization_format_converter.hpp"
+#include "rosbag2_cpp/types.hpp"
 
 namespace rosbag2_converter_default_plugins
 {
 
-class CdrConverter : public rosbag2::converter_interfaces::SerializationFormatConverter
+class CdrConverter : public rosbag2_cpp::converter_interfaces::SerializationFormatConverter
 {
 public:
   CdrConverter();
 
   void deserialize(
-    std::shared_ptr<const rosbag2::SerializedBagMessage> serialized_message,
+    std::shared_ptr<const rosbag2_storage::SerializedBagMessage> serialized_message,
     const rosidl_message_type_support_t * type_support,
-    std::shared_ptr<rosbag2_introspection_message_t> introspection_message) override;
+    std::shared_ptr<rosbag2_cpp::rosbag2_introspection_message_t> introspection_message) override;
 
   void serialize(
-    std::shared_ptr<const rosbag2_introspection_message_t> introspection_message,
+    std::shared_ptr<const rosbag2_cpp::rosbag2_introspection_message_t> introspection_message,
     const rosidl_message_type_support_t * type_support,
-    std::shared_ptr<rosbag2::SerializedBagMessage> serialized_message) override;
+    std::shared_ptr<rosbag2_storage::SerializedBagMessage> serialized_message) override;
+
+private:
+  std::shared_ptr<rcpputils::SharedLibrary> library;
 
 protected:
   rmw_ret_t (* serialize_fcn_)(

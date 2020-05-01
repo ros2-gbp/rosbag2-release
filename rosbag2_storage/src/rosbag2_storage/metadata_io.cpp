@@ -18,8 +18,11 @@
 #include <string>
 #include <vector>
 
+#include "rcpputils/filesystem_helper.hpp"
+
+#include "rcutils/filesystem.h"
+
 #include "rosbag2_storage/topic_metadata.hpp"
-#include "rosbag2_storage/filesystem_helper.hpp"
 
 #ifdef _WIN32
 // This is necessary because of a bug in yaml-cpp's cmake
@@ -36,6 +39,28 @@
 
 namespace YAML
 {
+/// Pass metadata version to the sub-structs of BagMetadata for deserializing.
+/**
+  * Encoding should always use the current metadata version, so it does not need this value.
+  * We cannot extend the YAML::Node class to include this, so we must call it
+  * as a function with the node as an argument.
+  */
+template<typename T>
+T decode_for_version(const Node & node, int version)
+{
+  static_assert(
+    std::is_default_constructible<T>::value,
+    "Type passed to decode_for_version that has is not default constructible.");
+  if (!node.IsDefined()) {
+    throw TypedBadConversion<T>(node.Mark());
+  }
+  T value{};
+  if (convert<T>::decode(node, value, version)) {
+    return value;
+  }
+  throw TypedBadConversion<T>(node.Mark());
+}
+
 template<>
 struct convert<rosbag2_storage::TopicMetadata>
 {
@@ -45,15 +70,20 @@ struct convert<rosbag2_storage::TopicMetadata>
     node["name"] = topic.name;
     node["type"] = topic.type;
     node["serialization_format"] = topic.serialization_format;
+    node["offered_qos_profiles"] = topic.offered_qos_profiles;
     return node;
   }
 
-  static bool decode(const Node & node, rosbag2_storage::TopicMetadata & topic)
+  static bool decode(const Node & node, rosbag2_storage::TopicMetadata & topic, int version)
   {
     topic.name = node["name"].as<std::string>();
     topic.type = node["type"].as<std::string>();
     topic.serialization_format = node["serialization_format"].as<std::string>();
-
+    if (version >= 4) {
+      topic.offered_qos_profiles = node["offered_qos_profiles"].as<std::string>();
+    } else {
+      topic.offered_qos_profiles = "";
+    }
     return true;
   }
 };
@@ -69,10 +99,38 @@ struct convert<rosbag2_storage::TopicInformation>
     return node;
   }
 
-  static bool decode(const Node & node, rosbag2_storage::TopicInformation & metadata)
+  static bool decode(const Node & node, rosbag2_storage::TopicInformation & metadata, int version)
   {
-    metadata.topic_metadata = node["topic_metadata"].as<rosbag2_storage::TopicMetadata>();
+    metadata.topic_metadata = decode_for_version<rosbag2_storage::TopicMetadata>(
+      node["topic_metadata"], version);
     metadata.message_count = node["message_count"].as<uint64_t>();
+    return true;
+  }
+};
+
+template<>
+struct convert<std::vector<rosbag2_storage::TopicInformation>>
+{
+  static Node encode(const std::vector<rosbag2_storage::TopicInformation> & rhs)
+  {
+    Node node{NodeType::Sequence};
+    for (const auto & value : rhs) {
+      node.push_back(value);
+    }
+    return node;
+  }
+
+  static bool decode(
+    const Node & node, std::vector<rosbag2_storage::TopicInformation> & rhs, int version)
+  {
+    if (!node.IsSequence()) {
+      return false;
+    }
+
+    rhs.clear();
+    for (const auto & value : node) {
+      rhs.push_back(decode_for_version<rosbag2_storage::TopicInformation>(value, version));
+    }
     return true;
   }
 };
@@ -126,6 +184,11 @@ struct convert<rosbag2_storage::BagMetadata>
     node["starting_time"] = metadata.starting_time;
     node["message_count"] = metadata.message_count;
     node["topics_with_message_count"] = metadata.topics_with_message_count;
+
+    if (metadata.version >= 3) {  // fields introduced by rosbag2_compression
+      node["compression_format"] = metadata.compression_format;
+      node["compression_mode"] = metadata.compression_mode;
+    }
     return node;
   }
 
@@ -139,7 +202,13 @@ struct convert<rosbag2_storage::BagMetadata>
       .as<std::chrono::time_point<std::chrono::high_resolution_clock>>();
     metadata.message_count = node["message_count"].as<uint64_t>();
     metadata.topics_with_message_count =
-      node["topics_with_message_count"].as<std::vector<rosbag2_storage::TopicInformation>>();
+      decode_for_version<std::vector<rosbag2_storage::TopicInformation>>(
+      node["topics_with_message_count"], metadata.version);
+
+    if (metadata.version >= 3) {  // fields introduced by rosbag2_compression
+      metadata.compression_format = node["compression_format"].as<std::string>();
+      metadata.compression_mode = node["compression_mode"].as<std::string>();
+    }
     return true;
   }
 };
@@ -162,7 +231,8 @@ BagMetadata MetadataIo::read_metadata(const std::string & uri)
   try {
     YAML::Node yaml_file = YAML::LoadFile(get_metadata_file_name(uri));
     auto metadata = yaml_file["rosbag2_bagfile_information"].as<rosbag2_storage::BagMetadata>();
-    metadata.bag_size = FilesystemHelper::calculate_directory_size(uri);
+    rcutils_allocator_t allocator = rcutils_get_default_allocator();
+    metadata.bag_size = rcutils_calculate_directory_size(uri.c_str(), allocator);
     return metadata;
   } catch (const YAML::Exception & ex) {
     throw std::runtime_error(std::string("Exception on parsing info file: ") + ex.what());
@@ -171,15 +241,14 @@ BagMetadata MetadataIo::read_metadata(const std::string & uri)
 
 std::string MetadataIo::get_metadata_file_name(const std::string & uri)
 {
-  std::string metadata_file = rosbag2_storage::FilesystemHelper::concat({uri, metadata_filename});
+  std::string metadata_file = (rcpputils::fs::path(uri) / metadata_filename).string();
 
   return metadata_file;
 }
 
 bool MetadataIo::metadata_file_exists(const std::string & uri)
 {
-  return rosbag2_storage::FilesystemHelper::file_exists(
-    rosbag2_storage::FilesystemHelper::concat({uri, metadata_filename}));
+  return rcpputils::fs::path(get_metadata_file_name(uri)).exists();
 }
 
 }  // namespace rosbag2_storage

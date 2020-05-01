@@ -19,7 +19,6 @@
 #include <string>
 #include <vector>
 
-#include "rosbag2/types.hpp"
 #include "rosbag2_transport/rosbag2_transport.hpp"
 #include "rosbag2_transport_test_fixture.hpp"
 
@@ -29,7 +28,7 @@ TEST_F(Rosbag2TransportTestFixture, info_pretty_prints_information_from_bagfile)
 {
   internal::CaptureStdout();
 
-  rosbag2::BagMetadata bagfile;
+  rosbag2_storage::BagMetadata bagfile;
   bagfile.storage_identifier = "sqlite3";
   bagfile.relative_file_paths.emplace_back("some_relative_path");
   bagfile.relative_file_paths.emplace_back("some_other_relative_path");
@@ -37,8 +36,8 @@ TEST_F(Rosbag2TransportTestFixture, info_pretty_prints_information_from_bagfile)
     std::chrono::nanoseconds(1538051985348887471));    // corresponds to Sept 27 14:39:45.348
   bagfile.duration = std::chrono::nanoseconds(50000000);
   bagfile.message_count = 50;
-  bagfile.topics_with_message_count.push_back({{"topic1", "type1", "rmw1"}, 100});
-  bagfile.topics_with_message_count.push_back({{"topic2", "type2", "rmw2"}, 200});
+  bagfile.topics_with_message_count.push_back({{"topic1", "type1", "rmw1", ""}, 100});
+  bagfile.topics_with_message_count.push_back({{"topic2", "type2", "rmw2", ""}, 200});
   EXPECT_CALL(*info_, read_metadata(_, _)).WillOnce(Return(bagfile));
 
   // the expected output uses a regex to handle different time zones.
@@ -46,18 +45,21 @@ TEST_F(Rosbag2TransportTestFixture, info_pretty_prints_information_from_bagfile)
   transport.print_bag_info("test", "sqlite3");
 
   std::string output = internal::GetCapturedStdout();
-  EXPECT_THAT(output, ContainsRegex(
+  EXPECT_THAT(
+    output, ContainsRegex(
       "\nFiles:             some_relative_path\n"
       "                   some_other_relative_path\n"
       "Bag size:          0 B\n"
       "Storage id:        sqlite3\n"
       "Duration:          0\\.50s\n"
       "Start:             Sep 27 2018 .*:.*:45.348 \\(1538051985\\.348\\)\n"
-      "End                Sep 27 2018 .*:.*:45.398 \\(1538051985\\.398\\)\n"
+      "End:               Sep 27 2018 .*:.*:45.398 \\(1538051985\\.398\\)\n"
       "Messages:          50\n"
       "Topic information: "));
-  EXPECT_THAT(output, HasSubstr(
+  EXPECT_THAT(
+    output, HasSubstr(
       "Topic: topic1 | Type: type1 | Count: 100 | Serialization Format: rmw1"));
-  EXPECT_THAT(output, HasSubstr(
+  EXPECT_THAT(
+    output, HasSubstr(
       "Topic: topic2 | Type: type2 | Count: 200 | Serialization Format: rmw2\n\n"));
 }

@@ -25,10 +25,15 @@
 #include <utility>
 #include <vector>
 
+#include "rcpputils/filesystem_helper.hpp"
+
 #include "rcutils/logging_macros.h"
 #include "rcutils/snprintf.h"
+
 #include "rosbag2_storage/metadata_io.hpp"
+
 #include "rosbag2_storage_default_plugins/sqlite/sqlite_storage.hpp"
+
 #include "rosbag2_test_common/temporary_directory_fixture.hpp"
 
 using namespace ::testing;  // NOLINT
@@ -55,15 +60,16 @@ public:
       throw std::runtime_error("Error allocating resources " + std::to_string(ret));
     }
 
-    auto serialized_data = std::shared_ptr<rcutils_uint8_array_t>(msg,
-        [](rcutils_uint8_array_t * msg) {
-          int error = rcutils_uint8_array_fini(msg);
-          delete msg;
-          if (error != RCUTILS_RET_OK) {
-            RCUTILS_LOG_ERROR_NAMED(
-              "rosbag2_storage_default_plugins", "Leaking memory %i", error);
-          }
-        });
+    auto serialized_data = std::shared_ptr<rcutils_uint8_array_t>(
+      msg,
+      [](rcutils_uint8_array_t * msg) {
+        int error = rcutils_uint8_array_fini(msg);
+        delete msg;
+        if (error != RCUTILS_RET_OK) {
+          RCUTILS_LOG_ERROR_NAMED(
+            "rosbag2_storage_default_plugins", "Leaking memory %i", error);
+        }
+      });
 
     serialized_data->buffer_length = message_size;
     int written_size = write_data_to_serialized_string_message(
@@ -91,7 +97,7 @@ public:
     std::unique_ptr<rosbag2_storage::storage_interfaces::ReadWriteInterface> writable_storage =
       std::make_unique<rosbag2_storage_plugins::SqliteStorage>();
 
-    auto db_file = rosbag2_storage::FilesystemHelper::concat({temporary_dir_path_, "rosbag"});
+    auto db_file = (rcpputils::fs::path(temporary_dir_path_) / "rosbag").string();
 
     writable_storage->open(db_file);
 
@@ -99,7 +105,7 @@ public:
       std::string topic_name = std::get<2>(msg);
       std::string type_name = std::get<3>(msg);
       std::string rmw_format = std::get<4>(msg);
-      writable_storage->create_topic({topic_name, type_name, rmw_format});
+      writable_storage->create_topic({topic_name, type_name, rmw_format, ""});
       auto bag_message = std::make_shared<rosbag2_storage::SerializedBagMessage>();
       bag_message->serialized_data = make_serialized_message(std::get<0>(msg));
       bag_message->time_stamp = std::get<1>(msg);
@@ -116,7 +122,7 @@ public:
     std::unique_ptr<rosbag2_storage::storage_interfaces::ReadOnlyInterface> readable_storage =
       std::make_unique<rosbag2_storage_plugins::SqliteStorage>();
 
-    auto db_file = rosbag2_storage::FilesystemHelper::concat({temporary_dir_path_, "rosbag.db3"});
+    auto db_file = (rcpputils::fs::path(temporary_dir_path_) / "rosbag.db3").string();
 
     readable_storage->open(
       db_file, rosbag2_storage::storage_interfaces::IOFlag::READ_ONLY);
@@ -140,11 +146,12 @@ protected:
   {
     // This function also writes the final null charachter, which is absent in the CDR format.
     // Here this behaviour is ok, because we only test test writing and reading from/to sqlite.
-    return rcutils_snprintf(reinterpret_cast<char *>(buffer),
-             buffer_capacity,
-             "%c%c%c%c%c%c%c%c%s",
-             0x00, 0x01, 0x00, 0x00, 0x0f, 0x00, 0x00, 0x00,
-             message.c_str());
+    return rcutils_snprintf(
+      reinterpret_cast<char *>(buffer),
+      buffer_capacity,
+      "%c%c%c%c%c%c%c%c%s",
+      0x00, 0x01, 0x00, 0x00, 0x0f, 0x00, 0x00, 0x00,
+      message.c_str());
   }
 
   rcutils_allocator_t allocator_;

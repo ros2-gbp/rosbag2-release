@@ -25,12 +25,12 @@
 #include "rosbag2_transport/storage_options.hpp"
 #include "rosbag2_transport/visibility_control.hpp"
 
-namespace rosbag2
+namespace rosbag2_cpp
 {
 class Info;
 class Reader;
 class Writer;
-}  // namespace rosbag2
+}  // namespace rosbag2_cpp
 
 namespace rosbag2_transport
 {
@@ -47,9 +47,9 @@ public:
   /// Constructor for testing, allows to set the reader and writer to use
   ROSBAG2_TRANSPORT_PUBLIC
   Rosbag2Transport(
-    std::shared_ptr<rosbag2::Reader> reader,
-    std::shared_ptr<rosbag2::Writer> writer,
-    std::shared_ptr<rosbag2::Info> info);
+    std::shared_ptr<rosbag2_cpp::Reader> reader,
+    std::shared_ptr<rosbag2_cpp::Writer> writer,
+    std::shared_ptr<rosbag2_cpp::Info> info);
 
   ROSBAG2_TRANSPORT_PUBLIC
   void init();
@@ -85,11 +85,13 @@ public:
   void print_bag_info(const std::string & uri, const std::string & storage_id);
 
 private:
-  std::shared_ptr<Rosbag2Node> setup_node(std::string node_prefix = "");
+  std::shared_ptr<Rosbag2Node> setup_node(
+    std::string node_prefix = "",
+    const std::vector<std::string> & topic_remapping_options = {});
 
-  std::shared_ptr<rosbag2::Reader> reader_;
-  std::shared_ptr<rosbag2::Writer> writer_;
-  std::shared_ptr<rosbag2::Info> info_;
+  std::shared_ptr<rosbag2_cpp::Reader> reader_;
+  std::shared_ptr<rosbag2_cpp::Writer> writer_;
+  std::shared_ptr<rosbag2_cpp::Info> info_;
 
   std::shared_ptr<Rosbag2Node> transport_node_;
 };

@@ -1,4 +1,6 @@
 # rosbag2
+![License](https://img.shields.io/github/license/ros2/rosbag2)
+[![GitHub Action Status](https://github.com/ros2/rosbag2/workflows/Test%20rosbag2/badge.svg)](https://github.com/ros2/rosbag2/actions)
 
 Repository for implementing rosbag2 as described in its corresponding [design article](https://github.com/ros2/design/blob/f69fbbd11848e3dd6866b71a158a1902e31e92f1/articles/rosbags.md).
 
@@ -10,10 +12,17 @@ rosbag2 packages are available via debian packages and thus can be installed via
 
 ```
 $ export CHOOSE_ROS_DISTRO=crystal # rosbag2 is available starting from crystal
-$ sudo apt-get install ros-$CHOOSE_ROS_DISTRO-ros2bag* ros-$CHOOSE_ROS_DISTRO-rosbag2*
+$ sudo apt-get install ros-$CHOOSE_ROS_DISTRO-ros2bag ros-$CHOOSE_ROS_DISTRO-rosbag2*
 ```
 
-For other platforms than Linux, rosbag2 has to be built from source as it's currently not part of the latest [ros2.repos file](https://github.com/ros2/ros2/blob/master/ros2.repos).
+Note that the above command installs all packages related to rosbag2.
+This also includes the plugin for [reading ROS1 bag files](https://github.com/ros2/rosbag2_bag_v2), which brings a hard dependency on the [ros1_bridge](https://github.com/ros2/ros1_bridge) with it and therefore ROS1 packages.
+If you want to install only the ROS2 related packages for rosbag, please use the following command:
+
+```
+$ export CHOOSE_ROS_DISTRO=crystal # rosbag2 is available starting from crystal
+$ sudo apt-get install ros-$CHOOSE_ROS_DISTRO-ros2bag ros-$CHOOSE_ROS_DISTRO-rosbag2-transport
+```
 
 ## Build from source
 
@@ -29,6 +38,7 @@ Clone this repository into the source folder:
 ```
 $ git clone https://github.com/ros2/rosbag2.git
 ```
+**[Note]**: if you are only building rosbag2 on top of a Debian Installation of ROS2, please git clone the branch following your current ROS2 distribution. 
 
 Then build all the packages with this command:
 
@@ -113,6 +123,39 @@ End                Nov 28 2018 18:02:27.102 (1543456947.102)
 Messages:          27
 Topic information: Topic: /chatter | Type: std_msgs/String | Count: 9 | Serialization Format: cdr
                    Topic: /my_chatter | Type: std_msgs/String | Count: 18 | Serialization Format: cdr
+```
+
+### Using in launch
+
+We can invoke the command line tool from a ROS launch script as an *executable* (not a *node* action).
+For example, to launch the command to record all topics you can use the following launch script:
+
+```xml
+<launch>
+  <executable cmd="ros2 bag record -a" output="screen" />
+</launch>
+```
+
+Here's the equivalent Python launch script:
+
+```python
+import launch
+
+
+def generate_launch_description():
+    return launch.LaunchDescription([
+        launch.actions.ExecuteProcess(
+            cmd=['ros2', 'bag', 'record', '-a'],
+            output='screen'
+        )
+    ])
+```
+
+Use the `ros2 launch` command line tool to launch either of the above launch scripts.
+For example, if we named the above XML launch script, `record_all.launch.xml`:
+
+```sh
+$ ros2 launch record_all.launch.xml
 ```
 
 ## Storage format plugin architecture

@@ -20,48 +20,78 @@
 #include <utility>
 #include <vector>
 
-#include "rosbag2/reader_interfaces/base_reader_interface.hpp"
+#include "rosbag2_cpp/reader_interfaces/base_reader_interface.hpp"
 
-class MockSequentialReader : public rosbag2::reader_interfaces::BaseReaderInterface
+class MockSequentialReader : public rosbag2_cpp::reader_interfaces::BaseReaderInterface
 {
 public:
   void open(
-    const rosbag2::StorageOptions & storage_options,
-    const rosbag2::ConverterOptions & converter_options) override
+    const rosbag2_cpp::StorageOptions & storage_options,
+    const rosbag2_cpp::ConverterOptions & converter_options) override
   {
     (void) storage_options;
     (void) converter_options;
+    num_read_ = 0;
   }
 
   void reset() override {}
 
   bool has_next() override
   {
-    return num_read_ < messages_.size();
+    if (filter_.topics.empty()) {
+      return num_read_ < messages_.size();
+    }
+
+    while (num_read_ < messages_.size()) {
+      for (const auto & filter_topic : filter_.topics) {
+        if (!messages_[num_read_ + 1]->topic_name.compare(filter_topic)) {
+          return true;
+        }
+      }
+      num_read_++;
+    }
+    return false;
   }
 
-  std::shared_ptr<rosbag2::SerializedBagMessage> read_next() override
+  std::shared_ptr<rosbag2_storage::SerializedBagMessage> read_next() override
   {
     return messages_[num_read_++];
   }
 
-  std::vector<rosbag2::TopicMetadata> get_all_topics_and_types() override
+  const rosbag2_storage::BagMetadata & get_metadata() const override
+  {
+    return metadata_;
+  }
+
+  std::vector<rosbag2_storage::TopicMetadata> get_all_topics_and_types() const override
   {
     return topics_;
   }
 
+  void set_filter(const rosbag2_storage::StorageFilter & storage_filter) override
+  {
+    filter_ = storage_filter;
+  }
+
+  void reset_filter() override
+  {
+    filter_ = rosbag2_storage::StorageFilter();
+  }
+
   void prepare(
-    std::vector<std::shared_ptr<rosbag2::SerializedBagMessage>> messages,
-    std::vector<rosbag2::TopicMetadata> topics)
+    std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages,
+    std::vector<rosbag2_storage::TopicMetadata> topics)
   {
     messages_ = std::move(messages);
     topics_ = std::move(topics);
   }
 
 private:
-  std::vector<std::shared_ptr<rosbag2::SerializedBagMessage>> messages_;
-  std::vector<rosbag2::TopicMetadata> topics_;
+  std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages_;
+  rosbag2_storage::BagMetadata metadata_;
+  std::vector<rosbag2_storage::TopicMetadata> topics_;
   size_t num_read_;
+  rosbag2_storage::StorageFilter filter_;
 };
 
 #endif  // ROSBAG2_TRANSPORT__MOCK_SEQUENTIAL_READER_HPP_
