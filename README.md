@@ -1,3 +1,39 @@
+## rosbag2 (foxy) - 0.2.5-1
+
+The packages in the `rosbag2` repository were released into the `foxy` distro by running `/Users/karsten/.pyenv/versions/3.7.4/bin/bloom-release rosbag2 --rosdistro foxy` on `Fri, 01 May 2020 01:02:07 -0000`
+
+These packages were released:
+- `ros2bag`
+- `rosbag2`
+- `rosbag2_compression`
+- `rosbag2_converter_default_plugins`
+- `rosbag2_cpp`
+- `rosbag2_storage`
+- `rosbag2_storage_default_plugins`
+- `rosbag2_test_common`
+- `rosbag2_tests`
+- `rosbag2_transport`
+- `shared_queues_vendor`
+- `sqlite3_vendor`
+- `zstd_vendor`
+
+Version of package(s) in repository `rosbag2`:
+
+- upstream repository: https://github.com/ros2/rosbag2.git
+- release repository: unknown
+- rosdistro version: `null`
+- old version: `null`
+- new version: `0.2.5-1`
+
+Versions of tools used:
+
+- bloom version: `0.9.3`
+- catkin_pkg version: `0.4.16`
+- rosdep version: `0.17.1`
+- rosdistro version: `0.8.0`
+- vcstools version: `0.1.42`
+
+
 ## rosbag2 (eloquent) - 0.2.4-1
 
 The packages in the `rosbag2` repository were released into the `eloquent` distro by running `/Users/karsten/.pyenv/versions/3.7.4/bin/bloom-release --rosdistro eloquent --track eloquent rosbag2` on `Tue, 19 Nov 2019 02:16:27 -0000`
