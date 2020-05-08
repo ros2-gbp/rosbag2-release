@@ -3,6 +3,11 @@ Changelog for package rosbag2_converter_default_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
+0.2.6 (2020-05-07)
+------------------
+* Correct usage of rcpputils::SharedLibrary loading. (`#400 <https://github.com/ros2/rosbag2/issues/400>`_)
+* Contributors: Karsten Knese
+
 0.2.5 (2020-04-30)
 ------------------
 * Fixed string related with poco (`#374 <https://github.com/ros2/rosbag2/issues/374>`_)
