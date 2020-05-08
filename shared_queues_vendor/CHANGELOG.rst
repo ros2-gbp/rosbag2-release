@@ -3,6 +3,9 @@ Changelog for package shared_queues_vendor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
+0.2.6 (2020-05-07)
+------------------
+
 0.2.5 (2020-04-30)
 ------------------
 * make ros tooling working group maintainer (`#211 <https://github.com/ros2/rosbag2/issues/211>`_)
