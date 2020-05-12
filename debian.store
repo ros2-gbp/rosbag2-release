@@ -1,1 +1,1 @@
-{"base": "91acf54", "parent": "debian/foxy/rosbag2_storage_default_plugins", "previous": "629898d", "trim": "", "trimbase": ""}
+{"trim": "", "base": "8f30f1a", "trimbase": "", "parent": "debian/foxy/rosbag2_storage_default_plugins", "previous": "e9faf55"}
