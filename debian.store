@@ -1,1 +1,1 @@
-{"base": "4bbb3e7", "parent": "debian/foxy/rosbag2_transport", "previous": "20fe237", "trim": "", "trimbase": ""}
+{"trim": "", "base": "351ac3c", "trimbase": "", "parent": "debian/foxy/rosbag2_transport", "previous": "1fdaa56"}
