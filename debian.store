@@ -1,1 +1,1 @@
-{"base": "2b379be", "parent": "debian/foxy/rosbag2", "previous": "2879d94", "trim": "", "trimbase": ""}
+{"trim": "", "base": "d15d647", "trimbase": "", "parent": "debian/foxy/rosbag2", "previous": "615ceed"}
