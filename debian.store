@@ -1,1 +1,1 @@
-{"base": "b6dbb29a", "parent": "debian/foxy/shared_queues_vendor", "previous": "5606eefd", "trim": "", "trimbase": ""}
+{"base": "bdb3528e", "parent": "debian/rolling/shared_queues_vendor", "previous": "f7cd07f2", "trim": "", "trimbase": ""}
