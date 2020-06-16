@@ -1,0 +1,12 @@
+Source: ros-rolling-rosbag2-transport
+Section: misc
+Priority: optional
+Maintainer: Karsten Knese <karsten@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), ros-rolling-ament-cmake-gmock, ros-rolling-ament-cmake-ros, ros-rolling-ament-index-cpp, ros-rolling-ament-lint-auto, ros-rolling-ament-lint-common, ros-rolling-python-cmake-module, ros-rolling-rclcpp, ros-rolling-rmw, ros-rolling-rmw-implementation-cmake, ros-rolling-rosbag2-compression, ros-rolling-rosbag2-cpp, ros-rolling-rosbag2-test-common, ros-rolling-rpyutils, ros-rolling-shared-queues-vendor, ros-rolling-test-msgs, ros-rolling-yaml-cpp-vendor, ros-rolling-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-rolling-rosbag2-transport
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-rolling-python-cmake-module, ros-rolling-rclcpp, ros-rolling-rmw, ros-rolling-rosbag2-compression, ros-rolling-rosbag2-cpp, ros-rolling-rpyutils, ros-rolling-shared-queues-vendor, ros-rolling-yaml-cpp-vendor, ros-rolling-ros-workspace
+Description: Layer encapsulating ROS middleware to allow rosbag2 to be used with or without middleware
