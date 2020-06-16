@@ -1,0 +1,12 @@
+Source: ros-rolling-rosbag2-compression
+Section: misc
+Priority: optional
+Maintainer: ROS Tooling Working Group <ros-tooling@googlegroups.com>
+Build-Depends: debhelper (>= 9.0.0), ros-rolling-ament-cmake, ros-rolling-ament-cmake-gmock, ros-rolling-ament-lint-auto, ros-rolling-ament-lint-common, ros-rolling-rclcpp, ros-rolling-rcpputils, ros-rolling-rcutils, ros-rolling-rosbag2-cpp, ros-rolling-rosbag2-storage, ros-rolling-rosbag2-test-common, ros-rolling-zstd-vendor, ros-rolling-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-rolling-rosbag2-compression
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-rolling-rcpputils, ros-rolling-rcutils, ros-rolling-rosbag2-cpp, ros-rolling-rosbag2-storage, ros-rolling-zstd-vendor, ros-rolling-ros-workspace
+Description: Compression implementations for rosbag2 bags and messages.
