@@ -1,0 +1,120 @@
+ros-rolling-shared-queues-vendor (0.3.2-2focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Wed, 03 Jun 2020 04:00:00 -0000
+
+ros-rolling-shared-queues-vendor (0.3.1-2focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Mon, 01 Jun 2020 04:00:00 -0000
+
+ros-rolling-shared-queues-vendor (0.3.0-2focal) focal; urgency=high
+
+  * Export targets (#403 <https://github.com/ros2/rosbag2/issues/403>)
+  * Contributors: Karsten Knese
+
+ -- Karsten Knese <karsten@openrobotics.org>  Tue, 26 May 2020 04:00:00 -0000
+
+ros-rolling-shared-queues-vendor (0.2.8-2focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Mon, 18 May 2020 04:00:00 -0000
+
+ros-rolling-shared-queues-vendor (0.2.7-2focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Tue, 12 May 2020 04:00:00 -0000
+
+ros-rolling-shared-queues-vendor (0.2.6-2focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Thu, 07 May 2020 04:00:00 -0000
+
+ros-rolling-shared-queues-vendor (0.2.5-2focal) focal; urgency=high
+
+  * make ros tooling working group maintainer (#211 <https://github.com/ros2/rosbag2/issues/211>)
+  * Contributors: Karsten Knese
+
+ -- Karsten Knese <karsten@openrobotics.org>  Thu, 30 Apr 2020 04:00:00 -0000
+
+ros-rolling-shared-queues-vendor (0.2.4-2focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Mon, 18 Nov 2019 05:00:00 -0000
+
+ros-rolling-shared-queues-vendor (0.2.3-2focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Mon, 18 Nov 2019 05:00:00 -0000
+
+ros-rolling-shared-queues-vendor (0.2.2-2focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Wed, 13 Nov 2019 05:00:00 -0000
+
+ros-rolling-shared-queues-vendor (0.2.1-2focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Wed, 23 Oct 2019 04:00:00 -0000
+
+ros-rolling-shared-queues-vendor (0.2.0-2focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Thu, 26 Sep 2019 04:00:00 -0000
+
+ros-rolling-shared-queues-vendor (0.1.2-2focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Mon, 20 May 2019 04:00:00 -0000
+
+ros-rolling-shared-queues-vendor (0.1.1-2focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Thu, 09 May 2019 04:00:00 -0000
+
+ros-rolling-shared-queues-vendor (0.1.0-2focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Wed, 08 May 2019 04:00:00 -0000
+
+ros-rolling-shared-queues-vendor (0.0.5-2focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Thu, 27 Dec 2018 05:00:00 -0000
+
+ros-rolling-shared-queues-vendor (0.0.4-2focal) focal; urgency=high
+
+  * 0.0.3
+  * Contributors: Karsten Knese
+
+ -- Karsten Knese <karsten@openrobotics.org>  Wed, 19 Dec 2018 05:00:00 -0000
+
+ros-rolling-shared-queues-vendor (0.0.2-2focal) focal; urgency=high
+
+  * update maintainer email
+  * Contributors: Karsten Knese
+
+ -- Karsten Knese <karsten@openrobotics.org>  Wed, 12 Dec 2018 05:00:00 -0000
+
+ros-rolling-shared-queues-vendor (0.0.1-2focal) focal; urgency=high
+
+  * Add correct timing behaviour for rosbag play (#32 <https://github.com/ros2/rosbag2/issues/32>)
+  * Contributors: Martin Idel
+
+ -- Karsten Knese <karsten@openrobotics.org>  Tue, 11 Dec 2018 05:00:00 -0000
+
+
