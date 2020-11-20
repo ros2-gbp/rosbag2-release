@@ -1,3 +1,39 @@
+## rosbag2 (rolling) - 0.3.5-1
+
+The packages in the `rosbag2` repository were released into the `rolling` distro by running `/usr/bin/bloom-release -r rolling rosbag2` on `Fri, 20 Nov 2020 22:30:22 -0000`
+
+These packages were released:
+- `ros2bag`
+- `rosbag2`
+- `rosbag2_compression`
+- `rosbag2_converter_default_plugins`
+- `rosbag2_cpp`
+- `rosbag2_storage`
+- `rosbag2_storage_default_plugins`
+- `rosbag2_test_common`
+- `rosbag2_tests`
+- `rosbag2_transport`
+- `shared_queues_vendor`
+- `sqlite3_vendor`
+- `zstd_vendor`
+
+Version of package(s) in repository `rosbag2`:
+
+- upstream repository: https://github.com/ros2/rosbag2.git
+- release repository: https://github.com/ros2-gbp/rosbag2-release.git
+- rosdistro version: `0.3.2-2`
+- old version: `0.3.2-2`
+- new version: `0.3.5-1`
+
+Versions of tools used:
+
+- bloom version: `0.10.0`
+- catkin_pkg version: `0.4.23`
+- rosdep version: `0.19.0`
+- rosdistro version: `0.8.3`
+- vcstools version: `0.1.42`
+
+
 ## rosbag2 (foxy) - 0.3.5-1
 
 The packages in the `rosbag2` repository were released into the `foxy` distro by running `/Users/karsten/.pyenv/versions/3.7.4/bin/bloom-release -r foxy rosbag2` on `Mon, 31 Aug 2020 22:21:29 -0000`
