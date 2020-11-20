@@ -25,6 +25,7 @@
 #include "rosbag2_cpp/writer.hpp"
 
 #include "rosbag2_storage/bag_metadata.hpp"
+#include "rosbag2_storage/ros_helper.hpp"
 #include "rosbag2_storage/topic_metadata.hpp"
 
 #include "mock_converter.hpp"
@@ -44,19 +45,28 @@ public:
     storage_ = std::make_shared<NiceMock<MockStorage>>();
     converter_factory_ = std::make_shared<StrictMock<MockConverterFactory>>();
     metadata_io_ = std::make_unique<NiceMock<MockMetadataIo>>();
-    storage_options_ = rosbag2_cpp::StorageOptions{};
+    storage_options_ = rosbag2_storage::StorageOptions{};
     storage_options_.uri = "uri";
 
-    ON_CALL(*storage_factory_, open_read_write(_, _)).WillByDefault(
+    rcpputils::fs::path dir(storage_options_.uri);
+    rcpputils::fs::remove_all(dir);
+
+    ON_CALL(*storage_factory_, open_read_write(_)).WillByDefault(
       DoAll(
         Invoke(
-          [this](const std::string & uri, const std::string &) {
+          [this](const rosbag2_storage::StorageOptions & storage_options) {
             fake_storage_size_ = 0;
-            fake_storage_uri_ = uri;
+            fake_storage_uri_ = storage_options.uri;
           }),
         Return(storage_)));
     EXPECT_CALL(
-      *storage_factory_, open_read_write(_, _)).Times(AtLeast(0));
+      *storage_factory_, open_read_write(_)).Times(AtLeast(0));
+  }
+
+  ~SequentialWriterTest()
+  {
+    rcpputils::fs::path dir(storage_options_.uri);
+    rcpputils::fs::remove_all(dir);
   }
 
   std::unique_ptr<StrictMock<MockStorageFactory>> storage_factory_;
@@ -64,7 +74,7 @@ public:
   std::shared_ptr<StrictMock<MockConverterFactory>> converter_factory_;
   std::unique_ptr<MockMetadataIo> metadata_io_;
   std::unique_ptr<rosbag2_cpp::Writer> writer_;
-  rosbag2_cpp::StorageOptions storage_options_;
+  rosbag2_storage::StorageOptions storage_options_;
   uint64_t fake_storage_size_;
   rosbag2_storage::BagMetadata fake_metadata_;
   std::string fake_storage_uri_;
@@ -256,13 +266,14 @@ TEST_F(SequentialWriterTest, writer_splits_when_storage_bagfile_size_gt_max_bagf
 }
 
 TEST_F(SequentialWriterTest, only_write_after_cache_is_full) {
-  const size_t counter = 1000;
+  const uint64_t counter = 1000;
   const uint64_t max_cache_size = 100;
-
+  std::string msg_content = "Hello";
+  const auto msg_length = msg_content.length();
   EXPECT_CALL(
     *storage_,
     write(An<const std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>> &>())).
-  Times(counter / max_cache_size);
+  Times(static_cast<int>(counter * msg_length / max_cache_size));
   EXPECT_CALL(
     *storage_,
     write(An<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>>())).Times(0);
@@ -275,6 +286,8 @@ TEST_F(SequentialWriterTest, only_write_after_cache_is_full) {
 
   auto message = std::make_shared<rosbag2_storage::SerializedBagMessage>();
   message->topic_name = "test_topic";
+  message->serialized_data = rosbag2_storage::make_serialized_message(
+    msg_content.c_str(), msg_length);
 
   storage_options_.max_bagfile_size = 0;
   storage_options_.max_cache_size = max_cache_size;
@@ -305,8 +318,13 @@ TEST_F(SequentialWriterTest, do_not_use_cache_if_cache_size_is_zero) {
 
   std::string rmw_format = "rmw_format";
 
+  std::string msg_content = "Hello";
+  auto msg_length = msg_content.length();
   auto message = std::make_shared<rosbag2_storage::SerializedBagMessage>();
   message->topic_name = "test_topic";
+  message->serialized_data = rosbag2_storage::make_serialized_message(
+    msg_content.c_str(), msg_length);
+
 
   storage_options_.max_bagfile_size = 0;
   storage_options_.max_cache_size = max_cache_size;
