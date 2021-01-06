@@ -56,14 +56,6 @@ class PlayVerb(VerbExtension):
             '--remap', '-m', default='', nargs='+',
             help='list of topics to be remapped: in the form '
                  '"old_topic1:=new_topic1 old_topic2:=new_topic2 etc." ')
-        parser.add_argument(
-            '--storage-config-file', type=FileType('r'),
-            help='Path to a yaml file defining storage specific configurations. '
-                 'For the default storage plugin settings are specified through syntax:'
-                 'read:'
-                 '  pragmas: [\"<setting_name>\" = <setting_value>]'
-                 'Note that applicable settings are limited to read-only for ros2 bag play.'
-                 'For a list of sqlite3 settings, refer to sqlite3 documentation')
 
     def main(self, *, args):  # noqa: D102
         qos_profile_overrides = {}  # Specify a valid default
@@ -74,10 +66,6 @@ class PlayVerb(VerbExtension):
                     qos_profile_dict)
             except (InvalidQoSProfileException, ValueError) as e:
                 return print_error(str(e))
-
-        storage_config_file = ''
-        if args.storage_config_file:
-            storage_config_file = args.storage_config_file.name
 
         # NOTE(hidmic): in merged install workspaces on Windows, Python entrypoint lookups
         #               combined with constrained environments (as imposed by colcon test)
@@ -94,5 +82,4 @@ class PlayVerb(VerbExtension):
             topics=args.topics,
             qos_profile_overrides=qos_profile_overrides,
             loop=args.loop,
-            topic_remapping=args.remap,
-            storage_config_file=storage_config_file)
+            topic_remapping=args.remap)

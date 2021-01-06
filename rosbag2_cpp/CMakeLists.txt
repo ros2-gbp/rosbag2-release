@@ -20,7 +20,7 @@ if(WIN32)
   add_definitions(-DNOMINMAX)
 endif()
 
-option(DISABLE_SANITIZERS "disables the use of gcc sanitizers" ON)
+option(DISABLE_SANITIZERS "disables the use of gcc sanitizers")
 if(NOT DISABLE_SANITIZERS AND CMAKE_COMPILER_IS_GNUCXX)
   include(CheckCXXSourceCompiles)
   set(OLD_CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS})
@@ -45,9 +45,6 @@ find_package(rosidl_typesupport_cpp REQUIRED)
 find_package(rosidl_typesupport_introspection_cpp REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED
-  src/rosbag2_cpp/cache/cache_consumer.cpp
-  src/rosbag2_cpp/cache/message_cache_buffer.cpp
-  src/rosbag2_cpp/cache/message_cache.cpp
   src/rosbag2_cpp/converter.cpp
   src/rosbag2_cpp/info.cpp
   src/rosbag2_cpp/reader.cpp
@@ -157,12 +154,6 @@ if(BUILD_TESTING)
     test/rosbag2_cpp/test_storage_without_metadata_file.cpp)
   if(TARGET test_storage_without_metadata_file)
     target_link_libraries(test_storage_without_metadata_file ${PROJECT_NAME})
-  endif()
-
-  ament_add_gmock(test_message_cache
-    test/rosbag2_cpp/test_message_cache.cpp)
-  if(TARGET test_message_cache)
-    target_link_libraries(test_message_cache ${PROJECT_NAME})
   endif()
 
   # If compiling with gcc, run this test with sanitizers enabled

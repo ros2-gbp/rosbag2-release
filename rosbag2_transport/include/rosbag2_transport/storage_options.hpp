@@ -1,4 +1,4 @@
-// Copyright 2020 Open Source Robotics Foundation, Inc.
+// Copyright 2018, Bosch Software Innovations GmbH.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,19 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ROSBAG2_PY__PYBIND11_HPP_
-#define ROSBAG2_PY__PYBIND11_HPP_
+#ifndef ROSBAG2_TRANSPORT__STORAGE_OPTIONS_HPP_
+#define ROSBAG2_TRANSPORT__STORAGE_OPTIONS_HPP_
 
-// Ignore -Wunused-value for clang.
-// Based on https://github.com/pybind/pybind11/issues/2225
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-value"
-#endif
-#include <pybind11/pybind11.h>
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#endif
-#include <pybind11/stl.h>
+#include <string>
 
-#endif  // ROSBAG2_PY__PYBIND11_HPP_
+#include "rosbag2_cpp/storage_options.hpp"
+
+namespace rosbag2_transport
+{
+using StorageOptions = rosbag2_cpp::StorageOptions;
+}  // namespace rosbag2_transport
+
+#endif  // ROSBAG2_TRANSPORT__STORAGE_OPTIONS_HPP_

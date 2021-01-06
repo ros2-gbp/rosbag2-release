@@ -29,6 +29,7 @@
 
 namespace rosbag2_compression
 {
+
 SequentialCompressionReader::SequentialCompressionReader(
   std::unique_ptr<rosbag2_compression::CompressionFactory> compression_factory,
   std::unique_ptr<rosbag2_storage::StorageFactoryInterface> storage_factory,
@@ -46,12 +47,9 @@ void SequentialCompressionReader::setup_decompression()
   compression_mode_ = rosbag2_compression::compression_mode_from_string(metadata_.compression_mode);
   if (compression_mode_ != rosbag2_compression::CompressionMode::NONE) {
     decompressor_ = compression_factory_->create_decompressor(metadata_.compression_format);
-    // Decompress the first file so that it is readable; don't need to do anything for
-    // per-message encryption.
-    if (compression_mode_ == CompressionMode::FILE) {
-      ROSBAG2_COMPRESSION_LOG_DEBUG_STREAM("Decompressing " << get_current_file().c_str());
-      *current_file_iterator_ = decompressor_->decompress_uri(get_current_file());
-    }
+    // Decompress the first file so that it is readable.
+    ROSBAG2_COMPRESSION_LOG_DEBUG_STREAM("Decompressing " << get_current_file().c_str());
+    *current_file_iterator_ = decompressor_->decompress_uri(get_current_file());
   } else {
     throw std::invalid_argument{
             "SequentialCompressionReader requires a CompressionMode that is not NONE!"};
@@ -59,11 +57,9 @@ void SequentialCompressionReader::setup_decompression()
 }
 
 void SequentialCompressionReader::open(
-  const rosbag2_storage::StorageOptions & storage_options,
+  const rosbag2_cpp::StorageOptions & storage_options,
   const rosbag2_cpp::ConverterOptions & converter_options)
 {
-  storage_options_ = storage_options;
-
   if (metadata_io_->metadata_file_exists(storage_options.uri)) {
     metadata_ = metadata_io_->read_metadata(storage_options.uri);
     if (metadata_.relative_file_paths.empty()) {
@@ -74,8 +70,8 @@ void SequentialCompressionReader::open(
     current_file_iterator_ = file_paths_.begin();
     setup_decompression();
 
-    storage_options_.uri = *current_file_iterator_;
-    storage_ = storage_factory_->open_read_only(storage_options);
+    storage_ = storage_factory_->open_read_only(
+      *current_file_iterator_, metadata_.storage_identifier);
     if (!storage_) {
       std::stringstream errmsg;
       errmsg << "No storage could be initialized for: \"" <<

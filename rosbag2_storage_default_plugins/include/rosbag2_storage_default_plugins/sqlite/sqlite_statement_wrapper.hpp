@@ -177,7 +177,7 @@ private:
     bool is_already_accessed_;
   };
 
-  std::shared_ptr<SqliteStatementWrapper> execute_and_reset(bool assert_return_value = false);
+  std::shared_ptr<SqliteStatementWrapper> execute_and_reset();
   template<typename ... Columns>
   QueryResult<Columns ...> execute_query();
 

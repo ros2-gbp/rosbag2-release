@@ -37,14 +37,14 @@ StorageFactory::StorageFactory()
 StorageFactory::~StorageFactory() {}
 
 std::shared_ptr<ReadOnlyInterface> StorageFactory::open_read_only(
-  const StorageOptions & storage_options)
+  const std::string & uri, const std::string & storage_id)
 {
-  return impl_->open_read_only(storage_options);
+  return impl_->open_read_only(uri, storage_id);
 }
 
 std::shared_ptr<ReadWriteInterface> StorageFactory::open_read_write(
-  const StorageOptions & storage_options)
+  const std::string & uri, const std::string & storage_id)
 {
-  return impl_->open_read_write(storage_options);
+  return impl_->open_read_write(uri, storage_id);
 }
 }  // namespace rosbag2_storage
