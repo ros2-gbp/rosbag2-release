@@ -46,6 +46,7 @@ mkdir -p obj-%{_target_platform} && cd obj-%{_target_platform}
     -DCMAKE_INSTALL_PREFIX="@(InstallationPrefix)" \
     -DCMAKE_PREFIX_PATH="@(InstallationPrefix)" \
     -DSETUPTOOLS_DEB_LAYOUT=OFF \
+    -DDISABLE_SANITIZERS=ON \
     ..
 
 %make_build
