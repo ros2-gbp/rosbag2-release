@@ -1,4 +1,4 @@
-// Copyright 2018, Bosch Software Innovations GmbH.
+// Copyright 2020-2021, Robotec.ai sp. z o.o.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,16 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ROSBAG2_TRANSPORT__STORAGE_OPTIONS_HPP_
-#define ROSBAG2_TRANSPORT__STORAGE_OPTIONS_HPP_
+#ifndef ROSBAG2_PERFORMANCE_BENCHMARKING__PUBLISHER_GROUP_CONFIG_HPP_
+#define ROSBAG2_PERFORMANCE_BENCHMARKING__PUBLISHER_GROUP_CONFIG_HPP_
 
 #include <string>
+#include "rosbag2_performance_benchmarking/producer_config.hpp"
+#include "rclcpp/qos.hpp"
 
-#include "rosbag2_cpp/storage_options.hpp"
-
-namespace rosbag2_transport
+struct PublisherGroupConfig
 {
-using StorageOptions = rosbag2_cpp::StorageOptions;
-}  // namespace rosbag2_transport
+  PublisherGroupConfig()
+  : count(0), qos(10) {}
+  unsigned int count;
+  ProducerConfig producer_config;
+  std::string topic_root;
+  rclcpp::QoS qos;
+};
 
-#endif  // ROSBAG2_TRANSPORT__STORAGE_OPTIONS_HPP_
+#endif  // ROSBAG2_PERFORMANCE_BENCHMARKING__PUBLISHER_GROUP_CONFIG_HPP_
