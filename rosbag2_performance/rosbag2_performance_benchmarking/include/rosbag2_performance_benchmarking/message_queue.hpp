@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ROSBAG2_PERFORMANCE_WRITER_BENCHMARKING__MESSAGE_QUEUE_HPP_
-#define ROSBAG2_PERFORMANCE_WRITER_BENCHMARKING__MESSAGE_QUEUE_HPP_
+#ifndef ROSBAG2_PERFORMANCE_BENCHMARKING__MESSAGE_QUEUE_HPP_
+#define ROSBAG2_PERFORMANCE_BENCHMARKING__MESSAGE_QUEUE_HPP_
 
 #include <atomic>
 #include <iostream>
@@ -40,7 +40,6 @@ public:
     std::lock_guard<std::mutex> lock(mutex_);
     if (queue_.size() > max_size_) {  // We skip the element and consider it "lost"
       ++unsuccessful_insert_count_;
-      std::cerr << "X" << std::flush;
       return;
     }
     queue_.push(elem);
@@ -94,4 +93,4 @@ private:
 
 typedef MessageQueue<std_msgs::msg::ByteMultiArray> ByteMessageQueue;
 
-#endif  // ROSBAG2_PERFORMANCE_WRITER_BENCHMARKING__MESSAGE_QUEUE_HPP_
+#endif  // ROSBAG2_PERFORMANCE_BENCHMARKING__MESSAGE_QUEUE_HPP_
