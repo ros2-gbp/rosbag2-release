@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>rosbag2</name>
-  <version>0.6.0</version>
+  <version>0.3.7</version>
   <description>Meta package for rosbag2 related packages</description>
   <maintainer email="karsten@openrobotics.org">Karsten Knese</maintainer>
   <maintainer email="michael.jeronimo@openrobotics.org">Michael Jeronimo</maintainer>
@@ -14,7 +14,6 @@
   <exec_depend>rosbag2_compression</exec_depend>
   <exec_depend>rosbag2_converter_default_plugins</exec_depend>
   <exec_depend>rosbag2_cpp</exec_depend>
-  <exec_depend>rosbag2_py</exec_depend>
   <exec_depend>rosbag2_storage</exec_depend>
   <exec_depend>rosbag2_storage_default_plugins</exec_depend>
   <exec_depend>rosbag2_transport</exec_depend>

@@ -27,14 +27,14 @@
 class MockStorageFactory : public rosbag2_storage::StorageFactoryInterface
 {
 public:
-  MOCK_METHOD1(
+  MOCK_METHOD2(
     open_read_only,
     std::shared_ptr<rosbag2_storage::storage_interfaces::ReadOnlyInterface>(
-      const rosbag2_storage::StorageOptions &));
-  MOCK_METHOD1(
+      const std::string &, const std::string &));
+  MOCK_METHOD2(
     open_read_write,
     std::shared_ptr<rosbag2_storage::storage_interfaces::ReadWriteInterface>(
-      const rosbag2_storage::StorageOptions &));
+      const std::string &, const std::string &));
 };
 
 #endif  // ROSBAG2_CPP__MOCK_STORAGE_FACTORY_HPP_

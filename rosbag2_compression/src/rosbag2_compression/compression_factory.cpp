@@ -27,13 +27,13 @@ CompressionFactory::CompressionFactory()
 
 CompressionFactory::~CompressionFactory() = default;
 
-std::shared_ptr<rosbag2_compression::BaseCompressorInterface>
+std::unique_ptr<rosbag2_compression::BaseCompressorInterface>
 CompressionFactory::create_compressor(const std::string & compression_format)
 {
   return impl_->create_compressor(compression_format);
 }
 
-std::shared_ptr<rosbag2_compression::BaseDecompressorInterface>
+std::unique_ptr<rosbag2_compression::BaseDecompressorInterface>
 CompressionFactory::create_decompressor(const std::string & compression_format)
 {
   return impl_->create_decompressor(compression_format);

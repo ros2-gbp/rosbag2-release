@@ -65,15 +65,10 @@ public:
   void run_publishers()
   {
     pub_man_.run_publishers(
-      [this](const std::string & topic_name) -> size_t {
+      [this](const std::string & topic_name) {
         MockSequentialWriter & writer =
         static_cast<MockSequentialWriter &>(writer_->get_implementation_handle());
-        const auto & messages = writer.messages_per_topic();
-        auto it = writer.messages_per_topic().find(topic_name);
-        if (it != messages.end()) {
-          return it->second;
-        }
-        return 0;
+        return writer.messages_per_topic()[topic_name];
       });
   }
 

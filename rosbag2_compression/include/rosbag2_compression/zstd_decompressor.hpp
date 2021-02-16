@@ -37,9 +37,9 @@ namespace rosbag2_compression
 class ROSBAG2_COMPRESSION_PUBLIC ZstdDecompressor : public BaseDecompressorInterface
 {
 public:
-  ZstdDecompressor();
+  ZstdDecompressor() = default;
 
-  ~ZstdDecompressor() override;
+  ~ZstdDecompressor() = default;
 
   std::string decompress_uri(const std::string & uri) override;
 
@@ -47,9 +47,6 @@ public:
     rosbag2_storage::SerializedBagMessage * bag_message) override;
 
   std::string get_decompression_identifier() const override;
-
-private:
-  ZSTD_DCtx * zstd_context_;
 };
 
 }  // namespace rosbag2_compression

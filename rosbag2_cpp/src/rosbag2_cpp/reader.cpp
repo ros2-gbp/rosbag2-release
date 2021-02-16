@@ -16,7 +16,6 @@
 #include "rosbag2_cpp/reader.hpp"
 
 #include <memory>
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -35,18 +34,8 @@ Reader::~Reader()
   reader_impl_->reset();
 }
 
-void Reader::open(const std::string & uri)
-{
-  rosbag2_storage::StorageOptions storage_options;
-  storage_options.uri = uri;
-  storage_options.storage_id = "sqlite3";
-
-  rosbag2_cpp::ConverterOptions converter_options{};
-  return open(storage_options, converter_options);
-}
-
 void Reader::open(
-  const rosbag2_storage::StorageOptions & storage_options,
+  const StorageOptions & storage_options,
   const ConverterOptions & converter_options)
 {
   reader_impl_->open(storage_options, converter_options);

@@ -26,13 +26,11 @@ bool spin_and_wait_for(Timeout timeout, const Node & node, Condition condition)
 {
   using clock = std::chrono::system_clock;
   auto start = clock::now();
-  rclcpp::executors::SingleThreadedExecutor exec;
-  exec.add_node(node);
   while (!condition()) {
     if ((clock::now() - start) > timeout) {
       return false;
     }
-    exec.spin_some();
+    rclcpp::spin_some(node);
   }
   return true;
 }
