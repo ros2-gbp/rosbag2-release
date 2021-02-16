@@ -1,0 +1,157 @@
+ros-foxy-zstd-vendor (0.3.7-1focal) focal; urgency=high
+
+  * [foxy backport] Zstd should not install internal headers (#631 <https://github.com/ros2/rosbag2/issues/631>) (#653 <https://github.com/ros2/rosbag2/issues/653>)
+  * Contributors: Emerson Knapp
+
+ -- Karsten Knese <karsten@openrobotics.org>  Mon, 15 Feb 2021 08:00:00 -0000
+
+ros-foxy-zstd-vendor (0.3.6-1focal) focal; urgency=high
+
+  * Patch zstd 1.4.4 to include cmake_minimum_version bump to 2.8.12 (#579 <https://github.com/ros2/rosbag2/issues/579>) (#587 <https://github.com/ros2/rosbag2/issues/587>)
+  * Update maintainer list for Foxy (#551 <https://github.com/ros2/rosbag2/issues/551>)
+  * Contributors: Emerson Knapp, Jacob Perron, Michael Jeronimo
+
+ -- Karsten Knese <karsten@openrobotics.org>  Tue, 05 Jan 2021 08:00:00 -0000
+
+ros-foxy-zstd-vendor (0.3.5-1focal) focal; urgency=high
+
+
+
+ -- ROS Tooling Working Group <ros-tooling@googlegroups.com>  Mon, 31 Aug 2020 07:00:00 -0000
+
+ros-foxy-zstd-vendor (0.3.4-1focal) focal; urgency=high
+
+
+
+ -- ROS Tooling Working Group <ros-tooling@googlegroups.com>  Wed, 05 Aug 2020 07:00:00 -0000
+
+ros-foxy-zstd-vendor (0.3.3-1focal) focal; urgency=high
+
+
+
+ -- ROS Tooling Working Group <ros-tooling@googlegroups.com>  Tue, 23 Jun 2020 07:00:00 -0000
+
+ros-foxy-zstd-vendor (0.3.2-1focal) focal; urgency=high
+
+
+
+ -- ROS Tooling Working Group <ros-tooling@googlegroups.com>  Wed, 03 Jun 2020 07:00:00 -0000
+
+ros-foxy-zstd-vendor (0.3.1-1focal) focal; urgency=high
+
+  * Shared publisher handle (#420 <https://github.com/ros2/rosbag2/issues/420>)
+  * Contributors: Chris Lalancette
+
+ -- ROS Tooling Working Group <ros-tooling@googlegroups.com>  Mon, 01 Jun 2020 07:00:00 -0000
+
+ros-foxy-zstd-vendor (0.3.0-1focal) focal; urgency=high
+
+  * Export targets (#403 <https://github.com/ros2/rosbag2/issues/403>)
+  * Contributors: Karsten Knese
+
+ -- ROS Tooling Working Group <ros-tooling@googlegroups.com>  Tue, 26 May 2020 07:00:00 -0000
+
+ros-foxy-zstd-vendor (0.2.8-1focal) focal; urgency=high
+
+
+
+ -- ROS Tooling Working Group <ros-tooling@googlegroups.com>  Mon, 18 May 2020 07:00:00 -0000
+
+ros-foxy-zstd-vendor (0.2.7-1focal) focal; urgency=high
+
+
+
+ -- ROS Tooling Working Group <ros-tooling@googlegroups.com>  Tue, 12 May 2020 07:00:00 -0000
+
+ros-foxy-zstd-vendor (0.2.6-1focal) focal; urgency=high
+
+
+
+ -- ROS Tooling Working Group <ros-tooling@googlegroups.com>  Thu, 07 May 2020 07:00:00 -0000
+
+ros-foxy-zstd-vendor (0.2.5-1focal) focal; urgency=high
+
+  * [Compression - 5] Add Zstd file compression (#220 <https://github.com/ros2/rosbag2/issues/220>)
+  * Contributors: Anas Abou Allaban, Zachary Michaels
+
+ -- ROS Tooling Working Group <ros-tooling@googlegroups.com>  Thu, 30 Apr 2020 07:00:00 -0000
+
+ros-foxy-zstd-vendor (0.2.4-1focal) focal; urgency=high
+
+
+
+ -- ROS Tooling Working Group <ros-tooling@googlegroups.com>  Tue, 19 Nov 2019 01:51:00 -0000
+
+ros-foxy-zstd-vendor (0.2.3-1focal) focal; urgency=high
+
+
+
+ -- ROS Tooling Working Group <ros-tooling@googlegroups.com>  Mon, 18 Nov 2019 21:55:00 -0000
+
+ros-foxy-zstd-vendor (0.2.2-1focal) focal; urgency=high
+
+
+
+ -- ROS Tooling Working Group <ros-tooling@googlegroups.com>  Wed, 13 Nov 2019 08:00:00 -0000
+
+ros-foxy-zstd-vendor (0.2.1-1focal) focal; urgency=high
+
+
+
+ -- ROS Tooling Working Group <ros-tooling@googlegroups.com>  Wed, 23 Oct 2019 07:00:00 -0000
+
+ros-foxy-zstd-vendor (0.2.0-1focal) focal; urgency=high
+
+
+
+ -- ROS Tooling Working Group <ros-tooling@googlegroups.com>  Thu, 26 Sep 2019 07:00:00 -0000
+
+ros-foxy-zstd-vendor (0.1.2-1focal) focal; urgency=high
+
+
+
+ -- ROS Tooling Working Group <ros-tooling@googlegroups.com>  Mon, 20 May 2019 07:00:00 -0000
+
+ros-foxy-zstd-vendor (0.1.1-1focal) focal; urgency=high
+
+
+
+ -- ROS Tooling Working Group <ros-tooling@googlegroups.com>  Thu, 09 May 2019 07:00:00 -0000
+
+ros-foxy-zstd-vendor (0.1.0-1focal) focal; urgency=high
+
+
+
+ -- ROS Tooling Working Group <ros-tooling@googlegroups.com>  Wed, 08 May 2019 07:00:00 -0000
+
+ros-foxy-zstd-vendor (0.0.5-1focal) focal; urgency=high
+
+
+
+ -- ROS Tooling Working Group <ros-tooling@googlegroups.com>  Thu, 27 Dec 2018 08:00:00 -0000
+
+ros-foxy-zstd-vendor (0.0.4-1focal) focal; urgency=high
+
+
+
+ -- ROS Tooling Working Group <ros-tooling@googlegroups.com>  Wed, 19 Dec 2018 08:00:00 -0000
+
+ros-foxy-zstd-vendor (0.0.3-1focal) focal; urgency=high
+
+
+
+ -- ROS Tooling Working Group <ros-tooling@googlegroups.com>  Fri, 14 Dec 2018 08:00:00 -0000
+
+ros-foxy-zstd-vendor (0.0.2-1focal) focal; urgency=high
+
+
+
+ -- ROS Tooling Working Group <ros-tooling@googlegroups.com>  Wed, 12 Dec 2018 08:00:00 -0000
+
+ros-foxy-zstd-vendor (0.0.1-1focal) focal; urgency=high
+
+
+
+ -- ROS Tooling Working Group <ros-tooling@googlegroups.com>  Tue, 11 Dec 2018 08:00:00 -0000
+
+
