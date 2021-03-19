@@ -1,4 +1,4 @@
-From dab5a50fd26bde05f5bedcd09d10e318e7d47d21 Mon Sep 17 00:00:00 2001
+From c754e8a81c5ea729af627e6faa435aa64e1cdbc5 Mon Sep 17 00:00:00 2001
 From: Scott K Logan <logans@cottsay.net>
 Date: Thu, 28 Jan 2021 14:33:37 -0800
 Subject: [PATCH] Disable sanitizers in RPM build
@@ -9,11 +9,11 @@ Signed-off-by: Scott K Logan <logans@cottsay.net>
  1 file changed, 1 insertion(+)
 
 diff --git a/rpm/template.spec.em b/rpm/template.spec.em
-index c0d00ea8..07297266 100644
+index f7231506..d7165161 100644
 --- a/rpm/template.spec.em
 +++ b/rpm/template.spec.em
 @@ -46,6 +46,7 @@ mkdir -p obj-%{_target_platform} && cd obj-%{_target_platform}
-     -DCMAKE_INSTALL_PREFIX="@(InstallationPrefix)" \
+     -DAMENT_PREFIX_PATH="@(InstallationPrefix)" \
      -DCMAKE_PREFIX_PATH="@(InstallationPrefix)" \
      -DSETUPTOOLS_DEB_LAYOUT=OFF \
 +    -DDISABLE_SANITIZERS=ON \
@@ -21,5 +21,5 @@ index c0d00ea8..07297266 100644
  
  %make_build
 -- 
-2.29.2
+2.30.2
 
