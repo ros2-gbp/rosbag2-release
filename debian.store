@@ -1,1 +1,1 @@
-{"trim": "", "base": "4707812e", "trimbase": "", "parent": "debian/rolling/sqlite3_vendor", "previous": "c99cce3d"}
+{"base": "de375362", "parent": "debian/rolling/sqlite3_vendor", "previous": "52ef1d0d", "trim": "", "trimbase": ""}
