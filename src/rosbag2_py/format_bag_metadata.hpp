@@ -1,4 +1,4 @@
-// Copyright 2020 Open Source Robotics Foundation, Inc.
+// Copyright 2018-2021, Bosch Software Innovations GmbH.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,20 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ROSBAG2_PY__PYBIND11_HPP_
-#define ROSBAG2_PY__PYBIND11_HPP_
+#ifndef ROSBAG2_PY__FORMAT_BAG_METADATA_HPP_
+#define ROSBAG2_PY__FORMAT_BAG_METADATA_HPP_
 
-// Ignore -Wunused-value for clang.
-// Based on https://github.com/pybind/pybind11/issues/2225
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-value"
-#endif
-#include <pybind11/pybind11.h>
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#endif
-#include <pybind11/stl.h>
-#include <pybind11/chrono.h>
+#include <string>
 
-#endif  // ROSBAG2_PY__PYBIND11_HPP_
+#include "rosbag2_storage/bag_metadata.hpp"
+
+std::string format_bag_meta_data(const rosbag2_storage::BagMetadata & metadata);
+
+#endif  // ROSBAG2_PY__FORMAT_BAG_METADATA_HPP_
