@@ -2,25 +2,38 @@
 Changelog for package rosbag2_tests
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-
-0.3.7 (2021-02-15)
+0.7.0 (2021-03-18)
 ------------------
-* [foxy backport] Fix --topics flag for ros2 bag play being ignored for all bags after the first one (`#619 <https://github.com/ros2/rosbag2/issues/619>`_) (`#654 <https://github.com/ros2/rosbag2/issues/654>`_)
-* Contributors: Aleksandr Rozhdestvenskii
+* Alternative write api (`#676 <https://github.com/ros2/rosbag2/issues/676>`_)
+* RMW-implementation-searcher converter in rosbag2_cpp (`#670 <https://github.com/ros2/rosbag2/issues/670>`_)
+* Use rosbag2_py for ros2 bag info (`#673 <https://github.com/ros2/rosbag2/issues/673>`_)
+* Remove temporary directory platform-specific logic from test fixture (`#660 <https://github.com/ros2/rosbag2/issues/660>`_)
+* Fix --topics flag for ros2 bag play being ignored for all bags after the first one. (`#619 <https://github.com/ros2/rosbag2/issues/619>`_)
+* Move zstd compressor to its own package (`#636 <https://github.com/ros2/rosbag2/issues/636>`_)
+* Contributors: Alexander, Emerson Knapp, Karsten Knese
 
-0.3.6 (2021-01-05)
+0.6.0 (2021-02-01)
 ------------------
-* Update maintainer list for Foxy (`#551 <https://github.com/ros2/rosbag2/issues/551>`_)
-* Contributors: Michael Jeronimo
+* Fix relative metadata paths in SequentialCompressionWriter (`#613 <https://github.com/ros2/rosbag2/issues/613>`_)
+* Recorder --regex and --exclude options (`#604 <https://github.com/ros2/rosbag2/issues/604>`_)
+* Fix the tests on cyclonedds by translating qos duration values (`#606 <https://github.com/ros2/rosbag2/issues/606>`_)
+* Contributors: Adam Dąbrowski, Emerson Knapp
 
-0.3.5 (2020-08-31)
+0.5.0 (2020-12-02)
 ------------------
 
-0.3.4 (2020-08-05)
+0.4.0 (2020-11-19)
 ------------------
-
-0.3.3 (2020-06-23)
-------------------
+* add storage_config_uri (`#493 <https://github.com/ros2/rosbag2/issues/493>`_)
+* Removed duplicated code in record (`#534 <https://github.com/ros2/rosbag2/issues/534>`_)
+* Change default cache size for sequential_writer to a non zero value (`#533 <https://github.com/ros2/rosbag2/issues/533>`_)
+* Update the package.xml files with the latest Open Robotics maintainers (`#535 <https://github.com/ros2/rosbag2/issues/535>`_)
+* Mark flaky tests as xfail for now (`#520 <https://github.com/ros2/rosbag2/issues/520>`_)
+* introduce defaults for the C++ API (`#452 <https://github.com/ros2/rosbag2/issues/452>`_)
+* Adding db directory creation to rosbag2_cpp (`#450 <https://github.com/ros2/rosbag2/issues/450>`_)
+* minimal c++ API test (`#451 <https://github.com/ros2/rosbag2/issues/451>`_)
+* Add split by time to recording (`#409 <https://github.com/ros2/rosbag2/issues/409>`_)
+* Contributors: Emerson Knapp, Jaison Titus, Karsten Knese, Marwan Taher, Michael Jeronimo, jhdcs
 
 0.3.2 (2020-06-03)
 ------------------

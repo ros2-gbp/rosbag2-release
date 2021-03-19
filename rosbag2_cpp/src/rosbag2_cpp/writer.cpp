@@ -22,14 +22,16 @@
 #include <utility>
 
 #include "rosbag2_cpp/info.hpp"
-#include "rosbag2_cpp/storage_options.hpp"
 #include "rosbag2_cpp/writer_interfaces/base_writer_interface.hpp"
 
 #include "rosbag2_storage/serialized_bag_message.hpp"
+#include "rosbag2_storage/storage_options.hpp"
 #include "rosbag2_storage/topic_metadata.hpp"
 
 namespace rosbag2_cpp
 {
+
+static constexpr char const * kDefaultStorageID = "sqlite3";
 
 Writer::Writer(std::unique_ptr<rosbag2_cpp::writer_interfaces::BaseWriterInterface> writer_impl)
 : writer_impl_(std::move(writer_impl))
@@ -40,8 +42,19 @@ Writer::~Writer()
   writer_impl_.reset();
 }
 
+void Writer::open(const std::string & uri)
+{
+  rosbag2_storage::StorageOptions storage_options;
+  storage_options.uri = uri;
+  storage_options.storage_id = kDefaultStorageID;
+
+  rosbag2_cpp::ConverterOptions converter_options{};
+  return open(storage_options, converter_options);
+}
+
 void Writer::open(
-  const StorageOptions & storage_options, const ConverterOptions & converter_options)
+  const rosbag2_storage::StorageOptions & storage_options,
+  const ConverterOptions & converter_options)
 {
   writer_impl_->open(storage_options, converter_options);
 }
@@ -62,6 +75,26 @@ void Writer::write(std::shared_ptr<rosbag2_storage::SerializedBagMessage> messag
 {
   std::lock_guard<std::mutex> writer_lock(writer_mutex_);
   writer_impl_->write(message);
+}
+
+void Writer::write(
+  std::shared_ptr<rosbag2_storage::SerializedBagMessage> message,
+  const std::string & topic_name,
+  const std::string & type_name,
+  const std::string & serialization_format)
+{
+  if (message->topic_name != topic_name) {
+    auto err = std::string("trying to write a message with mismatching topic information: ");
+    err += "(" + message->topic_name + ") vs (" + topic_name + ")";
+    throw std::runtime_error(err);
+  }
+
+  rosbag2_storage::TopicMetadata tm;
+  tm.name = topic_name;
+  tm.type = type_name;
+  tm.serialization_format = serialization_format;
+  create_topic(tm);
+  write(message);
 }
 
 }  // namespace rosbag2_cpp
