@@ -39,11 +39,21 @@ with add_dll_directories_from_env('PATH'):
     from rosbag2_py._info import (
         Info,
     )
+    from rosbag2_py._transport import (
+        Player,
+        PlayOptions,
+        Recorder,
+        RecordOptions,
+    )
+    from rosbag2_py._reindexer import (
+        Reindexer
+    )
 
 __all__ = [
     'ConverterOptions',
     'get_registered_readers',
     'get_registered_writers',
+    'Reindexer',
     'SequentialCompressionReader',
     'SequentialCompressionWriter',
     'SequentialReader',
@@ -54,4 +64,8 @@ __all__ = [
     'TopicInformation',
     'BagMetadata',
     'Info',
+    'Player',
+    'PlayOptions',
+    'Recorder',
+    'RecordOptions',
 ]
