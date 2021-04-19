@@ -1,1 +1,1 @@
-{"base": "5a9a133c", "parent": "release/rolling/rosbag2_compression_zstd", "previous": "1c8f569c", "trim": "", "trimbase": ""}
+{"trim": "", "base": "8a6b0ca3", "trimbase": "", "parent": "release/rolling/rosbag2_compression_zstd", "previous": "d1adacda"}
