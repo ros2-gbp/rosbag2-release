@@ -15,9 +15,29 @@
 #include <string>
 #include <vector>
 
-#include "rosbag2_transport/logging.hpp"
+#include "rclcpp/logging.hpp"
 
 #include "qos.hpp"
+
+namespace
+{
+/**
+ * The following constants were the "Inifinity" value returned by RMW implementations before
+ * the introduction of RMW_DURATION_INFINITE and associated RMW fixes
+ * RMW: https://github.com/ros2/rmw/pull/301
+ * Fast-DDS: https://github.com/ros2/rmw_fastrtps/pull/515
+ * CycloneDDS: https://github.com/ros2/rmw_cyclonedds/pull/288
+ * RTI Connext: https://github.com/ros2/rmw_connext/pull/491
+ *
+ * These values exist in bags recorded in Foxy, they need to be translated to RMW_DURATION_INFINITE
+ * to be consistently understood for playback.
+ * With those values, if a bag is played back in a different implementation than it was recorded,
+ * the publishers will fail to be created with an error indicating an invalid QoS value..
+ */
+static const rmw_time_t RMW_CYCLONEDDS_FOXY_INFINITE = rmw_time_from_nsec(0x7FFFFFFFFFFFFFFFll);
+static const rmw_time_t RMW_FASTRTPS_FOXY_INFINITE {0x7FFFFFFFll, 0xFFFFFFFFll};
+static const rmw_time_t RMW_CONNEXT_FOXY_INFINITE  {0x7FFFFFFFll, 0x7FFFFFFFll};
+}  // namespace
 
 namespace YAML
 {
@@ -33,6 +53,13 @@ bool convert<rmw_time_t>::decode(const Node & node, rmw_time_t & time)
 {
   time.sec = node["sec"].as<uint64_t>();
   time.nsec = node["nsec"].as<uint64_t>();
+  if (
+    rmw_time_equal(time, RMW_CYCLONEDDS_FOXY_INFINITE) ||
+    rmw_time_equal(time, RMW_FASTRTPS_FOXY_INFINITE) ||
+    rmw_time_equal(time, RMW_CONNEXT_FOXY_INFINITE))
+  {
+    time = RMW_DURATION_INFINITE;
+  }
   return true;
 }
 
@@ -95,6 +122,8 @@ Rosbag2QoS Rosbag2QoS::adapt_request_to_offers(
     }
   }
 
+  auto logger = rclcpp::get_logger("rosbag2_transport");
+
   // We set policies in order as defined in rmw_qos_profile_t
   Rosbag2QoS request_qos{};
   // Policy: history, depth
@@ -105,7 +134,8 @@ Rosbag2QoS Rosbag2QoS::adapt_request_to_offers(
     request_qos.reliable();
   } else {
     if (reliability_reliable_endpoints_count > 0) {
-      ROSBAG2_TRANSPORT_LOG_WARN_STREAM(
+      RCLCPP_WARN_STREAM(
+        logger,
         "Some, but not all, publishers on topic \"" << topic_name << "\" "
           "are offering RMW_QOS_POLICY_RELIABILITY_RELIABLE. "
           "Falling back to RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT "
@@ -121,7 +151,8 @@ Rosbag2QoS Rosbag2QoS::adapt_request_to_offers(
     request_qos.transient_local();
   } else {
     if (durability_transient_local_endpoints_count > 0) {
-      ROSBAG2_TRANSPORT_LOG_WARN_STREAM(
+      RCLCPP_WARN_STREAM(
+        logger,
         "Some, but not all, publishers on topic \"" << topic_name << "\" "
           "are offering RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL. "
           "Falling back to RMW_QOS_POLICY_DURABILITY_VOLATILE "
@@ -191,7 +222,8 @@ Rosbag2QoS Rosbag2QoS::adapt_offer_to_recorded_offers(
     return result.default_history();
   }
 
-  ROSBAG2_TRANSPORT_LOG_WARN_STREAM(
+  RCLCPP_WARN_STREAM(
+    rclcpp::get_logger("rosbag2_transport"),
     "Not all original publishers on topic " << topic_name << " offered the same QoS profiles. "
       "Rosbag2 cannot yet choose an adapted profile to offer for this mixed case. "
       "Falling back to the rosbag2_transport default publisher offer.");
