@@ -151,9 +151,14 @@ TEST_F(RecordIntegrationTestFixture, receives_latched_messages)
   // Publish messages before starting recording
   test_msgs::msg::Strings msg;
   msg.string_value = "Hello";
-  for (size_t i = 0; i < num_latched_messages; i++) {
-    publisher_transient_local->publish(msg);
-    rclcpp::spin_some(publisher_node);
+  {
+    // Scope the executor so that the node is removed from it before `spin_and_wait_for`
+    rclcpp::executors::SingleThreadedExecutor exec;
+    exec.add_node(publisher_node);
+    for (size_t i = 0; i < num_latched_messages; i++) {
+      publisher_transient_local->publish(msg);
+      exec.spin_some();
+    }
   }
   start_recording({false, false, {topic}, "rmw_format", 100ms});
   auto & writer = static_cast<MockSequentialWriter &>(writer_->get_implementation_handle());
@@ -162,7 +167,7 @@ TEST_F(RecordIntegrationTestFixture, receives_latched_messages)
   bool succeeded = rosbag2_test_common::spin_and_wait_for(
     std::chrono::seconds(5), publisher_node,
     // The = is necessary due to an implementation difference between clang and windows
-    // Clang claims capture is unecessary (and we use -Werror), but windows needs it
+    // Clang claims capture is unecessary, but windows needs it
     [&writer, num_latched_messages = num_latched_messages]() {
       return writer.get_messages().size() == num_latched_messages;
     });
