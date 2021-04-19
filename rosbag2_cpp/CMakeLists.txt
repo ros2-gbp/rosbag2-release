@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 project(rosbag2_cpp)
 
+add_definitions(-D_SRC_REINDEX_DIR_PATH="${CMAKE_CURRENT_SOURCE_DIR}/test/rosbag2_cpp/reindex_test_bags")
+
 # Default to C99
 if(NOT CMAKE_C_STANDARD)
   set(CMAKE_C_STANDARD 99)
@@ -12,7 +14,10 @@ if(NOT CMAKE_CXX_STANDARD)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic -Werror)
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wthread-safety)
 endif()
 
 # Windows supplies macros for min and max by default. We should only use min and max from stl
@@ -36,6 +41,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(pluginlib REQUIRED)
+find_package(rclcpp REQUIRED)
 find_package(rcpputils REQUIRED)
 find_package(rcutils REQUIRED)
 find_package(rmw REQUIRED)
@@ -50,6 +56,7 @@ add_library(${PROJECT_NAME} SHARED
   src/rosbag2_cpp/cache/cache_consumer.cpp
   src/rosbag2_cpp/cache/message_cache_buffer.cpp
   src/rosbag2_cpp/cache/message_cache.cpp
+  src/rosbag2_cpp/clocks/time_controller_clock.cpp
   src/rosbag2_cpp/converter.cpp
   src/rosbag2_cpp/info.cpp
   src/rosbag2_cpp/reader.cpp
@@ -60,11 +67,14 @@ add_library(${PROJECT_NAME} SHARED
   src/rosbag2_cpp/typesupport_helpers.cpp
   src/rosbag2_cpp/types/introspection_message.cpp
   src/rosbag2_cpp/writer.cpp
-  src/rosbag2_cpp/writers/sequential_writer.cpp)
+  src/rosbag2_cpp/writers/sequential_writer.cpp
+  src/rosbag2_cpp/reindexer.cpp)
 
 ament_target_dependencies(${PROJECT_NAME}
+  PUBLIC
   ament_index_cpp
   pluginlib
+  rclcpp
   rcpputils
   rcutils
   rmw
@@ -103,7 +113,9 @@ install(
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
 ament_export_targets(export_${PROJECT_NAME})
-ament_export_dependencies(pluginlib
+ament_export_dependencies(
+  pluginlib
+  rclcpp
   rmw
   rmw_implementation
   rosbag2_storage
@@ -175,6 +187,7 @@ if(BUILD_TESTING)
     target_link_libraries(test_message_cache ${PROJECT_NAME})
   endif()
 
+
   # If compiling with gcc, run this test with sanitizers enabled
   ament_add_gmock(test_ros2_message
     test/rosbag2_cpp/types/test_ros2_message.cpp
@@ -212,6 +225,12 @@ if(BUILD_TESTING)
   if(TARGET test_multifile_reader)
     ament_target_dependencies(test_multifile_reader rosbag2_storage)
     target_link_libraries(test_multifile_reader ${PROJECT_NAME})
+  endif()
+
+  ament_add_gmock(test_time_controller_clock
+    test/rosbag2_cpp/test_time_controller_clock.cpp)
+  if(TARGET test_time_controller_clock)
+    target_link_libraries(test_time_controller_clock ${PROJECT_NAME})
   endif()
 endif()
 
