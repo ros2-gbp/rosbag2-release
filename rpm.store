@@ -1,1 +1,1 @@
-{"trim": "", "base": "d4708525", "trimbase": "", "parent": "release/rolling/rosbag2_storage", "previous": "8bf91c3c"}
+{"base": "e4318016", "parent": "release/galactic/rosbag2_storage", "previous": "df793386", "trim": "", "trimbase": ""}
