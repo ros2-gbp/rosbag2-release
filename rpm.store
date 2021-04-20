@@ -1,1 +1,1 @@
-{"trim": "", "base": "8470f4cb", "trimbase": "", "parent": "rpm/rolling/rosbag2_storage_default_plugins", "previous": "18d2b828"}
+{"base": "133a9eb9", "parent": "rpm/galactic/rosbag2_storage_default_plugins", "previous": "456b9664", "trim": "", "trimbase": ""}
