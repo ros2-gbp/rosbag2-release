@@ -1,1 +1,1 @@
-{"trim": "", "base": "fbbeb385", "trimbase": "", "parent": "rpm/rolling/zstd_vendor", "previous": "e3e62e09"}
+{"base": "9eb6bdce", "parent": "rpm/galactic/zstd_vendor", "previous": "b67440e9", "trim": "", "trimbase": ""}
