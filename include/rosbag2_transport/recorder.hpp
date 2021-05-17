@@ -31,6 +31,7 @@
 #include "rosbag2_storage/topic_metadata.hpp"
 
 #include "rosbag2_transport/record_options.hpp"
+#include "rosbag2_transport/visibility_control.hpp"
 
 namespace rosbag2_cpp
 {
@@ -39,16 +40,16 @@ class Writer;
 
 namespace rosbag2_transport
 {
-namespace impl
-{
 
 class Recorder : public rclcpp::Node
 {
 public:
+  ROSBAG2_TRANSPORT_PUBLIC
   explicit Recorder(
     const std::string & node_name = "rosbag2_recorder",
     const rclcpp::NodeOptions & node_options = rclcpp::NodeOptions());
 
+  ROSBAG2_TRANSPORT_PUBLIC
   Recorder(
     std::shared_ptr<rosbag2_cpp::Writer> writer,
     const rosbag2_storage::StorageOptions & storage_options,
@@ -56,8 +57,10 @@ public:
     const std::string & node_name = "rosbag2_recorder",
     const rclcpp::NodeOptions & node_options = rclcpp::NodeOptions());
 
+  ROSBAG2_TRANSPORT_PUBLIC
   virtual ~Recorder();
 
+  ROSBAG2_TRANSPORT_PUBLIC
   void record();
 
   const std::unordered_set<std::string> &
@@ -71,6 +74,9 @@ public:
   {
     return subscriptions_;
   }
+
+  ROSBAG2_TRANSPORT_PUBLIC
+  const rosbag2_cpp::Writer & get_writer_handle();
 
 private:
   void topics_discovery();
@@ -116,7 +122,6 @@ private:
   std::unordered_map<std::string, rclcpp::QoS> topic_qos_profile_overrides_;
 };
 
-}  // namespace impl
 }  // namespace rosbag2_transport
 
 #endif  // ROSBAG2_TRANSPORT__RECORDER_HPP_
