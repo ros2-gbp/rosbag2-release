@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "recorder.hpp"
+#include "rosbag2_transport/recorder.hpp"
 
 #include <algorithm>
 #include <future>
@@ -46,8 +46,7 @@
 
 namespace rosbag2_transport
 {
-namespace impl
-{
+
 Recorder::Recorder(
   const std::string & node_name,
   const rclcpp::NodeOptions & node_options)
@@ -102,6 +101,11 @@ void Recorder::record()
     discovery_future_ =
       std::async(std::launch::async, std::bind(&Recorder::topics_discovery, this));
   }
+}
+
+const rosbag2_cpp::Writer & Recorder::get_writer_handle()
+{
+  return *writer_;
 }
 
 void Recorder::topics_discovery()
@@ -187,12 +191,12 @@ void Recorder::subscribe_topics(
 {
   for (const auto & topic_with_type : topics_and_types) {
     subscribe_topic(
-        {
-          topic_with_type.first,
-          topic_with_type.second,
-          serialization_format_,
-          serialized_offered_qos_profiles_for_topic(topic_with_type.first)
-        });
+      {
+        topic_with_type.first,
+        topic_with_type.second,
+        serialization_format_,
+        serialized_offered_qos_profiles_for_topic(topic_with_type.first)
+      });
   }
 }
 
@@ -318,5 +322,5 @@ void Recorder::warn_if_new_qos_for_subscribed_topic(const std::string & topic_na
     }
   }
 }
-}  // namespace impl
+
 }  // namespace rosbag2_transport
