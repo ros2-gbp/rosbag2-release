@@ -1,1 +1,1 @@
-{"base": "35e6e4b2", "parent": "debian/galactic/rosbag2", "previous": "8a92af6c", "trim": "", "trimbase": ""}
+{"trim": "", "base": "8248c0ac", "trimbase": "", "parent": "debian/galactic/rosbag2", "previous": "bfc6f510"}
