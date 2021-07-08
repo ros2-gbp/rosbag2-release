@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <csignal>
 #include <chrono>
 #include <memory>
 #include <string>
@@ -145,6 +146,10 @@ public:
   Recorder()
   {
     rclcpp::init(0, nullptr);
+    std::signal(
+      SIGTERM, [](int /* signal */) {
+        rclcpp::shutdown();
+      });
   }
 
   virtual ~Recorder()
@@ -220,6 +225,7 @@ PYBIND11_MODULE(_transport, m) {
   .def_readwrite("loop", &PlayOptions::loop)
   .def_readwrite("topic_remapping_options", &PlayOptions::topic_remapping_options)
   .def_readwrite("clock_publish_frequency", &PlayOptions::clock_publish_frequency)
+  .def_readwrite("delay", &PlayOptions::delay)
   ;
 
   py::class_<RecordOptions>(m, "RecordOptions")
