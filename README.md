@@ -1,76 +1,282 @@
-# Rosbag2 writer benchmarking
+# rosbag2
+![License](https://img.shields.io/github/license/ros2/rosbag2)
+[![GitHub Action Status](https://github.com/ros2/rosbag2/workflows/Test%20rosbag2/badge.svg)](https://github.com/ros2/rosbag2/actions)
 
-The primary package to test performance of the rosbag2.
+Repository for implementing rosbag2 as described in its corresponding [design article](https://github.com/ros2/design/blob/ros2bags/articles/rosbags.md).
 
-## How it works
+## Installation instructions
 
-Use `benchmark_launch.py` launchfile to run an entire set of benchmarks.
+## Debian packages
 
-Launchfile requires two arguments:
+rosbag2 packages are available via debian packages and thus can be installed via
 
-- `benchmark` - provides benchmark description (how many repetitions, cache size, database configuration etc.),
-- `producers` - provides producers description (how many publisher/producer instances, frequency, messages size etc.)
-
-Templates for these configuration files are in `config` directory of this package.
-
-To run test benchmark (with `test.yaml` and `mixed_110Mbs.yaml`):
-
-```bash
-ros2 launch rosbag2_performance_benchmarking benchmark_launch.py benchmark:=`ros2 pkg prefix rosbag2_performance_benchmarking`/share/rosbag2_performance_benchmarking/config/benchmarks/test.yaml producers:=`ros2 pkg prefix rosbag2_performance_benchmarking`/share/rosbag2_performance_benchmarking/config/producers/mixed_110Mbs.yaml
+```
+$ export CHOOSE_ROS_DISTRO=crystal # rosbag2 is available starting from crystal
+$ sudo apt-get install ros-$CHOOSE_ROS_DISTRO-ros2bag ros-$CHOOSE_ROS_DISTRO-rosbag2*
 ```
 
-The summary of benchmark goes into result file described in benchmark config: `<db_root_folder>/<BENCHMARK_NAME>/summary_result_file` where `BENCHMARK_NAME` is a name generated from config names, transport type and timestamp.
+Note that the above command installs all packages related to rosbag2.
+This also includes the plugin for [reading ROS1 bag files](https://github.com/ros2/rosbag2_bag_v2), which brings a hard dependency on the [ros1_bridge](https://github.com/ros2/ros1_bridge) with it and therefore ROS1 packages.
+If you want to install only the ROS2 related packages for rosbag, please use the following command:
 
-For human friendly output, a postprocess report generation tool can be used. Launch it with benchmark result directory as an `-i` argument (directory with `summary_result_file` file):
-
-```bash
-scripts/report_gen.py -i <BENCHMARK_RESULT_DIR>
 ```
-#### Binaries
+$ export CHOOSE_ROS_DISTRO=crystal # rosbag2 is available starting from crystal
+$ sudo apt-get install ros-$CHOOSE_ROS_DISTRO-ros2bag ros-$CHOOSE_ROS_DISTRO-rosbag2-transport
+```
 
-These are used in the launch file:
+## Build from source
 
-*  `benchmark_publishers` - runs publishers based on provided parameters. Used when `no_transport` parameter is set to `False`;
-*  `writer_benchmark` - runs storage-only benchmarking, mimicking subscription queues but using no transport whatsoever. Used when `no_transport` parameter is set to `True`.
-*  `results_writer` - based on provider parameters, write results (percentage of recorded messages) after recording. One of the parameters is the
-storage uri, which is used to read the bag metadata file.
+It is recommended to create a new overlay workspace on top of your current ROS 2 installation.
 
-#### Compression
+```
+$ mkdir -p ~/rosbag_ws/src
+$ cd ~/rosbag_ws/src
+```
 
-Note that while you can opt to select compression for benchmarking, the generated data is random so it is likely not representative for this specific case. To publish non-random data, you need to modify the ByteProducer.
+Clone this repository into the source folder:
 
-## Building
+```
+$ git clone https://github.com/ros2/rosbag2.git
+```
+**[Note]**: if you are only building rosbag2 on top of a Debian Installation of ROS2, please git clone the branch following your current ROS2 distribution.
 
-To build the package in the rosbag2 build process, make sure to turn `BUILD_ROSBAG2_BENCHMARKS` flag on (e.g. `colcon build --cmake-args -DBUILD_ROSBAG2_BENCHMARKS=1`)
+Then build all the packages with this command:
 
-If you already built rosbag2, you can use `packages-select` option to build benchmarks.
-Example: `colcon build --packages-select rosbag2_performance_benchmarking --cmake-args -DBUILD_ROSBAG2_BENCHMARKS=1`.
+```
+$ colcon build [--merge-install]
+```
 
-## General knowledge: I/O benchmarking
+The `--merge-install` flag is optional and installs all packages into one folder rather than isolated folders for each package.
 
-#### Background: benchmarking disk writes on your system
+#### Executing tests
 
-It might be useful to first understand what limitation your disk poses to the throughput of data recording.
-Performance of bag write can't be higher over extended period of time (you can only use as much memory).
+The tests can be run using the following commands:
 
-**Using dd command**
+```
+$ colcon test [--merge-install]
+$ colcon test-result --verbose
+```
 
-`dd if=/dev/zero of=/tmp/output conv=fdatasync bs=384k count=1k; rm -f /tmp/output`
+The first command executes the test and the second command displays the errors (if any).
 
-This method is not great for benchmarking the disk but an easy way to start since it requires no dependencies.
-This will write zeros to the /tmp/output file with block size 384k, 1000 blocks, ends when write finishes.
-Make sure to benchmark the disk which your bags will be written to (check your mount points and change “/tmp/output” to another path if needed).
-Note: this depends on parameters used and whatever else is running on your system but can give you a ballpark figure when ran several times.
+## Using rosbag2
 
-**Using fio**
+rosbag2 is part of the ROS 2 command line interfaces.
+This repo introduces a new verb called `bag` and thus serves as the entry point of using rosbag2.
+As of the time of writing, there are three commands available for `ros2 bag`:
 
-For more sophisticated & accurate benchmarks, see the `fio` command. An example for big data blocks is: `fio --name TEST --eta-newline=5s --filename=fio-tempfile.dat --rw=write --size=500m --io_size=10g --blocksize=1024k --ioengine=libaio --fsync=10000 --iodepth=32 --direct=1 --numjobs=1 --runtime=60 --group_reporting`.
+* record
+* play
+* info
 
-#### Profiling bags I/O with tools
+### Recording data
 
-Tools that can help in I/O profiling: `sudo apt-get install iotop ioping sysstat`
-* `iotop` works similar as `top` command, but shows disk reads, writes, swaps and I/O %. Can be used at higher frequency in batch mode with specified process to deliver data that can be plotted.
-  *  Example use: `sudo iotop -h -d 0.1 -t -b -o -p <PID>` after running the bag.  
-* `ioping` can be used to check latency of requests to device
-* `strace` can help determine syscalls associated with the bottleneck.
-  *  Example use: `strace -c ros2 bag record /image --max-cache-size 10 -o ./tmp`. You will see a report after finishing recording with Ctrl-C.
+In order to record all topics currently available in the system:
+
+```
+$ ros2 bag record -a
+```
+
+The command above will record all available topics and discovers new topics as they appear while recording.
+This auto-discovery of new topics can be disabled by given the command line argument `--no-discovery`.
+
+To record a set of predefined topics, one can specify them on the command line explicitly.
+
+```
+$ ros2 bag record <topic1> <topic2> … <topicN>
+```
+
+The specified topics don't necessarily have to be present at start time.
+The discovery function will automatically recognize if one of the specified topics appeared.
+In the same fashion, this auto discovery can be disabled with `--no-discovery`.
+
+If not further specified, `ros2 bag record` will create a new folder named to the current time stamp and stores all data within this folder.
+A user defined name can be given with `-o, --output`.
+
+#### Splitting recorded bag files
+
+rosbag2 offers the capability to split bag files when they reach a maximum size or after a specified duration. By default rosbag2 will record all data into a single bag file, but this can be changed using the CLI options.
+
+_Splitting by size_: `ros2 bag record -a -b 100000` will split the bag files when they become greater than 100 kilobytes. Note: the batch size's units are in bytes and must be greater than `86016`. This option defaults to `0`, which means data is written to a single file.
+
+_Splitting by time_: `ros2 bag record -a -d 9000` will split the bag files after a duration of `9000` seconds. This option defaults to `0`, which means data is written to a single file.
+
+If both splitting by size and duration are enabled, the bag will split at whichever threshold is reached first.
+
+#### Recording with compression
+
+By default rosbag2 does not record with compression enabled. However, compression can be specified using the following CLI options.
+
+For example, `ros2 bag record -a --compression-mode file --compression-format zstd` will record all topics and compress each file using the [zstd](https://github.com/facebook/zstd) compressor.
+
+Currently, the only `compression-format` available is `zstd`. Both the mode and format options default to `none`. To use a compression format, a compression mode must be specified, where the currently supported modes are compress by `file` or compress by `message`.
+
+It is recommended to use this feature with the splitting options.
+
+#### Recording with a storage configuration
+
+Storage configuration can be specified in a YAML file passed through the `--storage-config-file` option.
+This can be used to optimize performance for specific use-cases.
+
+For the default storage plugin (sqlite3), the file has a following syntax:
+```
+read:
+  pragmas: <list of pragma settings for read-only>
+write:
+  pragmas: <list of pragma settings for read/write>
+```
+
+By default, SQLite settings are significantly optimized for performance.
+This might have consequences of bag data being corrupted after an application or system-level crash.
+This consideration only applies to current bagfile in case bag splitting is on (through `--max-bag-*` parameters).
+If increased crash-caused corruption resistance is necessary, use `resilient` option for `--storage-preset-profile` setting.
+
+Settings are fully exposed to the user and should be applied with understanding.
+Please refer to [documentation of pragmas](https://www.sqlite.org/pragma.html).
+
+An example configuration file could look like this:
+
+```
+write:
+  pragmas: ["journal_mode = MEMORY", "synchronous = OFF", "schema.cache_size = 1000", "schema.page_size = 4096"]
+
+```
+
+### Replaying data
+
+After recording data, the next logical step is to replay this data:
+
+```
+$ ros2 bag play <bag_file>
+```
+
+The bag file is by default set to the folder name where the data was previously recorded in.
+
+### Analyzing data
+
+The recorded data can be analyzed by displaying some meta information about it:
+
+```
+$ ros2 bag info <bag_file>
+```
+
+You should see something along these lines:
+
+```
+Files:             demo_strings.db3
+Bag size:          44.5 KiB
+Storage id:        sqlite3
+Duration:          8.501s
+Start:             Nov 28 2018 18:02:18.600 (1543456938.600)
+End                Nov 28 2018 18:02:27.102 (1543456947.102)
+Messages:          27
+Topic information: Topic: /chatter | Type: std_msgs/String | Count: 9 | Serialization Format: cdr
+                   Topic: /my_chatter | Type: std_msgs/String | Count: 18 | Serialization Format: cdr
+```
+
+### Overriding QoS Profiles
+
+When starting a recording or playback workflow, you can pass a YAML file that contains QoS profile settings for a specific topic.
+The YAML schema for the profile overrides is a dictionary of topic names with key/value pairs for each QoS policy.
+Below is an example profile set to the default ROS2 QoS settings.
+
+```yaml
+/topic_name:
+  history: keep_last
+  depth: 10
+  reliability: reliable
+  durability: volatile
+  deadline:
+    # unspecified/infinity
+    sec: 0
+    nsec: 0
+  lifespan:
+    # unspecified/infinity
+    sec: 0
+    nsec: 0
+  liveliness: system_default
+  liveliness_lease_duration:
+    # unspecified/infinity
+    sec: 0
+    nsec: 0
+  avoid_ros_namespace_conventions: false
+```
+
+You can then use the override by specifying the `--qos-profile-overrides-path` argument in the CLI:
+
+```sh
+# Record
+ros2 bag record --qos-profile-overrides-path override.yaml -a -o my_bag
+# Playback
+ros2 bag play --qos-profile-overrides-path override.yaml my_bag
+```
+
+See [the official QoS override tutorial][qos-override-tutorial] and ["About QoS Settings"][about-qos-settings] for more detail.
+
+### Using in launch
+
+We can invoke the command line tool from a ROS launch script as an *executable* (not a *node* action).
+For example, to launch the command to record all topics you can use the following launch script:
+
+```xml
+<launch>
+  <executable cmd="ros2 bag record -a" output="screen" />
+</launch>
+```
+
+Here's the equivalent Python launch script:
+
+```python
+import launch
+
+
+def generate_launch_description():
+    return launch.LaunchDescription([
+        launch.actions.ExecuteProcess(
+            cmd=['ros2', 'bag', 'record', '-a'],
+            output='screen'
+        )
+    ])
+```
+
+Use the `ros2 launch` command line tool to launch either of the above launch scripts.
+For example, if we named the above XML launch script, `record_all.launch.xml`:
+
+```sh
+$ ros2 launch record_all.launch.xml
+```
+
+## Storage format plugin architecture
+
+Looking at the output of the `ros2 bag info` command, we can see a field called `storage id:`.
+rosbag2 specifically was designed to support multiple storage formats.
+This allows a flexible adaptation of various storage formats depending on individual use cases.
+As of now, this repository comes with two storage plugins.
+The first plugin, sqlite3 is chosen by default.
+If not specified otherwise, rosbag2 will store and replay all recorded data in an SQLite3 database.
+
+In order to use a specified (non-default) storage format plugin, rosbag2 has a command line argument for it:
+
+```
+$ ros2 bag <record> | <play> | <info> -s <sqlite3> | <rosbag2_v2> | <custom_plugin>
+```
+
+Have a look at each of the individual plugins for further information.
+
+## Serialization format plugin architecture
+
+Looking further at the output of `ros2 bag info`, we can see another field attached to each topic called `Serialization Format`.
+By design, ROS 2 is middleware agnostic and thus can leverage multiple communication frameworks.
+The default middleware for ROS 2 is DDS which has `cdr` as its default binary serialization format.
+However, other middleware implementation might have different formats.
+If not specified, `ros2 bag record -a` will record all data in the middleware specific format.
+This however also means that such a bag file can't easily be replayed with another middleware format.
+
+rosbag2 implements a serialization format plugin architecture which allows the user the specify a certain serialization format.
+When specified, rosbag2 looks for a suitable converter to transform the native middleware protocol to the target format.
+This also allows to record data in a native format to optimize for speed, but to convert or transform the recorded data into a middleware agnostic serialization format.
+
+By default, rosbag2 can convert from and to CDR as it's the default serialization format for ROS 2.
+
+[qos-override-tutorial]: https://docs.ros.org/en/rolling/Guides/Overriding-QoS-Policies-For-Recording-And-Playback.html
+[about-qos-settings]: https://docs.ros.org/en/rolling/Concepts/About-Quality-of-Service-Settings.html
