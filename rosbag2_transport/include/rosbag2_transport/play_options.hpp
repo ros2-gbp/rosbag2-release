@@ -28,7 +28,7 @@ namespace rosbag2_transport
 struct PlayOptions
 {
 public:
-  size_t read_ahead_queue_size = 1000;
+  size_t read_ahead_queue_size;
   std::string node_prefix = "";
   float rate = 1.0;
 
@@ -40,13 +40,6 @@ public:
   std::unordered_map<std::string, rclcpp::QoS> topic_qos_profile_overrides = {};
   bool loop = false;
   std::vector<std::string> topic_remapping_options = {};
-
-  // Rate in Hz at which to publish to /clock.
-  // 0 (or negative) means that no publisher will be created
-  double clock_publish_frequency = 0.0;
-
-  // Sleep SEC seconds before play. Valid range > 0.0.
-  float delay = 0.0;
 };
 
 }  // namespace rosbag2_transport

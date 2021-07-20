@@ -12,7 +12,7 @@ if(NOT CMAKE_CXX_STANDARD)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
+  add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 endif()
 
 # Windows supplies macros for min and max by default. We should only use min and max from stl
@@ -63,6 +63,10 @@ install(
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)
 
+install(
+  DIRECTORY cmake
+  DESTINATION share/${PROJECT_NAME})
+
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
 ament_export_targets(export_${PROJECT_NAME})
@@ -111,4 +115,5 @@ if(BUILD_TESTING)
   endif()
 endif()
 
-ament_package()
+ament_package(
+  CONFIG_EXTRAS cmake/rosbag2_storage_register_storage_plugin.cmake)

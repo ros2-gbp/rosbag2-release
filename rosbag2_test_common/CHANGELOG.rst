@@ -2,46 +2,27 @@
 Changelog for package rosbag2_test_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.9.1 (2021-07-08)
+0.3.8 (2021-07-19)
 ------------------
-* [backport galactic] Handle SIGTERM gracefully in recording (`#792 <https://github.com/ros2/rosbag2/issues/792>`_) (`#807 <https://github.com/ros2/rosbag2/issues/807>`_)
-  Backport `#792 <https://github.com/ros2/rosbag2/issues/792>`_ to galactic
-  * Handle SIGTERM gracefully in recording
+* Handle SIGTERM gracefully in recording (`#809 <https://github.com/ros2/rosbag2/issues/809>`_)
 * Contributors: Emerson Knapp
 
-0.9.0 (2021-05-17)
-------------------
-* Add play_next() API to the player class (`#762 <https://github.com/ros2/rosbag2/issues/762>`_)
-* use rclcpp::SerializedMessage in MemoryManagement (`#750 <https://github.com/ros2/rosbag2/issues/750>`_)
-* remodel publication manager (`#749 <https://github.com/ros2/rosbag2/issues/749>`_)
-* use public recorder api in tests (`#741 <https://github.com/ros2/rosbag2/issues/741>`_)
-* player owns the reader (`#725 <https://github.com/ros2/rosbag2/issues/725>`_)
-* Contributors: Karsten Knese, Michael Orlov
-
-0.8.0 (2021-04-19)
-------------------
-* Remove -Werror from builds, enable it in Action CI (`#722 <https://github.com/ros2/rosbag2/issues/722>`_)
-* Fix bad_function_call by replacing rclcpp::spin_some with SingleThreadedExecutor (`#705 <https://github.com/ros2/rosbag2/issues/705>`_)
-* Explicitly add emersonknapp as maintainer (`#692 <https://github.com/ros2/rosbag2/issues/692>`_)
-* Contributors: Emerson Knapp
-
-0.7.0 (2021-03-18)
-------------------
-* Remove temporary directory platform-specific logic from test fixture (`#660 <https://github.com/ros2/rosbag2/issues/660>`_)
-* Contributors: Emerson Knapp
-
-0.6.0 (2021-02-01)
-------------------
-* Stabilize test_record by reducing copies of executors and messages (`#576 <https://github.com/ros2/rosbag2/issues/576>`_)
-* Contributors: Emerson Knapp
-
-0.5.0 (2020-12-02)
+0.3.7 (2021-02-15)
 ------------------
 
-0.4.0 (2020-11-19)
+0.3.6 (2021-01-05)
 ------------------
-* Update the package.xml files with the latest Open Robotics maintainers (`#535 <https://github.com/ros2/rosbag2/issues/535>`_)
+* Update maintainer list for Foxy (`#551 <https://github.com/ros2/rosbag2/issues/551>`_)
 * Contributors: Michael Jeronimo
+
+0.3.5 (2020-08-31)
+------------------
+
+0.3.4 (2020-08-05)
+------------------
+
+0.3.3 (2020-06-23)
+------------------
 
 0.3.2 (2020-06-03)
 ------------------

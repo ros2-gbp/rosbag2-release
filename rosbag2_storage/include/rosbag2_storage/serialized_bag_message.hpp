@@ -31,8 +31,6 @@ struct SerializedBagMessage
   std::string topic_name;
 };
 
-typedef std::shared_ptr<SerializedBagMessage> SerializedBagMessageSharedPtr;
-
 }  // namespace rosbag2_storage
 
 #endif  // ROSBAG2_STORAGE__SERIALIZED_BAG_MESSAGE_HPP_

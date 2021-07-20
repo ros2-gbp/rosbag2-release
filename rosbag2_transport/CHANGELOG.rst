@@ -2,82 +2,38 @@
 Changelog for package rosbag2_transport
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.9.1 (2021-07-08)
-------------------
-* [backport galactic] Add delay option (`#789 <https://github.com/ros2/rosbag2/issues/789>`_) (`#812 <https://github.com/ros2/rosbag2/issues/812>`_)
-  Backport `#789 <https://github.com/ros2/rosbag2/issues/789>`_ to galactic
-  * Add delay option
-* Copy recorder QoS profile to local variable so that temporary value isn't cleared (`#803 <https://github.com/ros2/rosbag2/issues/803>`_) (`#805 <https://github.com/ros2/rosbag2/issues/805>`_)
-* Contributors: Emerson Knapp, Kosuke Takeuchi
 
-0.9.0 (2021-05-17)
+0.3.8 (2021-07-19)
 ------------------
-* Expose play_next service (`#767 <https://github.com/ros2/rosbag2/issues/767>`_)
-* Add play_next() API to the player class (`#762 <https://github.com/ros2/rosbag2/issues/762>`_)
-* Naive clock jump implementation - allows for clock reuse and simplified Player setup (`#754 <https://github.com/ros2/rosbag2/issues/754>`_)
-* Rename Reader/Writer 'reset' to 'close' (`#760 <https://github.com/ros2/rosbag2/issues/760>`_)
-* simply constructor for rosbag2_transport::Player (`#757 <https://github.com/ros2/rosbag2/issues/757>`_)
-* Expose GetRate/SetRate services for playback (`#753 <https://github.com/ros2/rosbag2/issues/753>`_)
-* Expose pause/resume related services on the Player (`#729 <https://github.com/ros2/rosbag2/issues/729>`_)
-* remodel publication manager (`#749 <https://github.com/ros2/rosbag2/issues/749>`_)
-* remove rosbag2_transport header (`#742 <https://github.com/ros2/rosbag2/issues/742>`_)
-* use public recorder api in tests (`#741 <https://github.com/ros2/rosbag2/issues/741>`_)
-* Use public player API in tests (`#740 <https://github.com/ros2/rosbag2/issues/740>`_)
-* public recorder and player (`#739 <https://github.com/ros2/rosbag2/issues/739>`_)
-* player owns the reader (`#725 <https://github.com/ros2/rosbag2/issues/725>`_)
-* Contributors: Emerson Knapp, Karsten Knese, Michael Orlov
+* [backport Foxy] Fixed playing if unknown message types exist (backports `#592 <https://github.com/ros2/rosbag2/issues/592>`_) (`#686 <https://github.com/ros2/rosbag2/issues/686>`_)
+* [backport Foxy] More reliable topic remapping test (backports `#456 <https://github.com/ros2/rosbag2/issues/456>`_) (`#817 <https://github.com/ros2/rosbag2/issues/817>`_)
+* [backport Foxy] Handle SIGTERM gracefully in recording (`#809 <https://github.com/ros2/rosbag2/issues/809>`_)
+* Contributors: Emerson Knapp
 
-0.8.0 (2021-04-19)
+0.3.7 (2021-02-15)
 ------------------
-* cleanup cmakelists (`#726 <https://github.com/ros2/rosbag2/issues/726>`_)
-* turn recorder into a node (`#724 <https://github.com/ros2/rosbag2/issues/724>`_)
-* turn player into a node (`#723 <https://github.com/ros2/rosbag2/issues/723>`_)
-* Remove -Werror from builds, enable it in Action CI (`#722 <https://github.com/ros2/rosbag2/issues/722>`_)
-* Split Rosbag2Transport into Player and Recorder classes - first pass to enable further progress (`#721 <https://github.com/ros2/rosbag2/issues/721>`_)
-* /clock publisher in Player (`#695 <https://github.com/ros2/rosbag2/issues/695>`_)
-* use rclcpp logging macros (`#715 <https://github.com/ros2/rosbag2/issues/715>`_)
-* use rclcpp::Node for generic pub/sub (`#714 <https://github.com/ros2/rosbag2/issues/714>`_)
-* PlayerClock initial implementation - Player functionally unchanged (`#689 <https://github.com/ros2/rosbag2/issues/689>`_)
-* Fix bad_function_call by replacing rclcpp::spin_some with SingleThreadedExecutor (`#705 <https://github.com/ros2/rosbag2/issues/705>`_)
-* rosbag2_py pybind wrapper for "record" - remove rosbag2_transport_py (`#702 <https://github.com/ros2/rosbag2/issues/702>`_)
-* Add rosbag2_py::Player::play to replace rosbag2_transport_python version (`#693 <https://github.com/ros2/rosbag2/issues/693>`_)
-* Fix and clarify logic in test_play filter test (`#690 <https://github.com/ros2/rosbag2/issues/690>`_)
-* Explicitly add emersonknapp as maintainer (`#692 <https://github.com/ros2/rosbag2/issues/692>`_)
-* Add QoS decoding translation for infinite durations to RMW_DURATION_INFINITE (`#684 <https://github.com/ros2/rosbag2/issues/684>`_)
+
+0.3.6 (2021-01-05)
+------------------
+* Update maintainer list for Foxy (`#551 <https://github.com/ros2/rosbag2/issues/551>`_)
+* Contributors: Michael Jeronimo
+
+0.3.5 (2020-08-31)
+------------------
+* resolve memory leak for serialized message (`#502 <https://github.com/ros2/rosbag2/issues/502>`_) (`#518 <https://github.com/ros2/rosbag2/issues/518>`_)
+* Use shared logic for importing the rosbag2_transport_py library in Python (`#482 <https://github.com/ros2/rosbag2/issues/482>`_) (`#494 <https://github.com/ros2/rosbag2/issues/494>`_)
 * Contributors: Emerson Knapp, Karsten Knese
 
-0.7.0 (2021-03-18)
+0.3.4 (2020-08-05)
 ------------------
-* Add support for rmw_connextdds (`#671 <https://github.com/ros2/rosbag2/issues/671>`_)
-* Use rosbag2_py for ros2 bag info (`#673 <https://github.com/ros2/rosbag2/issues/673>`_)
-* Contributors: Andrea Sorbini, Karsten Knese
+* fix missing target dependencies (`#479 <https://github.com/ros2/rosbag2/issues/479>`_) (`#481 <https://github.com/ros2/rosbag2/issues/481>`_)
+  Co-authored-by: Dirk Thomas <dirk-thomas@users.noreply.github.com>
+* Contributors: Karsten Knese
 
-0.6.0 (2021-02-01)
+0.3.3 (2020-06-23)
 ------------------
-* Fix build issues when rosbag2_storage is binary installed (`#585 <https://github.com/ros2/rosbag2/issues/585>`_)
-* Regex and exclude fix for rosbag recorder (`#620 <https://github.com/ros2/rosbag2/issues/620>`_)
-* Recorder --regex and --exclude options (`#604 <https://github.com/ros2/rosbag2/issues/604>`_)
-* SQLite storage optimized by default (`#568 <https://github.com/ros2/rosbag2/issues/568>`_)
-* Fixed playing if unknown message types exist (`#592 <https://github.com/ros2/rosbag2/issues/592>`_)
-* Compress bag files in separate threads (`#506 <https://github.com/ros2/rosbag2/issues/506>`_)
-* Stabilize test_record by reducing copies of executors and messages (`#576 <https://github.com/ros2/rosbag2/issues/576>`_)
-* Contributors: Adam Dąbrowski, Chen Lihui, Emerson Knapp, P. J. Reed, Piotr Jaroszek
-
-0.5.0 (2020-12-02)
-------------------
-
-0.4.0 (2020-11-19)
-------------------
-* add storage_config_uri (`#493 <https://github.com/ros2/rosbag2/issues/493>`_)
-* Update the package.xml files with the latest Open Robotics maintainers (`#535 <https://github.com/ros2/rosbag2/issues/535>`_)
-* resolve memory leak for serialized message (`#502 <https://github.com/ros2/rosbag2/issues/502>`_)
-* Use shared logic for importing the rosbag2_transport_py library in Python (`#482 <https://github.com/ros2/rosbag2/issues/482>`_)
-* fix missing target dependencies (`#479 <https://github.com/ros2/rosbag2/issues/479>`_)
-* reenable cppcheck for rosbag2_transport (`#461 <https://github.com/ros2/rosbag2/issues/461>`_)
-* More reliable topic remapping test (`#456 <https://github.com/ros2/rosbag2/issues/456>`_)
-* Add split by time to recording (`#409 <https://github.com/ros2/rosbag2/issues/409>`_)
-* export shared_queues_vendor (`#434 <https://github.com/ros2/rosbag2/issues/434>`_)
-* Contributors: Dirk Thomas, Emerson Knapp, Karsten Knese, Michael Jeronimo, jhdcs
+* export shared_queues_vendor for modern cmake support (`#434 <https://github.com/ros2/rosbag2/issues/434>`_) (`#438 <https://github.com/ros2/rosbag2/issues/438>`_)
+* Contributors: Karsten Knese
 
 0.3.2 (2020-06-03)
 ------------------

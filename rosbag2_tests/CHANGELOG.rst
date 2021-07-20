@@ -2,61 +2,31 @@
 Changelog for package rosbag2_tests
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.9.1 (2021-07-08)
+
+0.3.8 (2021-07-19)
 ------------------
-* [backport galactic] Handle SIGTERM gracefully in recording (`#792 <https://github.com/ros2/rosbag2/issues/792>`_) (`#807 <https://github.com/ros2/rosbag2/issues/807>`_)
-  Backport `#792 <https://github.com/ros2/rosbag2/issues/792>`_ to galactic
-  * Handle SIGTERM gracefully in recording
+* Disable SIGTERM test on Windows in Foxy due to shutdown behavior in tests on that platform. (`#818 <https://github.com/ros2/rosbag2/issues/818>`_)
+* Handle SIGTERM gracefully in recording (`#809 <https://github.com/ros2/rosbag2/issues/809>`_)
 * Contributors: Emerson Knapp
 
-0.9.0 (2021-05-17)
+0.3.7 (2021-02-15)
 ------------------
-* Correct expectation for exit code in play_end_to_end test since after redesign we are getting exception in constructor. (`#763 <https://github.com/ros2/rosbag2/issues/763>`_)
-* remodel publication manager (`#749 <https://github.com/ros2/rosbag2/issues/749>`_)
-* correct exit code assertion (`#747 <https://github.com/ros2/rosbag2/issues/747>`_)
-* Contributors: Karsten Knese, Michael Orlov
+* [foxy backport] Fix --topics flag for ros2 bag play being ignored for all bags after the first one (`#619 <https://github.com/ros2/rosbag2/issues/619>`_) (`#654 <https://github.com/ros2/rosbag2/issues/654>`_)
+* Contributors: Aleksandr Rozhdestvenskii
 
-0.8.0 (2021-04-19)
+0.3.6 (2021-01-05)
 ------------------
-* Remove -Werror from builds, enable it in Action CI (`#722 <https://github.com/ros2/rosbag2/issues/722>`_)
-* Explicitly add emersonknapp as maintainer (`#692 <https://github.com/ros2/rosbag2/issues/692>`_)
-* Reindexer core (`#641 <https://github.com/ros2/rosbag2/issues/641>`_)
-  Add a new C++ Reindexer class for reconstructing metadata from bags that are missing it.
-* use rclcpp serialized messages to write data (`#457 <https://github.com/ros2/rosbag2/issues/457>`_)
-* Contributors: Emerson Knapp, Karsten Knese, jhdcs
+* Update maintainer list for Foxy (`#551 <https://github.com/ros2/rosbag2/issues/551>`_)
+* Contributors: Michael Jeronimo
 
-0.7.0 (2021-03-18)
-------------------
-* Alternative write api (`#676 <https://github.com/ros2/rosbag2/issues/676>`_)
-* RMW-implementation-searcher converter in rosbag2_cpp (`#670 <https://github.com/ros2/rosbag2/issues/670>`_)
-* Use rosbag2_py for ros2 bag info (`#673 <https://github.com/ros2/rosbag2/issues/673>`_)
-* Remove temporary directory platform-specific logic from test fixture (`#660 <https://github.com/ros2/rosbag2/issues/660>`_)
-* Fix --topics flag for ros2 bag play being ignored for all bags after the first one. (`#619 <https://github.com/ros2/rosbag2/issues/619>`_)
-* Move zstd compressor to its own package (`#636 <https://github.com/ros2/rosbag2/issues/636>`_)
-* Contributors: Alexander, Emerson Knapp, Karsten Knese
-
-0.6.0 (2021-02-01)
-------------------
-* Fix relative metadata paths in SequentialCompressionWriter (`#613 <https://github.com/ros2/rosbag2/issues/613>`_)
-* Recorder --regex and --exclude options (`#604 <https://github.com/ros2/rosbag2/issues/604>`_)
-* Fix the tests on cyclonedds by translating qos duration values (`#606 <https://github.com/ros2/rosbag2/issues/606>`_)
-* Contributors: Adam Dąbrowski, Emerson Knapp
-
-0.5.0 (2020-12-02)
+0.3.5 (2020-08-31)
 ------------------
 
-0.4.0 (2020-11-19)
+0.3.4 (2020-08-05)
 ------------------
-* add storage_config_uri (`#493 <https://github.com/ros2/rosbag2/issues/493>`_)
-* Removed duplicated code in record (`#534 <https://github.com/ros2/rosbag2/issues/534>`_)
-* Change default cache size for sequential_writer to a non zero value (`#533 <https://github.com/ros2/rosbag2/issues/533>`_)
-* Update the package.xml files with the latest Open Robotics maintainers (`#535 <https://github.com/ros2/rosbag2/issues/535>`_)
-* Mark flaky tests as xfail for now (`#520 <https://github.com/ros2/rosbag2/issues/520>`_)
-* introduce defaults for the C++ API (`#452 <https://github.com/ros2/rosbag2/issues/452>`_)
-* Adding db directory creation to rosbag2_cpp (`#450 <https://github.com/ros2/rosbag2/issues/450>`_)
-* minimal c++ API test (`#451 <https://github.com/ros2/rosbag2/issues/451>`_)
-* Add split by time to recording (`#409 <https://github.com/ros2/rosbag2/issues/409>`_)
-* Contributors: Emerson Knapp, Jaison Titus, Karsten Knese, Marwan Taher, Michael Jeronimo, jhdcs
+
+0.3.3 (2020-06-23)
+------------------
 
 0.3.2 (2020-06-03)
 ------------------

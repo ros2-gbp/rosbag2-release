@@ -21,9 +21,8 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rcpputils/filesystem_helper.hpp"
 #include "rcutils/filesystem.h"
-#include "rosbag2_compression_zstd/zstd_decompressor.hpp"
+#include "rosbag2_compression/zstd_decompressor.hpp"
 #include "rosbag2_storage/metadata_io.hpp"
-#include "rosbag2_test_common/publication_manager.hpp"
 #include "rosbag2_test_common/subscription_manager.hpp"
 #include "rosbag2_test_common/process_execution_helpers.hpp"
 
@@ -65,21 +64,21 @@ TEST_F(RecordFixture, record_end_to_end_test_with_zstd_file_compression) {
   message->string_value = "test";
   size_t expected_test_messages = 100;
 
-  rosbag2_test_common::PublicationManager pub_manager;
-  pub_manager.setup_publisher(topic_name, message, expected_test_messages);
-
   std::stringstream cmd;
   cmd << "ros2 bag record" <<
     " --compression-mode file" <<
     " --compression-format zstd" <<
-    " --max-cache-size 0" <<
     " --output " << root_bag_path_.string() <<
     " " << topic_name;
 
   auto process_handle = start_execution(cmd.str());
   wait_for_db();
 
-  pub_manager.run_publishers();
+  pub_man_.run_scoped_publisher(
+    topic_name,
+    message,
+    50ms,
+    expected_test_messages);
 
   stop_execution(process_handle);
 
@@ -91,7 +90,7 @@ TEST_F(RecordFixture, record_end_to_end_test_with_zstd_file_compression) {
     "Expected compressed bag file path: \"" <<
     compressed_bag_file_path.string() << "\" to exist!";
 
-  rosbag2_compression_zstd::ZstdDecompressor decompressor;
+  rosbag2_compression::ZstdDecompressor decompressor;
 
   const auto decompressed_uri = decompressor.decompress_uri(compressed_bag_file_path.string());
   const auto database_path = get_bag_file_path(0).string();
@@ -118,15 +117,21 @@ TEST_F(RecordFixture, record_end_to_end_test) {
   auto wrong_message = get_messages_strings()[0];
   wrong_message->string_value = "wrong_content";
 
-  rosbag2_test_common::PublicationManager pub_manager;
-  pub_manager.setup_publisher("/test_topic", message, expected_test_messages);
-  pub_manager.setup_publisher("/wrong_topic", wrong_message, 3);
-
   auto process_handle = start_execution(
-    "ros2 bag record --max-cache-size 0 --output " + root_bag_path_.string() + " /test_topic");
+    "ros2 bag record --output " + root_bag_path_.string() + " /test_topic");
   wait_for_db();
 
-  pub_manager.run_publishers();
+  pub_man_.add_publisher("/test_topic", message, expected_test_messages);
+  pub_man_.add_publisher("/wrong_topic", wrong_message);
+
+  const auto database_path = get_bag_file_path(0).string();
+
+  rosbag2_storage_plugins::SqliteWrapper db{
+    database_path, rosbag2_storage::storage_interfaces::IOFlag::READ_ONLY};
+  pub_man_.run_publishers(
+    [this, &db](const std::string & topic_name) {
+      return count_stored_messages(db, topic_name);
+    });
 
   stop_execution(process_handle);
 
@@ -153,28 +158,28 @@ TEST_F(RecordFixture, record_end_to_end_test) {
     EXPECT_EQ(message->string_value, "test");
   }
 
-  const auto database_path = get_bag_file_path(0).string();
-  rosbag2_storage_plugins::SqliteWrapper db{
-    database_path, rosbag2_storage::storage_interfaces::IOFlag::READ_ONLY};
   EXPECT_THAT(get_rwm_format_for_topic("/test_topic", db), Eq(rmw_get_serialization_format()));
 
   auto wrong_topic_messages = get_messages_for_topic<test_msgs::msg::BasicTypes>("/wrong_topic");
   EXPECT_THAT(wrong_topic_messages, IsEmpty());
 }
 
+// Disable this test on Windows in Foxy. See TODO note on following metadata test for details.
+#ifndef _WIN32
 TEST_F(RecordFixture, record_end_to_end_exits_gracefully_on_sigterm) {
   const std::string topic_name = "/test_sigterm";
   auto message = get_messages_strings()[0];
   message->string_value = "test";
-  rosbag2_test_common::PublicationManager pub_manager;
-  pub_manager.setup_publisher(topic_name, message, 10);
   auto process_handle = start_execution(
     "ros2 bag record --output " + root_bag_path_.string() + " " + topic_name);
   wait_for_db();
-  pub_manager.run_publishers();
+  {
+    pub_man_.run_scoped_publisher(topic_name, message, 50ms, 10);
+  }
   stop_execution(process_handle, SIGTERM);
   wait_for_metadata();
 }
+#endif
 
 // TODO(zmichaels11): Fix and enable this test on Windows.
 // This tests depends on the ability to read the metadata file.
@@ -182,19 +187,6 @@ TEST_F(RecordFixture, record_end_to_end_exits_gracefully_on_sigterm) {
 #ifndef _WIN32
 TEST_F(RecordFixture, record_end_to_end_with_splitting_metadata_contains_all_topics) {
   constexpr const int bagfile_split_size = 4 * 1024 * 1024;  // 4MB.
-  constexpr const char first_topic_name[] = "/test_topic0";
-  constexpr const char second_topic_name[] = "/test_topic1";
-  constexpr const int expected_splits = 4;
-  constexpr const char message_str[] = "Test";
-  constexpr const int message_size = 1024 * 1024;  // 1MB
-  const auto message = create_string_message(message_str, message_size);
-  constexpr const int message_count = bagfile_split_size * expected_splits / message_size;
-  constexpr const int message_batch_size = message_count / 2;
-
-  rosbag2_test_common::PublicationManager pub_manager;
-  pub_manager.setup_publisher(first_topic_name, message, message_batch_size);
-  pub_manager.setup_publisher(second_topic_name, message, message_batch_size);
-
   std::stringstream command;
   command << "ros2 bag record" <<
     " --output " << root_bag_path_.string() <<
@@ -203,7 +195,28 @@ TEST_F(RecordFixture, record_end_to_end_with_splitting_metadata_contains_all_top
   auto process_handle = start_execution(command.str());
   wait_for_db();
 
-  pub_manager.run_publishers();
+  constexpr const char first_topic_name[] = "/test_topic0";
+  constexpr const char second_topic_name[] = "/test_topic1";
+  constexpr const int expected_splits = 4;
+  {
+    constexpr const char message_str[] = "Test";
+    constexpr const int message_size = 1024 * 1024;  // 1MB
+    const auto message = create_string_message(message_str, message_size);
+    constexpr const int message_count = bagfile_split_size * expected_splits / message_size;
+    constexpr const int message_batch_size = message_count / 2;
+
+    pub_man_.run_scoped_publisher(
+      first_topic_name,
+      message,
+      50ms,
+      message_batch_size);
+
+    pub_man_.run_scoped_publisher(
+      second_topic_name,
+      message,
+      50ms,
+      message_batch_size);
+  }
 
   stop_execution(process_handle);
 
@@ -229,15 +242,6 @@ TEST_F(RecordFixture, record_end_to_end_with_splitting_metadata_contains_all_top
 TEST_F(RecordFixture, record_end_to_end_with_splitting_bagsize_split_is_at_least_specified_size) {
   constexpr const char topic_name[] = "/test_topic";
   constexpr const int bagfile_split_size = 4 * 1024 * 1024;  // 4MB.
-  constexpr const int expected_splits = 4;
-  constexpr const char message_str[] = "Test";
-  constexpr const int message_size = 512 * 1024;  // 512KB
-  const auto message = create_string_message(message_str, message_size);
-  constexpr const int message_count = bagfile_split_size * expected_splits / message_size;
-
-  rosbag2_test_common::PublicationManager pub_manager;
-  pub_manager.setup_publisher(topic_name, message, message_count);
-
   std::stringstream command;
   command << "ros2 bag record " <<
     " --output " << root_bag_path_.string() <<
@@ -246,9 +250,21 @@ TEST_F(RecordFixture, record_end_to_end_with_splitting_bagsize_split_is_at_least
   auto process_handle = start_execution(command.str());
   wait_for_db();
 
-  stop_execution(process_handle);
+  constexpr const int expected_splits = 4;
+  {
+    constexpr const char message_str[] = "Test";
+    constexpr const int message_size = 512 * 1024;  // 512KB
+    const auto message = create_string_message(message_str, message_size);
+    constexpr const int message_count = bagfile_split_size * expected_splits / message_size;
 
-  pub_manager.run_publishers();
+    pub_man_.run_scoped_publisher(
+      topic_name,
+      message,
+      50ms,
+      message_count);
+  }
+
+  stop_execution(process_handle);
 
   rosbag2_storage::MetadataIo metadata_io;
 
@@ -294,15 +310,6 @@ TEST_F(RecordFixture, record_end_to_end_with_splitting_bagsize_split_is_at_least
 TEST_F(RecordFixture, record_end_to_end_with_splitting_max_size_not_reached) {
   constexpr const char topic_name[] = "/test_topic";
   constexpr const int bagfile_split_size = 4 * 1024 * 1024;  // 4MB.
-  constexpr const int message_size = 512 * 1024;  // 512KB
-  constexpr const char message_str[] = "Test";
-  const auto message = create_string_message(message_str, message_size);
-  // only fill the bagfile halfway
-  constexpr const int message_count = bagfile_split_size / message_size / 2;
-
-  rosbag2_test_common::PublicationManager pub_manager;
-  pub_manager.setup_publisher(topic_name, message, message_count);
-
   std::stringstream command;
   command << "ros2 bag record " <<
     " --output " << root_bag_path_.string() <<
@@ -311,7 +318,19 @@ TEST_F(RecordFixture, record_end_to_end_with_splitting_max_size_not_reached) {
   auto process_handle = start_execution(command.str());
   wait_for_db();
 
-  pub_manager.run_publishers();
+  {
+    constexpr const int message_size = 512 * 1024;  // 512KB
+    constexpr const char message_str[] = "Test";
+    const auto message = create_string_message(message_str, message_size);
+    // only fill the bagfile halfway
+    constexpr const int message_count = bagfile_split_size / message_size / 2;
+
+    pub_man_.run_scoped_publisher(
+      topic_name,
+      message,
+      50ms,
+      message_count);
+  }
 
   stop_execution(process_handle);
 
@@ -348,15 +367,6 @@ TEST_F(RecordFixture, record_end_to_end_with_splitting_max_size_not_reached) {
 TEST_F(RecordFixture, record_end_to_end_with_splitting_splits_bagfile) {
   constexpr const char topic_name[] = "/test_topic";
   constexpr const int bagfile_split_size = 4 * 1024 * 1024;  // 4MB.
-  constexpr const int expected_splits = 4;
-  constexpr const char message_str[] = "Test";
-  constexpr const int message_size = 1024 * 1024;  // 1MB
-  // string message from test_msgs
-  const auto message = create_string_message(message_str, message_size);
-  constexpr const int message_count = bagfile_split_size * expected_splits / message_size;
-
-  rosbag2_test_common::PublicationManager pub_manager;
-  pub_manager.setup_publisher(topic_name, message, message_count);
 
   std::stringstream command;
   command << "ros2 bag record" <<
@@ -366,7 +376,20 @@ TEST_F(RecordFixture, record_end_to_end_with_splitting_splits_bagfile) {
   auto process_handle = start_execution(command.str());
   wait_for_db();
 
-  pub_manager.run_publishers();
+  constexpr const int expected_splits = 4;
+  {
+    constexpr const char message_str[] = "Test";
+    constexpr const int message_size = 1024 * 1024;  // 1MB
+    // string message from test_msgs
+    const auto message = create_string_message(message_str, message_size);
+    constexpr const int message_count = bagfile_split_size * expected_splits / message_size;
+
+    pub_man_.run_scoped_publisher(
+      topic_name,
+      message,
+      50ms,
+      message_count);
+  }
 
   stop_execution(process_handle);
 
@@ -406,73 +429,9 @@ TEST_F(RecordFixture, record_end_to_end_with_splitting_splits_bagfile) {
   }
 }
 
-TEST_F(RecordFixture, record_end_to_end_with_duration_splitting_splits_bagfile) {
-  constexpr const char topic_name[] = "/test_topic";
-  constexpr const int bagfile_split_duration = 1000;   // 1 second
-  constexpr const int expected_splits = 4;
-  constexpr const char message_str[] = "Test";
-  constexpr const int message_size = 1024 * 1024;  // 1MB
-  constexpr const int message_time = 500;  // 500ms
-  // string message from test_msgs
-  const auto message = create_string_message(message_str, message_size);
-  constexpr const int message_count = (bagfile_split_duration * expected_splits) / message_time;
-
-  rosbag2_test_common::PublicationManager pub_manager;
-  pub_manager.setup_publisher(topic_name, message, message_count);
-
-  std::stringstream command;
-  command << "ros2 bag record" <<
-    " --output " << root_bag_path_.string() <<
-    " -d " << bagfile_split_duration <<
-    " " << topic_name;
-  auto process_handle = start_execution(command.str());
-  wait_for_db();
-
-  pub_manager.run_publishers();
-
-  stop_execution(process_handle);
-
-  rosbag2_storage::MetadataIo metadata_io;
-
-#ifdef _WIN32
-  {
-    rosbag2_storage::BagMetadata metadata;
-    metadata.version = 4;
-    metadata.storage_identifier = "sqlite3";
-
-    // Loop until expected_splits in case it split or the bagfile doesn't exist.
-    for (int i = 0; i < expected_splits; ++i) {
-      const auto bag_file_path = get_relative_bag_file_path(i);
-      if (rcpputils::fs::exists(root_bag_path_ / bag_file_path)) {
-        metadata.relative_file_paths.push_back(bag_file_path.string());
-      }
-    }
-
-    metadata_io.write_metadata(root_bag_path_.string(), metadata);
-  }
-#endif
-
-  wait_for_metadata();
-  const auto metadata = metadata_io.read_metadata(root_bag_path_.string());
-
-  for (const auto & rel_path : metadata.relative_file_paths) {
-    auto path = root_bag_path_ / rcpputils::fs::path(rel_path);
-    EXPECT_TRUE(rcpputils::fs::exists(path));
-  }
-}
-
 TEST_F(RecordFixture, record_end_to_end_test_with_zstd_file_compression_compresses_files) {
   constexpr const char topic_name[] = "/test_topic";
   constexpr const int bagfile_split_size = 4 * 1024 * 1024;  // 4MB.
-  constexpr const int expected_splits = 4;
-  constexpr const char message_str[] = "Test";
-  constexpr const int message_size = 1024 * 1024;  // 1MB
-  // string message from test_msgs
-  const auto message = create_string_message(message_str, message_size);
-  constexpr const int message_count = bagfile_split_size * expected_splits / message_size;
-
-  rosbag2_test_common::PublicationManager pub_manager;
-  pub_manager.setup_publisher(topic_name, message, message_count);
 
   std::stringstream command;
   command << "ros2 bag record" <<
@@ -485,7 +444,20 @@ TEST_F(RecordFixture, record_end_to_end_test_with_zstd_file_compression_compress
   auto process_handle = start_execution(command.str());
   wait_for_db();
 
-  pub_manager.run_publishers();
+  constexpr const int expected_splits = 4;
+  {
+    constexpr const char message_str[] = "Test";
+    constexpr const int message_size = 1024 * 1024;  // 1MB
+    // string message from test_msgs
+    const auto message = create_string_message(message_str, message_size);
+    constexpr const int message_count = bagfile_split_size * expected_splits / message_size;
+
+    pub_man_.run_scoped_publisher(
+      topic_name,
+      message,
+      50ms,
+      message_count);
+  }
 
   stop_execution(process_handle);
 
@@ -522,7 +494,7 @@ TEST_F(RecordFixture, record_end_to_end_test_with_zstd_file_compression_compress
   const auto metadata = metadata_io.read_metadata(root_bag_path_.string());
 
   for (const auto & path : metadata.relative_file_paths) {
-    const auto file_path = root_bag_path_ / rcpputils::fs::path{path};
+    const auto file_path = rcpputils::fs::path{path};
 
     EXPECT_TRUE(file_path.exists()) << "File: \"" <<
       file_path.string() << "\" does not exist!";
@@ -550,17 +522,7 @@ TEST_F(RecordFixture, record_fails_if_both_all_and_topic_list_is_specified) {
   auto error_output = internal::GetCapturedStderr();
 
   EXPECT_THAT(exit_code, Eq(EXIT_FAILURE));
-  EXPECT_FALSE(error_output.empty());
-}
-
-TEST_F(RecordFixture, record_fails_if_neither_all_nor_topic_list_are_specified) {
-  internal::CaptureStderr();
-  auto exit_code =
-    execute_and_wait_until_completion("ros2 bag record", temporary_dir_path_);
-  auto output = internal::GetCapturedStderr();
-
-  EXPECT_THAT(exit_code, Eq(EXIT_FAILURE));
-  EXPECT_FALSE(output.empty());
+  EXPECT_THAT(error_output, HasSubstr("Can not specify topics and -a at the same time."));
 }
 
 TEST_F(RecordFixture, record_fails_gracefully_if_plugin_for_given_encoding_does_not_exist) {
@@ -569,9 +531,9 @@ TEST_F(RecordFixture, record_fails_gracefully_if_plugin_for_given_encoding_does_
     execute_and_wait_until_completion("ros2 bag record -a -f some_rmw", temporary_dir_path_);
   auto error_output = internal::GetCapturedStderr();
 
-  EXPECT_THAT(exit_code, Eq(EXIT_FAILURE));
+  EXPECT_THAT(exit_code, Eq(EXIT_SUCCESS));
   EXPECT_THAT(
-    error_output, HasSubstr("Could not find converter for format some_rmw"));
+    error_output, HasSubstr("Requested converter for format 'some_rmw' does not exist"));
 }
 
 TEST_F(RecordFixture, record_end_to_end_test_with_cache) {
@@ -582,15 +544,21 @@ TEST_F(RecordFixture, record_end_to_end_test_with_cache) {
   message->string_value = "test";
   size_t expected_test_messages = 33;
 
-  rosbag2_test_common::PublicationManager pub_manager;
-  pub_manager.setup_publisher(topic_name, message, expected_test_messages);
-
   auto process_handle = start_execution(
     "ros2 bag record --output " + root_bag_path_.string() + " " + topic_name + " " +
     "--max-cache-size " + std::to_string(max_cache_size));
   wait_for_db();
 
-  pub_manager.run_publishers();
+  pub_man_.add_publisher(topic_name, message, expected_test_messages);
+
+  const auto database_path = get_bag_file_path(0).string();
+
+  rosbag2_storage_plugins::SqliteWrapper db{
+    database_path, rosbag2_storage::storage_interfaces::IOFlag::READ_ONLY};
+  pub_man_.run_publishers(
+    [this, &db](const std::string & topic_name) {
+      return count_stored_messages(db, topic_name);
+    });
 
   stop_execution(process_handle);
 
@@ -615,8 +583,19 @@ TEST_F(RecordFixture, record_end_to_end_test_with_cache) {
   EXPECT_THAT(test_topic_messages, SizeIs(Ge(expected_test_messages)));
 }
 
+#ifndef _WIN32
 TEST_F(RecordFixture, rosbag2_record_and_play_multiple_topics_with_filter) {
   constexpr const int bagfile_split_size = 4 * 1024 * 1024;  // 4MB.
+
+  std::stringstream command_record;
+  command_record << "ros2 bag record" <<
+    " --output " << root_bag_path_.string() <<
+    " --max-bag-size " << bagfile_split_size <<
+    " -a";
+  auto process_handle = start_execution(command_record.str());
+
+  wait_for_db();
+
   constexpr const char first_topic_name[] = "/test_topic0";
   constexpr const char second_topic_name[] = "/test_topic1";
   constexpr const int expected_splits = 4;
@@ -625,19 +604,19 @@ TEST_F(RecordFixture, rosbag2_record_and_play_multiple_topics_with_filter) {
   constexpr const int message_count = bagfile_split_size * expected_splits / message_size;
   const auto message = create_string_message(message_str, message_size);
   constexpr const int message_batch_size = message_count / 2;
-  rosbag2_test_common::PublicationManager pub_manager;
-  pub_manager.setup_publisher(first_topic_name, message, message_batch_size);
-  pub_manager.setup_publisher(second_topic_name, message, message_batch_size);
+  {
+    pub_man_.run_scoped_publisher(
+      first_topic_name,
+      message,
+      50ms,
+      message_batch_size);
 
-  std::stringstream command_record;
-  command_record << "ros2 bag record" <<
-    " --output " << root_bag_path_.string() <<
-    " --max-bag-size " << bagfile_split_size <<
-    " -a";
-  auto process_handle = start_execution(command_record.str());
-  wait_for_db();
-
-  pub_manager.run_publishers();
+    pub_man_.run_scoped_publisher(
+      second_topic_name,
+      message,
+      50ms,
+      message_batch_size);
+  }
 
   stop_execution(process_handle);
 
@@ -665,3 +644,4 @@ TEST_F(RecordFixture, rosbag2_record_and_play_multiple_topics_with_filter) {
   // stops thread
   sub->add_subscription<test_msgs::msg::Strings>(first_topic_name, 0);
 }
+#endif

@@ -21,32 +21,18 @@ from ros2bag.api import convert_yaml_to_qos_profile
 from ros2bag.api import print_error
 from ros2bag.verb import VerbExtension
 from ros2cli.node import NODE_NAME_PREFIX
-from rosbag2_py import get_registered_readers
-from rosbag2_py import Player
-from rosbag2_py import PlayOptions
-from rosbag2_py import StorageOptions
 import yaml
-
-
-def positive_float(arg: str) -> float:
-    value = float(arg)
-    if value <= 0:
-        raise ValueError(f'Value {value} is less than or equal to zero.')
-    return value
 
 
 class PlayVerb(VerbExtension):
     """Play back ROS data from a bag."""
 
     def add_arguments(self, parser, cli_name):  # noqa: D102
-        reader_choices = get_registered_readers()
-        default_reader = 'sqlite3' if 'sqlite3' in reader_choices else reader_choices[0]
-
         parser.add_argument(
             'bag_file', type=check_path_exists, help='bag file to replay')
         parser.add_argument(
-            '-s', '--storage', default=default_reader, choices=reader_choices,
-            help=f"storage identifier to be used, defaults to '{default_reader}'")
+            '-s', '--storage', default='sqlite3',
+            help="storage identifier to be used, defaults to 'sqlite3'")
         parser.add_argument(
             '--read-ahead-queue-size', type=int, default=1000,
             help='size of message queue rosbag tries to hold in memory to help deterministic '
@@ -56,7 +42,7 @@ class PlayVerb(VerbExtension):
             '-r', '--rate', type=check_positive_float, default=1.0,
             help='rate at which to play back messages. Valid range > 0.0.')
         parser.add_argument(
-            '--topics', type=str, default=[], nargs='+',
+            '--topics', type=str, default='', nargs='+',
             help='topics to replay, separated by space. If none specified, all topics will be '
                  'replayed.')
         parser.add_argument(
@@ -70,21 +56,6 @@ class PlayVerb(VerbExtension):
             '--remap', '-m', default='', nargs='+',
             help='list of topics to be remapped: in the form '
                  '"old_topic1:=new_topic1 old_topic2:=new_topic2 etc." ')
-        parser.add_argument(
-            '--storage-config-file', type=FileType('r'),
-            help='Path to a yaml file defining storage specific configurations. '
-                 'For the default storage plugin settings are specified through syntax:'
-                 'read:'
-                 '  pragmas: [\"<setting_name>\" = <setting_value>]'
-                 'Note that applicable settings are limited to read-only for ros2 bag play.'
-                 'For a list of sqlite3 settings, refer to sqlite3 documentation')
-        parser.add_argument(
-            '--clock', type=positive_float, nargs='?', const=40, default=0,
-            help='Publish to /clock at a specific frequency in Hz, to act as a ROS Time Source. '
-                 'Value must be positive. Defaults to not publishing.')
-        parser.add_argument(
-            '-d', '--delay', type=float, default=0.0,
-            help='Sleep SEC seconds before play. Valid range > 0.0')
 
     def main(self, *, args):  # noqa: D102
         qos_profile_overrides = {}  # Specify a valid default
@@ -96,30 +67,19 @@ class PlayVerb(VerbExtension):
             except (InvalidQoSProfileException, ValueError) as e:
                 return print_error(str(e))
 
-        storage_config_file = ''
-        if args.storage_config_file:
-            storage_config_file = args.storage_config_file.name
-
-        topic_remapping = ['--ros-args']
-        for remap_rule in args.remap:
-            topic_remapping.append('--remap')
-            topic_remapping.append(remap_rule)
-
-        storage_options = StorageOptions(
+        # NOTE(hidmic): in merged install workspaces on Windows, Python entrypoint lookups
+        #               combined with constrained environments (as imposed by colcon test)
+        #               may result in DLL loading failures when attempting to import a C
+        #               extension. Therefore, do not import rosbag2_transport at the module
+        #               level but on demand, right before first use.
+        from rosbag2_transport import rosbag2_transport_py
+        rosbag2_transport_py.play(
             uri=args.bag_file,
             storage_id=args.storage,
-            storage_config_uri=storage_config_file,
-        )
-        play_options = PlayOptions()
-        play_options.read_ahead_queue_size = args.read_ahead_queue_size
-        play_options.node_prefix = NODE_NAME_PREFIX
-        play_options.rate = args.rate
-        play_options.topics_to_filter = args.topics
-        play_options.topic_qos_profile_overrides = qos_profile_overrides
-        play_options.loop = args.loop
-        play_options.topic_remapping_options = topic_remapping
-        play_options.clock_publish_frequency = args.clock
-        play_options.delay = args.delay
-
-        player = Player()
-        player.play(storage_options, play_options)
+            node_prefix=NODE_NAME_PREFIX,
+            read_ahead_queue_size=args.read_ahead_queue_size,
+            rate=args.rate,
+            topics=args.topics,
+            qos_profile_overrides=qos_profile_overrides,
+            loop=args.loop,
+            topic_remapping=args.remap)

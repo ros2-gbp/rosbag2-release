@@ -26,14 +26,14 @@ class MockSequentialWriter : public rosbag2_cpp::writer_interfaces::BaseWriterIn
 {
 public:
   void open(
-    const rosbag2_storage::StorageOptions & storage_options,
+    const rosbag2_cpp::StorageOptions & storage_options,
     const rosbag2_cpp::ConverterOptions & converter_options) override
   {
     (void) storage_options;
     (void) converter_options;
   }
 
-  void close() override {}
+  void reset() override {}
 
   void create_topic(const rosbag2_storage::TopicMetadata & topic_with_type) override
   {
@@ -51,17 +51,17 @@ public:
     messages_per_topic_[message->topic_name] += 1;
   }
 
-  const std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> & get_messages()
+  std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> get_messages()
   {
     return messages_;
   }
 
-  const std::unordered_map<std::string, size_t> & messages_per_topic()
+  std::unordered_map<std::string, size_t> messages_per_topic()
   {
     return messages_per_topic_;
   }
 
-  const std::unordered_map<std::string, rosbag2_storage::TopicMetadata> & get_topics()
+  std::unordered_map<std::string, rosbag2_storage::TopicMetadata> get_topics()
   {
     return topics_;
   }

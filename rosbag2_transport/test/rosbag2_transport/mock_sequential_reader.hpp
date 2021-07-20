@@ -26,7 +26,7 @@ class MockSequentialReader : public rosbag2_cpp::reader_interfaces::BaseReaderIn
 {
 public:
   void open(
-    const rosbag2_storage::StorageOptions & storage_options,
+    const rosbag2_cpp::StorageOptions & storage_options,
     const rosbag2_cpp::ConverterOptions & converter_options) override
   {
     (void) storage_options;
@@ -34,7 +34,7 @@ public:
     num_read_ = 0;
   }
 
-  void close() override {}
+  void reset() override {}
 
   bool has_next() override
   {
@@ -55,7 +55,6 @@ public:
 
   std::shared_ptr<rosbag2_storage::SerializedBagMessage> read_next() override
   {
-    // filter_ was considered when incrementing num_read_ in has_next()
     return messages_[num_read_++];
   }
 
