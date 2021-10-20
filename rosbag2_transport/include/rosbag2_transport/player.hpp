@@ -21,6 +21,9 @@
 #include <queue>
 #include <string>
 #include <unordered_map>
+#include <vector>
+
+#include "keyboard_handler/keyboard_handler.hpp"
 
 #include "moodycamel/readerwriterqueue.h"
 
@@ -76,22 +79,28 @@ public:
     const rclcpp::NodeOptions & node_options = rclcpp::NodeOptions());
 
   ROSBAG2_TRANSPORT_PUBLIC
+  Player(
+    std::unique_ptr<rosbag2_cpp::Reader> reader,
+    std::shared_ptr<KeyboardHandler> keyboard_handler,
+    const rosbag2_storage::StorageOptions & storage_options,
+    const rosbag2_transport::PlayOptions & play_options,
+    const std::string & node_name = "rosbag2_player",
+    const rclcpp::NodeOptions & node_options = rclcpp::NodeOptions());
+
+  ROSBAG2_TRANSPORT_PUBLIC
   virtual ~Player();
 
   ROSBAG2_TRANSPORT_PUBLIC
   void play();
 
-  ROSBAG2_TRANSPORT_PUBLIC
-  rosbag2_cpp::Reader * release_reader();
-
   // Playback control interface
   /// Pause the flow of time for playback.
   ROSBAG2_TRANSPORT_PUBLIC
-  void pause();
+  virtual void pause();
 
   /// Start the flow of time for playback.
   ROSBAG2_TRANSPORT_PUBLIC
-  void resume();
+  virtual void resume();
 
   /// Pause if time running, resume if paused.
   ROSBAG2_TRANSPORT_PUBLIC
@@ -105,11 +114,8 @@ public:
   ROSBAG2_TRANSPORT_PUBLIC
   double get_rate() const;
 
-  /// Set the playback rate.
-  /**
-   * Set the playback rate.
-   * \return false if an invalid value was provided (<= 0).
-   */
+  /// \brief Set the playback rate.
+  /// \return false if an invalid value was provided (<= 0).
   ROSBAG2_TRANSPORT_PUBLIC
   bool set_rate(double);
 
@@ -118,13 +124,26 @@ public:
   /// published or rclcpp context shut down.
   /// \note If internal player queue is starving and storage has not been completely loaded,
   /// this method will wait until new element will be pushed to the queue.
-  /// \return true if Player::play() has been started, player in pause mode and successfully
-  /// played next message, otherwise false.
+  /// \return true if player in pause mode and successfully played next message, otherwise false.
   ROSBAG2_TRANSPORT_PUBLIC
-  bool play_next();
+  virtual bool play_next();
+
+  /// \brief Advance player to the message with closest timestamp >= time_point.
+  /// \details This is blocking call and it will wait until current message will be published
+  /// and message queue will be refilled.
+  /// If time_point is before the beginning of the bag, then playback time will be set to the
+  /// beginning of the bag.
+  /// If time_point is after the end of the bag, playback time will be set to the end of the bag,
+  /// which will then end playback, or if loop is enabled then will start playing at the beginning
+  /// of the next loop.
+  /// \param time_point Time point in ROS playback timeline.
+  ROSBAG2_TRANSPORT_PUBLIC
+  void seek(rcutils_time_point_value_t time_point);
 
 protected:
-  std::atomic<bool> playing_messages_from_queue_{false};
+  bool is_ready_to_play_from_queue_{false};
+  std::mutex ready_to_play_from_queue_mutex_;
+  std::condition_variable ready_to_play_from_queue_cv_;
   rclcpp::Publisher<rosgraph_msgs::msg::Clock>::SharedPtr clock_publisher_;
   std::unordered_map<std::string, std::shared_ptr<rclcpp::GenericPublisher>> publishers_;
 
@@ -132,15 +151,24 @@ private:
   rosbag2_storage::SerializedBagMessageSharedPtr * peek_next_message_from_queue();
   void load_storage_content();
   bool is_storage_completely_loaded() const;
-  void enqueue_up_to_boundary(uint64_t boundary);
+  void enqueue_up_to_boundary(size_t boundary) RCPPUTILS_TSA_REQUIRES(reader_mutex_);
   void wait_for_filled_queue() const;
   void play_messages_from_queue();
   void prepare_publishers();
   bool publish_message(rosbag2_storage::SerializedBagMessageSharedPtr message);
   static constexpr double read_ahead_lower_bound_percentage_ = 0.9;
   static const std::chrono::milliseconds queue_read_wait_period_;
+  std::atomic_bool cancel_wait_for_next_message_{false};
 
-  std::unique_ptr<rosbag2_cpp::Reader> reader_;
+  std::mutex reader_mutex_;
+  std::unique_ptr<rosbag2_cpp::Reader> reader_ RCPPUTILS_TSA_GUARDED_BY(reader_mutex_);
+
+  void add_key_callback(
+    KeyboardHandler::KeyCode key,
+    const std::function<void()> & cb,
+    const std::string & op_name);
+  void add_keyboard_callbacks();
+
   rosbag2_storage::StorageOptions storage_options_;
   rosbag2_transport::PlayOptions play_options_;
   moodycamel::ReaderWriterQueue<rosbag2_storage::SerializedBagMessageSharedPtr> message_queue_;
@@ -151,7 +179,8 @@ private:
   std::mutex skip_message_in_main_play_loop_mutex_;
   bool skip_message_in_main_play_loop_ RCPPUTILS_TSA_GUARDED_BY
     (skip_message_in_main_play_loop_mutex_) = false;
-  std::atomic_bool is_in_play_{false};
+
+  rcutils_time_point_value_t starting_time_;
 
   rclcpp::Service<rosbag2_interfaces::srv::Pause>::SharedPtr srv_pause_;
   rclcpp::Service<rosbag2_interfaces::srv::Resume>::SharedPtr srv_resume_;
@@ -160,6 +189,10 @@ private:
   rclcpp::Service<rosbag2_interfaces::srv::GetRate>::SharedPtr srv_get_rate_;
   rclcpp::Service<rosbag2_interfaces::srv::SetRate>::SharedPtr srv_set_rate_;
   rclcpp::Service<rosbag2_interfaces::srv::PlayNext>::SharedPtr srv_play_next_;
+
+  // defaults
+  std::shared_ptr<KeyboardHandler> keyboard_handler_;
+  std::vector<KeyboardHandler::callback_handle_t> keyboard_callbacks_;
 };
 
 }  // namespace rosbag2_transport
