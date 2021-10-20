@@ -1,1 +1,1 @@
-{"base": "1c954bf3", "parent": "debian/rolling/rosbag2_compression_zstd", "previous": "5be27fc5", "trim": "", "trimbase": ""}
+{"base": "d7d26d5b", "parent": "debian/rolling/rosbag2_compression_zstd", "previous": "612c4006", "trim": "", "trimbase": ""}
