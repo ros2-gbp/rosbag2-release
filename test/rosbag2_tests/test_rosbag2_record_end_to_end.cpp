@@ -20,6 +20,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "rcpputils/filesystem_helper.hpp"
+#include "rcpputils/scope_exit.hpp"
 #include "rcutils/filesystem.h"
 #include "rosbag2_compression_zstd/zstd_decompressor.hpp"
 #include "rosbag2_storage/metadata_io.hpp"
@@ -77,11 +78,19 @@ TEST_F(RecordFixture, record_end_to_end_test_with_zstd_file_compression) {
     " " << topic_name;
 
   auto process_handle = start_execution(cmd.str());
+  auto cleanup_process_handle = rcpputils::make_scope_exit(
+    [process_handle]() {
+      stop_execution(process_handle);
+    });
+
+  ASSERT_TRUE(pub_manager.wait_for_matched(topic_name)) <<
+    "Expected find rosbag subscription";
   wait_for_db();
 
   pub_manager.run_publishers();
 
   stop_execution(process_handle);
+  cleanup_process_handle.cancel();
 
   wait_for_metadata();
 
@@ -124,11 +133,20 @@ TEST_F(RecordFixture, record_end_to_end_test) {
 
   auto process_handle = start_execution(
     "ros2 bag record --max-cache-size 0 --output " + root_bag_path_.string() + " /test_topic");
+  auto cleanup_process_handle = rcpputils::make_scope_exit(
+    [process_handle]() {
+      stop_execution(process_handle);
+    });
+
+  ASSERT_TRUE(pub_manager.wait_for_matched("/test_topic")) <<
+    "Expected find rosbag subscription";
+
   wait_for_db();
 
   pub_manager.run_publishers();
 
   stop_execution(process_handle);
+  cleanup_process_handle.cancel();
 
   // TODO(Martin-Idel-SI): Find out how to correctly send a Ctrl-C signal on Windows
   // This is necessary as the process is killed hard on Windows and doesn't write a metadata file
@@ -162,6 +180,20 @@ TEST_F(RecordFixture, record_end_to_end_test) {
   EXPECT_THAT(wrong_topic_messages, IsEmpty());
 }
 
+TEST_F(RecordFixture, record_end_to_end_exits_gracefully_on_sigterm) {
+  const std::string topic_name = "/test_sigterm";
+  auto message = get_messages_strings()[0];
+  message->string_value = "test";
+  rosbag2_test_common::PublicationManager pub_manager;
+  pub_manager.setup_publisher(topic_name, message, 10);
+  auto process_handle = start_execution(
+    "ros2 bag record --output " + root_bag_path_.string() + " " + topic_name);
+  wait_for_db();
+  pub_manager.run_publishers();
+  stop_execution(process_handle, SIGTERM);
+  wait_for_metadata();
+}
+
 // TODO(zmichaels11): Fix and enable this test on Windows.
 // This tests depends on the ability to read the metadata file.
 // Stopping the process on Windows does a hard kill and the metadata file is not written.
@@ -187,11 +219,22 @@ TEST_F(RecordFixture, record_end_to_end_with_splitting_metadata_contains_all_top
     " --max-bag-size " << bagfile_split_size <<
     " -a";
   auto process_handle = start_execution(command.str());
+  auto cleanup_process_handle = rcpputils::make_scope_exit(
+    [process_handle]() {
+      stop_execution(process_handle);
+    });
+
+  ASSERT_TRUE(pub_manager.wait_for_matched("/test_topic0")) <<
+    "Expected find rosbag subscription";
+  ASSERT_TRUE(pub_manager.wait_for_matched("/test_topic1")) <<
+    "Expected find rosbag subscription";
+
   wait_for_db();
 
   pub_manager.run_publishers();
 
   stop_execution(process_handle);
+  cleanup_process_handle.cancel();
 
   wait_for_metadata();
   rosbag2_storage::MetadataIo metadataIo;
@@ -230,9 +273,18 @@ TEST_F(RecordFixture, record_end_to_end_with_splitting_bagsize_split_is_at_least
     " --max-bag-size " << bagfile_split_size <<
     " " << topic_name;
   auto process_handle = start_execution(command.str());
+  auto cleanup_process_handle = rcpputils::make_scope_exit(
+    [process_handle]() {
+      stop_execution(process_handle);
+    });
+
+  ASSERT_TRUE(pub_manager.wait_for_matched(topic_name)) <<
+    "Expected find rosbag subscription";
+
   wait_for_db();
 
   stop_execution(process_handle);
+  cleanup_process_handle.cancel();
 
   pub_manager.run_publishers();
 
@@ -258,7 +310,7 @@ TEST_F(RecordFixture, record_end_to_end_with_splitting_bagsize_split_is_at_least
 
   wait_for_metadata();
   const auto metadata = metadata_io.read_metadata(root_bag_path_.string());
-  const auto actual_splits = static_cast<int>(metadata.relative_file_paths.size());
+  const auto actual_splits = static_cast<int>(metadata.files.size());
 
   // TODO(zmichaels11): Support reliable sync-to-disk for more accurate splits.
   // The only guarantee with splits right now is that they will not occur until
@@ -267,7 +319,7 @@ TEST_F(RecordFixture, record_end_to_end_with_splitting_bagsize_split_is_at_least
 
   // Don't include the last bagfile since it won't be full
   for (int i = 0; i < actual_splits - 1; ++i) {
-    const auto bagfile_path = root_bag_path_ / rcpputils::fs::path{metadata.relative_file_paths[i]};
+    const auto bagfile_path = root_bag_path_ / rcpputils::fs::path{metadata.files[i].path};
     ASSERT_TRUE(bagfile_path.exists()) <<
       "Expected bag file: \"" << bagfile_path.string() << "\" to exist.";
 
@@ -295,11 +347,20 @@ TEST_F(RecordFixture, record_end_to_end_with_splitting_max_size_not_reached) {
     " --max-bag-size " << bagfile_split_size <<
     " " << topic_name;
   auto process_handle = start_execution(command.str());
+  auto cleanup_process_handle = rcpputils::make_scope_exit(
+    [process_handle]() {
+      stop_execution(process_handle);
+    });
+
+  ASSERT_TRUE(pub_manager.wait_for_matched(topic_name)) <<
+    "Expected find rosbag subscription";
+
   wait_for_db();
 
   pub_manager.run_publishers();
 
   stop_execution(process_handle);
+  cleanup_process_handle.cancel();
 
   rosbag2_storage::MetadataIo metadata_io;
 
@@ -320,8 +381,8 @@ TEST_F(RecordFixture, record_end_to_end_with_splitting_max_size_not_reached) {
   const auto metadata = metadata_io.read_metadata(root_bag_path_.string());
 
   // Check that there's only 1 bagfile and that it exists.
-  ASSERT_EQ(1u, metadata.relative_file_paths.size());
-  const auto bagfile_path = root_bag_path_ / rcpputils::fs::path{metadata.relative_file_paths[0]};
+  ASSERT_EQ(1u, metadata.files.size());
+  const auto bagfile_path = root_bag_path_ / rcpputils::fs::path{metadata.files[0].path};
   ASSERT_TRUE(bagfile_path.exists()) <<
     "Expected bag file: \"" << bagfile_path.string() << "\" to exist.";
 
@@ -350,11 +411,20 @@ TEST_F(RecordFixture, record_end_to_end_with_splitting_splits_bagfile) {
     " --max-bag-size " << bagfile_split_size <<
     " " << topic_name;
   auto process_handle = start_execution(command.str());
+  auto cleanup_process_handle = rcpputils::make_scope_exit(
+    [process_handle]() {
+      stop_execution(process_handle);
+    });
+
+  ASSERT_TRUE(pub_manager.wait_for_matched(topic_name)) <<
+    "Expected find rosbag subscription";
+
   wait_for_db();
 
   pub_manager.run_publishers();
 
   stop_execution(process_handle);
+  cleanup_process_handle.cancel();
 
   rosbag2_storage::MetadataIo metadata_io;
 
@@ -386,8 +456,8 @@ TEST_F(RecordFixture, record_end_to_end_with_splitting_splits_bagfile) {
   wait_for_metadata();
   const auto metadata = metadata_io.read_metadata(root_bag_path_.string());
 
-  for (const auto & rel_path : metadata.relative_file_paths) {
-    auto path = root_bag_path_ / rcpputils::fs::path(rel_path);
+  for (const auto & file : metadata.files) {
+    auto path = root_bag_path_ / rcpputils::fs::path(file.path);
     EXPECT_TRUE(rcpputils::fs::exists(path));
   }
 }
@@ -412,11 +482,20 @@ TEST_F(RecordFixture, record_end_to_end_with_duration_splitting_splits_bagfile) 
     " -d " << bagfile_split_duration <<
     " " << topic_name;
   auto process_handle = start_execution(command.str());
+  auto cleanup_process_handle = rcpputils::make_scope_exit(
+    [process_handle]() {
+      stop_execution(process_handle);
+    });
+
+  ASSERT_TRUE(pub_manager.wait_for_matched(topic_name)) <<
+    "Expected find rosbag subscription";
+
   wait_for_db();
 
   pub_manager.run_publishers();
 
   stop_execution(process_handle);
+  cleanup_process_handle.cancel();
 
   rosbag2_storage::MetadataIo metadata_io;
 
@@ -441,8 +520,8 @@ TEST_F(RecordFixture, record_end_to_end_with_duration_splitting_splits_bagfile) 
   wait_for_metadata();
   const auto metadata = metadata_io.read_metadata(root_bag_path_.string());
 
-  for (const auto & rel_path : metadata.relative_file_paths) {
-    auto path = root_bag_path_ / rcpputils::fs::path(rel_path);
+  for (const auto & file : metadata.files) {
+    auto path = root_bag_path_ / rcpputils::fs::path(file.path);
     EXPECT_TRUE(rcpputils::fs::exists(path));
   }
 }
@@ -469,11 +548,20 @@ TEST_F(RecordFixture, record_end_to_end_test_with_zstd_file_compression_compress
     " " << topic_name;
 
   auto process_handle = start_execution(command.str());
+  auto cleanup_process_handle = rcpputils::make_scope_exit(
+    [process_handle]() {
+      stop_execution(process_handle);
+    });
+
+  ASSERT_TRUE(pub_manager.wait_for_matched(topic_name)) <<
+    "Expected find rosbag subscription";
+
   wait_for_db();
 
   pub_manager.run_publishers();
 
   stop_execution(process_handle);
+  cleanup_process_handle.cancel();
 
   rosbag2_storage::MetadataIo metadata_io;
 
@@ -555,9 +643,9 @@ TEST_F(RecordFixture, record_fails_gracefully_if_plugin_for_given_encoding_does_
     execute_and_wait_until_completion("ros2 bag record -a -f some_rmw", temporary_dir_path_);
   auto error_output = internal::GetCapturedStderr();
 
-  EXPECT_THAT(exit_code, Eq(EXIT_FAILURE));
+  EXPECT_THAT(exit_code, Ne(EXIT_SUCCESS));
   EXPECT_THAT(
-    error_output, HasSubstr("Could not find converter for format some_rmw"));
+    error_output, HasSubstr("invalid choice: 'some_rmw'"));
 }
 
 TEST_F(RecordFixture, record_end_to_end_test_with_cache) {
@@ -574,11 +662,20 @@ TEST_F(RecordFixture, record_end_to_end_test_with_cache) {
   auto process_handle = start_execution(
     "ros2 bag record --output " + root_bag_path_.string() + " " + topic_name + " " +
     "--max-cache-size " + std::to_string(max_cache_size));
+  auto cleanup_process_handle = rcpputils::make_scope_exit(
+    [process_handle]() {
+      stop_execution(process_handle);
+    });
+
+  ASSERT_TRUE(pub_manager.wait_for_matched(topic_name)) <<
+    "Expected find rosbag subscription";
+
   wait_for_db();
 
   pub_manager.run_publishers();
 
   stop_execution(process_handle);
+  cleanup_process_handle.cancel();
 
   // TODO(Martin-Idel-SI): Find out how to correctly send a Ctrl-C signal on Windows
   // This is necessary as the process is killed hard on Windows and doesn't write a metadata file
@@ -621,11 +718,21 @@ TEST_F(RecordFixture, rosbag2_record_and_play_multiple_topics_with_filter) {
     " --max-bag-size " << bagfile_split_size <<
     " -a";
   auto process_handle = start_execution(command_record.str());
+  auto cleanup_process_handle = rcpputils::make_scope_exit(
+    [process_handle]() {
+      stop_execution(process_handle);
+    });
+
+  ASSERT_TRUE(pub_manager.wait_for_matched(first_topic_name)) <<
+    "Expected find rosbag subscription";
+  ASSERT_TRUE(pub_manager.wait_for_matched(second_topic_name)) <<
+    "Expected find rosbag subscription";
   wait_for_db();
 
   pub_manager.run_publishers();
 
   stop_execution(process_handle);
+  cleanup_process_handle.cancel();
 
   wait_for_metadata();
 
