@@ -40,6 +40,20 @@
 namespace
 {
 /**
+ * Trivial std::unique_lock wrapper providing constructor that allows Clang Thread Safety Analysis.
+ * The std::unique_lock does not have these annotations.
+ */
+class RCPPUTILS_TSA_SCOPED_CAPABILITY TSAUniqueLock : public std::unique_lock<std::mutex>
+{
+public:
+  explicit TSAUniqueLock(std::mutex & mu) RCPPUTILS_TSA_ACQUIRE(mu)
+  : std::unique_lock<std::mutex>(mu)
+  {}
+
+  ~TSAUniqueLock() RCPPUTILS_TSA_RELEASE() {}
+};
+
+/**
  * Determine which QoS to offer for a topic.
  * The priority of the profile selected is:
  *   1. The override specified in play_options (if one exists for the topic).
@@ -99,26 +113,41 @@ Player::Player(
   const rosbag2_transport::PlayOptions & play_options,
   const std::string & node_name,
   const rclcpp::NodeOptions & node_options)
+: Player(std::move(reader),
+    // only call KeyboardHandler when using default keyboard handler implementation
+    std::shared_ptr<KeyboardHandler>(new KeyboardHandler()),
+    storage_options, play_options,
+    node_name, node_options)
+{}
+
+Player::Player(
+  std::unique_ptr<rosbag2_cpp::Reader> reader,
+  std::shared_ptr<KeyboardHandler> keyboard_handler,
+  const rosbag2_storage::StorageOptions & storage_options,
+  const rosbag2_transport::PlayOptions & play_options,
+  const std::string & node_name,
+  const rclcpp::NodeOptions & node_options)
 : rclcpp::Node(
     node_name,
     rclcpp::NodeOptions(node_options).arguments(play_options.topic_remapping_options)),
-  reader_(std::move(reader)),
   storage_options_(storage_options),
-  play_options_(play_options)
+  play_options_(play_options),
+  keyboard_handler_(keyboard_handler)
 {
   {
+    std::lock_guard<std::mutex> lk(reader_mutex_);
+    reader_ = std::move(reader);
+    // keep reader open until player is destroyed
     reader_->open(storage_options_, {"", rmw_get_serialization_format()});
-    const auto starting_time = std::chrono::duration_cast<std::chrono::nanoseconds>(
-      reader_->get_metadata().starting_time.time_since_epoch()).count();
-    clock_ = std::make_unique<rosbag2_cpp::TimeControllerClock>(starting_time);
+    auto metadata = reader_->get_metadata();
+    starting_time_ = std::chrono::duration_cast<std::chrono::nanoseconds>(
+      metadata.starting_time.time_since_epoch()).count();
+    clock_ = std::make_unique<rosbag2_cpp::TimeControllerClock>(starting_time_);
     set_rate(play_options_.rate);
-
     topic_qos_profile_overrides_ = play_options_.topic_qos_profile_overrides;
     prepare_publishers();
-
-    reader_->close();
   }
-
+  // service callbacks
   srv_pause_ = create_service<rosbag2_interfaces::srv::Pause>(
     "~/pause",
     [this](
@@ -182,19 +211,22 @@ Player::Player(
     {
       response->success = play_next();
     });
+  // keyboard callbacks
+  add_keyboard_callbacks();
 }
 
 Player::~Player()
 {
+  // remove callbacks on key_codes to prevent race conditions
+  // Note: keyboard_handler handles locks between removing & executing callbacks
+  for (auto cb_handle : keyboard_callbacks_) {
+    keyboard_handler_->delete_key_press_callback(cb_handle);
+  }
+  // closes reader
+  std::lock_guard<std::mutex> lk(reader_mutex_);
   if (reader_) {
     reader_->close();
   }
-}
-
-rosbag2_cpp::Reader * Player::release_reader()
-{
-  reader_->close();
-  return reader_.release();
 }
 
 const std::chrono::milliseconds
@@ -212,41 +244,59 @@ bool Player::is_storage_completely_loaded() const
 
 void Player::play()
 {
-  is_in_play_ = true;
+  rclcpp::Duration delay(0, 0);
+  if (play_options_.delay >= rclcpp::Duration(0, 0)) {
+    delay = play_options_.delay;
+  } else {
+    RCLCPP_WARN_STREAM(
+      get_logger(),
+      "Invalid delay value: " << play_options_.delay.nanoseconds() << ". Delay is disabled.");
+  }
+
   try {
     do {
-      reader_->open(storage_options_, {"", rmw_get_serialization_format()});
-      const auto starting_time = std::chrono::duration_cast<std::chrono::nanoseconds>(
-        reader_->get_metadata().starting_time.time_since_epoch()).count();
-      clock_->jump(starting_time);
-
-      storage_loading_future_ = std::async(
-        std::launch::async,
-        [this]() {load_storage_content();});
-
+      if (delay > rclcpp::Duration(0, 0)) {
+        RCLCPP_INFO_STREAM(get_logger(), "Sleep " << delay.nanoseconds() << " ns");
+        std::chrono::nanoseconds duration(delay.nanoseconds());
+        std::this_thread::sleep_for(duration);
+      }
+      {
+        std::lock_guard<std::mutex> lk(reader_mutex_);
+        reader_->seek(starting_time_);
+        clock_->jump(starting_time_);
+      }
+      storage_loading_future_ = std::async(std::launch::async, [this]() {load_storage_content();});
       wait_for_filled_queue();
       play_messages_from_queue();
-      reader_->close();
+      {
+        std::lock_guard<std::mutex> lk(ready_to_play_from_queue_mutex_);
+        is_ready_to_play_from_queue_ = false;
+        ready_to_play_from_queue_cv_.notify_all();
+      }
     } while (rclcpp::ok() && play_options_.loop);
   } catch (std::runtime_error & e) {
-    RCLCPP_ERROR(this->get_logger(), "Failed to play: %s", e.what());
+    RCLCPP_ERROR(get_logger(), "Failed to play: %s", e.what());
   }
-  is_in_play_ = false;
+  std::lock_guard<std::mutex> lk(ready_to_play_from_queue_mutex_);
+  is_ready_to_play_from_queue_ = false;
+  ready_to_play_from_queue_cv_.notify_all();
 }
 
 void Player::pause()
 {
   clock_->pause();
+  RCLCPP_INFO_STREAM(get_logger(), "Pausing play.");
 }
 
 void Player::resume()
 {
   clock_->resume();
+  RCLCPP_INFO_STREAM(get_logger(), "Resuming play.");
 }
 
 void Player::toggle_paused()
 {
-  clock_->is_paused() ? clock_->resume() : clock_->pause();
+  is_paused() ? resume() : pause();
 }
 
 bool Player::is_paused() const
@@ -269,7 +319,7 @@ rosbag2_storage::SerializedBagMessageSharedPtr * Player::peek_next_message_from_
   rosbag2_storage::SerializedBagMessageSharedPtr * message_ptr = message_queue_.peek();
   if (message_ptr == nullptr && !is_storage_completely_loaded() && rclcpp::ok()) {
     RCLCPP_WARN(
-      this->get_logger(),
+      get_logger(),
       "Message queue starved. Messages will be delayed. Consider "
       "increasing the --read-ahead-queue-size option.");
     while (message_ptr == nullptr && !is_storage_completely_loaded() && rclcpp::ok()) {
@@ -277,19 +327,33 @@ rosbag2_storage::SerializedBagMessageSharedPtr * Player::peek_next_message_from_
       message_ptr = message_queue_.peek();
     }
   }
+  // Workaround for race condition between peek and is_storage_completely_loaded()
+  // Don't sync with mutex for the sake of the performance
+  if (message_ptr == nullptr) {
+    message_ptr = message_queue_.peek();
+  }
   return message_ptr;
 }
 
 bool Player::play_next()
 {
-  // Temporary take over playback from play_messages_from_queue()
-  std::lock_guard<std::mutex> lk(skip_message_in_main_play_loop_mutex_);
-
-  if (!clock_->is_paused() || !is_in_play_) {
+  if (!clock_->is_paused()) {
+    RCLCPP_WARN_STREAM(get_logger(), "Called play next, but not in paused state.");
     return false;
   }
 
+  RCLCPP_INFO_STREAM(get_logger(), "Playing next message.");
+
+  // Temporary take over playback from play_messages_from_queue()
+  std::lock_guard<std::mutex> main_play_loop_lk(skip_message_in_main_play_loop_mutex_);
   skip_message_in_main_play_loop_ = true;
+  // Wait for player to be ready for playback messages from queue i.e. wait for Player:play() to
+  // be called if not yet and queue to be filled with messages.
+  {
+    std::unique_lock<std::mutex> lk(ready_to_play_from_queue_mutex_);
+    ready_to_play_from_queue_cv_.wait(lk, [this] {return is_ready_to_play_from_queue_;});
+  }
+
   rosbag2_storage::SerializedBagMessageSharedPtr * message_ptr = peek_next_message_from_queue();
 
   bool next_message_published = false;
@@ -303,6 +367,38 @@ bool Player::play_next()
     message_ptr = peek_next_message_from_queue();
   }
   return next_message_published;
+}
+
+void Player::seek(rcutils_time_point_value_t time_point)
+{
+  // Temporary stop playback in play_messages_from_queue() and block play_next()
+  std::lock_guard<std::mutex> main_play_loop_lk(skip_message_in_main_play_loop_mutex_);
+  skip_message_in_main_play_loop_ = true;
+  // Wait for player to be ready for playback messages from queue i.e. wait for Player:play() to
+  // be called if not yet and queue to be filled with messages.
+  {
+    std::unique_lock<std::mutex> lk(ready_to_play_from_queue_mutex_);
+    ready_to_play_from_queue_cv_.wait(lk, [this] {return is_ready_to_play_from_queue_;});
+  }
+  cancel_wait_for_next_message_ = true;
+  // if given seek value is earlier than the beginning of the bag, then clamp
+  // it to the beginning of the bag
+  if (time_point < starting_time_) {
+    time_point = starting_time_;
+  }
+  {
+    std::lock_guard<std::mutex> lk(reader_mutex_);
+    // Purge current messages in queue.
+    while (message_queue_.pop()) {}
+    reader_->seek(time_point);
+    clock_->jump(time_point);
+    // Restart queuing thread if it has finished running (previously reached end of bag),
+    // otherwise, queueing should continue automatically after releasing mutex
+    if (is_storage_completely_loaded() && rclcpp::ok()) {
+      storage_loading_future_ =
+        std::async(std::launch::async, [this]() {load_storage_content();});
+    }
+  }
 }
 
 void Player::wait_for_filled_queue() const
@@ -321,16 +417,20 @@ void Player::load_storage_content()
     static_cast<size_t>(play_options_.read_ahead_queue_size * read_ahead_lower_bound_percentage_);
   auto queue_upper_boundary = play_options_.read_ahead_queue_size;
 
-  while (reader_->has_next() && rclcpp::ok()) {
+  while (rclcpp::ok()) {
+    TSAUniqueLock lk(reader_mutex_);
+    if (!reader_->has_next()) {break;}
+
     if (message_queue_.size_approx() < queue_lower_boundary) {
       enqueue_up_to_boundary(queue_upper_boundary);
     } else {
+      lk.unlock();
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
   }
 }
 
-void Player::enqueue_up_to_boundary(uint64_t boundary)
+void Player::enqueue_up_to_boundary(size_t boundary)
 {
   rosbag2_storage::SerializedBagMessageSharedPtr message;
   for (size_t i = message_queue_.size_approx(); i < boundary; i++) {
@@ -344,32 +444,44 @@ void Player::enqueue_up_to_boundary(uint64_t boundary)
 
 void Player::play_messages_from_queue()
 {
-  playing_messages_from_queue_ = true;
   // Note: We need to use message_queue_.peek() instead of message_queue_.try_dequeue(message)
   // to support play_next() API logic.
   rosbag2_storage::SerializedBagMessageSharedPtr * message_ptr = peek_next_message_from_queue();
-  while (message_ptr != nullptr && rclcpp::ok()) {
-    {
-      rosbag2_storage::SerializedBagMessageSharedPtr message = *message_ptr;
-      // Do not move on until sleep_until returns true
-      // It will always sleep, so this is not a tight busy loop on pause
-      while (rclcpp::ok() && !clock_->sleep_until(message->time_stamp)) {}
-      if (rclcpp::ok()) {
-        {
-          std::lock_guard<std::mutex> lk(skip_message_in_main_play_loop_mutex_);
-          if (skip_message_in_main_play_loop_) {
-            skip_message_in_main_play_loop_ = false;
-            message_ptr = peek_next_message_from_queue();
-            continue;
-          }
-        }
-        publish_message(message);
-      }
-      message_queue_.pop();
-      message_ptr = peek_next_message_from_queue();
-    }
+  { // Notify play_next() that we are ready for playback
+    // Note: We should do notification that we are ready for playback after peeking pointer to
+    // the next message. message_queue_.peek() is not allowed to be called from more than one
+    // thread concurrently.
+    std::lock_guard<std::mutex> lk(ready_to_play_from_queue_mutex_);
+    is_ready_to_play_from_queue_ = true;
+    ready_to_play_from_queue_cv_.notify_all();
   }
-  playing_messages_from_queue_ = false;
+  while (message_ptr != nullptr && rclcpp::ok()) {
+    rosbag2_storage::SerializedBagMessageSharedPtr message = *message_ptr;
+    // Do not move on until sleep_until returns true
+    // It will always sleep, so this is not a tight busy loop on pause
+    while (rclcpp::ok() && !clock_->sleep_until(message->time_stamp)) {
+      if (std::atomic_exchange(&cancel_wait_for_next_message_, false)) {
+        break;
+      }
+    }
+    std::lock_guard<std::mutex> lk(skip_message_in_main_play_loop_mutex_);
+    if (rclcpp::ok()) {
+      if (skip_message_in_main_play_loop_) {
+        skip_message_in_main_play_loop_ = false;
+        cancel_wait_for_next_message_ = false;
+        message_ptr = peek_next_message_from_queue();
+        continue;
+      }
+      publish_message(message);
+    }
+    message_queue_.pop();
+    message_ptr = peek_next_message_from_queue();
+  }
+  // while we're in pause state, make sure we don't return
+  // if we happen to be at the end of queue
+  while (is_paused()) {
+    clock_->sleep_until(clock_->now());
+  }
 }
 
 void Player::prepare_publishers()
@@ -384,9 +496,9 @@ void Player::prepare_publishers()
       static_cast<uint64_t>(RCUTILS_S_TO_NS(1) / play_options_.clock_publish_frequency));
     // NOTE: PlayerClock does not own this publisher because rosbag2_cpp
     // should not own transport-based functionality
-    clock_publisher_ = this->create_publisher<rosgraph_msgs::msg::Clock>(
+    clock_publisher_ = create_publisher<rosgraph_msgs::msg::Clock>(
       "/clock", rclcpp::ClockQoS());
-    clock_publish_timer_ = this->create_wall_timer(
+    clock_publish_timer_ = create_wall_timer(
       publish_period, [this]() {
         auto msg = rosgraph_msgs::msg::Clock();
         msg.clock = rclcpp::Time(clock_->now());
@@ -411,16 +523,16 @@ void Player::prepare_publishers()
 
     auto topic_qos = publisher_qos_for_topic(
       topic, topic_qos_profile_overrides_,
-      this->get_logger());
+      get_logger());
     try {
       publishers_.insert(
         std::make_pair(
-          topic.name, this->create_generic_publisher(topic.name, topic.type, topic_qos)));
+          topic.name, create_generic_publisher(topic.name, topic.type, topic_qos)));
     } catch (const std::runtime_error & e) {
       // using a warning log seems better than adding a new option
       // to ignore some unknown message type library
       RCLCPP_WARN(
-        this->get_logger(),
+        get_logger(),
         "Ignoring a topic '%s', reason: %s.", topic.name.c_str(), e.what());
     }
   }
@@ -435,6 +547,49 @@ bool Player::publish_message(rosbag2_storage::SerializedBagMessageSharedPtr mess
     message_published = true;
   }
   return message_published;
+}
+
+void Player::add_key_callback(
+  KeyboardHandler::KeyCode key,
+  const std::function<void()> & cb,
+  const std::string & op_name)
+{
+  std::string key_str = enum_key_code_to_str(key);
+  if (key == KeyboardHandler::KeyCode::UNKNOWN) {
+    RCLCPP_ERROR_STREAM(
+      get_logger(),
+      "Invalid key binding " << key_str << " for " << op_name);
+    throw std::invalid_argument("Invalid key binding.");
+  }
+  keyboard_callbacks_.push_back(
+    keyboard_handler_->add_key_press_callback(
+      [cb](KeyboardHandler::KeyCode /*key_code*/,
+      KeyboardHandler::KeyModifiers /*key_modifiers*/) {cb();},
+      key));
+  // show instructions
+  RCLCPP_INFO_STREAM(
+    get_logger(),
+    "Press " << key_str << " for " << op_name);
+}
+
+void Player::add_keyboard_callbacks()
+{
+  // skip if disabled
+  if (play_options_.disable_keyboard_controls) {
+    return;
+  }
+  RCLCPP_INFO_STREAM(get_logger(), "Adding keyboard callbacks.");
+  // check keybindings
+  add_key_callback(
+    play_options_.pause_resume_toggle_key,
+    [this]() {toggle_paused();},
+    "Pause/Resume"
+  );
+  add_key_callback(
+    play_options_.play_next_key,
+    [this]() {play_next();},
+    "Play Next Message"
+  );
 }
 
 }  // namespace rosbag2_transport
