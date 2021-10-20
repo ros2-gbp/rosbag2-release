@@ -27,7 +27,9 @@ class TestReadOnlyPlugin : public rosbag2_storage::storage_interfaces::ReadOnlyI
 public:
   ~TestReadOnlyPlugin() override;
 
-  void open(const std::string & uri, rosbag2_storage::storage_interfaces::IOFlag flag) override;
+  void open(
+    const rosbag2_storage::StorageOptions & storage_options,
+    rosbag2_storage::storage_interfaces::IOFlag flag) override;
 
   bool has_next() override;
 
@@ -46,6 +48,8 @@ public:
   void set_filter(const rosbag2_storage::StorageFilter & storage_filter) override;
 
   void reset_filter() override;
+
+  void seek(const rcutils_time_point_value_t & timestamp) override;
 };
 
 #endif  // ROSBAG2_STORAGE__TEST_READ_ONLY_PLUGIN_HPP_

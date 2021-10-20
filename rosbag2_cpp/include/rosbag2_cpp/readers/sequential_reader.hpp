@@ -59,9 +59,10 @@ public:
   virtual ~SequentialReader();
 
   void open(
-    const StorageOptions & storage_options, const ConverterOptions & converter_options) override;
+    const rosbag2_storage::StorageOptions & storage_options,
+    const ConverterOptions & converter_options) override;
 
-  void reset() override;
+  void close() override;
 
   bool has_next() override;
 
@@ -74,6 +75,12 @@ public:
   void set_filter(const rosbag2_storage::StorageFilter & storage_filter) override;
 
   void reset_filter() override;
+
+  /**
+   * seek(t) will cause subsequent reads to return messages that satisfy
+   * timestamp >= time t.
+   */
+  void seek(const rcutils_time_point_value_t & timestamp) override;
 
   /**
    * Ask whether there is another database file to read from the list of relative
@@ -95,8 +102,14 @@ public:
 
 protected:
   /**
+  * Opens the current file and sets up the filters in the new storage.
+  *
+  */
+  virtual void load_current_file();
+
+  /**
   * Increment the current file iterator to point to the next file in the list of relative file
-  * paths.
+  * paths, and opens the next file by calling open_current_file()
   *
   * Expected usage:
   * if (has_next_file()) load_next_file();
@@ -132,17 +145,28 @@ protected:
     */
   virtual void fill_topics_metadata();
 
+  /**
+    * Prepare current file for opening by the storage implementation.
+    * This may be used by subclasses, for example decompressing
+    */
+  virtual void preprocess_current_file() {}
+
   std::unique_ptr<rosbag2_storage::StorageFactoryInterface> storage_factory_{};
   std::shared_ptr<rosbag2_storage::storage_interfaces::ReadOnlyInterface> storage_{};
   std::unique_ptr<Converter> converter_{};
   std::unique_ptr<rosbag2_storage::MetadataIo> metadata_io_{};
   rosbag2_storage::BagMetadata metadata_{};
+  rcutils_time_point_value_t seek_time_ = 0;
   rosbag2_storage::StorageFilter topics_filter_{};
   std::vector<rosbag2_storage::TopicMetadata> topics_metadata_{};
   std::vector<std::string> file_paths_{};  // List of database files.
   std::vector<std::string>::iterator current_file_iterator_{};  // Index of file to read from
 
+  // Hang on to this because storage_options_ is mutated to point at individual files
+  std::string base_folder_;
+
 private:
+  rosbag2_storage::StorageOptions storage_options_;
   std::shared_ptr<SerializationFormatConverterFactoryInterface> converter_factory_{};
 };
 

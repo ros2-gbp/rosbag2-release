@@ -28,6 +28,8 @@
 #include "rosbag2_cpp/logging.hpp"
 #include "rosbag2_cpp/visibility_control.hpp"
 
+#include "./rmw_implemented_serialization_format_converter.hpp"
+
 namespace rosbag2_cpp
 {
 
@@ -42,15 +44,18 @@ public:
       converter_class_loader_ =
         std::make_unique<pluginlib::ClassLoader<
             converter_interfaces::SerializationFormatConverter>>(
-        "rosbag2_cpp", "rosbag2_cpp::converter_interfaces::SerializationFormatConverter");
+        "rosbag2_cpp",
+        converter_interfaces::SerializationFormatConverter::get_base_class_name());
       serializer_class_loader_ =
         std::make_shared<pluginlib::ClassLoader<
             converter_interfaces::SerializationFormatSerializer>>(
-        "rosbag2_cpp", "rosbag2_cpp::converter_interfaces::SerializationFormatSerializer");
+        "rosbag2_cpp",
+        converter_interfaces::SerializationFormatSerializer::get_base_class_name());
       deserializer_class_loader_ =
         std::make_shared<pluginlib::ClassLoader<
             converter_interfaces::SerializationFormatDeserializer>>(
-        "rosbag2_cpp", "rosbag2_cpp::converter_interfaces::SerializationFormatDeserializer");
+        "rosbag2_cpp",
+        converter_interfaces::SerializationFormatDeserializer::get_base_class_name());
     } catch (const std::exception & e) {
       ROSBAG2_CPP_LOG_ERROR_STREAM("Unable to create class loader instance: " << e.what());
       throw e;
@@ -71,7 +76,13 @@ public:
     return load_interface(format, serializer_class_loader_);
   }
 
+  std::vector<std::string> get_declared_serialization_plugins() const
+  {
+    return serializer_class_loader_->getDeclaredClasses();
+  }
+
 private:
+  // Return true if a plugin is found with this ID
   bool is_plugin_registered(
     const std::string & converter_id,
     const std::vector<std::string> & registered_converter_classes,
@@ -83,8 +94,8 @@ private:
     auto class_exists_in_deserializers = std::find(
       registered_interface_classes.begin(),
       registered_interface_classes.end(), converter_id);
-    return class_exists_in_converters == registered_converter_classes.end() &&
-           class_exists_in_deserializers == registered_interface_classes.end();
+    return !(class_exists_in_converters == registered_converter_classes.end() &&
+           class_exists_in_deserializers == registered_interface_classes.end());
   }
 
   template<typename SerializationFormatIface>
@@ -93,32 +104,39 @@ private:
     const std::string & format,
     std::shared_ptr<pluginlib::ClassLoader<SerializationFormatIface>> class_loader)
   {
-    auto converter_id = format + converter_suffix;
-
+    const auto converter_id = format + converter_suffix;
     if (is_plugin_registered(
         converter_id,
         converter_class_loader_->getDeclaredClasses(),
         class_loader->getDeclaredClasses()))
     {
-      ROSBAG2_CPP_LOG_ERROR_STREAM(
-        "Requested converter for format '" << format << "' does not exist");
-      return nullptr;
+      try {
+        return std::unique_ptr<SerializationFormatIface>(
+          class_loader->createUnmanagedInstance(converter_id));
+      } catch (const std::runtime_error & ex) {
+        (void) ex;
+        // Plugin was not a SerializationFormatIface, try to load as SerializationFormatConverter.
+      }
+
+      try {
+        return std::unique_ptr<converter_interfaces::SerializationFormatConverter>(
+          converter_class_loader_->createUnmanagedInstance(converter_id));
+      } catch (const std::runtime_error & ex) {
+        ROSBAG2_CPP_LOG_ERROR_STREAM(
+          "Unexpectedly unable to load instance of discovered converter interface: " <<
+            ex.what() << ". Falling back to RMW implementation search.");
+      }
     }
 
+    ROSBAG2_CPP_LOG_INFO(
+      "No plugin found providing serialization format. "
+      "Falling back to checking RMW implementations.");
     try {
-      return std::unique_ptr<SerializationFormatIface>(
-        class_loader->createUnmanagedInstance(converter_id));
+      return std::make_unique<RMWImplementedConverter>(format);
     } catch (const std::runtime_error & ex) {
-      (void) ex;  // Ignore, try to load converter instead
+      ROSBAG2_CPP_LOG_ERROR_STREAM("Could not initialize RMWImplementedConverter: " << ex.what());
     }
-
-    try {
-      return std::unique_ptr<converter_interfaces::SerializationFormatConverter>(
-        converter_class_loader_->createUnmanagedInstance(converter_id));
-    } catch (const std::runtime_error & ex) {
-      ROSBAG2_CPP_LOG_ERROR_STREAM("Unable to load instance of converter interface: " << ex.what());
-      return nullptr;
-    }
+    return nullptr;
   }
 
   std::unique_ptr<

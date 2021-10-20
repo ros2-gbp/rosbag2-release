@@ -29,7 +29,6 @@
 #include "rosbag2_storage_default_plugins/sqlite/sqlite_storage.hpp"
 
 #include "rosbag2_test_common/temporary_directory_fixture.hpp"
-#include "rosbag2_test_common/publisher_manager.hpp"
 #include "rosbag2_test_common/memory_management.hpp"
 
 #include "test_msgs/msg/arrays.hpp"
@@ -52,9 +51,7 @@ public:
     // Clean up potentially leftover bag files.
     // There may be leftovers if the system reallocates a temp directory
     // used by a previous test execution and the test did not have a clean exit.
-    if (root_bag_path_.exists()) {
-      remove_directory_recursively(root_bag_path_.string());
-    }
+    rcpputils::fs::remove_all(root_bag_path_);
   }
 
   static void SetUpTestCase()
@@ -64,7 +61,7 @@ public:
 
   void TearDown() override
   {
-    remove_directory_recursively(root_bag_path_.string());
+    rcpputils::fs::remove_all(root_bag_path_);
   }
 
   static void TearDownTestCase()
@@ -187,7 +184,9 @@ public:
     std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> table_msgs;
     auto storage = std::make_shared<rosbag2_storage_plugins::SqliteStorage>();
     const auto database_path = get_bag_file_path(0).string();
-    storage->open(database_path, rosbag2_storage::storage_interfaces::IOFlag::READ_ONLY);
+    storage->open(
+      {database_path, "sqlite3"},
+      rosbag2_storage::storage_interfaces::IOFlag::READ_ONLY);
 
     while (storage->has_next()) {
       table_msgs.push_back(storage->read_next());
@@ -209,7 +208,6 @@ public:
   // relative path to the root of the bag file.
   rcpputils::fs::path root_bag_path_;
 
-  PublisherManager pub_man_;
   MemoryManagement memory_management_;
 };
 

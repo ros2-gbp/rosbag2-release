@@ -18,6 +18,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "rosbag2_cpp/writer_interfaces/base_writer_interface.hpp"
@@ -26,14 +27,15 @@ class MockSequentialWriter : public rosbag2_cpp::writer_interfaces::BaseWriterIn
 {
 public:
   void open(
-    const rosbag2_cpp::StorageOptions & storage_options,
+    const rosbag2_storage::StorageOptions & storage_options,
     const rosbag2_cpp::ConverterOptions & converter_options) override
   {
+    snapshot_mode_ = storage_options.snapshot_mode;
     (void) storage_options;
     (void) converter_options;
   }
 
-  void reset() override {}
+  void close() override {}
 
   void create_topic(const rosbag2_storage::TopicMetadata & topic_with_type) override
   {
@@ -47,21 +49,37 @@ public:
 
   void write(std::shared_ptr<rosbag2_storage::SerializedBagMessage> message) override
   {
-    messages_.push_back(message);
+    if (!snapshot_mode_) {
+      messages_.push_back(message);
+    } else {
+      snapshot_buffer_.push_back(message);
+    }
     messages_per_topic_[message->topic_name] += 1;
   }
 
-  std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> get_messages()
+  bool take_snapshot() override
+  {
+    std::swap(snapshot_buffer_, messages_);
+    snapshot_buffer_.clear();
+    return true;
+  }
+
+  const std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> & get_messages()
   {
     return messages_;
   }
 
-  std::unordered_map<std::string, size_t> messages_per_topic()
+  const std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> & get_snapshot_buffer()
+  {
+    return snapshot_buffer_;
+  }
+
+  const std::unordered_map<std::string, size_t> & messages_per_topic()
   {
     return messages_per_topic_;
   }
 
-  std::unordered_map<std::string, rosbag2_storage::TopicMetadata> get_topics()
+  const std::unordered_map<std::string, rosbag2_storage::TopicMetadata> & get_topics()
   {
     return topics_;
   }
@@ -69,7 +87,9 @@ public:
 private:
   std::unordered_map<std::string, rosbag2_storage::TopicMetadata> topics_;
   std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages_;
+  std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> snapshot_buffer_;
   std::unordered_map<std::string, size_t> messages_per_topic_;
+  bool snapshot_mode_ = false;
 };
 
 #endif  // ROSBAG2_TRANSPORT__MOCK_SEQUENTIAL_WRITER_HPP_

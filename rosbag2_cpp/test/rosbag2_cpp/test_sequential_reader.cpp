@@ -61,6 +61,7 @@ public:
     auto metadata_io = std::make_unique<NiceMock<MockMetadataIo>>();
     rosbag2_storage::BagMetadata metadata;
     metadata.relative_file_paths = {relative_file_path};
+    metadata.version = 4;
     metadata.topics_with_message_count.push_back({{topic_with_type}, 1});
 
     EXPECT_CALL(*metadata_io, read_metadata(_)).WillRepeatedly(Return(metadata));
@@ -68,12 +69,13 @@ public:
 
     EXPECT_CALL(*storage_, get_all_topics_and_types())
     .Times(AtMost(1)).WillRepeatedly(Return(topics_and_types));
+    EXPECT_CALL(*storage_, has_next()).WillRepeatedly(Return(true));
     EXPECT_CALL(*storage_, read_next()).WillRepeatedly(Return(message));
 
-    EXPECT_CALL(*storage_factory, open_read_only(_, _));
+    EXPECT_CALL(*storage_factory, open_read_only(_));
     ON_CALL(*storage_factory, open_read_only).WillByDefault(
-      [this, relative_file_path](const std::string & path, const std::string & /* storage_id */) {
-        EXPECT_STREQ(relative_file_path.c_str(), path.c_str());
+      [this, relative_file_path](const rosbag2_storage::StorageOptions & storage_options) {
+        EXPECT_STREQ(relative_file_path.c_str(), storage_options.uri.c_str());
         return storage_;
       });
 
@@ -87,7 +89,7 @@ public:
   std::unique_ptr<rosbag2_cpp::Reader> reader_;
   std::string storage_serialization_format_;
   std::string storage_uri_;
-  rosbag2_cpp::StorageOptions default_storage_options_;
+  rosbag2_storage::StorageOptions default_storage_options_;
 };
 
 TEST_F(SequentialReaderTest, read_next_uses_converters_to_convert_serialization_format) {
@@ -138,7 +140,7 @@ TEST_F(SequentialReaderTest, set_filter_calls_storage) {
   EXPECT_ANY_THROW(reader_->get_implementation_handle().set_filter(storage_filter));
   EXPECT_ANY_THROW(reader_->get_implementation_handle().reset_filter());
 
-  EXPECT_CALL(*storage_, set_filter(_)).Times(2);
+  EXPECT_CALL(*storage_, set_filter(_)).Times(3);
   reader_->open(default_storage_options_, {"", storage_serialization_format_});
   reader_->get_implementation_handle().set_filter(storage_filter);
   reader_->read_next();
@@ -146,8 +148,6 @@ TEST_F(SequentialReaderTest, set_filter_calls_storage) {
   storage_filter.topics.push_back("topic2");
   reader_->get_implementation_handle().set_filter(storage_filter);
   reader_->read_next();
-
-  EXPECT_CALL(*storage_, reset_filter()).Times(1);
   reader_->get_implementation_handle().reset_filter();
   reader_->read_next();
 }

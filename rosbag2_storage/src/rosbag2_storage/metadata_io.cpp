@@ -136,6 +136,30 @@ struct convert<std::vector<rosbag2_storage::TopicInformation>>
 };
 
 template<>
+struct convert<rosbag2_storage::FileInformation>
+{
+  static Node encode(const rosbag2_storage::FileInformation & metadata)
+  {
+    Node node;
+    node["path"] = metadata.path;
+    node["starting_time"] = metadata.starting_time;
+    node["duration"] = metadata.duration;
+    node["message_count"] = metadata.message_count;
+    return node;
+  }
+
+  static bool decode(const Node & node, rosbag2_storage::FileInformation & metadata)
+  {
+    metadata.path = node["path"].as<std::string>();
+    metadata.starting_time =
+      node["starting_time"].as<std::chrono::time_point<std::chrono::high_resolution_clock>>();
+    metadata.duration = node["duration"].as<std::chrono::nanoseconds>();
+    metadata.message_count = node["message_count"].as<uint64_t>();
+    return true;
+  }
+};
+
+template<>
 struct convert<std::chrono::nanoseconds>
 {
   static Node encode(const std::chrono::nanoseconds & time_in_ns)
@@ -179,16 +203,15 @@ struct convert<rosbag2_storage::BagMetadata>
     Node node;
     node["version"] = metadata.version;
     node["storage_identifier"] = metadata.storage_identifier;
-    node["relative_file_paths"] = metadata.relative_file_paths;
     node["duration"] = metadata.duration;
     node["starting_time"] = metadata.starting_time;
     node["message_count"] = metadata.message_count;
     node["topics_with_message_count"] = metadata.topics_with_message_count;
+    node["compression_format"] = metadata.compression_format;
+    node["compression_mode"] = metadata.compression_mode;
+    node["relative_file_paths"] = metadata.relative_file_paths;
+    node["files"] = metadata.files;
 
-    if (metadata.version >= 3) {  // fields introduced by rosbag2_compression
-      node["compression_format"] = metadata.compression_format;
-      node["compression_mode"] = metadata.compression_mode;
-    }
     return node;
   }
 
@@ -196,7 +219,6 @@ struct convert<rosbag2_storage::BagMetadata>
   {
     metadata.version = node["version"].as<int>();
     metadata.storage_identifier = node["storage_identifier"].as<std::string>();
-    metadata.relative_file_paths = node["relative_file_paths"].as<std::vector<std::string>>();
     metadata.duration = node["duration"].as<std::chrono::nanoseconds>();
     metadata.starting_time = node["starting_time"]
       .as<std::chrono::time_point<std::chrono::high_resolution_clock>>();
@@ -205,9 +227,15 @@ struct convert<rosbag2_storage::BagMetadata>
       decode_for_version<std::vector<rosbag2_storage::TopicInformation>>(
       node["topics_with_message_count"], metadata.version);
 
+    metadata.relative_file_paths = node["relative_file_paths"].as<std::vector<std::string>>();
+
     if (metadata.version >= 3) {  // fields introduced by rosbag2_compression
       metadata.compression_format = node["compression_format"].as<std::string>();
       metadata.compression_mode = node["compression_mode"].as<std::string>();
+    }
+    if (metadata.version >= 5) {
+      metadata.files =
+        node["files"].as<std::vector<rosbag2_storage::FileInformation>>();
     }
     return true;
   }
@@ -232,7 +260,12 @@ BagMetadata MetadataIo::read_metadata(const std::string & uri)
     YAML::Node yaml_file = YAML::LoadFile(get_metadata_file_name(uri));
     auto metadata = yaml_file["rosbag2_bagfile_information"].as<rosbag2_storage::BagMetadata>();
     rcutils_allocator_t allocator = rcutils_get_default_allocator();
-    metadata.bag_size = rcutils_calculate_directory_size(uri.c_str(), allocator);
+    if (RCUTILS_RET_OK !=
+      rcutils_calculate_directory_size(uri.c_str(), &metadata.bag_size, allocator))
+    {
+      throw std::runtime_error(
+              std::string("Exception on calculating the size of directory :") + uri);
+    }
     return metadata;
   } catch (const YAML::Exception & ex) {
     throw std::runtime_error(std::string("Exception on parsing info file: ") + ex.what());
@@ -248,7 +281,7 @@ std::string MetadataIo::get_metadata_file_name(const std::string & uri)
 
 bool MetadataIo::metadata_file_exists(const std::string & uri)
 {
-  return rcpputils::fs::path(get_metadata_file_name(uri)).exists();
+  return rcpputils::fs::exists(rcpputils::fs::path(get_metadata_file_name(uri)));
 }
 
 }  // namespace rosbag2_storage

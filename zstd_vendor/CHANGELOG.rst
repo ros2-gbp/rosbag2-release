@@ -2,28 +2,37 @@
 Changelog for package zstd_vendor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.3.8 (2021-07-19)
+0.10.0 (2021-10-19)
+-------------------
+* Switch to using 'git apply' for zstd_vendor patches (`#846 <https://github.com/ros2/rosbag2/issues/846>`_)
+* Contributors: Christophe Bedard
+
+0.9.0 (2021-05-17)
 ------------------
 
-0.3.7 (2021-02-15)
+0.8.0 (2021-04-19)
 ------------------
-* [foxy backport] Zstd should not install internal headers (`#631 <https://github.com/ros2/rosbag2/issues/631>`_) (`#653 <https://github.com/ros2/rosbag2/issues/653>`_)
+* Explicitly add emersonknapp as maintainer (`#692 <https://github.com/ros2/rosbag2/issues/692>`_)
 * Contributors: Emerson Knapp
 
-0.3.6 (2021-01-05)
+0.7.0 (2021-03-18)
 ------------------
-* Patch zstd 1.4.4 to include cmake_minimum_version bump to 2.8.12 (`#579 <https://github.com/ros2/rosbag2/issues/579>`_) (`#587 <https://github.com/ros2/rosbag2/issues/587>`_)
-* Update maintainer list for Foxy (`#551 <https://github.com/ros2/rosbag2/issues/551>`_)
-* Contributors: Emerson Knapp, Jacob Perron, Michael Jeronimo
+* Always preserve source permissions in vendor packages (`#645 <https://github.com/ros2/rosbag2/issues/645>`_)
+* Zstd should not install internal headers - some of them try include others that aren't installed. We don't use them. Avoid the situation (`#631 <https://github.com/ros2/rosbag2/issues/631>`_)
+* Contributors: Emerson Knapp, Scott K Logan
 
-0.3.5 (2020-08-31)
+0.6.0 (2021-02-01)
+------------------
+* Patch zstd 1.4.4 to include cmake_minimum_version bump to 2.8.12 (`#579 <https://github.com/ros2/rosbag2/issues/579>`_)
+* Contributors: Emerson Knapp
+
+0.5.0 (2020-12-02)
 ------------------
 
-0.3.4 (2020-08-05)
+0.4.0 (2020-11-19)
 ------------------
-
-0.3.3 (2020-06-23)
-------------------
+* Update the package.xml files with the latest Open Robotics maintainers (`#535 <https://github.com/ros2/rosbag2/issues/535>`_)
+* Contributors: Michael Jeronimo
 
 0.3.2 (2020-06-03)
 ------------------

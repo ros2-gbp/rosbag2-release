@@ -2,26 +2,51 @@
 Changelog for package rosbag2_storage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.10.0 (2021-10-19)
+-------------------
+* Metadata per file info (`#870 <https://github.com/ros2/rosbag2/issues/870>`_)
+* Implement snapshot mechanism and corresponding ROS Service (`#850 <https://github.com/ros2/rosbag2/issues/850>`_)
+* added seek interface (`#836 <https://github.com/ros2/rosbag2/issues/836>`_)
+* Refactor plugin query mechanism and standardize trait management (`#833 <https://github.com/ros2/rosbag2/issues/833>`_)
+* Contributors: Cameron Miller, Wojciech Jaworski, sonia
 
-0.3.8 (2021-07-19)
+0.9.0 (2021-05-17)
 ------------------
 
-0.3.7 (2021-02-15)
+0.8.0 (2021-04-19)
 ------------------
+* Remove -Werror from builds, enable it in Action CI (`#722 <https://github.com/ros2/rosbag2/issues/722>`_)
+* PlayerClock initial implementation - Player functionally unchanged (`#689 <https://github.com/ros2/rosbag2/issues/689>`_)
+* Explicitly add emersonknapp as maintainer (`#692 <https://github.com/ros2/rosbag2/issues/692>`_)
+* Reindexer core (`#641 <https://github.com/ros2/rosbag2/issues/641>`_)
+  Add a new C++ Reindexer class for reconstructing metadata from bags that are missing it.
+* Contributors: Emerson Knapp, jhdcs
 
-0.3.6 (2021-01-05)
+0.7.0 (2021-03-18)
 ------------------
-* Update maintainer list for Foxy (`#551 <https://github.com/ros2/rosbag2/issues/551>`_)
-* Contributors: Michael Jeronimo
+* Remove outdated pluginlib cmake script from rosbag2_storage (`#661 <https://github.com/ros2/rosbag2/issues/661>`_)
+* CLI query rosbag2_py for available storage implementations (`#659 <https://github.com/ros2/rosbag2/issues/659>`_)
+* Shorten some excessively long lines of CMake (`#648 <https://github.com/ros2/rosbag2/issues/648>`_)
+* Contributors: Emerson Knapp, Scott K Logan
 
-0.3.5 (2020-08-31)
+0.6.0 (2021-02-01)
 ------------------
+* SQLite storage optimized by default (`#568 <https://github.com/ros2/rosbag2/issues/568>`_)
+  * Use optimized pragmas by default in sqlite storage. Added option to use former behavior
+* Use std::filesystem compliant non-member `exists` function for path object (`#593 <https://github.com/ros2/rosbag2/issues/593>`_)
+* Contributors: Adam Dąbrowski, Josh Langsfeld
 
-0.3.4 (2020-08-05)
+0.5.0 (2020-12-02)
 ------------------
+* Update codes since rcutils_calculate_directory_size() is changed (`#567 <https://github.com/ros2/rosbag2/issues/567>`_)
+* Contributors: Barry Xu
 
-0.3.3 (2020-06-23)
+0.4.0 (2020-11-19)
 ------------------
+* add storage_config_uri (`#493 <https://github.com/ros2/rosbag2/issues/493>`_)
+* Update the package.xml files with the latest Open Robotics maintainers (`#535 <https://github.com/ros2/rosbag2/issues/535>`_)
+* Add split by time to recording (`#409 <https://github.com/ros2/rosbag2/issues/409>`_)
+* Contributors: Karsten Knese, Michael Jeronimo, jhdcs
 
 0.3.2 (2020-06-03)
 ------------------

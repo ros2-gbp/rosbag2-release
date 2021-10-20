@@ -23,10 +23,8 @@
 #include "rclcpp/rclcpp.hpp"
 
 #include "rosbag2_transport/record_options.hpp"
-#include "rosbag2_transport/rosbag2_transport.hpp"
 
 #include "rosbag2_test_common/memory_management.hpp"
-#include "rosbag2_test_common/publisher_manager.hpp"
 
 #include "rosbag2_transport_test_fixture.hpp"
 
@@ -43,33 +41,31 @@ public:
   RecordIntegrationTestFixture()
   : Rosbag2TransportTestFixture()
   {
+  }
+
+  void SetUp() override
+  {
     rclcpp::init(0, nullptr);
   }
 
-  void start_recording(const RecordOptions & options)
-  {
-    // the future object returned from std::async needs to be stored not to block the execution
-    future_ = std::async(
-      std::launch::async, [this, options]() {
-        rosbag2_transport::Rosbag2Transport rosbag2_transport(reader_, writer_, info_);
-        rosbag2_transport.record(storage_options_, options);
-      });
-  }
-
-  void stop_recording()
+  void TearDown() override
   {
     rclcpp::shutdown();
-    future_.get();
   }
 
-  void run_publishers()
+  template<class T>
+  void start_async_spin(T node)
   {
-    pub_man_.run_publishers(
-      [this](const std::string & topic_name) {
-        MockSequentialWriter & writer =
-        static_cast<MockSequentialWriter &>(writer_->get_implementation_handle());
-        return writer.messages_per_topic()[topic_name];
-      });
+    future_ = std::async(
+      std::launch::async, [node]() -> void {rclcpp::spin(node);});
+  }
+
+  void stop_spinning()
+  {
+    rclcpp::shutdown();
+    if (future_.valid()) {
+      future_.wait();
+    }
   }
 
   template<typename MessageT>
@@ -88,7 +84,6 @@ public:
   }
 
   MemoryManagement memory_;
-  PublisherManager pub_man_;
   std::future<void> future_;
 };
 

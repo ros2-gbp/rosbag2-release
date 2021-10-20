@@ -16,19 +16,24 @@
 #define ROSBAG2_CPP__WRITERS__SEQUENTIAL_WRITER_HPP_
 
 #include <memory>
+#include <mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
+#include "rosbag2_cpp/cache/cache_consumer.hpp"
+#include "rosbag2_cpp/cache/circular_message_cache.hpp"
+#include "rosbag2_cpp/cache/message_cache.hpp"
+#include "rosbag2_cpp/cache/message_cache_interface.hpp"
 #include "rosbag2_cpp/converter.hpp"
 #include "rosbag2_cpp/serialization_format_converter_factory.hpp"
-#include "rosbag2_cpp/storage_options.hpp"
 #include "rosbag2_cpp/writer_interfaces/base_writer_interface.hpp"
 #include "rosbag2_cpp/visibility_control.hpp"
 
 #include "rosbag2_storage/metadata_io.hpp"
 #include "rosbag2_storage/storage_factory.hpp"
 #include "rosbag2_storage/storage_factory_interface.hpp"
+#include "rosbag2_storage/storage_options.hpp"
 #include "rosbag2_storage/storage_interfaces/read_write_interface.hpp"
 
 // This is necessary because of using stl types here. It is completely safe, because
@@ -71,9 +76,10 @@ public:
    * \param converter_options options to define in which format incoming messages are stored
    **/
   void open(
-    const StorageOptions & storage_options, const ConverterOptions & converter_options) override;
+    const rosbag2_storage::StorageOptions & storage_options,
+    const ConverterOptions & converter_options) override;
 
-  void reset() override;
+  void close() override;
 
   /**
    * Create a new topic in the underlying storage. Needs to be called for every topic used within
@@ -102,7 +108,13 @@ public:
    */
   void write(std::shared_ptr<rosbag2_storage::SerializedBagMessage> message) override;
 
-private:
+  /**
+   * Take a snapshot by triggering a circular buffer flip, writing data to disk.
+   * *\returns true if snapshot is successful
+   */
+  bool take_snapshot() override;
+
+protected:
   std::string base_folder_;
   std::unique_ptr<rosbag2_storage::StorageFactoryInterface> storage_factory_;
   std::shared_ptr<SerializationFormatConverterFactoryInterface> converter_factory_;
@@ -110,30 +122,50 @@ private:
   std::unique_ptr<rosbag2_storage::MetadataIo> metadata_io_;
   std::unique_ptr<Converter> converter_;
 
-  // Used in bagfile splitting; specifies the best-effort maximum sub-section of a bagfile in bytes.
-  uint64_t max_bagfile_size_;
+  bool use_cache_;
+  std::shared_ptr<rosbag2_cpp::cache::MessageCacheInterface> message_cache_;
+  std::unique_ptr<rosbag2_cpp::cache::CacheConsumer> cache_consumer_;
 
-  // Intermediate cache to write multiple messages into the storage.
-  // `max_cache_size` is the amount of messages to hold in storage before writing to disk.
-  uint64_t max_cache_size_;
-  std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>> cache_;
+  void switch_to_next_storage();
 
-  // Used to track topic -> message count
+  std::string format_storage_uri(
+    const std::string & base_folder, uint64_t storage_count);
+
+  rosbag2_storage::StorageOptions storage_options_;
+
+  // Used in bagfile splitting;
+  // specifies the best-effort maximum duration of a bagfile in seconds.
+  std::chrono::seconds max_bagfile_duration;
+
+  // Used to track topic -> message count. If cache is present, it is updated by CacheConsumer
   std::unordered_map<std::string, rosbag2_storage::TopicInformation> topics_names_to_info_;
+  std::mutex topics_info_mutex_;
 
   rosbag2_storage::BagMetadata metadata_;
 
   // Closes the current backed storage and opens the next bagfile.
-  void split_bagfile();
+  virtual void split_bagfile();
 
   // Checks if the current recording bagfile needs to be split and rolled over to a new file.
   bool should_split_bagfile() const;
 
   // Prepares the metadata by setting initial values.
-  void init_metadata();
+  virtual void init_metadata();
 
   // Record TopicInformation into metadata
   void finalize_metadata();
+
+  // Helper method used by write to get the message in a format that is ready to be written.
+  // Common use cases include converting the message using the converter or
+  // performing other operations like compression on it
+  virtual std::shared_ptr<rosbag2_storage::SerializedBagMessage>
+  get_writeable_message(
+    std::shared_ptr<rosbag2_storage::SerializedBagMessage> message);
+
+private:
+  /// Helper method to write messages while also updating tracked metadata.
+  void write_messages(
+    const std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>> & messages);
 };
 
 }  // namespace writers
