@@ -20,6 +20,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "keyboard_handler/keyboard_handler.hpp"
+#include "rclcpp/duration.hpp"
 #include "rclcpp/qos.hpp"
 
 namespace rosbag2_transport
@@ -44,6 +46,14 @@ public:
   // Rate in Hz at which to publish to /clock.
   // 0 (or negative) means that no publisher will be created
   double clock_publish_frequency = 0.0;
+
+  // Sleep before play. Negative durations invalid. Will delay at the beginning of each loop.
+  rclcpp::Duration delay = rclcpp::Duration(0, 0);
+
+  bool disable_keyboard_controls = false;
+  // keybindings
+  KeyboardHandler::KeyCode pause_resume_toggle_key = KeyboardHandler::KeyCode::SPACE;
+  KeyboardHandler::KeyCode play_next_key = KeyboardHandler::KeyCode::CURSOR_RIGHT;
 };
 
 }  // namespace rosbag2_transport
