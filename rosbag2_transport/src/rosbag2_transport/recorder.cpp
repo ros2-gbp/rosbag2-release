@@ -25,8 +25,11 @@
 #include <vector>
 
 #include "rclcpp/logging.hpp"
+#include "rclcpp/clock.hpp"
 
 #include "rosbag2_cpp/writer.hpp"
+
+#include "rosbag2_interfaces/srv/snapshot.hpp"
 
 #include "qos.hpp"
 #include "topic_filter.hpp"
@@ -93,6 +96,19 @@ void Recorder::record()
     storage_options_,
     {rmw_get_serialization_format(), record_options_.rmw_serialization_format});
 
+  // Only expose snapshot service when mode is enabled
+  if (storage_options_.snapshot_mode) {
+    srv_snapshot_ = create_service<rosbag2_interfaces::srv::Snapshot>(
+      "~/snapshot",
+      [this](
+        const std::shared_ptr<rmw_request_id_t>/* request_header */,
+        const std::shared_ptr<rosbag2_interfaces::srv::Snapshot::Request>/* request */,
+        const std::shared_ptr<rosbag2_interfaces::srv::Snapshot::Response> response)
+      {
+        response->success = writer_->take_snapshot();
+      });
+  }
+
   serialization_format_ = record_options_.rmw_serialization_format;
   RCLCPP_INFO(this->get_logger(), "Listening for topics...");
   subscribe_topics(get_requested_or_available_topics());
@@ -136,6 +152,9 @@ Recorder::get_requested_or_available_topics()
   auto filtered_topics_and_types = topic_filter::filter_topics_with_more_than_one_type(
     all_topics_and_types, record_options_.include_hidden_topics);
 
+  filtered_topics_and_types = topic_filter::filter_topics_with_known_type(
+    filtered_topics_and_types, topic_unknown_types_);
+
   if (!record_options_.topics.empty()) {
     // expand specified topics
     std::vector<std::string> expanded_topics;
@@ -153,24 +172,12 @@ Recorder::get_requested_or_available_topics()
     return filtered_topics_and_types;
   }
 
-  std::unordered_map<std::string, std::string> filtered_by_regex;
-
-  std::regex topic_regex(record_options_.regex);
-  std::regex exclude_regex(record_options_.exclude);
-  bool take = record_options_.all;
-  for (const auto & kv : filtered_topics_and_types) {
-    // regex_match returns false for 'empty' regex
-    if (!record_options_.regex.empty()) {
-      take = std::regex_match(kv.first, topic_regex);
-    }
-    if (take) {
-      take = !std::regex_match(kv.first, exclude_regex);
-    }
-    if (take) {
-      filtered_by_regex.insert(kv);
-    }
-  }
-  return filtered_by_regex;
+  return topic_filter::filter_topics_using_regex(
+    filtered_topics_and_types,
+    record_options_.regex,
+    record_options_.exclude,
+    record_options_.all
+  );
 }
 
 std::unordered_map<std::string, std::string>
@@ -228,33 +235,8 @@ Recorder::create_subscription(
     topic_name,
     topic_type,
     qos,
-    [this, topic_name](std::shared_ptr<rclcpp::SerializedMessage> message) {
-      auto bag_message = std::make_shared<rosbag2_storage::SerializedBagMessage>();
-      // the serialized bag message takes ownership of the incoming rclcpp serialized message
-      // we therefore have to make sure to cleanup that memory in a custom deleter.
-      bag_message->serialized_data = std::shared_ptr<rcutils_uint8_array_t>(
-        new rcutils_uint8_array_t,
-        [](rcutils_uint8_array_t * msg) {
-          auto fini_return = rcutils_uint8_array_fini(msg);
-          delete msg;
-          if (fini_return != RCUTILS_RET_OK) {
-            RCLCPP_ERROR_STREAM(
-              rclcpp::get_logger("rosbag2_transport"),
-              "Failed to destroy serialized message: " << rcutils_get_error_string().str);
-          }
-        });
-      *bag_message->serialized_data = message->release_rcl_serialized_message();
-      bag_message->topic_name = topic_name;
-      rcutils_time_point_value_t time_stamp;
-      int error = rcutils_system_time_now(&time_stamp);
-      if (error != RCUTILS_RET_OK) {
-        RCLCPP_ERROR_STREAM(
-          this->get_logger(),
-          "Error getting current time. Error:" << rcutils_get_error_string().str);
-      }
-      bag_message->time_stamp = time_stamp;
-
-      writer_->write(bag_message);
+    [this, topic_name, topic_type](std::shared_ptr<rclcpp::SerializedMessage> message) {
+      writer_->write(message, topic_name, topic_type, rclcpp::Clock(RCL_SYSTEM_TIME).now());
     });
   return subscription;
 }
@@ -292,7 +274,8 @@ void Recorder::warn_if_new_qos_for_subscribed_topic(const std::string & topic_na
     // Already warned about this topic
     return;
   }
-  const auto & used_profile = existing_subscription->second->get_actual_qos().get_rmw_qos_profile();
+  const auto actual_qos = existing_subscription->second->get_actual_qos();
+  const auto & used_profile = actual_qos.get_rmw_qos_profile();
   auto publishers_info = this->get_publishers_info_by_topic(topic_name);
   for (const auto & info : publishers_info) {
     auto new_profile = info.qos_profile().get_rmw_qos_profile();
@@ -314,7 +297,7 @@ void Recorder::warn_if_new_qos_for_subscribed_topic(const std::string & topic_na
     } else if (incompatible_durability) {
       RCLCPP_WARN_STREAM(
         this->get_logger(),
-        "A new publisher for susbcribed topic " << topic_name << " "
+        "A new publisher for subscribed topic " << topic_name << " "
           "was found offering RMW_QOS_POLICY_DURABILITY_VOLATILE, "
           "but rosbag2 already subscribed requesting RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL. "
           "Messages from this new publisher will not be recorded.");

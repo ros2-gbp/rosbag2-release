@@ -14,9 +14,11 @@
 
 #include <algorithm>
 #include <map>
+#include <regex>
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "rclcpp/logging.hpp"
 
@@ -85,6 +87,64 @@ std::unordered_map<std::string, std::string> filter_topics_with_more_than_one_ty
     }
 
     filtered_topics_and_types.insert({topic_and_type.first, topic_and_type.second[0]});
+  }
+  return filtered_topics_and_types;
+}
+
+std::unordered_map<std::string, std::string>
+filter_topics_using_regex(
+  const std::unordered_map<std::string, std::string> & topics_and_types,
+  const std::string & filter_regex_string,
+  const std::string & exclude_regex_string,
+  bool all_flag
+)
+{
+  std::unordered_map<std::string, std::string> filtered_by_regex;
+
+  std::regex filter_regex(filter_regex_string);
+  std::regex exclude_regex(exclude_regex_string);
+
+  for (const auto & kv : topics_and_types) {
+    bool take = all_flag;
+    // regex_match returns false for 'empty' regex
+    if (!all_flag && !filter_regex_string.empty()) {
+      take = std::regex_match(kv.first, filter_regex);
+    }
+    if (take) {
+      take = !std::regex_match(kv.first, exclude_regex);
+    }
+    if (take) {
+      filtered_by_regex.insert(kv);
+    }
+  }
+  return filtered_by_regex;
+}
+
+std::unordered_map<std::string, std::string>
+filter_topics_with_known_type(
+  const std::unordered_map<std::string, std::string> & topics_and_types,
+  std::unordered_set<std::string> & topic_unknown_types)
+{
+  std::unordered_map<std::string, std::string> filtered_topics_and_types;
+
+  for (const auto & topic_and_type : topics_and_types) {
+    try {
+      auto package_name = std::get<0>(rosbag2_cpp::extract_type_identifier(topic_and_type.second));
+      rosbag2_cpp::get_typesupport_library_path(package_name, "rosidl_typesupport_cpp");
+    } catch (std::runtime_error & e) {
+      std::unordered_set<std::string>::const_iterator got = topic_unknown_types.find(
+        topic_and_type.second);
+      if (got == topic_unknown_types.end()) {
+        topic_unknown_types.emplace(topic_and_type.second);
+        RCLCPP_WARN_STREAM(
+          rclcpp::get_logger("rosbag2_transport"),
+          "Topic '" << topic_and_type.first <<
+            "' has unknown type '" << topic_and_type.second <<
+            "' associated. Only topics with known type are supported. Reason: '" << e.what());
+      }
+      continue;
+    }
+    filtered_topics_and_types.insert(topic_and_type);
   }
   return filtered_topics_and_types;
 }
