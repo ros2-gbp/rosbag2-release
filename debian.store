@@ -1,1 +1,1 @@
-{"trim": "", "base": "608b5333", "trimbase": "", "parent": "debian/rolling/zstd_vendor", "previous": "f54d0f56"}
+{"base": "5bfc27e4", "parent": "debian/rolling/zstd_vendor", "previous": "4881a1e3", "trim": "", "trimbase": ""}
