@@ -142,76 +142,14 @@ Player::Player(
     auto metadata = reader_->get_metadata();
     starting_time_ = std::chrono::duration_cast<std::chrono::nanoseconds>(
       metadata.starting_time.time_since_epoch()).count();
-    clock_ = std::make_unique<rosbag2_cpp::TimeControllerClock>(starting_time_);
+    clock_ = std::make_unique<rosbag2_cpp::TimeControllerClock>(
+      starting_time_, std::chrono::steady_clock::now,
+      std::chrono::milliseconds{100}, play_options_.start_paused);
     set_rate(play_options_.rate);
     topic_qos_profile_overrides_ = play_options_.topic_qos_profile_overrides;
     prepare_publishers();
   }
-  // service callbacks
-  srv_pause_ = create_service<rosbag2_interfaces::srv::Pause>(
-    "~/pause",
-    [this](
-      const std::shared_ptr<rmw_request_id_t>/* request_header */,
-      const std::shared_ptr<rosbag2_interfaces::srv::Pause::Request>/* request */,
-      const std::shared_ptr<rosbag2_interfaces::srv::Pause::Response>/* response */)
-    {
-      pause();
-    });
-  srv_resume_ = create_service<rosbag2_interfaces::srv::Resume>(
-    "~/resume",
-    [this](
-      const std::shared_ptr<rmw_request_id_t>/* request_header */,
-      const std::shared_ptr<rosbag2_interfaces::srv::Resume::Request>/* request */,
-      const std::shared_ptr<rosbag2_interfaces::srv::Resume::Response>/* response */)
-    {
-      resume();
-    });
-  srv_toggle_paused_ = create_service<rosbag2_interfaces::srv::TogglePaused>(
-    "~/toggle_paused",
-    [this](
-      const std::shared_ptr<rmw_request_id_t>/* request_header */,
-      const std::shared_ptr<rosbag2_interfaces::srv::TogglePaused::Request>/* request */,
-      const std::shared_ptr<rosbag2_interfaces::srv::TogglePaused::Response>/* response */)
-    {
-      toggle_paused();
-    });
-  srv_is_paused_ = create_service<rosbag2_interfaces::srv::IsPaused>(
-    "~/is_paused",
-    [this](
-      const std::shared_ptr<rmw_request_id_t>/* request_header */,
-      const std::shared_ptr<rosbag2_interfaces::srv::IsPaused::Request>/* request */,
-      const std::shared_ptr<rosbag2_interfaces::srv::IsPaused::Response> response)
-    {
-      response->paused = is_paused();
-    });
-  srv_get_rate_ = create_service<rosbag2_interfaces::srv::GetRate>(
-    "~/get_rate",
-    [this](
-      const std::shared_ptr<rmw_request_id_t>/* request_header */,
-      const std::shared_ptr<rosbag2_interfaces::srv::GetRate::Request>/* request */,
-      const std::shared_ptr<rosbag2_interfaces::srv::GetRate::Response> response)
-    {
-      response->rate = get_rate();
-    });
-  srv_set_rate_ = create_service<rosbag2_interfaces::srv::SetRate>(
-    "~/set_rate",
-    [this](
-      const std::shared_ptr<rmw_request_id_t>/* request_header */,
-      const std::shared_ptr<rosbag2_interfaces::srv::SetRate::Request> request,
-      const std::shared_ptr<rosbag2_interfaces::srv::SetRate::Response> response)
-    {
-      response->success = set_rate(request->rate);
-    });
-  srv_play_next_ = create_service<rosbag2_interfaces::srv::PlayNext>(
-    "~/play_next",
-    [this](
-      const std::shared_ptr<rmw_request_id_t>/* request_header */,
-      const std::shared_ptr<rosbag2_interfaces::srv::PlayNext::Request>/* request */,
-      const std::shared_ptr<rosbag2_interfaces::srv::PlayNext::Response> response)
-    {
-      response->success = play_next();
-    });
-  // keyboard callbacks
+  create_control_services();
   add_keyboard_callbacks();
 }
 
@@ -311,7 +249,13 @@ double Player::get_rate() const
 
 bool Player::set_rate(double rate)
 {
-  return clock_->set_rate(rate);
+  bool ok = clock_->set_rate(rate);
+  if (ok) {
+    RCLCPP_INFO_STREAM(get_logger(), "Set rate to " << rate);
+  } else {
+    RCLCPP_WARN_STREAM(get_logger(), "Failed to set rate to invalid value " << rate);
+  }
+  return ok;
 }
 
 rosbag2_storage::SerializedBagMessageSharedPtr * Player::peek_next_message_from_queue()
@@ -590,6 +534,85 @@ void Player::add_keyboard_callbacks()
     [this]() {play_next();},
     "Play Next Message"
   );
+  add_key_callback(
+    play_options_.increase_rate_key,
+    [this]() {set_rate(get_rate() * 1.1);},
+    "Increase Rate 10%"
+  );
+  add_key_callback(
+    play_options_.decrease_rate_key,
+    [this]() {set_rate(get_rate() * 0.9);},
+    "Decrease Rate 10%"
+  );
+}
+
+void Player::create_control_services()
+{
+  srv_pause_ = create_service<rosbag2_interfaces::srv::Pause>(
+    "~/pause",
+    [this](
+      rosbag2_interfaces::srv::Pause::Request::ConstSharedPtr,
+      rosbag2_interfaces::srv::Pause::Response::SharedPtr)
+    {
+      pause();
+    });
+  srv_resume_ = create_service<rosbag2_interfaces::srv::Resume>(
+    "~/resume",
+    [this](
+      rosbag2_interfaces::srv::Resume::Request::ConstSharedPtr,
+      rosbag2_interfaces::srv::Resume::Response::SharedPtr)
+    {
+      resume();
+    });
+  srv_toggle_paused_ = create_service<rosbag2_interfaces::srv::TogglePaused>(
+    "~/toggle_paused",
+    [this](
+      rosbag2_interfaces::srv::TogglePaused::Request::ConstSharedPtr,
+      rosbag2_interfaces::srv::TogglePaused::Response::SharedPtr)
+    {
+      toggle_paused();
+    });
+  srv_is_paused_ = create_service<rosbag2_interfaces::srv::IsPaused>(
+    "~/is_paused",
+    [this](
+      rosbag2_interfaces::srv::IsPaused::Request::ConstSharedPtr,
+      rosbag2_interfaces::srv::IsPaused::Response::SharedPtr response)
+    {
+      response->paused = is_paused();
+    });
+  srv_get_rate_ = create_service<rosbag2_interfaces::srv::GetRate>(
+    "~/get_rate",
+    [this](
+      rosbag2_interfaces::srv::GetRate::Request::ConstSharedPtr,
+      rosbag2_interfaces::srv::GetRate::Response::SharedPtr response)
+    {
+      response->rate = get_rate();
+    });
+  srv_set_rate_ = create_service<rosbag2_interfaces::srv::SetRate>(
+    "~/set_rate",
+    [this](
+      rosbag2_interfaces::srv::SetRate::Request::ConstSharedPtr request,
+      rosbag2_interfaces::srv::SetRate::Response::SharedPtr response)
+    {
+      response->success = set_rate(request->rate);
+    });
+  srv_play_next_ = create_service<rosbag2_interfaces::srv::PlayNext>(
+    "~/play_next",
+    [this](
+      rosbag2_interfaces::srv::PlayNext::Request::ConstSharedPtr,
+      rosbag2_interfaces::srv::PlayNext::Response::SharedPtr response)
+    {
+      response->success = play_next();
+    });
+  srv_seek_ = create_service<rosbag2_interfaces::srv::Seek>(
+    "~/seek",
+    [this](
+      rosbag2_interfaces::srv::Seek::Request::ConstSharedPtr request,
+      rosbag2_interfaces::srv::Seek::Response::SharedPtr response)
+    {
+      seek(rclcpp::Time(request->time).nanoseconds());
+      response->success = true;
+    });
 }
 
 }  // namespace rosbag2_transport
