@@ -1,1 +1,1 @@
-{"trim": "", "base": "7a2ff499", "trimbase": "", "parent": "debian/rolling/rosbag2_converter_default_plugins", "previous": "91d638d1"}
+{"base": "592558fb", "parent": "debian/rolling/rosbag2_converter_default_plugins", "previous": "a4a71cc5", "trim": "", "trimbase": ""}
