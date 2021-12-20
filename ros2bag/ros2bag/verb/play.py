@@ -40,13 +40,12 @@ class PlayVerb(VerbExtension):
 
     def add_arguments(self, parser, cli_name):  # noqa: D102
         reader_choices = get_registered_readers()
-        default_reader = 'sqlite3' if 'sqlite3' in reader_choices else reader_choices[0]
 
         parser.add_argument(
             'bag_file', type=check_path_exists, help='bag file to replay')
         parser.add_argument(
-            '-s', '--storage', default=default_reader, choices=reader_choices,
-            help=f"storage identifier to be used, defaults to '{default_reader}'")
+            '-s', '--storage', default='', choices=reader_choices,
+            help='Storage implementation of bag. By default tries to determine from metadata.')
         parser.add_argument(
             '--read-ahead-queue-size', type=int, default=1000,
             help='size of message queue rosbag tries to hold in memory to help deterministic '
@@ -91,6 +90,9 @@ class PlayVerb(VerbExtension):
         parser.add_argument(
             '-p', '--start-paused', action='store_true', default=False,
             help='Start the playback player in a paused state.')
+        parser.add_argument(
+            '--start-offset', type=check_positive_float, default=0.0,
+            help='Start the playback player this many seconds into the bag file.')
 
     def main(self, *, args):  # noqa: D102
         qos_profile_overrides = {}  # Specify a valid default
@@ -128,6 +130,7 @@ class PlayVerb(VerbExtension):
         play_options.delay = args.delay
         play_options.disable_keyboard_controls = args.disable_keyboard_controls
         play_options.start_paused = args.start_paused
+        play_options.start_offset = args.start_offset
 
         player = Player()
         player.play(storage_options, play_options)
