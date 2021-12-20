@@ -31,21 +31,10 @@
 
 #include "rosbag2_interfaces/srv/snapshot.hpp"
 
-#include "qos.hpp"
-#include "topic_filter.hpp"
+#include "rosbag2_storage/yaml.hpp"
+#include "rosbag2_transport/qos.hpp"
 
-#ifdef _WIN32
-// This is necessary because of a bug in yaml-cpp's cmake
-#define YAML_CPP_DLL
-// This is necessary because yaml-cpp does not always use dllimport/dllexport consistently
-# pragma warning(push)
-# pragma warning(disable:4251)
-# pragma warning(disable:4275)
-#endif
-#include "yaml-cpp/yaml.h"
-#ifdef _WIN32
-# pragma warning(pop)
-#endif
+#include "topic_filter.hpp"
 
 namespace rosbag2_transport
 {
@@ -67,16 +56,49 @@ Recorder::Recorder(
   const rosbag2_transport::RecordOptions & record_options,
   const std::string & node_name,
   const rclcpp::NodeOptions & node_options)
+: Recorder(
+    std::move(writer),
+    std::make_shared<KeyboardHandler>(),
+    storage_options,
+    record_options,
+    node_name,
+    node_options)
+{}
+
+Recorder::Recorder(
+  std::shared_ptr<rosbag2_cpp::Writer> writer,
+  std::shared_ptr<KeyboardHandler> keyboard_handler,
+  const rosbag2_storage::StorageOptions & storage_options,
+  const rosbag2_transport::RecordOptions & record_options,
+  const std::string & node_name,
+  const rclcpp::NodeOptions & node_options)
 : rclcpp::Node(node_name, rclcpp::NodeOptions(node_options).start_parameter_event_publisher(false)),
   writer_(std::move(writer)),
   storage_options_(storage_options),
   record_options_(record_options),
-  stop_discovery_(record_options_.is_discovery_disabled)
+  stop_discovery_(record_options_.is_discovery_disabled),
+  paused_(record_options.start_paused),
+  keyboard_handler_(std::move(keyboard_handler))
 {
+  std::string key_str = enum_key_code_to_str(Recorder::kPauseResumeToggleKey);
+  toggle_paused_key_callback_handle_ =
+    keyboard_handler_->add_key_press_callback(
+    [this](KeyboardHandler::KeyCode /*key_code*/,
+    KeyboardHandler::KeyModifiers /*key_modifiers*/) {this->toggle_paused();},
+    Recorder::kPauseResumeToggleKey);
+  // show instructions
+  RCLCPP_INFO_STREAM(
+    get_logger(),
+    "Press " << key_str << " for pausing/resuming");
+
+  for (auto & topic : record_options_.topics) {
+    topic = rclcpp::expand_topic_or_service_name(topic, get_name(), get_namespace(), false);
+  }
 }
 
 Recorder::~Recorder()
 {
+  keyboard_handler_->delete_key_press_callback(toggle_paused_key_callback_handle_);
   stop_discovery_ = true;
   if (discovery_future_.valid()) {
     discovery_future_.wait();
@@ -124,6 +146,32 @@ const rosbag2_cpp::Writer & Recorder::get_writer_handle()
   return *writer_;
 }
 
+void Recorder::pause()
+{
+  paused_.store(true);
+  RCLCPP_INFO_STREAM(get_logger(), "Pausing recording.");
+}
+
+void Recorder::resume()
+{
+  paused_.store(false);
+  RCLCPP_INFO_STREAM(get_logger(), "Resuming recording.");
+}
+
+void Recorder::toggle_paused()
+{
+  if (paused_.load()) {
+    this->resume();
+  } else {
+    this->pause();
+  }
+}
+
+bool Recorder::is_paused()
+{
+  return paused_.load();
+}
+
 void Recorder::topics_discovery()
 {
   while (rclcpp::ok() && stop_discovery_ == false) {
@@ -149,35 +197,8 @@ std::unordered_map<std::string, std::string>
 Recorder::get_requested_or_available_topics()
 {
   auto all_topics_and_types = this->get_topic_names_and_types();
-  auto filtered_topics_and_types = topic_filter::filter_topics_with_more_than_one_type(
-    all_topics_and_types, record_options_.include_hidden_topics);
-
-  filtered_topics_and_types = topic_filter::filter_topics_with_known_type(
-    filtered_topics_and_types, topic_unknown_types_);
-
-  if (!record_options_.topics.empty()) {
-    // expand specified topics
-    std::vector<std::string> expanded_topics;
-    expanded_topics.reserve(record_options_.topics.size());
-    for (const auto & topic : record_options_.topics) {
-      expanded_topics.push_back(
-        rclcpp::expand_topic_or_service_name(
-          topic, this->get_name(), this->get_namespace(), false));
-    }
-    filtered_topics_and_types = topic_filter::filter_topics(
-      expanded_topics, filtered_topics_and_types);
-  }
-
-  if (record_options_.regex.empty() && record_options_.exclude.empty()) {
-    return filtered_topics_and_types;
-  }
-
-  return topic_filter::filter_topics_using_regex(
-    filtered_topics_and_types,
-    record_options_.regex,
-    record_options_.exclude,
-    record_options_.all
-  );
+  TopicFilter topic_filter{record_options_, this->get_node_graph_interface()};
+  return topic_filter.filter_topics(all_topics_and_types);
 }
 
 std::unordered_map<std::string, std::string>
@@ -236,7 +257,9 @@ Recorder::create_subscription(
     topic_type,
     qos,
     [this, topic_name, topic_type](std::shared_ptr<rclcpp::SerializedMessage> message) {
-      writer_->write(message, topic_name, topic_type, rclcpp::Clock(RCL_SYSTEM_TIME).now());
+      if (!paused_.load()) {
+        writer_->write(message, topic_name, topic_type, rclcpp::Clock(RCL_SYSTEM_TIME).now());
+      }
     });
   return subscription;
 }
