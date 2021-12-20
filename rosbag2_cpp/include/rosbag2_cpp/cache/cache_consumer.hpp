@@ -71,8 +71,11 @@ public:
 
   ~CacheConsumer();
 
-  /// shut down the consumer thread
-  void close();
+  /// \brief start inner consumer thread if it hasn't been started yet
+  void start();
+
+  /// \brief shut down the consumer thread
+  void stop();
 
 private:
   std::shared_ptr<MessageCacheInterface> message_cache_;
@@ -83,8 +86,6 @@ private:
 
   /// Consumer thread shutdown sync
   std::atomic_bool is_stop_issued_ {false};
-  std::mutex consumer_mutex_;
-
   std::thread consumer_thread_;
 };
 
