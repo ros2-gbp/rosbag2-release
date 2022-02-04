@@ -1,0 +1,12 @@
+Source: ros-foxy-ros2bag
+Section: misc
+Priority: optional
+Maintainer: Karsten Knese <karsten@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), python3-pytest, ros-foxy-ament-copyright, ros-foxy-ament-flake8, ros-foxy-ament-pep257, ros-foxy-launch-testing, ros-foxy-launch-testing-ros, ros-foxy-ros2cli, ros-foxy-rosbag2-transport, ros-foxy-ros-workspace, python3-all, python3-setuptools
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-foxy-ros2bag
+Architecture: any
+Depends: ${python3:Depends}, ${misc:Depends}, ros-foxy-ros2cli, ros-foxy-rosbag2-transport, ros-foxy-ros-workspace
+Description: Entry point for rosbag in ROS 2
