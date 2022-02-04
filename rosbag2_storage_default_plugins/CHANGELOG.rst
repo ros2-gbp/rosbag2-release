@@ -2,59 +2,29 @@
 Changelog for package rosbag2_storage_default_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.13.0 (2022-01-13)
--------------------
-* Emit a warning rather than crash when a message is too big for sqlite (`#919 <https://github.com/ros2/rosbag2/issues/919>`_)
-* Contributors: William Woodall
 
-0.12.0 (2021-12-17)
--------------------
-* Enable YAML encoding/decoding for RecordOptions and StorageOptions (`#916 <https://github.com/ros2/rosbag2/issues/916>`_)
-* Contributors: Emerson Knapp
-
-0.11.0 (2021-11-08)
--------------------
-* Update package maintainers (`#899 <https://github.com/ros2/rosbag2/issues/899>`_)
-* Contributors: Michel Hidalgo
-
-0.10.1 (2021-10-22)
--------------------
-
-0.10.0 (2021-10-19)
--------------------
-* added seek interface (`#836 <https://github.com/ros2/rosbag2/issues/836>`_)
-* Contributors: sonia
-
-0.9.0 (2021-05-17)
+0.3.9 (2022-02-03)
 ------------------
 
-0.8.0 (2021-04-19)
-------------------
-* Remove -Werror from builds, enable it in Action CI (`#722 <https://github.com/ros2/rosbag2/issues/722>`_)
-* Explicitly add emersonknapp as maintainer (`#692 <https://github.com/ros2/rosbag2/issues/692>`_)
-* Reindexer core (`#641 <https://github.com/ros2/rosbag2/issues/641>`_)
-  Add a new C++ Reindexer class for reconstructing metadata from bags that are missing it.
-* Contributors: Emerson Knapp, jhdcs
-
-0.7.0 (2021-03-18)
+0.3.8 (2021-07-19)
 ------------------
 
-0.6.0 (2021-02-01)
-------------------
-* Fix build issues when rosbag2_storage is binary installed (`#585 <https://github.com/ros2/rosbag2/issues/585>`_)
-* Mutex protection for db writing and stl collections in writer & storage (`#603 <https://github.com/ros2/rosbag2/issues/603>`_)
-* SQLite storage optimized by default (`#568 <https://github.com/ros2/rosbag2/issues/568>`_)
-* Contributors: Adam Dąbrowski, P. J. Reed
-
-0.5.0 (2020-12-02)
+0.3.7 (2021-02-15)
 ------------------
 
-0.4.0 (2020-11-19)
+0.3.6 (2021-01-05)
 ------------------
-* read yaml config file (`#497 <https://github.com/ros2/rosbag2/issues/497>`_)
-* add storage_config_uri (`#493 <https://github.com/ros2/rosbag2/issues/493>`_)
-* Update the package.xml files with the latest Open Robotics maintainers (`#535 <https://github.com/ros2/rosbag2/issues/535>`_)
-* Contributors: Karsten Knese, Michael Jeronimo
+* Update maintainer list for Foxy (`#551 <https://github.com/ros2/rosbag2/issues/551>`_)
+* Contributors: Michael Jeronimo
+
+0.3.5 (2020-08-31)
+------------------
+
+0.3.4 (2020-08-05)
+------------------
+
+0.3.3 (2020-06-23)
+------------------
 
 0.3.2 (2020-06-03)
 ------------------

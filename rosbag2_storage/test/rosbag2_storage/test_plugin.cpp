@@ -31,16 +31,14 @@ TestPlugin::~TestPlugin()
 }
 
 void TestPlugin::open(
-  const rosbag2_storage::StorageOptions & storage_options,
-  rosbag2_storage::storage_interfaces::IOFlag flag)
+  const std::string & uri, rosbag2_storage::storage_interfaces::IOFlag flag)
 {
   if (flag == rosbag2_storage::storage_interfaces::IOFlag::READ_ONLY) {
     std::cout << "opening testplugin read only: ";
   } else if (flag == rosbag2_storage::storage_interfaces::IOFlag::READ_WRITE) {
     std::cout << "opening testplugin read write: ";
   }
-  std::cout << "storage uri: " << storage_options.uri << ".\n";
-  std::cout << "config file uri: " << storage_options.storage_config_uri << ".\n";
+  std::cout << uri << ".\n";
 }
 
 bool TestPlugin::has_next()
@@ -122,11 +120,6 @@ void TestPlugin::set_filter(
 void TestPlugin::reset_filter()
 {
   std::cout << "\nresetting storage filter\n";
-}
-
-void TestPlugin::seek(const rcutils_time_point_value_t & /*timestamp*/)
-{
-  std::cout << "\nseeking\n";
 }
 
 PLUGINLIB_EXPORT_CLASS(TestPlugin, rosbag2_storage::storage_interfaces::ReadWriteInterface)

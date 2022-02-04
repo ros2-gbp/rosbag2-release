@@ -15,29 +15,9 @@
 #include <string>
 #include <vector>
 
+#include "rosbag2_transport/logging.hpp"
 
-#include "rosbag2_transport/qos.hpp"
-#include "logging.hpp"
-
-namespace
-{
-/**
- * The following constants were the "Inifinity" value returned by RMW implementations before
- * the introduction of RMW_DURATION_INFINITE and associated RMW fixes
- * RMW: https://github.com/ros2/rmw/pull/301
- * Fast-DDS: https://github.com/ros2/rmw_fastrtps/pull/515
- * CycloneDDS: https://github.com/ros2/rmw_cyclonedds/pull/288
- * RTI Connext: https://github.com/ros2/rmw_connext/pull/491
- *
- * These values exist in bags recorded in Foxy, they need to be translated to RMW_DURATION_INFINITE
- * to be consistently understood for playback.
- * With those values, if a bag is played back in a different implementation than it was recorded,
- * the publishers will fail to be created with an error indicating an invalid QoS value..
- */
-static const rmw_time_t RMW_CYCLONEDDS_FOXY_INFINITE = rmw_time_from_nsec(0x7FFFFFFFFFFFFFFFll);
-static const rmw_time_t RMW_FASTRTPS_FOXY_INFINITE {0x7FFFFFFFll, 0xFFFFFFFFll};
-static const rmw_time_t RMW_CONNEXT_FOXY_INFINITE  {0x7FFFFFFFll, 0x7FFFFFFFll};
-}  // namespace
+#include "qos.hpp"
 
 namespace YAML
 {
@@ -53,13 +33,6 @@ bool convert<rmw_time_t>::decode(const Node & node, rmw_time_t & time)
 {
   time.sec = node["sec"].as<uint64_t>();
   time.nsec = node["nsec"].as<uint64_t>();
-  if (
-    rmw_time_equal(time, RMW_CYCLONEDDS_FOXY_INFINITE) ||
-    rmw_time_equal(time, RMW_FASTRTPS_FOXY_INFINITE) ||
-    rmw_time_equal(time, RMW_CONNEXT_FOXY_INFINITE))
-  {
-    time = RMW_DURATION_INFINITE;
-  }
   return true;
 }
 

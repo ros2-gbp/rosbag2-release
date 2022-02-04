@@ -20,7 +20,6 @@
 #include "rosbag2_storage/storage_filter.hpp"
 #include "rosbag2_storage/storage_interfaces/read_only_interface.hpp"
 #include "rosbag2_storage/storage_interfaces/base_write_interface.hpp"
-#include "rosbag2_storage/storage_traits.hpp"
 #include "rosbag2_storage/visibility_control.hpp"
 
 namespace rosbag2_storage
@@ -34,9 +33,7 @@ class ROSBAG2_STORAGE_PUBLIC ReadWriteInterface
 public:
   ~ReadWriteInterface() override = default;
 
-  void open(
-    const StorageOptions & storage_options,
-    IOFlag io_flag = IOFlag::READ_WRITE) override = 0;
+  void open(const std::string & uri, IOFlag io_flag = IOFlag::READ_WRITE) override = 0;
 
   uint64_t get_bagfile_size() const override = 0;
 
@@ -47,17 +44,6 @@ public:
   void set_filter(const StorageFilter & storage_filter) override = 0;
 
   void reset_filter() override = 0;
-
-  static std::string get_package_name()
-  {
-    return "rosbag2_storage";
-  }
-  static std::string get_base_class_name()
-  {
-    return StorageTraits<ReadWriteInterface>::name;
-  }
-
-  void seek(const rcutils_time_point_value_t & timestamp) override = 0;
 };
 
 }  // namespace storage_interfaces

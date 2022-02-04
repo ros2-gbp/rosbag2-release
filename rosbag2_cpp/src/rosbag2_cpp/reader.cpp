@@ -16,7 +16,6 @@
 #include "rosbag2_cpp/reader.hpp"
 
 #include <memory>
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -32,29 +31,14 @@ Reader::Reader(std::unique_ptr<reader_interfaces::BaseReaderInterface> reader_im
 
 Reader::~Reader()
 {
-  reader_impl_->close();
-}
-
-void Reader::open(const std::string & uri)
-{
-  rosbag2_storage::StorageOptions storage_options;
-  storage_options.uri = uri;
-  storage_options.storage_id = "sqlite3";
-
-  rosbag2_cpp::ConverterOptions converter_options{};
-  return open(storage_options, converter_options);
+  reader_impl_->reset();
 }
 
 void Reader::open(
-  const rosbag2_storage::StorageOptions & storage_options,
+  const StorageOptions & storage_options,
   const ConverterOptions & converter_options)
 {
   reader_impl_->open(storage_options, converter_options);
-}
-
-void Reader::close()
-{
-  reader_impl_->close();
 }
 
 bool Reader::has_next()
@@ -85,11 +69,6 @@ void Reader::set_filter(const rosbag2_storage::StorageFilter & storage_filter)
 void Reader::reset_filter()
 {
   reader_impl_->reset_filter();
-}
-
-void Reader::seek(const rcutils_time_point_value_t & timestamp)
-{
-  reader_impl_->seek(timestamp);
 }
 
 }  // namespace rosbag2_cpp

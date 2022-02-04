@@ -14,8 +14,6 @@
 
 #include <string>
 
-#include "pluginlib/class_list_macros.hpp"
-
 #include "fake_compressor.hpp"
 
 std::string FakeCompressor::compress_uri(const std::string & uri)
@@ -30,5 +28,3 @@ std::string FakeCompressor::get_compression_identifier() const
 {
   return "fake_comp";
 }
-
-PLUGINLIB_EXPORT_CLASS(FakeCompressor, rosbag2_compression::BaseCompressorInterface)

@@ -19,7 +19,7 @@
 
 #include <memory>
 #include <string>
-#include <unordered_map>
+#include <vector>
 
 #include "rcutils/types.h"
 #include "rosbag2_storage/serialized_bag_message.hpp"
@@ -30,31 +30,23 @@
 namespace rosbag2_storage_plugins
 {
 
+using DBPtr = sqlite3 *;
+
 class ROSBAG2_STORAGE_DEFAULT_PLUGINS_PUBLIC SqliteWrapper
 {
 public:
-  SqliteWrapper(
-    const std::string & uri,
-    rosbag2_storage::storage_interfaces::IOFlag io_flag,
-    std::unordered_map<std::string, std::string> && pragmas = {});
+  SqliteWrapper(const std::string & uri, rosbag2_storage::storage_interfaces::IOFlag io_flag);
   SqliteWrapper();
   ~SqliteWrapper();
 
   SqliteStatement prepare_statement(const std::string & query);
-  std::string query_pragma_value(const std::string & key);
 
   size_t get_last_insert_id();
 
   operator bool();
 
-  sqlite3 * get_database();
-
 private:
-  void apply_pragma_settings(
-    std::unordered_map<std::string, std::string> & pragmas,
-    rosbag2_storage::storage_interfaces::IOFlag io_flag);
-
-  sqlite3 * db_ptr;
+  DBPtr db_ptr;
 };
 
 

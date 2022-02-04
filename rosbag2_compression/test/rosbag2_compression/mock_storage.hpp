@@ -30,9 +30,7 @@
 class MockStorage : public rosbag2_storage::storage_interfaces::ReadWriteInterface
 {
 public:
-  MOCK_METHOD2(
-    open,
-    void(const rosbag2_storage::StorageOptions &, rosbag2_storage::storage_interfaces::IOFlag));
+  MOCK_METHOD2(open, void(const std::string &, rosbag2_storage::storage_interfaces::IOFlag));
   MOCK_METHOD1(create_topic, void(const rosbag2_storage::TopicMetadata &));
   MOCK_METHOD1(remove_topic, void(const rosbag2_storage::TopicMetadata &));
   MOCK_METHOD0(has_next, bool());
@@ -40,16 +38,14 @@ public:
   MOCK_METHOD1(write, void(std::shared_ptr<const rosbag2_storage::SerializedBagMessage>));
   MOCK_METHOD1(
     write,
-    void(const std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>> &));
+    void(const std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>>&));
   MOCK_METHOD0(get_all_topics_and_types, std::vector<rosbag2_storage::TopicMetadata>());
   MOCK_METHOD0(get_metadata, rosbag2_storage::BagMetadata());
   MOCK_METHOD0(reset_filter, void());
   MOCK_METHOD1(set_filter, void(const rosbag2_storage::StorageFilter &));
-  MOCK_METHOD1(seek, void(const rcutils_time_point_value_t &));
   MOCK_CONST_METHOD0(get_bagfile_size, uint64_t());
   MOCK_CONST_METHOD0(get_relative_file_path, std::string());
   MOCK_CONST_METHOD0(get_storage_identifier, std::string());
-  MOCK_CONST_METHOD0(get_storage_extension, std::string());
   MOCK_CONST_METHOD0(get_minimum_split_file_size, uint64_t());
 };
 
