@@ -1,3 +1,40 @@
+## rosbag2 (foxy) - 0.3.9-1
+
+The packages in the `rosbag2` repository were released into the `foxy` distro by running `/usr/bin/bloom-release -r foxy rosbag2` on `Fri, 04 Feb 2022 16:20:53 -0000`
+
+These packages were released:
+- `bag_recorder_nodes`
+- `ros2bag`
+- `rosbag2`
+- `rosbag2_compression`
+- `rosbag2_converter_default_plugins`
+- `rosbag2_cpp`
+- `rosbag2_storage`
+- `rosbag2_storage_default_plugins`
+- `rosbag2_test_common`
+- `rosbag2_tests`
+- `rosbag2_transport`
+- `shared_queues_vendor`
+- `sqlite3_vendor`
+- `zstd_vendor`
+
+Version of package(s) in repository `rosbag2`:
+
+- upstream repository: https://github.com/ros2/rosbag2.git
+- release repository: https://github.com/ros2-gbp/rosbag2-release.git
+- rosdistro version: `0.3.8-1`
+- old version: `0.3.8-1`
+- new version: `0.3.9-1`
+
+Versions of tools used:
+
+- bloom version: `0.10.7`
+- catkin_pkg version: `0.4.24`
+- rosdep version: `0.21.0`
+- rosdistro version: `0.8.3`
+- vcstools version: `0.1.42`
+
+
 ## rosbag2 (rolling) - 0.13.0-1
 
 The packages in the `rosbag2` repository were released into the `rolling` distro by running `/usr/bin/bloom-release -r rolling rosbag2` on `Tue, 18 Jan 2022 18:54:33 -0000`
