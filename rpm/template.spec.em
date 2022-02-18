@@ -52,6 +52,7 @@ mkdir -p .obj-%{_target_platform} && cd .obj-%{_target_platform}
 %if !0%{?with_tests}
     -DBUILD_TESTING=OFF \
 %endif
+    -DDISABLE_SANITIZERS=ON \
     ..
 
 %make_build
