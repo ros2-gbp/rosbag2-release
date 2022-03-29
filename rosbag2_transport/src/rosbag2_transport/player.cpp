@@ -229,6 +229,31 @@ void Player::play()
   std::lock_guard<std::mutex> lk(ready_to_play_from_queue_mutex_);
   is_ready_to_play_from_queue_ = false;
   ready_to_play_from_queue_cv_.notify_all();
+
+  // Wait for all published messages to be acknowledged.
+  if (play_options_.wait_acked_timeout >= 0) {
+    std::chrono::milliseconds timeout(play_options_.wait_acked_timeout);
+    if (timeout == std::chrono::milliseconds(0)) {
+      timeout = std::chrono::milliseconds(-1);
+    }
+    for (auto pub : publishers_) {
+      try {
+        if (!pub.second->wait_for_all_acked(timeout)) {
+          RCLCPP_ERROR(
+            get_logger(),
+            "Timed out while waiting for all published messages to be acknowledged for topic %s",
+            pub.first.c_str());
+        }
+      } catch (std::exception & e) {
+        RCLCPP_ERROR(
+          get_logger(),
+          "Exception occurred while waiting for all published messages to be acknowledged for "
+          "topic %s : %s",
+          pub.first.c_str(),
+          e.what());
+      }
+    }
+  }
 }
 
 void Player::pause()
@@ -322,6 +347,21 @@ bool Player::play_next()
     message_ptr = peek_next_message_from_queue();
   }
   return next_message_published;
+}
+
+size_t Player::burst(const size_t num_messages)
+{
+  uint64_t messages_played = 0;
+
+  for (auto ii = 0u; ii < num_messages; ++ii) {
+    if (play_next()) {
+      ++messages_played;
+    } else {
+      break;
+    }
+  }
+
+  return messages_played;
 }
 
 void Player::seek(rcutils_time_point_value_t time_point)
@@ -463,6 +503,7 @@ void Player::prepare_publishers()
 
   // Create topic publishers
   auto topics = reader_->get_all_topics_and_types();
+  std::string topic_without_support_acked;
   for (const auto & topic : topics) {
     if (publishers_.find(topic.name) != publishers_.end()) {
       continue;
@@ -483,6 +524,11 @@ void Player::prepare_publishers()
       publishers_.insert(
         std::make_pair(
           topic.name, create_generic_publisher(topic.name, topic.type, topic_qos)));
+      if (play_options_.wait_acked_timeout >= 0 &&
+        topic_qos.reliability() == rclcpp::ReliabilityPolicy::BestEffort)
+      {
+        topic_without_support_acked += topic.name + ", ";
+      }
     } catch (const std::runtime_error & e) {
       // using a warning log seems better than adding a new option
       // to ignore some unknown message type library
@@ -490,6 +536,18 @@ void Player::prepare_publishers()
         get_logger(),
         "Ignoring a topic '%s', reason: %s.", topic.name.c_str(), e.what());
     }
+  }
+
+  if (!topic_without_support_acked.empty()) {
+    // remove the last ", "
+    topic_without_support_acked.erase(
+      topic_without_support_acked.end() - 2,
+      topic_without_support_acked.end());
+
+    RCLCPP_WARN(
+      get_logger(),
+      "--wait-for-all-acked is invalid for the below topics since reliability of QOS is "
+      "BestEffort.\n%s", topic_without_support_acked.c_str());
   }
 }
 
@@ -614,6 +672,14 @@ void Player::create_control_services()
       rosbag2_interfaces::srv::PlayNext::Response::SharedPtr response)
     {
       response->success = play_next();
+    });
+  srv_burst_ = create_service<rosbag2_interfaces::srv::Burst>(
+    "~/burst",
+    [this](
+      rosbag2_interfaces::srv::Burst::Request::ConstSharedPtr request,
+      rosbag2_interfaces::srv::Burst::Response::SharedPtr response)
+    {
+      response->actually_burst = burst(request->num_messages);
     });
   srv_seek_ = create_service<rosbag2_interfaces::srv::Seek>(
     "~/seek",
