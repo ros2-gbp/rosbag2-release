@@ -1,0 +1,12 @@
+Source: ros-rolling-zstd-vendor
+Section: misc
+Priority: optional
+Maintainer: Geoffrey Biggs <geoff@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), git, libzstd-dev, ros-rolling-ament-cmake, ros-rolling-ros-workspace
+Homepage: https://facebook.github.io/zstd/
+Standards-Version: 3.9.2
+
+Package: ros-rolling-zstd-vendor
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libzstd-dev, ros-rolling-ros-workspace
+Description: Zstd compression vendor package, providing a dependency for Zstd.
