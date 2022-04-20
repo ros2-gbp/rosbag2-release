@@ -1,0 +1,12 @@
+Source: ros-humble-ros2bag
+Section: misc
+Priority: optional
+Maintainer: Geoffrey Biggs <geoff@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), python3-pytest <!nocheck>, ros-humble-ament-copyright <!nocheck>, ros-humble-ament-flake8 <!nocheck>, ros-humble-ament-pep257 <!nocheck>, ros-humble-launch-testing <!nocheck>, ros-humble-launch-testing-ros <!nocheck>, ros-humble-ros2cli, ros-humble-rosbag2-py, ros-humble-rosbag2-transport, ros-humble-ros-workspace, python3-all, python3-setuptools, dh-python
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-humble-ros2bag
+Architecture: any
+Depends: ${python3:Depends}, ${misc:Depends}, ros-humble-ros2cli, ros-humble-rosbag2-py, ros-humble-rosbag2-transport, ros-humble-ros-workspace
+Description: Entry point for rosbag in ROS 2
