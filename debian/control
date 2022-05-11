@@ -1,0 +1,12 @@
+Source: ros-humble-rosbag2-py
+Section: misc
+Priority: optional
+Maintainer: Geoffrey Biggs <geoff@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), python3-pytest <!nocheck>, ros-humble-ament-cmake-python, ros-humble-ament-cmake-ros, ros-humble-ament-lint-auto <!nocheck>, ros-humble-ament-lint-common <!nocheck>, ros-humble-pybind11-vendor, ros-humble-python-cmake-module, ros-humble-rcl-interfaces <!nocheck>, ros-humble-rclpy <!nocheck>, ros-humble-rosbag2-compression, ros-humble-rosbag2-cpp, ros-humble-rosbag2-storage, ros-humble-rosbag2-storage-default-plugins <!nocheck>, ros-humble-rosbag2-transport, ros-humble-rosidl-runtime-py <!nocheck>, ros-humble-std-msgs <!nocheck>, ros-humble-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-humble-rosbag2-py
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-humble-pybind11-vendor, ros-humble-rosbag2-compression, ros-humble-rosbag2-cpp, ros-humble-rosbag2-storage, ros-humble-rosbag2-transport, ros-humble-rpyutils, ros-humble-ros-workspace
+Description: Python API for rosbag2
