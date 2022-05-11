@@ -1,3 +1,42 @@
+## rosbag2 (humble) - 0.15.2-1
+
+The packages in the `rosbag2` repository were released into the `humble` distro by running `/usr/local/bin/bloom-release --non-interactive -r humble rosbag2` on `Wed, 11 May 2022 22:40:53 -0000`
+
+These packages were released:
+- `ros2bag`
+- `rosbag2`
+- `rosbag2_compression`
+- `rosbag2_compression_zstd`
+- `rosbag2_cpp`
+- `rosbag2_interfaces`
+- `rosbag2_performance_benchmarking`
+- `rosbag2_py`
+- `rosbag2_storage`
+- `rosbag2_storage_default_plugins`
+- `rosbag2_test_common`
+- `rosbag2_tests`
+- `rosbag2_transport`
+- `shared_queues_vendor`
+- `sqlite3_vendor`
+- `zstd_vendor`
+
+Version of package(s) in repository `rosbag2`:
+
+- upstream repository: https://github.com/ros2/rosbag2.git
+- release repository: https://github.com/ros2-gbp/rosbag2-release.git
+- rosdistro version: `0.15.1-2`
+- old version: `0.15.1-2`
+- new version: `0.15.2-1`
+
+Versions of tools used:
+
+- bloom version: `0.11.1`
+- catkin_pkg version: `0.4.24`
+- rosdep version: `0.21.0`
+- rosdistro version: `0.8.3`
+- vcstools version: `0.1.42`
+
+
 ## rosbag2 (humble) - 0.15.1-2
 
 The packages in the `rosbag2` repository were released into the `humble` distro by running `/home/steven/osrf/bloom/.direnv/python-3.10.4/bin/bloom-release -r humble rosbag2` on `Wed, 20 Apr 2022 23:29:23 -0000`
