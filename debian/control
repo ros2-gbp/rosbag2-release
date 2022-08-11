@@ -1,0 +1,12 @@
+Source: ros-rolling-rosbag2-performance-benchmarking
+Section: misc
+Priority: optional
+Maintainer: Geoffrey Biggs <geoff@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), ros-rolling-ament-cmake, ros-rolling-ament-lint-auto <!nocheck>, ros-rolling-ament-lint-common <!nocheck>, ros-rolling-rclcpp, ros-rolling-rmw, ros-rolling-rosbag2-compression, ros-rolling-rosbag2-cpp, ros-rolling-rosbag2-storage, ros-rolling-std-msgs, ros-rolling-yaml-cpp-vendor, ros-rolling-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-rolling-rosbag2-performance-benchmarking
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-rolling-rclcpp, ros-rolling-rmw, ros-rolling-rosbag2-compression, ros-rolling-rosbag2-cpp, ros-rolling-rosbag2-storage, ros-rolling-std-msgs, ros-rolling-yaml-cpp-vendor, ros-rolling-ros-workspace
+Description: Code to benchmark rosbag2
