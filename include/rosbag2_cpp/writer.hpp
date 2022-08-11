@@ -25,6 +25,7 @@
 #include "rclcpp/serialized_message.hpp"
 #include "rclcpp/time.hpp"
 
+#include "rosbag2_cpp/bag_events.hpp"
 #include "rosbag2_cpp/converter_options.hpp"
 #include "rosbag2_cpp/visibility_control.hpp"
 #include "rosbag2_cpp/writers/sequential_writer.hpp"
@@ -118,7 +119,7 @@ public:
    * \param message to be written to the bagfile
    * \throws runtime_error if the Writer is not open.
    */
-  void write(std::shared_ptr<rosbag2_storage::SerializedBagMessage> message);
+  void write(std::shared_ptr<const rosbag2_storage::SerializedBagMessage> message);
 
   /**
    * Write a message to a bagfile.
@@ -131,7 +132,7 @@ public:
    * \throws runtime_error if the Writer is not open.
    */
   void write(
-    std::shared_ptr<rosbag2_storage::SerializedBagMessage> message,
+    std::shared_ptr<const rosbag2_storage::SerializedBagMessage> message,
     const std::string & topic_name,
     const std::string & type_name,
     const std::string & serialization_format = "cdr");
@@ -171,7 +172,7 @@ public:
    * \throws runtime_error if the Writer is not open.
    */
   void write(
-    std::shared_ptr<rclcpp::SerializedMessage> message,
+    std::shared_ptr<const rclcpp::SerializedMessage> message,
     const std::string & topic_name,
     const std::string & type_name,
     const rclcpp::Time & time);
@@ -203,6 +204,12 @@ public:
   {
     return *writer_impl_;
   }
+
+  /*
+   * \brief Add callbacks for events that may occur during bag writing.
+   * \param callbacks the structure containing the callback to add for each event.
+   */
+  void add_event_callbacks(bag_events::WriterEventCallbacks & callbacks);
 
 private:
   std::mutex writer_mutex_;
