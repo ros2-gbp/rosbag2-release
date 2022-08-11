@@ -1,0 +1,371 @@
+ros-rolling-ros2bag (0.17.0-2jammy) jammy; urgency=high
+
+  * Use a single variable for evaluating the filter regex (#1053 <https://github.com/ros2/rosbag2/issues/1053>)
+  * Add additional mode of publishing sim time updates triggered by replayed messages (#1050 <https://github.com/ros2/rosbag2/issues/1050>)
+  * Renamed --topics-regex to --regex and -e in Player class to be consistent with Recorder (#1045 <https://github.com/ros2/rosbag2/issues/1045>)
+  * Use first available writer in recording if default sqlite3 not available. (#1044 <https://github.com/ros2/rosbag2/issues/1044>)
+  * Add the ability to record any key/value pair in 'custom' field in metadata.yaml (#1038 <https://github.com/ros2/rosbag2/issues/1038>)
+  * Added support for filtering topics via regular expressions on Playback (#1034 <https://github.com/ros2/rosbag2/issues/1034>)
+  * Fix incorrect boundary check for playback_duration and play_until_timestamp (#1032 <https://github.com/ros2/rosbag2/issues/1032>)
+  * Adds play until timestamp functionality (#1005 <https://github.com/ros2/rosbag2/issues/1005>)
+  * Add CLI verb for burst mode of playback (#980 <https://github.com/ros2/rosbag2/issues/980>)
+  * Add play-for specified number of seconds functionality (#960 <https://github.com/ros2/rosbag2/issues/960>)
+  * Contributors: Agustin Alba Chicar, EsipovPA, Esteve Fernandez, Geoffrey Biggs, Hunter L.Allen,
+    Michael Orlov, kylemarcey, Tony Peng
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Sat, 30 Jul 2022 07:00:00 -0000
+
+ros-rolling-ros2bag (0.16.0-2jammy) jammy; urgency=high
+
+  * Make unpublished topics unrecorded by default (#968 <https://github.com/ros2/rosbag2/issues/968>)
+  * Contributors: Michael Orlov, Sean Kelly
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 11 May 2022 07:00:00 -0000
+
+ros-rolling-ros2bag (0.15.1-2jammy) jammy; urgency=high
+
+  * support to publish as loaned message (#981 <https://github.com/ros2/rosbag2/issues/981>)
+  * Revert "Add the ability to record any key/value pair in the 'custom' field in metadata.yaml (#976 <https://github.com/ros2/rosbag2/issues/976>)" (#984 <https://github.com/ros2/rosbag2/issues/984>)
+  * Add the ability to record any key/value pair in the 'custom' field in metadata.yaml (#976 <https://github.com/ros2/rosbag2/issues/976>)
+  * Contributors: Audrow Nash, Barry Xu, Jorge Perez, Tony Peng
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 06 Apr 2022 07:00:00 -0000
+
+ros-rolling-ros2bag (0.15.0-2jammy) jammy; urgency=high
+
+  * support to publish as loaned message (#981 <https://github.com/ros2/rosbag2/issues/981>)
+  * Revert "Add the ability to record any key/value pair in the 'custom' field in metadata.yaml (#976 <https://github.com/ros2/rosbag2/issues/976>)" (#984 <https://github.com/ros2/rosbag2/issues/984>)
+  * Add the ability to record any key/value pair in the 'custom' field in metadata.yaml (#976 <https://github.com/ros2/rosbag2/issues/976>)
+  * Contributors: Barry Xu, Jorge Perez, Tony Peng
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 05 Apr 2022 07:00:00 -0000
+
+ros-rolling-ros2bag (0.14.1-2jammy) jammy; urgency=high
+
+  * Bump version number to avoid conflict
+  * Contributors: Chris Lalancette
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 29 Mar 2022 07:00:00 -0000
+
+ros-rolling-ros2bag (0.14.0-2jammy) jammy; urgency=high
+
+  * Make sure published messages are acknowledged for play mode (#951 <https://github.com/ros2/rosbag2/issues/951>)
+  * Contributors: Barry Xu
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 29 Mar 2022 07:00:00 -0000
+
+ros-rolling-ros2bag (0.13.0-2jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 13 Jan 2022 08:00:00 -0000
+
+ros-rolling-ros2bag (0.12.0-2jammy) jammy; urgency=high
+
+  * TopicFilter use regex_search instead of regex_match (#932 <https://github.com/ros2/rosbag2/issues/932>)
+  * Add start-offset play option (#931 <https://github.com/ros2/rosbag2/issues/931>)
+  * Expose bag_rewrite as ros2 bag convert (#921 <https://github.com/ros2/rosbag2/issues/921>)
+  * Add "ignore leaf topics" option to recorder (#925 <https://github.com/ros2/rosbag2/issues/925>)
+  * Auto-detect storage_id for Reader (if possible) (#918 <https://github.com/ros2/rosbag2/issues/918>)
+  * Add pause/resume options to the bag recorder (#905 <https://github.com/ros2/rosbag2/issues/905>)
+  * Contributors: Abrar Rahman Protyasha, Emerson Knapp, Ivan Santiago Paunovic
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Fri, 17 Dec 2021 08:00:00 -0000
+
+ros-rolling-ros2bag (0.11.0-2jammy) jammy; urgency=high
+
+  * Add --start-paused option to ros2 bag play (#904 <https://github.com/ros2/rosbag2/issues/904>)
+  * Update package maintainers (#899 <https://github.com/ros2/rosbag2/issues/899>)
+  * Fix converter plugin choices for record (#897 <https://github.com/ros2/rosbag2/issues/897>)
+  * Contributors: Emerson Knapp, Ivan Santiago Paunovic, Michel Hidalgo
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 08 Nov 2021 08:00:00 -0000
+
+ros-rolling-ros2bag (0.10.1-2jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Fri, 22 Oct 2021 07:00:00 -0000
+
+ros-rolling-ros2bag (0.10.0-2jammy) jammy; urgency=high
+
+  * Add missing spaces to error message (#875 <https://github.com/ros2/rosbag2/issues/875>)
+  * keyboard controls for pause/resume toggle and play-next: (#847 <https://github.com/ros2/rosbag2/issues/847>)
+  * Add --snapshot-mode argument to the "record" verb (#851 <https://github.com/ros2/rosbag2/issues/851>)
+  * Refactor plugin query mechanism and standardize trait management (#833 <https://github.com/ros2/rosbag2/issues/833>)
+  * Update PlayOptions::delay to rclcpp::Duration to get nanosecond resolution (#843 <https://github.com/ros2/rosbag2/issues/843>)
+  * Load compression and serialization choices via plugin query (#827 <https://github.com/ros2/rosbag2/issues/827>)
+  * Add delay option (#789 <https://github.com/ros2/rosbag2/issues/789>)
+  * Avoid passing exception KeyboardInterrupt to the upper layer (#788 <https://github.com/ros2/rosbag2/issues/788>)
+  * Contributors: Barry Xu, Cameron Miller, Emerson Knapp, Jacob Perron, Kosuke Takeuchi, Sonia Jin
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 19 Oct 2021 07:00:00 -0000
+
+ros-rolling-ros2bag (0.9.0-2jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 17 May 2021 07:00:00 -0000
+
+ros-rolling-ros2bag (0.8.0-2jammy) jammy; urgency=high
+
+  * /clock publisher in Player (#695 <https://github.com/ros2/rosbag2/issues/695>)
+  * Introducing Reindexer CLI (#699 <https://github.com/ros2/rosbag2/issues/699>)
+  * rosbag2_py pybind wrapper for "record" - remove rosbag2_transport_py (#702 <https://github.com/ros2/rosbag2/issues/702>)
+  * Add rosbag2_py::Player::play to replace rosbag2_transport_python version (#693 <https://github.com/ros2/rosbag2/issues/693>)
+  * Explicitly add emersonknapp as maintainer (#692 <https://github.com/ros2/rosbag2/issues/692>)
+  * Contributors: Emerson Knapp, jhdcs
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 19 Apr 2021 07:00:00 -0000
+
+ros-rolling-ros2bag (0.7.0-2jammy) jammy; urgency=high
+
+  * use rosbag2_py for ros2 bag info (#673 <https://github.com/ros2/rosbag2/issues/673>)
+  * CLI query rosbag2_py for available storage implementations (#659 <https://github.com/ros2/rosbag2/issues/659>)
+  * Contributors: Emerson Knapp, Karsten Knese
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 18 Mar 2021 07:00:00 -0000
+
+ros-rolling-ros2bag (0.6.0-2jammy) jammy; urgency=high
+
+  * Recorder --regex and --exclude options (#604 <https://github.com/ros2/rosbag2/issues/604>)
+  * Fix the tests on cyclonedds by translating qos duration values (#606 <https://github.com/ros2/rosbag2/issues/606>)
+  * SQLite storage optimized by default (#568 <https://github.com/ros2/rosbag2/issues/568>)
+  * Fix a bug on parsing wrong description in plugin xml file (#578 <https://github.com/ros2/rosbag2/issues/578>)
+  * Compress bag files in separate threads (#506 <https://github.com/ros2/rosbag2/issues/506>)
+  * Contributors: Adam Dąbrowski, Barry Xu, Emerson Knapp, P. J. Reed
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 01 Feb 2021 08:00:00 -0000
+
+ros-rolling-ros2bag (0.5.0-2jammy) jammy; urgency=high
+
+  * Sqlite storage double buffering (#546 <https://github.com/ros2/rosbag2/issues/546>)
+    * Double buffers
+    * Circular queue and FLUSH option as define
+    * Minor naming and lexical fixes.
+    * Removed FLUSH_BUFFERS define check.
+    * Sqlite3 storage logging fixes.
+    * Sqlite3 storage circular buffer with pre allocated memory.
+    * Sqlite3 storage buffers moved to shared_ptrs.
+    * Uncrustify
+    * Moved double buffers to writer
+    * Buffer layer reset in seq compression writer in rosbag2 cpp
+    * Buffer layer for rosbag2 writer refactor
+    * Changed buffers in BufferLayer to std vectors.
+    * BufferLayer uncrustify
+    * Removed non-applicable test for writer cache.
+    * BufferLayer review fixes
+    * Rosbag metadata msgs count fixed for BufferLayer
+    * Condition variable for buffer layer sync.
+    * Fixed buffer locks
+    * Buffers in BufferLayer refactored, moved into new class
+    * Buffer layer split bags fixed.
+    * Storage options include fix in buffer layer header.
+    * Mutex around swapping buffers in buffer layer.
+    * Fixed cache 0 bug in buffer layer.
+    * Minor buffer layer refactor.
+    * Counting messages in writer refactored.
+    * Changed default cache size to 100Mb and updated parameter description
+    * Applied review remarks:
+    - significant refactoring: separation of cache classes
+    - applied suggested improvements
+    - some renaming
+    - reduce code duplication that would otherwise increase with cache refactor, between compression and plain writers
+    * Applied review comments
+    - cache consumer now takes a callback and is independent of storage
+    - namespace changes, renaming, cleaning
+    - counting and logging messages by topic
+    * linter
+    * Changes after review: fixing flushing, topic counts, and more
+    * Fix for splitting - flushing state now correctly turns off
+    * cache classes documentation
+    * simplified signature
+    * a couple of tests for cache
+    * address review: explicit constructor and doxygen styling
+    * Windows warnings fix
+    * fixed type mismatch warning on Windows
+    * added minor comment
+    Co-authored-by: Piotr Jaroszek <mailto:piotr.jaroszek@robotec.ai>
+  * Contributors: Adam Dąbrowski
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 02 Dec 2020 08:00:00 -0000
+
+ros-rolling-ros2bag (0.4.0-2jammy) jammy; urgency=high
+
+  * read yaml config file (#497 <https://github.com/ros2/rosbag2/issues/497>)
+  * List all storage plugins in plugin xml file (#554 <https://github.com/ros2/rosbag2/issues/554>)
+  * add storage_config_uri (#493 <https://github.com/ros2/rosbag2/issues/493>)
+  * Update deprecated qos policy value names (#548 <https://github.com/ros2/rosbag2/issues/548>)
+  * Add record test for ros2bag (#523 <https://github.com/ros2/rosbag2/issues/523>)
+  * Removed duplicated code in record (#534 <https://github.com/ros2/rosbag2/issues/534>)
+  * Change default cache size for sequential_writer to a non zero value (#533 <https://github.com/ros2/rosbag2/issues/533>)
+  * Update the package.xml files with the latest Open Robotics maintainers (#535 <https://github.com/ros2/rosbag2/issues/535>)
+  * [ros2bag test_record] Gets rid of time.sleep and move to using command.wait_for_output (#525 <https://github.com/ros2/rosbag2/issues/525>)
+  * Add pytest.ini back to ros2bag. (#492 <https://github.com/ros2/rosbag2/issues/492>)
+  * performance testing packages (#442 <https://github.com/ros2/rosbag2/issues/442>)
+  * Validate QoS profile values are not negative. (#483 <https://github.com/ros2/rosbag2/issues/483>)
+  * catch parent exception (#472 <https://github.com/ros2/rosbag2/issues/472>)
+  * add wait for closed file handles on Windows (#470 <https://github.com/ros2/rosbag2/issues/470>)
+  * introduce ros2 bag list <plugins> (#468 <https://github.com/ros2/rosbag2/issues/468>)
+  * move wait_for_shutdown() call out of the context manager (#466 <https://github.com/ros2/rosbag2/issues/466>)
+  * Adding db directory creation to rosbag2_cpp (#450 <https://github.com/ros2/rosbag2/issues/450>)
+  * use a single temp dir for the test class (#462 <https://github.com/ros2/rosbag2/issues/462>)
+  * Add per-message ZSTD compression (#418 <https://github.com/ros2/rosbag2/issues/418>)
+  * Add split by time to recording (#409 <https://github.com/ros2/rosbag2/issues/409>)
+  * Add pytest.ini so local tests don't display warning (#446 <https://github.com/ros2/rosbag2/issues/446>)
+  * Contributors: Adam Dąbrowski, Barry Xu, Chris Lalancette, Dirk Thomas, Ivan Santiago Paunovic, Jacob Perron, Jaison Titus, Jesse Ikawa, Karsten Knese, Marwan Taher, Michael Jeronimo, P. J. Reed, jhdcs
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 19 Nov 2020 08:00:00 -0000
+
+ros-rolling-ros2bag (0.3.2-2jammy) jammy; urgency=high
+
+  * Improve help message for CLI verbs (#427 <https://github.com/ros2/rosbag2/issues/427>)
+  * Contributors: Jacob Perron
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 03 Jun 2020 07:00:00 -0000
+
+ros-rolling-ros2bag (0.3.1-2jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 01 Jun 2020 07:00:00 -0000
+
+ros-rolling-ros2bag (0.3.0-2jammy) jammy; urgency=high
+
+  * Don't allow user to specify unimplemented compression mode 'message' (#415 <https://github.com/ros2/rosbag2/issues/415>)
+  * Use consistent quotes in help messages (#416 <https://github.com/ros2/rosbag2/issues/416>)
+  * Contributors: Dirk Thomas, Emerson Knapp
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 26 May 2020 07:00:00 -0000
+
+ros-rolling-ros2bag (0.2.8-2jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 18 May 2020 07:00:00 -0000
+
+ros-rolling-ros2bag (0.2.7-2jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 12 May 2020 07:00:00 -0000
+
+ros-rolling-ros2bag (0.2.6-2jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 07 May 2020 07:00:00 -0000
+
+ros-rolling-ros2bag (0.2.5-2jammy) jammy; urgency=high
+
+  * add topic remapping option to rosbag2 play (#388 <https://github.com/ros2/rosbag2/issues/388>)
+  * Add loop option to rosbag play (#361 <https://github.com/ros2/rosbag2/issues/361>)
+  * Expose topic filter to command line (addresses #342 <https://github.com/ros2/rosbag2/issues/342>) (#363 <https://github.com/ros2/rosbag2/issues/363>)
+  * Override QoS Profiles in CLI - Playback (#356 <https://github.com/ros2/rosbag2/issues/356>)
+  * Refactor utility functions in ros2bag (#358 <https://github.com/ros2/rosbag2/issues/358>)
+  * Add QoS Profile override to CLI (#347 <https://github.com/ros2/rosbag2/issues/347>)
+  * Transaction based sqlite3 inserts (#225 <https://github.com/ros2/rosbag2/issues/225>)
+  * include hidden topics (#332 <https://github.com/ros2/rosbag2/issues/332>)
+  * more verbose test_flake8 error messages (same as ros2/launch_ros#135 <https://github.com/ros2/launch_ros/issues/135>)
+  * Add playback rate command line arg (#304 <https://github.com/ros2/rosbag2/issues/304>)
+  * [compression] Enable compression through ros2bag cli (#263 <https://github.com/ros2/rosbag2/issues/263>)
+  * switch to not deprecated API (#261 <https://github.com/ros2/rosbag2/issues/261>)
+  * make ros tooling working group maintainer (#211 <https://github.com/ros2/rosbag2/issues/211>)
+  * Contributors: Anas Abou Allaban, Dirk Thomas, Karsten Knese, Mabel Zhang, Sriram Raghunathan, Zachary Michaels, ketatam
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 30 Apr 2020 07:00:00 -0000
+
+ros-rolling-ros2bag (0.2.4-2jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 18 Nov 2019 08:00:00 -0000
+
+ros-rolling-ros2bag (0.2.3-2jammy) jammy; urgency=high
+
+  * Add CLI option to expose option for bagfile splitting (#203 <https://github.com/ros2/rosbag2/issues/203>)
+  * Contributors: Karsten Knese, Prajakta Gokhale
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 18 Nov 2019 08:00:00 -0000
+
+ros-rolling-ros2bag (0.2.2-2jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 13 Nov 2019 08:00:00 -0000
+
+ros-rolling-ros2bag (0.2.1-2jammy) jammy; urgency=high
+
+  * Fix flake8 errors and add missing lint tests. (#194 <https://github.com/ros2/rosbag2/issues/194>)
+  * Import rosbag2_transport Python module on demand. (#190 <https://github.com/ros2/rosbag2/issues/190>)
+  * Contributors: Michel Hidalgo, Thomas Moulard
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 23 Oct 2019 07:00:00 -0000
+
+ros-rolling-ros2bag (0.2.0-2jammy) jammy; urgency=high
+
+  * install resource marker file for package (#167 <https://github.com/ros2/rosbag2/issues/167>)
+  * install package manifest (#161 <https://github.com/ros2/rosbag2/issues/161>)
+  * Contributors: Dirk Thomas, Ruffin
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 26 Sep 2019 07:00:00 -0000
+
+ros-rolling-ros2bag (0.1.2-2jammy) jammy; urgency=high
+
+  * remove disclaimer (#122 <https://github.com/ros2/rosbag2/issues/122>)
+    Signed-off-by: Karsten Knese <mailto:karsten@openrobotics.org>
+  * Contributors: Karsten Knese
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 20 May 2019 07:00:00 -0000
+
+ros-rolling-ros2bag (0.1.1-2jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 09 May 2019 07:00:00 -0000
+
+ros-rolling-ros2bag (0.1.0-2jammy) jammy; urgency=high
+
+  * Fix issue with ros2bag record python frontend (#100 <https://github.com/ros2/rosbag2/issues/100>)
+  * Consistent node naming across ros2cli tools (#60 <https://github.com/ros2/rosbag2/issues/60>)
+  * Contributors: AAlon, Sagnik Basu
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 08 May 2019 07:00:00 -0000
+
+ros-rolling-ros2bag (0.0.5-2jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 27 Dec 2018 08:00:00 -0000
+
+ros-rolling-ros2bag (0.0.4-2jammy) jammy; urgency=high
+
+  * 0.0.3
+  * Play old bagfiles (#69 <https://github.com/bsinno/rosbag2/issues/69>)
+  * Release fixups (#72 <https://github.com/bsinno/rosbag2/issues/72>)
+  * Contributors: Andreas Holzner, Karsten Knese, Martin Idel
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 19 Dec 2018 08:00:00 -0000
+
+ros-rolling-ros2bag (0.0.2-2jammy) jammy; urgency=high
+
+  * update maintainer email
+  * Contributors: Karsten Knese
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 12 Dec 2018 08:00:00 -0000
+
+ros-rolling-ros2bag (0.0.1-2jammy) jammy; urgency=high
+
+  * Auto discovery of new topics (#63 <https://github.com/ros2/rosbag2/issues/63>)
+  * Use converters when recording a bag file (#57 <https://github.com/ros2/rosbag2/issues/57>)
+  * Display bag summary using ros2 bag info (#45 <https://github.com/ros2/rosbag2/issues/45>)
+  * Use directory as bagfile and add additonal record options (#43 <https://github.com/ros2/rosbag2/issues/43>)
+  * Introduce rosbag2_transport layer and CLI (#38 <https://github.com/ros2/rosbag2/issues/38>)
+  * initial command line interface (#12 <https://github.com/ros2/rosbag2/issues/12>)
+  * (demo, sqlite3) First working rosbag2 implementation (#6 <https://github.com/ros2/rosbag2/issues/6>)
+  * initial setup
+  * Contributors: Alessandro Bottero, Andreas Greimel, Karsten Knese, Martin Idel
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 11 Dec 2018 08:00:00 -0000
+
+
