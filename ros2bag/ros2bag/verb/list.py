@@ -27,9 +27,8 @@ class ListVerb(VerbExtension):
 
     def add_arguments(self, parser, cli_name):  # noqa: D102
         parser.add_argument(
-            'plugin_type',
-            help='lists available plugins',
-            choices=['storage', 'converter', 'compressor', 'decompressor'])
+            'plugin_type', help='lists available plugins (storage plugins or converter plugins',
+            choices=['storage', 'converter'])
         parser.add_argument(
             '--verbose', help='output verbose information about the available plugin',
             action='store_true')
@@ -38,8 +37,6 @@ class ListVerb(VerbExtension):
         # the following is the resource index which is created when installing a pluginlib xml file
         if args.plugin_type == 'storage':
             pluginlib_resource_index = 'rosbag2_storage__pluginlib__plugin'
-        elif args.plugin_type == 'compressor' or args.plugin_type == 'decompressor':
-            pluginlib_resource_index = 'rosbag2_compression__pluginlib__plugin'
         else:
             pluginlib_resource_index = 'rosbag2_cpp__pluginlib__plugin'
 
@@ -59,17 +56,6 @@ class ListVerb(VerbExtension):
                     type_name = class_item.attributes['type']
                     base_class_name = class_item.attributes['base_class_type']
                     description = class_item.getElementsByTagName('description')[0]
-
-                    # Compression and decompression plugins share the same resource index
-                    # so they must be filtered using their base class
-                    if args.plugin_type == 'compressor' and \
-                            base_class_name.value != \
-                            'rosbag2_compression::BaseCompressorInterface':
-                        continue
-                    elif args.plugin_type == 'decompressor' and \
-                            base_class_name.value != \
-                            'rosbag2_compression::BaseDecompressorInterface':
-                        continue
 
                     print('%s%s' % (('name: ' if args.verbose else ''), class_name.value))
                     if args.verbose:

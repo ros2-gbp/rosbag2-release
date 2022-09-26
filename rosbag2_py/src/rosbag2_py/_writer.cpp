@@ -19,13 +19,10 @@
 
 #include "rosbag2_compression/sequential_compression_writer.hpp"
 #include "rosbag2_cpp/converter_options.hpp"
-#include "rosbag2_cpp/plugins/plugin_utils.hpp"
 #include "rosbag2_cpp/writer.hpp"
 #include "rosbag2_cpp/writers/sequential_writer.hpp"
-#include "rosbag2_cpp/serialization_format_converter_factory.hpp"
 #include "rosbag2_storage/ros_helper.hpp"
 #include "rosbag2_storage/storage_filter.hpp"
-#include "rosbag2_storage/storage_interfaces/read_write_interface.hpp"
 #include "rosbag2_storage/storage_options.hpp"
 #include "rosbag2_storage/topic_metadata.hpp"
 
@@ -82,24 +79,9 @@ protected:
 
 std::unordered_set<std::string> get_registered_writers()
 {
-  return rosbag2_cpp::plugins::get_class_plugins
-         <rosbag2_storage::storage_interfaces::ReadWriteInterface>();
-}
-
-std::unordered_set<std::string> get_registered_compressors()
-{
-  return rosbag2_cpp::plugins::get_class_plugins
-         <rosbag2_compression::BaseCompressorInterface>();
-}
-
-std::unordered_set<std::string> get_registered_serializers()
-{
-  auto serializers = rosbag2_cpp::plugins::get_class_plugins<
-    rosbag2_cpp::converter_interfaces::SerializationFormatSerializer>();
-  auto converters = rosbag2_cpp::plugins::get_class_plugins<
-    rosbag2_cpp::converter_interfaces::SerializationFormatConverter>();
-  serializers.insert(converters.begin(), converters.end());
-  return serializers;
+  rosbag2_storage::StorageFactory storage_factory;
+  const auto read_write = storage_factory.get_declared_read_write_plugins();
+  return std::unordered_set<std::string>(read_write.begin(), read_write.end());
 }
 
 }  // namespace rosbag2_py
@@ -131,14 +113,4 @@ PYBIND11_MODULE(_writer, m) {
     "get_registered_writers",
     &rosbag2_py::get_registered_writers,
     "Returns list of discovered plugins that support rosbag2 recording");
-
-  m.def(
-    "get_registered_compressors",
-    &rosbag2_py::get_registered_compressors,
-    "Returns list of compression plugins available for rosbag2 recording");
-
-  m.def(
-    "get_registered_serializers",
-    &rosbag2_py::get_registered_serializers,
-    "Returns list of serialization format plugins available for rosbag2 recording");
 }

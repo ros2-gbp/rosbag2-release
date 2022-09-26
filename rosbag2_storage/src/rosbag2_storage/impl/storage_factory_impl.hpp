@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "pluginlib/class_loader.hpp"
 
@@ -135,6 +136,16 @@ public:
     }
 
     return instance;
+  }
+
+  std::vector<std::string> get_declared_read_only_plugins() const
+  {
+    return read_only_class_loader_->getDeclaredClasses();
+  }
+
+  std::vector<std::string> get_declared_read_write_plugins() const
+  {
+    return read_write_class_loader_->getDeclaredClasses();
   }
 
 private:

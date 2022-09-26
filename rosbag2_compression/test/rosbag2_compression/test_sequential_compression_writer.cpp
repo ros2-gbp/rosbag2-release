@@ -125,12 +125,10 @@ public:
   std::shared_ptr<NiceMock<MockStorage>> storage_;
   std::shared_ptr<StrictMock<MockConverterFactory>> converter_factory_;
   std::unique_ptr<MockMetadataIo> metadata_io_;
-
+  std::unique_ptr<rosbag2_cpp::Writer> writer_;
   rcpputils::fs::path tmp_dir_;
   rosbag2_storage::StorageOptions tmp_dir_storage_options_;
   rosbag2_storage::BagMetadata intercepted_metadata_;
-  std::unique_ptr<rosbag2_cpp::Writer> writer_;
-
   std::string serialization_format_;
   uint64_t fake_storage_size_;
   std::string fake_storage_uri_;
@@ -243,14 +241,14 @@ TEST_F(SequentialCompressionWriterTest, writer_creates_correct_metadata_relative
   message->topic_name = test_topic_name;
 
   writer_->write(message);
-  // bag size == max_bagfile_size, split
+  // bag size == max_bafile_size, no split yet
   writer_->write(message);
-  // bag size == max_bagfile_size, split
+  // bag size > max_bagfile_size, split
   writer_->write(message);
   writer_.reset();
 
   EXPECT_EQ(
-    intercepted_metadata_.relative_file_paths.size(), 3u);
+    intercepted_metadata_.relative_file_paths.size(), 2u);
 
   const auto base_path = tmp_dir_storage_options_.uri;
   int counter = 0;

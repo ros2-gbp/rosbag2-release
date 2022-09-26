@@ -55,14 +55,6 @@ public:
 
   std::shared_ptr<rosbag2_storage::SerializedBagMessage> read_next() override
   {
-    // "Split" the bag every few messages
-    if (num_read_ > 0 && num_read_ % max_messages_per_file_ == 0) {
-      auto info = std::make_shared<rosbag2_cpp::bag_events::BagSplitInfo>();
-      info->closed_file = "BagFile" + std::to_string(file_number_);
-      file_number_++;
-      info->opened_file = "BagFile" + std::to_string(file_number_);
-      callback_manager_.execute_callbacks(rosbag2_cpp::bag_events::BagEvent::READ_SPLIT, info);
-    }
     // filter_ was considered when incrementing num_read_ in has_next()
     return messages_[num_read_++];
   }
@@ -87,39 +79,12 @@ public:
     filter_ = rosbag2_storage::StorageFilter();
   }
 
-  void seek(const rcutils_time_point_value_t & timestamp) override
-  {
-    seek_time_ = timestamp;
-    num_read_ = 0;
-  }
-
-  void
-  add_event_callbacks(const rosbag2_cpp::bag_events::ReaderEventCallbacks & callbacks) override
-  {
-    if (callbacks.read_split_callback) {
-      callback_manager_.add_event_callback(
-        callbacks.read_split_callback,
-        rosbag2_cpp::bag_events::BagEvent::READ_SPLIT);
-    }
-  }
-
   void prepare(
     std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages,
     std::vector<rosbag2_storage::TopicMetadata> topics)
   {
-    metadata_.message_count = messages.size();
-    if (!messages.empty()) {
-      const auto message_timestamp = std::chrono::time_point<std::chrono::high_resolution_clock>(
-        std::chrono::nanoseconds(messages[0]->time_stamp));
-      metadata_.starting_time = message_timestamp;
-    }
     messages_ = std::move(messages);
     topics_ = std::move(topics);
-  }
-
-  size_t max_messages_per_file() const
-  {
-    return max_messages_per_file_;
   }
 
 private:
@@ -127,11 +92,7 @@ private:
   rosbag2_storage::BagMetadata metadata_;
   std::vector<rosbag2_storage::TopicMetadata> topics_;
   size_t num_read_;
-  rcutils_time_point_value_t seek_time_ = 0;
   rosbag2_storage::StorageFilter filter_;
-  rosbag2_cpp::bag_events::EventCallbackManager callback_manager_;
-  size_t file_number_ = 0;
-  const size_t max_messages_per_file_ = 5;
 };
 
 #endif  // ROSBAG2_TRANSPORT__MOCK_SEQUENTIAL_READER_HPP_

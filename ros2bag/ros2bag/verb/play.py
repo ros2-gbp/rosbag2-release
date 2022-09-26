@@ -15,7 +15,6 @@
 from argparse import FileType
 
 from rclpy.qos import InvalidQoSProfileException
-from ros2bag.api import check_not_negative_int
 from ros2bag.api import check_path_exists
 from ros2bag.api import check_positive_float
 from ros2bag.api import convert_yaml_to_qos_profile
@@ -41,12 +40,13 @@ class PlayVerb(VerbExtension):
 
     def add_arguments(self, parser, cli_name):  # noqa: D102
         reader_choices = get_registered_readers()
+        default_reader = 'sqlite3' if 'sqlite3' in reader_choices else reader_choices[0]
 
         parser.add_argument(
             'bag_file', type=check_path_exists, help='bag file to replay')
         parser.add_argument(
-            '-s', '--storage', default='', choices=reader_choices,
-            help='Storage implementation of bag. By default tries to determine from metadata.')
+            '-s', '--storage', default=default_reader, choices=reader_choices,
+            help=f"storage identifier to be used, defaults to '{default_reader}'")
         parser.add_argument(
             '--read-ahead-queue-size', type=int, default=1000,
             help='size of message queue rosbag tries to hold in memory to help deterministic '
@@ -59,10 +59,6 @@ class PlayVerb(VerbExtension):
             '--topics', type=str, default=[], nargs='+',
             help='topics to replay, separated by space. If none specified, all topics will be '
                  'replayed.')
-        parser.add_argument(
-            '-e', '--regex', default='',
-            help='filter topics by regular expression to replay, separated by space. If none '
-                 'specified, all topics will be replayed.')
         parser.add_argument(
             '--qos-profile-overrides-path', type=FileType('r'),
             help='Path to a yaml file defining overrides of the QoS profile for specific topics.')
@@ -82,84 +78,13 @@ class PlayVerb(VerbExtension):
                  '  pragmas: [\"<setting_name>\" = <setting_value>]'
                  'Note that applicable settings are limited to read-only for ros2 bag play.'
                  'For a list of sqlite3 settings, refer to sqlite3 documentation')
-        clock_args_group = parser.add_mutually_exclusive_group()
-        clock_args_group.add_argument(
+        parser.add_argument(
             '--clock', type=positive_float, nargs='?', const=40, default=0,
             help='Publish to /clock at a specific frequency in Hz, to act as a ROS Time Source. '
                  'Value must be positive. Defaults to not publishing.')
-        clock_args_group.add_argument(
-            '--clock-topics', type=str, default=[], nargs='+',
-            help='List of topics separated by spaces that will trigger a /clock update '
-                 'when a message is published on them'
-        )
-        clock_args_group.add_argument(
-            '--clock-topics-all', default=False, action='store_true',
-            help='Publishes an update on /clock immediately before each replayed message'
-        )
         parser.add_argument(
-            '-d', '--delay', type=positive_float, default=0.0,
-            help='Sleep duration before play (each loop), in seconds. Negative durations invalid.')
-        parser.add_argument(
-            '--playback-duration', type=float, default=-1.0,
-            help='Playback duration, in seconds. Negative durations mark an infinite playback. '
-                 'Default is -1.0. When positive, the maximum of `playback-until-*` and the one '
-                 'that this attribute yields will be used to determine which one stops playback '
-                 'execution.')
-
-        playback_until_arg_group = parser.add_mutually_exclusive_group()
-        playback_until_arg_group.add_argument(
-            '--playback-until-sec', type=float, default=-1.,
-            help='Playback until timestamp, expressed in seconds since epoch. '
-                 'Mutually exclusive argument with `--playback-until-nsec`. '
-                 'Use this argument when floating point to integer conversion error is not a '
-                 'problem for your application. Negative stamps disable this feature. Default is '
-                 '-1.0. When positive, the maximum of the effective time that '
-                 '`--playback-duration` yields and this attribute will be used to determine which '
-                 'one stops playback execution.')
-        playback_until_arg_group.add_argument(
-            '--playback-until-nsec', type=int, default=-1,
-            help='Playback until timestamp, expressed in nanoseconds since epoch.  '
-                 'Mutually exclusive argument with `--playback-until-sec`. '
-                 'Use this argument when floating point to integer conversion error matters for '
-                 'your application. Negative stamps disable this feature. Default is -1. When '
-                 'positive, the maximum of the effective time that `--playback-duration` yields '
-                 'and this attribute will be used to determine which one stops playback '
-                 'execution.')
-
-        parser.add_argument(
-            '--disable-keyboard-controls', action='store_true',
-            help='disables keyboard controls for playback')
-        parser.add_argument(
-            '-p', '--start-paused', action='store_true', default=False,
-            help='Start the playback player in a paused state.')
-        parser.add_argument(
-            '--start-offset', type=check_positive_float, default=0.0,
-            help='Start the playback player this many seconds into the bag file.')
-        parser.add_argument(
-            '--wait-for-all-acked', type=check_not_negative_int, default=-1,
-            help='Wait until all published messages are acknowledged by all subscribers or until '
-                 'the timeout elapses in millisecond before play is terminated. '
-                 'Especially for the case of sending message with big size in a short time. '
-                 'Negative timeout is invalid. '
-                 '0 means wait forever until all published messages are acknowledged by all '
-                 'subscribers. '
-                 "Note that this option is valid only if the publisher\'s QOS profile is "
-                 'RELIABLE.',
-            metavar='TIMEOUT')
-        parser.add_argument(
-            '--disable-loan-message', action='store_true', default=False,
-            help='Disable to publish as loaned message. '
-                 'By default, if loaned message can be used, messages are published as loaned '
-                 'message. It can help to reduce the number of data copies, so there is a greater '
-                 'benefit for sending big data.')
-
-    def get_playback_until_from_arg_group(self, playback_until_sec, playback_until_nsec) -> int:
-        nano_scale = 1000 * 1000 * 1000
-        if playback_until_sec and playback_until_sec >= 0.0:
-            return int(playback_until_sec * nano_scale)
-        if playback_until_nsec and playback_until_nsec >= 0:
-            return playback_until_nsec
-        return -1
+            '-d', '--delay', type=float, default=0.0,
+            help='Sleep SEC seconds before play. Valid range > 0.0')
 
     def main(self, *, args):  # noqa: D102
         qos_profile_overrides = {}  # Specify a valid default
@@ -190,23 +115,11 @@ class PlayVerb(VerbExtension):
         play_options.node_prefix = NODE_NAME_PREFIX
         play_options.rate = args.rate
         play_options.topics_to_filter = args.topics
-        play_options.topics_regex_to_filter = args.regex
         play_options.topic_qos_profile_overrides = qos_profile_overrides
         play_options.loop = args.loop
         play_options.topic_remapping_options = topic_remapping
         play_options.clock_publish_frequency = args.clock
-        if args.clock_topics_all or len(args.clock_topics) > 0:
-            play_options.clock_publish_on_topic_publish = True
-        play_options.clock_topics = args.clock_topics
         play_options.delay = args.delay
-        play_options.playback_duration = args.playback_duration
-        play_options.playback_until_timestamp = self.get_playback_until_from_arg_group(
-            args.playback_until_sec, args.playback_until_nsec)
-        play_options.disable_keyboard_controls = args.disable_keyboard_controls
-        play_options.start_paused = args.start_paused
-        play_options.start_offset = args.start_offset
-        play_options.wait_acked_timeout = args.wait_for_all_acked
-        play_options.disable_loan_message = args.disable_loan_message
 
         player = Player()
         player.play(storage_options, play_options)

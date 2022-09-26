@@ -2,68 +2,11 @@
 Changelog for package rosbag2_storage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.17.0 (2022-07-30)
--------------------
-* Use a single variable for evaluating the filter regex (`#1053 <https://github.com/ros2/rosbag2/issues/1053>`_)
-* Speed optimization: Preparing copyless publish/subscribing by using const message for writing (`#1010 <https://github.com/ros2/rosbag2/issues/1010>`_)
- * Update compression to make copy instead of in-place operation
- * Get rid of extra data copying operation in writer by refrencing to received message
-* Renamed --topics-regex to --regex and -e in Player class to be consistent with Recorder (`#1045 <https://github.com/ros2/rosbag2/issues/1045>`_)
-* Add the ability to record any key/value pair in 'custom' field in metadata.yaml (`#1038 <https://github.com/ros2/rosbag2/issues/1038>`_)
-* Added support for filtering topics via regular expressions on Playback (`#1034 <https://github.com/ros2/rosbag2/issues/1034>`_)
-* Contributors: DensoADAS, Joshua Hampp, Esteve Fernandez, Hunter L. Allen, Michael Orlov,
-  Tony Peng
+0.9.2 (2022-09-26)
+------------------
 
-0.16.0 (2022-05-11)
--------------------
-
-0.15.1 (2022-04-06)
--------------------
-* Revert "Add the ability to record any key/value pair in the 'custom' field in metadata.yaml (`#976 <https://github.com/ros2/rosbag2/issues/976>`_)" (`#984 <https://github.com/ros2/rosbag2/issues/984>`_)
-* Add the ability to record any key/value pair in the 'custom' field in metadata.yaml (`#976 <https://github.com/ros2/rosbag2/issues/976>`_)
-* Contributors: Audrow Nash, Jorge Perez, Tony Peng
-
-0.15.0 (2022-04-05)
--------------------
-* Revert "Add the ability to record any key/value pair in the 'custom' field in metadata.yaml (`#976 <https://github.com/ros2/rosbag2/issues/976>`_)" (`#984 <https://github.com/ros2/rosbag2/issues/984>`_)
-* Add the ability to record any key/value pair in the 'custom' field in metadata.yaml (`#976 <https://github.com/ros2/rosbag2/issues/976>`_)
-* Contributors: Jorge Perez, Tony Peng
-
-0.14.1 (2022-03-29)
--------------------
-* Bump version number to avoid conflict
-* Contributors: Chris Lalancette
-
-0.14.0 (2022-03-29)
--------------------
-* Install headers to include/${PROJECT_NAME} (`#958 <https://github.com/ros2/rosbag2/issues/958>`_)
-* Remove unnecessary public definition. (`#950 <https://github.com/ros2/rosbag2/issues/950>`_)
-* Contributors: Chris Lalancette, Shane Loretz
-
-0.13.0 (2022-01-13)
--------------------
-
-0.12.0 (2021-12-17)
--------------------
-* Enable YAML encoding/decoding for RecordOptions and StorageOptions (`#916 <https://github.com/ros2/rosbag2/issues/916>`_)
-* Contributors: Emerson Knapp
-
-0.11.0 (2021-11-08)
--------------------
-* Update package maintainers (`#899 <https://github.com/ros2/rosbag2/issues/899>`_)
-* Provide MetadataIO interface to convert metadata to a string in memory, alongside file IO versions (`#894 <https://github.com/ros2/rosbag2/issues/894>`_)
-* Contributors: Emerson Knapp, Michel Hidalgo
-
-0.10.1 (2021-10-22)
--------------------
-
-0.10.0 (2021-10-19)
--------------------
-* Metadata per file info (`#870 <https://github.com/ros2/rosbag2/issues/870>`_)
-* Implement snapshot mechanism and corresponding ROS Service (`#850 <https://github.com/ros2/rosbag2/issues/850>`_)
-* added seek interface (`#836 <https://github.com/ros2/rosbag2/issues/836>`_)
-* Refactor plugin query mechanism and standardize trait management (`#833 <https://github.com/ros2/rosbag2/issues/833>`_)
-* Contributors: Cameron Miller, Wojciech Jaworski, sonia
+0.9.1 (2021-07-08)
+------------------
 
 0.9.0 (2021-05-17)
 ------------------

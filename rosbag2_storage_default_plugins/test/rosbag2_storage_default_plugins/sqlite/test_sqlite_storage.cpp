@@ -14,8 +14,6 @@
 
 #include <gmock/gmock.h>
 
-#include <algorithm>
-#include <limits>
 #include <memory>
 #include <string>
 #include <tuple>
@@ -374,82 +372,4 @@ TEST_F(StorageTestFixture, throws_on_invalid_pragma_in_config_file) {
       make_storage_options_with_config(invalid_yaml, kPluginID),
       rosbag2_storage::storage_interfaces::IOFlag::READ_WRITE),
     std::runtime_error);
-}
-
-TEST_F(StorageTestFixture, does_not_throw_on_message_too_big) {
-  // Check that storage does not throw when a message is too large to be stored.
-
-  // Use write_messages_to_sqlite() to open the database without writing anything.
-  auto writable_storage = this->write_messages_to_sqlite({});
-
-  // Get the sqlite string/blob limit.
-  size_t sqlite_limit = sqlite3_limit(
-    writable_storage->get_sqlite_database_wrapper().get_database(),
-    SQLITE_LIMIT_LENGTH,
-    -1);
-
-  // Artificially lower the limit, make sure it's smaller than the original.
-  size_t artificial_limit = 1000;  // 1KB
-  artificial_limit = std::min(artificial_limit, sqlite_limit);
-  assert(artificial_limit <= static_cast<size_t>(std::numeric_limits<int>::max()));
-  sqlite3_limit(
-    writable_storage->get_sqlite_database_wrapper().get_database(),
-    SQLITE_LIMIT_LENGTH,
-    static_cast<int>(artificial_limit));
-
-  // This should produce a warning, but not an exception.
-  std::string msg(artificial_limit + 1, '\0');
-  EXPECT_NO_THROW(
-  {
-    this->write_messages_to_sqlite(
-    {
-      {msg, 0, "/too_big_message", "some_type", "some_rmw"}
-    }, writable_storage);
-  });
-}
-
-TEST_F(StorageTestFixture, read_next_returns_filtered_messages_regex) {
-  std::vector<std::tuple<std::string, int64_t, std::string, std::string, std::string>>
-  string_messages =
-  {std::make_tuple("topic1 message", 1, "prefix_topic1", "", ""),
-    std::make_tuple("topic2 message", 2, "topic2", "", ""),
-    std::make_tuple("topic3 message", 3, "topic3", "", "")};
-
-  write_messages_to_sqlite(string_messages);
-  std::unique_ptr<rosbag2_storage::storage_interfaces::ReadOnlyInterface> readable_storage =
-    std::make_unique<rosbag2_storage_plugins::SqliteStorage>();
-
-  auto db_filename = (rcpputils::fs::path(temporary_dir_path_) / "rosbag.db3").string();
-  readable_storage->open({db_filename, kPluginID});
-
-  rosbag2_storage::StorageFilter storage_filter;
-  storage_filter.topics_regex = "topic.*";
-  readable_storage->set_filter(storage_filter);
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto first_message = readable_storage->read_next();
-  EXPECT_THAT(first_message->topic_name, Eq("topic2"));
-  EXPECT_TRUE(readable_storage->has_next());
-  auto second_message = readable_storage->read_next();
-  EXPECT_THAT(second_message->topic_name, Eq("topic3"));
-  EXPECT_FALSE(readable_storage->has_next());
-
-  // Test reset filter
-  std::unique_ptr<rosbag2_storage::storage_interfaces::ReadOnlyInterface> readable_storage2 =
-    std::make_unique<rosbag2_storage_plugins::SqliteStorage>();
-
-  readable_storage2->open({db_filename, kPluginID});
-  readable_storage2->set_filter(storage_filter);
-  readable_storage2->reset_filter();
-
-  EXPECT_TRUE(readable_storage2->has_next());
-  auto third_message = readable_storage2->read_next();
-  EXPECT_THAT(third_message->topic_name, Eq("prefix_topic1"));
-  EXPECT_TRUE(readable_storage2->has_next());
-  auto fourth_message = readable_storage2->read_next();
-  EXPECT_THAT(fourth_message->topic_name, Eq("topic2"));
-  EXPECT_TRUE(readable_storage2->has_next());
-  auto fifth_message = readable_storage2->read_next();
-  EXPECT_THAT(fifth_message->topic_name, Eq("topic3"));
-  EXPECT_FALSE(readable_storage2->has_next());
 }

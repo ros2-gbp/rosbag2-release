@@ -16,7 +16,6 @@
 #include <memory>
 #include <mutex>
 #include <thread>
-#include <vector>
 
 #include "rcpputils/thread_safety_annotations.hpp"
 #include "rosbag2_cpp/clocks/time_controller_clock.hpp"
@@ -57,12 +56,9 @@ public:
   };
 
   explicit TimeControllerClockImpl(
-    PlayerClock::NowFunction now_fn,
-    std::chrono::milliseconds sleep_time_while_paused,
-    bool start_paused)
+    PlayerClock::NowFunction now_fn, std::chrono::milliseconds sleep_time_while_paused)
   : now_fn(now_fn),
-    sleep_time_while_paused(sleep_time_while_paused),
-    paused(start_paused)
+    sleep_time_while_paused(sleep_time_while_paused)
   {}
   virtual ~TimeControllerClockImpl() = default;
 
@@ -118,20 +114,6 @@ public:
     snapshot(ros_now());
   }
 
-  /**
-   * \brief Adjust internal clock to the specified timestamp.
-   * \details It will change the current internally maintained offset so that next published time
-   * is different.
-   * \note Will trigger any registered JumpHandler callbacks.
-   * \param ros_time Time point in ROS playback timeline.
-   */
-  void jump(rcutils_time_point_value_t ros_time)
-  {
-    std::lock_guard<std::mutex> lock(state_mutex);
-    snapshot(ros_time);
-    cv.notify_all();
-  }
-
   const PlayerClock::NowFunction now_fn;
   const std::chrono::milliseconds sleep_time_while_paused;
 
@@ -145,9 +127,8 @@ public:
 TimeControllerClock::TimeControllerClock(
   rcutils_time_point_value_t starting_time,
   NowFunction now_fn,
-  std::chrono::milliseconds sleep_time_while_paused,
-  bool paused)
-: impl_(std::make_unique<TimeControllerClockImpl>(now_fn, sleep_time_while_paused, paused))
+  std::chrono::milliseconds sleep_time_while_paused)
+: impl_(std::make_unique<TimeControllerClockImpl>(now_fn, sleep_time_while_paused))
 {
   if (now_fn == nullptr) {
     throw std::invalid_argument("TimeControllerClock now_fn must be non-empty.");
@@ -217,7 +198,7 @@ void TimeControllerClock::pause()
   if (impl_->paused) {
     return;
   }
-  // Take snapshot before changing state
+  // Take snaphot before changing state
   impl_->snapshot();
   impl_->paused = true;
   impl_->cv.notify_all();
@@ -229,7 +210,7 @@ void TimeControllerClock::resume()
   if (!impl_->paused) {
     return;
   }
-  // Take snapshot before changing state
+  // Take snaphot before changing state
   impl_->snapshot();
   impl_->paused = false;
   impl_->cv.notify_all();
@@ -243,20 +224,14 @@ bool TimeControllerClock::is_paused() const
 
 void TimeControllerClock::jump(rcutils_time_point_value_t ros_time)
 {
-  impl_->jump(ros_time);
+  std::lock_guard<std::mutex> lock(impl_->state_mutex);
+  impl_->snapshot(ros_time);
+  impl_->cv.notify_all();
 }
 
 void TimeControllerClock::jump(rclcpp::Time ros_time)
 {
   jump(ros_time.nanoseconds());
-}
-
-rclcpp::JumpHandler::SharedPtr TimeControllerClock::create_jump_callback(
-  rclcpp::JumpHandler::pre_callback_t /* pre_callback */,
-  rclcpp::JumpHandler::post_callback_t /* post_callback */,
-  const rcl_jump_threshold_t & /* threshold */)
-{
-  return nullptr;
 }
 
 }  // namespace rosbag2_cpp

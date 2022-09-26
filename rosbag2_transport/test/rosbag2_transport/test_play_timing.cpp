@@ -42,191 +42,205 @@ protected:
   void SetUp() override
   {
     rclcpp::init(0, nullptr);
-
-    auto primitive_message1 = get_messages_strings()[0];
-    primitive_message1->string_value = "Hello World 1";
-
-    auto primitive_message2 = get_messages_strings()[0];
-    primitive_message2->string_value = "Hello World 2";
-
-    topics_and_types = {{"topic1", "test_msgs/Strings", "", ""}};
-    messages = {
-      serialize_test_message("topic1", 0, primitive_message1),
-      serialize_test_message("topic1", 0, primitive_message2)
-    };
-
-    messages[0]->time_stamp = 100;
-    messages[1]->time_stamp = messages[0]->time_stamp + message_time_difference.nanoseconds();
-
-    prepared_mock_reader = std::make_unique<MockSequentialReader>();
-    prepared_mock_reader->prepare(messages, topics_and_types);
-    reader = std::make_unique<rosbag2_cpp::Reader>(std::move(prepared_mock_reader));
   }
 
   void TearDown() override
   {
     rclcpp::shutdown();
   }
-
-  rclcpp::Clock clock{RCL_STEADY_TIME};
-  std::vector<rosbag2_storage::TopicMetadata> topics_and_types;
-  std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages;
-  rclcpp::Duration message_time_difference = {1, 0};
-  std::unique_ptr<MockSequentialReader> prepared_mock_reader;
-  std::unique_ptr<rosbag2_cpp::Reader> reader;
 };
 
 TEST_F(PlayerTestFixture, playing_respects_relative_timing_of_stored_messages)
 {
-  auto player = std::make_shared<rosbag2_transport::Player>(
-    std::move(reader), storage_options_, play_options_);
+  auto primitive_message1 = get_messages_strings()[0];
+  primitive_message1->string_value = "Hello World 1";
+
+  auto primitive_message2 = get_messages_strings()[0];
+  primitive_message2->string_value = "Hello World 2";
+
+  auto message_time_difference = std::chrono::seconds(1);
+  auto topics_and_types =
+    std::vector<rosbag2_storage::TopicMetadata>{{"topic1", "test_msgs/Strings", "", ""}};
+  std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages =
+  {serialize_test_message("topic1", 0, primitive_message1),
+    serialize_test_message("topic1", 0, primitive_message2)};
+
+  messages[0]->time_stamp = 100;
+  messages[1]->time_stamp =
+    messages[0]->time_stamp + std::chrono::nanoseconds(message_time_difference).count();
+
+  auto prepared_mock_reader = std::make_unique<MockSequentialReader>();
+  prepared_mock_reader->prepare(messages, topics_and_types);
+  auto reader = std::make_unique<rosbag2_cpp::Reader>(std::move(prepared_mock_reader));
 
   // We can only assert indirectly that the relative times are respected when playing a bag. So
   // we check that time elapsed during playing is at least the time difference between the two
   // messages
-  auto start = clock.now();
+  auto start = std::chrono::steady_clock::now();
+  auto player = std::make_shared<rosbag2_transport::Player>(
+    std::move(reader), storage_options_, play_options_);
   player->play();
-  auto replay_time = clock.now() - start;
+  auto replay_time = std::chrono::steady_clock::now() - start;
+
   ASSERT_THAT(replay_time, Gt(message_time_difference));
 }
 
-TEST_F(PlayerTestFixture, playing_rate_2x)
+TEST_F(PlayerTestFixture, playing_respects_rate)
 {
-  play_options_.rate = 2.0;
-  auto player = std::make_shared<rosbag2_transport::Player>(
-    std::move(reader), storage_options_, play_options_);
+  auto primitive_message1 = get_messages_strings()[0];
+  primitive_message1->string_value = "Hello World 1";
 
-  auto start = clock.now();
-  player->play();
-  auto replay_time = clock.now() - start;
+  auto primitive_message2 = get_messages_strings()[0];
+  primitive_message2->string_value = "Hello World 2";
 
-  ASSERT_THAT(replay_time, Gt(message_time_difference * 0.5));
-  ASSERT_THAT(replay_time, Lt(message_time_difference));
-}
+  auto message_time_difference = std::chrono::seconds(1);
+  auto topics_and_types =
+    std::vector<rosbag2_storage::TopicMetadata>{{"topic1", "test_msgs/Strings", "", ""}};
+  std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages =
+  {serialize_test_message("topic1", 0, primitive_message1),
+    serialize_test_message("topic1", 0, primitive_message2)};
 
-TEST_F(PlayerTestFixture, playing_rate_1x)
-{
-  play_options_.rate = 1.0;
-  auto player = std::make_shared<rosbag2_transport::Player>(
-    std::move(reader), storage_options_, play_options_);
+  messages[0]->time_stamp = 100;
+  messages[1]->time_stamp =
+    messages[0]->time_stamp + std::chrono::nanoseconds(message_time_difference).count();
 
-  auto start = clock.now();
-  player->play();
-  auto replay_time = clock.now() - start;
-  ASSERT_THAT(replay_time, Gt(message_time_difference));
-}
+  // Play at 2x speed
+  {
+    play_options_.rate = 2.0;
 
-TEST_F(PlayerTestFixture, playing_rate_halfx)
-{
-  play_options_.rate = 0.5;
-  auto player = std::make_shared<rosbag2_transport::Player>(
-    std::move(reader), storage_options_, play_options_);
+    auto prepared_mock_reader = std::make_unique<MockSequentialReader>();
+    prepared_mock_reader->prepare(messages, topics_and_types);
+    auto reader = std::make_unique<rosbag2_cpp::Reader>(std::move(prepared_mock_reader));
+    auto player = std::make_shared<rosbag2_transport::Player>(
+      std::move(reader), storage_options_, play_options_);
+    auto start = std::chrono::steady_clock::now();
+    player->play();
+    auto replay_time = std::chrono::steady_clock::now() - start;
 
-  auto start = clock.now();
-  player->play();
-  auto replay_time = clock.now() - start;
-  ASSERT_THAT(replay_time, Gt(message_time_difference * 2.0));
-}
+    ASSERT_THAT(replay_time, Gt(0.5 * message_time_difference));
+    ASSERT_THAT(replay_time, Lt(message_time_difference));
+  }
 
-TEST_F(PlayerTestFixture, playing_rate_zero)
-{
+  // Play at 1x speed
+  {
+    play_options_.rate = 1.0;
+
+    auto prepared_mock_reader = std::make_unique<MockSequentialReader>();
+    prepared_mock_reader->prepare(messages, topics_and_types);
+    auto reader = std::make_unique<rosbag2_cpp::Reader>(std::move(prepared_mock_reader));
+    auto player = std::make_shared<rosbag2_transport::Player>(
+      std::move(reader), storage_options_, play_options_);
+    auto start = std::chrono::steady_clock::now();
+    player->play();
+    auto replay_time = std::chrono::steady_clock::now() - start;
+
+    ASSERT_THAT(replay_time, Gt(message_time_difference));
+  }
+
+  // Play at half speed
+  {
+    play_options_.rate = 0.5;
+
+    auto prepared_mock_reader = std::make_unique<MockSequentialReader>();
+    prepared_mock_reader->prepare(messages, topics_and_types);
+    auto reader = std::make_unique<rosbag2_cpp::Reader>(std::move(prepared_mock_reader));
+    auto player = std::make_shared<rosbag2_transport::Player>(
+      std::move(reader), storage_options_, play_options_);
+    auto start = std::chrono::steady_clock::now();
+    player->play();
+    auto replay_time = std::chrono::steady_clock::now() - start;
+
+    ASSERT_THAT(replay_time, Gt(2 * message_time_difference));
+  }
+
   // Invalid value should result in playing at default rate 1.0
-  play_options_.rate = 0.0;
-  auto player = std::make_shared<rosbag2_transport::Player>(
-    std::move(reader), storage_options_, play_options_);
+  {
+    play_options_.rate = 0.0;
 
-  auto start = clock.now();
-  player->play();
-  auto replay_time = clock.now() - start;
-  ASSERT_THAT(replay_time, Gt(message_time_difference));
-}
+    auto prepared_mock_reader = std::make_unique<MockSequentialReader>();
+    prepared_mock_reader->prepare(messages, topics_and_types);
+    auto reader = std::make_unique<rosbag2_cpp::Reader>(std::move(prepared_mock_reader));
+    auto player = std::make_shared<rosbag2_transport::Player>(
+      std::move(reader), storage_options_, play_options_);
+    auto start = std::chrono::steady_clock::now();
+    player->play();
+    auto replay_time = std::chrono::steady_clock::now() - start;
 
-TEST_F(PlayerTestFixture, playing_rate_negative)
-{
+    ASSERT_THAT(replay_time, Gt(message_time_difference));
+  }
+
   // Invalid value should result in playing at default rate 1.0
-  play_options_.rate = -1.23f;
-  auto player = std::make_shared<rosbag2_transport::Player>(
-    std::move(reader), storage_options_, play_options_);
+  {
+    play_options_.rate = -1.23f;
 
-  auto start = clock.now();
-  player->play();
-  auto replay_time = clock.now() - start;
-  ASSERT_THAT(replay_time, Gt(message_time_difference));
+    auto prepared_mock_reader = std::make_unique<MockSequentialReader>();
+    prepared_mock_reader->prepare(messages, topics_and_types);
+    auto reader = std::make_unique<rosbag2_cpp::Reader>(std::move(prepared_mock_reader));
+    auto player = std::make_shared<rosbag2_transport::Player>(
+      std::move(reader), storage_options_, play_options_);
+    auto start = std::chrono::steady_clock::now();
+    player->play();
+    auto replay_time = std::chrono::steady_clock::now() - start;
+
+    ASSERT_THAT(replay_time, Gt(message_time_difference));
+  }
 }
 
 TEST_F(PlayerTestFixture, playing_respects_delay)
 {
-  rclcpp::Duration delay_margin(1, 0);
+  auto primitive_message1 = get_messages_strings()[0];
+  primitive_message1->string_value = "Hello World 1";
+
+  auto primitive_message2 = get_messages_strings()[0];
+  primitive_message2->string_value = "Hello World 2";
+
+  auto message_time_difference = std::chrono::seconds(1);
+  auto topics_and_types =
+    std::vector<rosbag2_storage::TopicMetadata>{{"topic1", "test_msgs/Strings", "", ""}};
+  std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages =
+  {serialize_test_message("topic1", 0, primitive_message1),
+    serialize_test_message("topic1", 0, primitive_message2)};
+
+  messages[0]->time_stamp = 100;
+  messages[1]->time_stamp =
+    messages[0]->time_stamp + std::chrono::nanoseconds(message_time_difference).count();
+
+  float delay_margin = 1.0;
 
   // Sleep 5.0 seconds before play
-  play_options_.delay = rclcpp::Duration(5, 0);
-  auto lower_expected_duration = message_time_difference + play_options_.delay;
-  auto upper_expected_duration = message_time_difference + play_options_.delay + delay_margin;
-  auto player = std::make_shared<rosbag2_transport::Player>(
-    std::move(reader), storage_options_, play_options_);
+  {
+    play_options_.delay = 5.0;
+    std::chrono::duration<float> delay(play_options_.delay);
+    std::chrono::duration<float> delay_uppper(play_options_.delay + delay_margin);
 
-  auto start = clock.now();
-  player->play();
-  auto replay_time = clock.now() - start;
+    auto prepared_mock_reader = std::make_unique<MockSequentialReader>();
+    prepared_mock_reader->prepare(messages, topics_and_types);
+    auto reader = std::make_unique<rosbag2_cpp::Reader>(std::move(prepared_mock_reader));
+    auto player = std::make_shared<rosbag2_transport::Player>(
+      std::move(reader), storage_options_, play_options_);
+    auto start = std::chrono::steady_clock::now();
+    player->play();
+    auto replay_time = std::chrono::steady_clock::now() - start;
 
-  EXPECT_THAT(replay_time, Gt(lower_expected_duration));
-  EXPECT_THAT(replay_time, Lt(upper_expected_duration));
-}
+    ASSERT_THAT(replay_time, Gt(message_time_difference + delay));
+    ASSERT_THAT(replay_time, Lt(message_time_difference + delay_uppper));
+  }
 
-TEST_F(PlayerTestFixture, play_ignores_invalid_delay)
-{
-  rclcpp::Duration delay_margin(1, 0);
   // Invalid value should result in playing at default delay 0.0
-  play_options_.delay = rclcpp::Duration(-5, 0);
-  auto lower_expected_duration = message_time_difference;
-  auto upper_expected_duration = message_time_difference + delay_margin;
-  auto player = std::make_shared<rosbag2_transport::Player>(
-    std::move(reader), storage_options_, play_options_);
+  {
+    play_options_.delay = -5.0;
+    std::chrono::duration<float> delay_uppper(delay_margin);
 
-  auto start = clock.now();
-  player->play();
-  auto replay_time = clock.now() - start;
+    auto prepared_mock_reader = std::make_unique<MockSequentialReader>();
+    prepared_mock_reader->prepare(messages, topics_and_types);
+    auto reader = std::make_unique<rosbag2_cpp::Reader>(std::move(prepared_mock_reader));
+    auto player = std::make_shared<rosbag2_transport::Player>(
+      std::move(reader), storage_options_, play_options_);
+    auto start = std::chrono::steady_clock::now();
+    player->play();
+    auto replay_time = std::chrono::steady_clock::now() - start;
 
-  EXPECT_THAT(replay_time, Gt(lower_expected_duration));
-  EXPECT_THAT(replay_time, Lt(upper_expected_duration));
-}
-
-TEST_F(PlayerTestFixture, play_respects_start_offset)
-{
-  rclcpp::Duration start_delay(0, static_cast<uint32_t>(RCUTILS_S_TO_NS(0.5)));
-  rclcpp::Duration delay_margin(1, 0);
-
-  // Start 0.5 seconds into the bag
-  play_options_.start_offset = static_cast<rcutils_time_point_value_t>(RCUTILS_S_TO_NS(0.5));
-  // Subtract the delay since we've sought further into the bag
-  auto lower_expected_duration = message_time_difference - start_delay;
-  auto upper_expected_duration = message_time_difference - start_delay + delay_margin;
-  auto player = std::make_shared<rosbag2_transport::Player>(
-    std::move(reader), storage_options_, play_options_);
-
-  auto start = clock.now();
-  player->play();
-  auto replay_duration = clock.now() - start;
-
-  EXPECT_THAT(replay_duration, Gt(lower_expected_duration));
-  EXPECT_THAT(replay_duration, Lt(upper_expected_duration));
-}
-
-TEST_F(PlayerTestFixture, play_ignores_invalid_start_offset)
-{
-  rclcpp::Duration delay_margin(1, 0);
-
-  // Player should ignore an invalid (negative) start offset
-  play_options_.start_offset = -5;
-  auto lower_expected_duration = message_time_difference;
-  auto upper_expected_duration = message_time_difference + delay_margin;
-  auto player = std::make_shared<rosbag2_transport::Player>(
-    std::move(reader), storage_options_, play_options_);
-
-  auto start = clock.now();
-  player->play();
-  auto replay_duration = clock.now() - start;
-
-  EXPECT_THAT(replay_duration, Gt(lower_expected_duration));
-  EXPECT_THAT(replay_duration, Lt(upper_expected_duration));
+    ASSERT_THAT(replay_time, Gt(message_time_difference));
+    ASSERT_THAT(replay_time, Lt(message_time_difference + delay_uppper));
+  }
 }

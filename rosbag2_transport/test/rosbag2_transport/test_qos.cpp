@@ -19,7 +19,7 @@
 
 #include "rmw/types.h"
 
-#include "rosbag2_transport/qos.hpp"
+#include "qos.hpp"
 
 TEST(TestQoS, serialization)
 {

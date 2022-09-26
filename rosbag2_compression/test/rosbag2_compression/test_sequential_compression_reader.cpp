@@ -225,10 +225,10 @@ TEST_F(SequentialCompressionReaderTest, compression_called_when_loading_split_ba
   EXPECT_CALL(*compression_factory, create_decompressor(_)).Times(1);
   // open_read_only should be called twice when opening 2 split bags
   EXPECT_CALL(*storage_factory_, open_read_only(_)).Times(2);
-  EXPECT_CALL(*storage_, has_next()).Times(3)
+  // storage::has_next() is called twice when reader::has_next() is called
+  EXPECT_CALL(*storage_, has_next()).Times(2)
   .WillOnce(Return(false))  // Load the next file
-  .WillOnce(Return(true))
-  .WillOnce(Return(true));
+  .WillOnce(Return(true));  // We have a message from the new file
 
   auto compression_reader = std::make_unique<rosbag2_compression::SequentialCompressionReader>(
     std::move(compression_factory),
@@ -238,8 +238,8 @@ TEST_F(SequentialCompressionReaderTest, compression_called_when_loading_split_ba
 
   compression_reader->open(storage_options_, converter_options_);
   EXPECT_EQ(compression_reader->has_next_file(), true);
-  EXPECT_EQ(compression_reader->has_next(), true);  // false then true
-  compression_reader->read_next();  // calls has_next true
+  EXPECT_EQ(compression_reader->has_next(), true);
+  compression_reader->read_next();
 }
 
 TEST_F(SequentialCompressionReaderTest, can_find_v4_names)
@@ -283,27 +283,4 @@ TEST_F(SequentialCompressionReaderTest, can_find_prefixed_filenames_in_renamed_b
 
   EXPECT_NO_THROW(reader->open(storage_options_, converter_options_));
   EXPECT_TRUE(reader->has_next_file());
-}
-
-TEST_F(SequentialCompressionReaderTest, does_not_decompress_again_on_seek)
-{
-  auto decompressor = std::make_unique<NiceMock<MockDecompressor>>();
-  ON_CALL(*decompressor, decompress_uri(_)).WillByDefault(Return("some/path"));
-  EXPECT_CALL(*decompressor, decompress_uri(_)).Times(1);
-
-  auto compression_factory = std::make_unique<NiceMock<MockCompressionFactory>>();
-  ON_CALL(*compression_factory, create_decompressor(_))
-  .WillByDefault(Return(ByMove(std::move(decompressor))));
-
-  ON_CALL(*storage_, has_next()).WillByDefault(Return(true));
-
-  auto sequential_reader = std::make_unique<rosbag2_compression::SequentialCompressionReader>(
-    std::move(compression_factory),
-    std::move(storage_factory_),
-    converter_factory_,
-    std::move(metadata_io_));
-
-  reader_ = std::make_unique<rosbag2_cpp::Reader>(std::move(sequential_reader));
-  reader_->open(storage_options_, converter_options_);
-  reader_->seek(0);
 }

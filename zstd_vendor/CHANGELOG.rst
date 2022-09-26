@@ -2,48 +2,11 @@
 Changelog for package zstd_vendor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.17.0 (2022-07-30)
--------------------
+0.9.2 (2022-09-26)
+------------------
 
-0.16.0 (2022-05-11)
--------------------
-
-0.15.1 (2022-04-06)
--------------------
-
-0.15.0 (2022-04-05)
--------------------
-
-0.14.1 (2022-03-29)
--------------------
-* Bump version number to avoid conflict
-* Contributors: Chris Lalancette
-
-0.14.0 (2022-03-29)
--------------------
-* Use git hash for zstd vendor (`#969 <https://github.com/ros2/rosbag2/issues/969>`_)
-* Contributors: Shane Loretz
-
-0.13.0 (2022-01-13)
--------------------
-
-0.12.0 (2021-12-17)
--------------------
-
-0.11.0 (2021-11-08)
--------------------
-* Update package maintainers (`#899 <https://github.com/ros2/rosbag2/issues/899>`_)
-* Contributors: Michel Hidalgo
-
-0.10.1 (2021-10-22)
--------------------
-* Declare missing dependency on 'git' in zstd_vendor (`#890 <https://github.com/ros2/rosbag2/issues/890>`_)
-* Contributors: Scott K Logan
-
-0.10.0 (2021-10-19)
--------------------
-* Switch to using 'git apply' for zstd_vendor patches (`#846 <https://github.com/ros2/rosbag2/issues/846>`_)
-* Contributors: Christophe Bedard
+0.9.1 (2021-07-08)
+------------------
 
 0.9.0 (2021-05-17)
 ------------------

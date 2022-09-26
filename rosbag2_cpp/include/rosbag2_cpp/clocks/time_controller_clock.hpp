@@ -25,7 +25,7 @@ namespace rosbag2_cpp
 
 /**
  * Version of the PlayerClock interface that has control over time.
- * It does not listen to any ROS time source, instead using an internal steady time.
+ * It does not listen to any external ROS Time Source and can optionally publish /clock
  */
 class TimeControllerClockImpl;
 class TimeControllerClock : public PlayerClock
@@ -41,14 +41,12 @@ public:
    *   Used to control for unit testing, or for specialized needs
    * \param sleep_time_while_paused: Amount of time to sleep in `sleep_until` when the clock
    *   is paused. Allows the caller to spin at a defined rate while receiving `false`
-   * \param paused: Start the clock paused
    */
   ROSBAG2_CPP_PUBLIC
   TimeControllerClock(
     rcutils_time_point_value_t starting_time,
     NowFunction now_fn = std::chrono::steady_clock::now,
-    std::chrono::milliseconds sleep_time_while_paused = std::chrono::milliseconds{100},
-    bool start_paused = false);
+    std::chrono::milliseconds sleep_time_while_paused = std::chrono::milliseconds{100});
 
   ROSBAG2_CPP_PUBLIC
   virtual ~TimeControllerClock();
@@ -111,9 +109,9 @@ public:
 
   /**
    * Change the current ROS time to an arbitrary time.
-   * \note This will wake any waiting `sleep_until` and trigger any registered JumpHandler
-   * callbacks.
-   * \note The Player should not use this method while its queues are active ("during playback")
+   * This will wake any waiting `sleep_until`.
+   * Note: this initial implementation does not have any jump-callback handling.
+   * The Player should not use this method while its queues are active ("during playback")
    * as an arbitrary time jump can make those queues, and the state of the Reader/Storage, invalid
    * The current Player implementation should only use this method in between calls to `play`,
    * to reset the initial time of the clock.
@@ -125,16 +123,6 @@ public:
 
   ROSBAG2_CPP_PUBLIC
   void jump(rclcpp::Time ros_time) override;
-
-  /// Since a jump can only occur via a `jump` call by the owner of this Clock,
-  /// jump callbacks are not handled in this clock.
-  /// It is expected that the caller handles jumps in their calling code.
-  /// \return nullptr
-  ROSBAG2_CPP_PUBLIC
-  rclcpp::JumpHandler::SharedPtr create_jump_callback(
-    rclcpp::JumpHandler::pre_callback_t pre_callback,
-    rclcpp::JumpHandler::post_callback_t post_callback,
-    const rcl_jump_threshold_t & threshold) override;
 
 private:
   std::unique_ptr<TimeControllerClockImpl> impl_;

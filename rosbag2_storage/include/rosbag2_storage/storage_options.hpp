@@ -16,10 +16,6 @@
 #define ROSBAG2_STORAGE__STORAGE_OPTIONS_HPP_
 
 #include <string>
-#include <unordered_map>
-
-#include "rosbag2_storage/visibility_control.hpp"
-#include "rosbag2_storage/yaml.hpp"
 
 namespace rosbag2_storage
 {
@@ -50,25 +46,8 @@ public:
   // Storage specific configuration file.
   // Defaults to empty string.
   std::string storage_config_uri = "";
-
-  // Enable snapshot mode.
-  // Defaults to disabled.
-  bool snapshot_mode = false;
-
-  // Stores the custom data
-  std::unordered_map<std::string, std::string> custom_data{};
 };
 
 }  // namespace rosbag2_storage
-
-namespace YAML
-{
-template<>
-struct ROSBAG2_STORAGE_PUBLIC convert<rosbag2_storage::StorageOptions>
-{
-  static Node encode(const rosbag2_storage::StorageOptions & storage_options);
-  static bool decode(const Node & node, rosbag2_storage::StorageOptions & storage_options);
-};
-}  // namespace YAML
 
 #endif  // ROSBAG2_STORAGE__STORAGE_OPTIONS_HPP_

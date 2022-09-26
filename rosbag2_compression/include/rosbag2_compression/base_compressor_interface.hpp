@@ -57,35 +57,18 @@ public:
   virtual std::string compress_uri(const std::string & uri) = 0;
 
   /**
-   * Compress the serialized_data of a serialized bag message.
+   * Compress the serialized_data of a serialized bag message in place.
    *
-   * \param[in] bag_message A serialized bag message.
-   * \param[out] compressed_message Compressed message.
+   * \param[in,out] bag_message A serialized bag message.
    */
   virtual void compress_serialized_bag_message(
-    const rosbag2_storage::SerializedBagMessage * bag_message,
-    rosbag2_storage::SerializedBagMessage * compressed_message) = 0;
+    rosbag2_storage::SerializedBagMessage * bag_message) = 0;
 
   /**
    * Get the identifier of the compression algorithm.
    * This is appended to the extension of the compressed file.
    */
   virtual std::string get_compression_identifier() const = 0;
-
-  /**
-   * Get the compressor package name
-   */
-  static std::string get_package_name()
-  {
-    return "rosbag2_compression";
-  }
-  /**
-   * Get the compressor base class name
-   */
-  static std::string get_base_class_name()
-  {
-    return "rosbag2_compression::BaseCompressorInterface";
-  }
 };
 
 }  // namespace rosbag2_compression

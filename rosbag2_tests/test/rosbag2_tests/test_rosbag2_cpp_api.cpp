@@ -76,12 +76,8 @@ TEST(TestRosbag2CPPAPI, minimal_writer_example)
     writer.write(bag_message, "/my/other/topic", "test_msgs/msg/BasicTypes");
 
     // yet another alternative, writing the rclcpp::SerializedMessage directly
-    std::shared_ptr<rclcpp::SerializedMessage> serialized_msg2 =
-      std::make_shared<rclcpp::SerializedMessage>();
-    serialization.serialize_message(&test_msg, serialized_msg2.get());
-
     writer.write(
-      serialized_msg2, "/yet/another/topic", "test_msgs/msg/BasicTypes",
+      serialized_msg, "/yet/another/topic", "test_msgs/msg/BasicTypes",
       rclcpp::Clock().now());
 
     // writing a non-serialized message

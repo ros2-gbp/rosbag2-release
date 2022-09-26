@@ -16,19 +16,17 @@
 
 #include <atomic>
 #include <thread>
-#include <rclcpp/utilities.hpp>
+
 #include "rosbag2_cpp/clocks/time_controller_clock.hpp"
 
 using namespace testing;  // NOLINT
 using SteadyTimePoint = std::chrono::steady_clock::time_point;
-using SteadyTimeDurationSecT = std::chrono::duration<int>;
 using NowFunction = rosbag2_cpp::PlayerClock::NowFunction;
 
 class TimeControllerClockTest : public Test
 {
 public:
   TimeControllerClockTest()
-  : return_time(std::chrono::nanoseconds(0))
   {
     now_fn = [this]() {
         return return_time;
@@ -152,21 +150,7 @@ TEST_F(TimeControllerClockTest, unpaused_sleep_returns_true)
 
   clock.pause();
   clock.resume();
-
-  auto sleep_until_timestamp = clock.now() + RCUTILS_S_TO_NS(1);
-  auto start = std::chrono::steady_clock::now();
-  bool sleep_result = clock.sleep_until(sleep_until_timestamp);
-  // clock.sleep_until can spuriously wake up and return false.
-  // Check it until true and use a timeout to avoid a hang
-  while (rclcpp::ok() && !sleep_result &&
-    (std::chrono::steady_clock::now() - start) < std::chrono::milliseconds(1200))
-  {
-    sleep_result = clock.sleep_until(sleep_until_timestamp);
-  }
-  auto end = std::chrono::steady_clock::now();
-  EXPECT_TRUE(end - start < std::chrono::milliseconds(1200));
-  EXPECT_TRUE(end - start >= std::chrono::seconds(1));
-  EXPECT_TRUE(sleep_result);
+  EXPECT_TRUE(clock.sleep_until(clock.now() + RCUTILS_S_TO_NS(1)));
 }
 
 TEST_F(TimeControllerClockTest, paused_sleep_returns_false_quickly)
@@ -273,56 +257,4 @@ TEST_F(TimeControllerClockTest, jump)
   clock.jump(rclcpp::Time(50, 0));
   return_time += std::chrono::seconds(2);
   EXPECT_EQ(clock.now(), RCUTILS_S_TO_NS(52));
-}
-
-TEST_F(TimeControllerClockTest, jump_forward_with_playback_rate)
-{
-  // Use non zero start time along side with payback rate differ than 1.0
-  ros_start_time = RCUTILS_S_TO_NS(1);
-  const SteadyTimePoint wall_time_begin(std::chrono::seconds(2));
-  return_time = wall_time_begin;  // Init now_fn() to some non zero wall_time_begin
-  const double playback_rate = 1.5;
-  rosbag2_cpp::TimeControllerClock testing_clock(ros_start_time, now_fn);
-  testing_clock.set_rate(playback_rate);
-
-  const rcutils_time_point_value_t ros_time_point_for_jump = ros_start_time + RCUTILS_S_TO_NS(3);
-  testing_clock.jump(ros_time_point_for_jump);
-
-  // Emulate wall clock ticks
-  const SteadyTimePoint current_wall_time = wall_time_begin + SteadyTimeDurationSecT(5);
-  return_time = current_wall_time;  // now_fn() will return wall_time_begin + 5 sec
-
-  // Jump shouldn't take in to account playback rate when jumping in time,
-  // although TimeControllerClock::now() should respect playback rate after jump.
-  rcutils_time_point_value_t expected_ros_time = ros_time_point_for_jump +
-    static_cast<rcutils_time_point_value_t>(playback_rate * (as_nanos(current_wall_time) -
-    as_nanos(wall_time_begin)));
-
-  EXPECT_EQ(testing_clock.now(), expected_ros_time);
-}
-
-TEST_F(TimeControllerClockTest, jump_backward_with_playback_rate)
-{
-  // Use non zero start time along side with payback rate differ than 1.0
-  ros_start_time = RCUTILS_S_TO_NS(5);
-  const SteadyTimePoint wall_time_begin(std::chrono::seconds(2));
-  return_time = wall_time_begin;  // Init now_fn() to some non zero wall_time_begin
-  const double playback_rate = 1.5;
-  rosbag2_cpp::TimeControllerClock testing_clock(ros_start_time, now_fn);
-  testing_clock.set_rate(playback_rate);
-
-  const rcutils_time_point_value_t ros_time_point_for_jump = ros_start_time - RCUTILS_S_TO_NS(3);
-  testing_clock.jump(ros_time_point_for_jump);
-
-  // Emulate wall clock ticks
-  const SteadyTimePoint current_wall_time = wall_time_begin + SteadyTimeDurationSecT(5);
-  return_time = current_wall_time;  // now_fn() will return wall_time_begin + 5 sec
-
-  // Jump shouldn't take in to account playback rate when jumping in time,
-  // although TimeControllerClock::now() should respect playback rate after jump.
-  rcutils_time_point_value_t expected_ros_time = ros_time_point_for_jump +
-    static_cast<rcutils_time_point_value_t>(playback_rate * (as_nanos(current_wall_time) -
-    as_nanos(wall_time_begin)));
-
-  EXPECT_EQ(testing_clock.now(), expected_ros_time);
 }

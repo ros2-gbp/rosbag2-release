@@ -2,123 +2,20 @@
 Changelog for package rosbag2_transport
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.17.0 (2022-07-30)
--------------------
-* Use a single variable for evaluating the filter regex (`#1053 <https://github.com/ros2/rosbag2/issues/1053>`_)
-* Add additional mode of publishing sim time updates triggered by replayed messages (`#1050 <https://github.com/ros2/rosbag2/issues/1050>`_)
- * When this mode is active, /clock updates are triggered whenever messages are replayed rather
-   than at a fixed rate. Optionally, a list of triggering topics can be set so that only a subset
-   of replayed messages will trigger the /clock update. This mode is most useful when replaying
-   applications which do some sanity checking or correlation of message data to system timestamps.
-   If the application does not need the sim time to be updated at a consistent rate, this mode can
-   substantially reduce the overhead of having sim time enabled in rosbag2.
-* Speed optimization: Preparing copyless publish/subscribing by using const message for writing (`#1010 <https://github.com/ros2/rosbag2/issues/1010>`_)
- * Update compression to make copy instead of in-place operation
- * Get rid of extra data copying operation in writer by refrencing to received message
-* Renamed --topics-regex to --regex and -e in Player class to be consistent with Recorder (`#1045 <https://github.com/ros2/rosbag2/issues/1045>`_)
-* Refactor play until and duration tests (`#1024 <https://github.com/ros2/rosbag2/issues/1024>`_)
-* Added support for filtering topics via regular expressions on Playback (`#1034 <https://github.com/ros2/rosbag2/issues/1034>`_)
-* Adds stop operation for rosbag2::Player (`#1007 <https://github.com/ros2/rosbag2/issues/1007>`_)
-  Stop will unpause if in pause mode, stop playback and exit from `play()` method.
-* Fix incorrect boundary check for `playback_duration` and `play_until_timestamp` (`#1032 <https://github.com/ros2/rosbag2/issues/1032>`_)
- * Add initialization for `metadata  starting time` in MockSequentialReader
- * Fixed one false positive and one flaky test in test_play_until
-* Split up the include of rclcpp.hpp (`#1027 <https://github.com/ros2/rosbag2/issues/1027>`_)
-* Notification of significant events during bag recording and playback (`#908 <https://github.com/ros2/rosbag2/issues/908>`_)
-* Adds play until timestamp functionality (`#1005 <https://github.com/ros2/rosbag2/issues/1005>`_)
-* Add CLI verb for burst mode of playback (`#980 <https://github.com/ros2/rosbag2/issues/980>`_)
-* Add on play message callbacks to the `rosbag2::Player` class (`#1004 <https://github.com/ros2/rosbag2/issues/1004>`_)
-* Add play-for specified number of seconds functionality (`#960 <https://github.com/ros2/rosbag2/issues/960>`_)
-* Reduce message spam when topics to be recorded do not exist (`#1018 <https://github.com/ros2/rosbag2/issues/1018>`_)
-* Address flakiness in record_all_with_sim_time test (`#1014 <https://github.com/ros2/rosbag2/issues/1014>`_)
-* Add debug instrumentation for `test_play_services` (`#1013 <https://github.com/ros2/rosbag2/issues/1013>`_)
-* Fix for rosbag2::Player freeze when pressing ctrl+c in pause mode (`#1002 <https://github.com/ros2/rosbag2/issues/1002>`_)
-* Contributors: Agustin Alba Chicar, Brian, Chris Lalancette, DensoADAS, Joshua Hampp,
-  Esteve Fernandez, Geoffrey Biggs, Jorge Perez, Michael Orlov, kylemarcey, Misha Shalem, Tony Peng
+0.9.2 (2022-09-26)
+------------------
+* allow for implementation of composable recorder via inheritance (`#892 <https://github.com/ros2/rosbag2/issues/892>`_)
+* Fix discovery silently stops after unknown msg type is found. (`#848 <https://github.com/ros2/rosbag2/issues/848>`_) (`#858 <https://github.com/ros2/rosbag2/issues/858>`_)
+* [backport galactic] recording with --all and --exclude fix (`#765 <https://github.com/ros2/rosbag2/issues/765>`_) (`#825 <https://github.com/ros2/rosbag2/issues/825>`_)
+* Contributors: Bernd Pfrommer, Cameron Miller, Emerson Knapp
 
-0.16.0 (2022-05-11)
--------------------
-* Add the /bigobj flag to Windows Debug builds. (`#1009 <https://github.com/ros2/rosbag2/issues/1009>`_)
-* Make unpublished topics unrecorded by default (`#968 <https://github.com/ros2/rosbag2/issues/968>`_)
-* Make peek_next_message_from_queue return a SharedPtr. (`#993 <https://github.com/ros2/rosbag2/issues/993>`_)
-* Change the topic names in test_record.cpp (`#988 <https://github.com/ros2/rosbag2/issues/988>`_)
-* Contributors: Chris Lalancette, Michael Orlov, Sean Kelly
-
-0.15.1 (2022-04-06)
--------------------
-* support to publish as loaned message (`#981 <https://github.com/ros2/rosbag2/issues/981>`_)
-* Contributors: Audrow Nash, Barry Xu
-
-0.15.0 (2022-04-05)
--------------------
-* support to publish as loaned message (`#981 <https://github.com/ros2/rosbag2/issues/981>`_)
-* Contributors: Barry Xu
-
-0.14.1 (2022-03-29)
--------------------
-* Bump version number to avoid conflict
-* Contributors: Chris Lalancette
-
-0.14.0 (2022-03-29)
--------------------
-* Add burst-mode to Player (`#977 <https://github.com/ros2/rosbag2/issues/977>`_)
-* Install headers to include/${PROJECT_NAME} (`#958 <https://github.com/ros2/rosbag2/issues/958>`_)
-* Make sure published messages are acknowledged for play mode (`#951 <https://github.com/ros2/rosbag2/issues/951>`_)
-* Contributors: Barry Xu, Geoffrey Biggs, Shane Loretz
-
-0.13.0 (2022-01-13)
--------------------
-
-0.12.0 (2021-12-17)
--------------------
-* Changes for uncrustify 0.72 (`#937 <https://github.com/ros2/rosbag2/issues/937>`_)
-* TopicFilter use regex_search instead of regex_match (`#932 <https://github.com/ros2/rosbag2/issues/932>`_)
-* Add start-offset play option (`#931 <https://github.com/ros2/rosbag2/issues/931>`_)
-* Add parentheses suggested by Clang on OSX to fix build warning (`#930 <https://github.com/ros2/rosbag2/issues/930>`_)
-* Bag rewriter (C++) (`#920 <https://github.com/ros2/rosbag2/issues/920>`_)
-* Add "ignore leaf topics" option to recorder (`#925 <https://github.com/ros2/rosbag2/issues/925>`_)
-* Rewrite TopicFilter for single-call reusability (`#924 <https://github.com/ros2/rosbag2/issues/924>`_)
-* Add a ReaderWriterFactory utility to share logic for reuse (`#923 <https://github.com/ros2/rosbag2/issues/923>`_)
-* Add pause/resume options to the bag recorder (`#905 <https://github.com/ros2/rosbag2/issues/905>`_)
-* Add logging macros for rosbag2_transport (`#917 <https://github.com/ros2/rosbag2/issues/917>`_)
-* Enable YAML encoding/decoding for RecordOptions and StorageOptions (`#916 <https://github.com/ros2/rosbag2/issues/916>`_)
-* Expose the QoS object wrapper (`#910 <https://github.com/ros2/rosbag2/issues/910>`_)
-* Contributors: Abrar Rahman Protyasha, Chris Lalancette, Emerson Knapp, Geoffrey Biggs, Ivan Santiago Paunovic
-
-0.11.0 (2021-11-08)
--------------------
-* Add --start-paused option to `ros2 bag play` (`#904 <https://github.com/ros2/rosbag2/issues/904>`_)
-* Update package maintainers (`#899 <https://github.com/ros2/rosbag2/issues/899>`_)
-* Add a Seek service (`#874 <https://github.com/ros2/rosbag2/issues/874>`_)
-* Add simple keyboard control for playback rate (`#893 <https://github.com/ros2/rosbag2/issues/893>`_)
-* Contributors: Emerson Knapp, Ivan Santiago Paunovic, Michel Hidalgo
-
-0.10.1 (2021-10-22)
--------------------
-
-0.10.0 (2021-10-19)
--------------------
-* Fix a bug on invalid pointer address when using "MESSAGE" compressio… (`#866 <https://github.com/ros2/rosbag2/issues/866>`_)
-* Fix typo (`#880 <https://github.com/ros2/rosbag2/issues/880>`_)
-* Use Reader's seek() method for seeking/jumping in Player (`#873 <https://github.com/ros2/rosbag2/issues/873>`_)
-* keyboard controls for pause/resume toggle and play-next: (`#847 <https://github.com/ros2/rosbag2/issues/847>`_)
-* Implement snapshot mechanism and corresponding ROS Service (`#850 <https://github.com/ros2/rosbag2/issues/850>`_)
-* Circular Message Cache implementation for snapshot feature (`#844 <https://github.com/ros2/rosbag2/issues/844>`_)
-* Add jump/seek API for Player class (`#826 <https://github.com/ros2/rosbag2/issues/826>`_)
-* Restructure test_play_timing to one test per case, to see which times out (`#863 <https://github.com/ros2/rosbag2/issues/863>`_)
-* Fix discovery silently stops after unknown msg type is found. (`#848 <https://github.com/ros2/rosbag2/issues/848>`_)
-* Fixing deprecated subscriber callback warnings (`#852 <https://github.com/ros2/rosbag2/issues/852>`_)
-* Bugfix for race condition in Player::peek_next_message_from_queue() (`#849 <https://github.com/ros2/rosbag2/issues/849>`_)
-* added seek interface (`#836 <https://github.com/ros2/rosbag2/issues/836>`_)
-* Update `PlayOptions::delay` to `rclcpp::Duration` to get nanosecond resolution (`#843 <https://github.com/ros2/rosbag2/issues/843>`_)
-* Move notification about ready for playback inside play_messages_from_queue() (`#832 <https://github.com/ros2/rosbag2/issues/832>`_)
-* Add wait for player to be ready for playback in Player::play_next() method (`#814 <https://github.com/ros2/rosbag2/issues/814>`_)
-* Make sure the subscription exists before publishing messages (`#804 <https://github.com/ros2/rosbag2/issues/804>`_)
-* Add delay option (`#789 <https://github.com/ros2/rosbag2/issues/789>`_)
-* Copy recorder QoS profile to local variable so that temporary value isn't cleared (`#803 <https://github.com/ros2/rosbag2/issues/803>`_)
-* test_play_services: fail gracefully on future error (`#798 <https://github.com/ros2/rosbag2/issues/798>`_)
-* Recording with --all and --exclude fix (`#765 <https://github.com/ros2/rosbag2/issues/765>`_)
-* Contributors: Abrar Rahman Protyasha, Barry Xu, Bastian Jäger, Cameron Miller, Emerson Knapp, Kosuke Takeuchi, Lei Liu, Louise Poubel, Michael Orlov, Piotr Jaroszek, sonia
+0.9.1 (2021-07-08)
+------------------
+* [backport galactic] Add delay option (`#789 <https://github.com/ros2/rosbag2/issues/789>`_) (`#812 <https://github.com/ros2/rosbag2/issues/812>`_)
+  Backport `#789 <https://github.com/ros2/rosbag2/issues/789>`_ to galactic
+  * Add delay option
+* Copy recorder QoS profile to local variable so that temporary value isn't cleared (`#803 <https://github.com/ros2/rosbag2/issues/803>`_) (`#805 <https://github.com/ros2/rosbag2/issues/805>`_)
+* Contributors: Emerson Knapp, Kosuke Takeuchi
 
 0.9.0 (2021-05-17)
 ------------------

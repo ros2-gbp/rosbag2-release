@@ -33,9 +33,7 @@ class ReindexVerb(VerbExtension):
 
     def add_arguments(self, parser, cli_name):
         storage_choices = get_registered_readers()
-        default_storage = 'sqlite3' if 'sqlite3' in storage_choices else \
-            next(iter(storage_choices))
-
+        default_storage = 'sqlite3' if 'sqlite3' in storage_choices else storage_choices[0]
         parser.add_argument(
             'bag_directory', type=check_path_exists, help='bag to reindex')
         parser.add_argument(

@@ -34,7 +34,7 @@ add_library(${PROJECT_NAME} SHARED
 target_include_directories(${PROJECT_NAME}
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include/${PROJECT_NAME}>)
+  $<INSTALL_INTERFACE:include>)
 ament_target_dependencies(${PROJECT_NAME}
   rcpputils
   rosbag2_compression
@@ -44,7 +44,7 @@ pluginlib_export_plugin_description_file(rosbag2_compression plugin_description.
 
 install(
   DIRECTORY include/
-  DESTINATION include/${PROJECT_NAME})
+  DESTINATION include)
 
 install(
   TARGETS ${PROJECT_NAME}
@@ -53,13 +53,9 @@ install(
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)
 
-# Export old-style CMake variables
-ament_export_include_directories("include/${PROJECT_NAME}")
+ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
-
-# Export modern CMake targets
 ament_export_targets(export_${PROJECT_NAME})
-
 # order matters here, first vendor, then zstd
 ament_export_dependencies(rcpputils rosbag2_compression zstd_vendor zstd)
 
@@ -73,6 +69,7 @@ if(BUILD_TESTING)
 
   ament_add_gmock(test_zstd_compressor
     test/rosbag2_compression_zstd/test_zstd_compressor.cpp)
+  target_include_directories(test_zstd_compressor PUBLIC include)
   target_link_libraries(test_zstd_compressor ${PROJECT_NAME})
   ament_target_dependencies(test_zstd_compressor rclcpp rosbag2_test_common)
 endif()

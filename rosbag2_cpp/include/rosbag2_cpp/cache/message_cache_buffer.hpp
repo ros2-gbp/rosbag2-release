@@ -20,7 +20,6 @@
 #include <vector>
 
 #include "rosbag2_cpp/visibility_control.hpp"
-#include "rosbag2_cpp/cache/cache_buffer_interface.hpp"
 #include "rosbag2_storage/serialized_bag_message.hpp"
 
 // This is necessary because of using stl types here. It is completely safe, because
@@ -46,31 +45,32 @@ namespace cache
 * ->byte_size() - like interface
 */
 class ROSBAG2_CPP_PUBLIC MessageCacheBuffer
-  : public CacheBufferInterface
 {
 public:
-  explicit MessageCacheBuffer(size_t max_cache_size);
+  explicit MessageCacheBuffer(const uint64_t max_cache_size);
+
+  using buffer_element_t = std::shared_ptr<const rosbag2_storage::SerializedBagMessage>;
 
   /**
   * If buffer size got some space left, we push message regardless of its size, but if
   * this results in exceeding buffer size, we mark buffer to drop all new incoming messages.
   * This flag is cleared when buffers are swapped.
   */
-  bool push(CacheBufferInterface::buffer_element_t msg) override;
+  bool push(buffer_element_t msg);
 
   /// Clear buffer
-  void clear() override;
+  void clear();
 
   /// Get number of elements in the buffer
-  size_t size() override;
+  size_t size();
 
   /// Get buffer data
-  const std::vector<CacheBufferInterface::buffer_element_t> & data() override;
+  const std::vector<buffer_element_t> & data();
 
 private:
-  std::vector<CacheBufferInterface::buffer_element_t> buffer_;
-  size_t buffer_bytes_size_ {0u};
-  const size_t max_bytes_size_;
+  std::vector<buffer_element_t> buffer_;
+  uint64_t buffer_bytes_size_ {0u};
+  const uint64_t max_bytes_size_;
 
   /// set when buffer is full and should drop messages instead of inserting them
   std::atomic_bool drop_messages_ {false};

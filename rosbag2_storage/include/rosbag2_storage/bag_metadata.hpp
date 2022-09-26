@@ -19,7 +19,6 @@
 #include <string>
 #include <vector>
 #include <utility>
-#include <unordered_map>
 
 #include "rosbag2_storage/topic_metadata.hpp"
 
@@ -32,28 +31,18 @@ struct TopicInformation
   size_t message_count;
 };
 
-struct FileInformation
-{
-  std::string path;
-  std::chrono::time_point<std::chrono::high_resolution_clock> starting_time;
-  std::chrono::nanoseconds duration;
-  size_t message_count;
-};
-
 struct BagMetadata
 {
-  int version = 6;  // upgrade this number when changing the content of the struct
+  int version = 4;  // upgrade this number when changing the content of the struct
   uint64_t bag_size = 0;  // Will not be serialized
   std::string storage_identifier;
   std::vector<std::string> relative_file_paths;
-  std::vector<FileInformation> files;
   std::chrono::nanoseconds duration;
   std::chrono::time_point<std::chrono::high_resolution_clock> starting_time;
   uint64_t message_count;
   std::vector<TopicInformation> topics_with_message_count;
   std::string compression_format;
   std::string compression_mode;
-  std::unordered_map<std::string, std::string> custom_data;  // {key: value, ...}
 };
 
 }  // namespace rosbag2_storage

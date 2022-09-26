@@ -19,7 +19,6 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
-#include <vector>
 
 #include "pluginlib/class_loader.hpp"
 
@@ -32,11 +31,27 @@ namespace rosbag2_compression
 using rosbag2_compression::BaseCompressorInterface;
 using rosbag2_compression::BaseDecompressorInterface;
 
+template<typename T>
+struct CompressionTraits
+{};
+
+template<>
+struct CompressionTraits<BaseCompressorInterface>
+{
+  static constexpr const char * name = "rosbag2_compression::BaseCompressorInterface";
+};
+
+template<>
+struct CompressionTraits<BaseDecompressorInterface>
+{
+  static constexpr const char * name = "rosbag2_compression::BaseDecompressorInterface";
+};
+
 template<typename InterfaceT>
 std::shared_ptr<pluginlib::ClassLoader<InterfaceT>>
 get_class_loader()
 {
-  const auto lookup_name = InterfaceT::get_base_class_name();
+  const auto lookup_name = CompressionTraits<InterfaceT>::name;
   return std::make_shared<pluginlib::ClassLoader<InterfaceT>>(
     "rosbag2_compression", lookup_name);
 }
@@ -112,12 +127,6 @@ public:
         "Could not load/open plugin for compression format '" << compression_format << "'");
     }
     return instance;
-  }
-
-  /// See CompressionFactory::get_declared_compressor_plugins for documentation.
-  std::vector<std::string> get_declared_compressor_plugins() const
-  {
-    return compressor_class_loader_->getDeclaredClasses();
   }
 
 private:

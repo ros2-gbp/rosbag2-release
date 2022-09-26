@@ -28,8 +28,7 @@ public:
   std::string compress_uri(const std::string & uri) override;
 
   void compress_serialized_bag_message(
-    const rosbag2_storage::SerializedBagMessage * bag_message,
-    rosbag2_storage::SerializedBagMessage * compressed_message) override;
+    rosbag2_storage::SerializedBagMessage * bag_message) override;
 
   std::string get_compression_identifier() const override;
 

@@ -14,7 +14,6 @@
 
 #include <gmock/gmock.h>
 
-#include <chrono>
 #include <memory>
 #include <regex>
 #include <string>
@@ -33,13 +32,11 @@
 
 #include "record_integration_fixture.hpp"
 
-using namespace std::chrono_literals;  // NOLINT
-
 TEST_F(RecordIntegrationTestFixture, regex_topics_recording)
 {
   auto test_string_messages = get_messages_strings();
   auto test_array_messages = get_messages_arrays();
-  std::string regex = "^/aa$";
+  std::string regex = "/aa";
 
   // matching topic
   std::string v1 = "/aa";
@@ -74,8 +71,6 @@ TEST_F(RecordIntegrationTestFixture, regex_topics_recording)
   recorder->record();
 
   start_async_spin(recorder);
-
-  ASSERT_TRUE(pub_manager.wait_for_matched(v1.c_str()));
 
   pub_manager.run_publishers();
 
@@ -147,9 +142,6 @@ TEST_F(RecordIntegrationTestFixture, regex_and_exclude_recording)
   recorder->record();
 
   start_async_spin(recorder);
-
-  ASSERT_TRUE(pub_manager.wait_for_matched(v1.c_str()));
-  ASSERT_TRUE(pub_manager.wait_for_matched(v2.c_str()));
 
   pub_manager.run_publishers();
 
