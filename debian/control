@@ -1,0 +1,12 @@
+Source: ros-galactic-rosbag2
+Section: misc
+Priority: optional
+Maintainer: Karsten Knese <karsten@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), ros-galactic-ament-cmake, ros-galactic-rosbag2-test-common <!nocheck>, ros-galactic-rosbag2-tests <!nocheck>, ros-galactic-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-galactic-rosbag2
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-galactic-ros2bag, ros-galactic-rosbag2-compression, ros-galactic-rosbag2-compression-zstd, ros-galactic-rosbag2-cpp, ros-galactic-rosbag2-py, ros-galactic-rosbag2-storage, ros-galactic-rosbag2-storage-default-plugins, ros-galactic-rosbag2-transport, ros-galactic-shared-queues-vendor, ros-galactic-sqlite3-vendor, ros-galactic-ros-workspace
+Description: Meta package for rosbag2 related packages
