@@ -1,0 +1,200 @@
+ros-galactic-rosbag2-py (0.9.2-1focal) focal; urgency=high
+
+  * Add stopRecording into rosbag2_py (#854 <https://github.com/ros2/rosbag2/issues/854>) (#995 <https://github.com/ros2/rosbag2/issues/995>)
+  * [backport galactic] Fix ros2 bag record race at startup (#911 <https://github.com/ros2/rosbag2/issues/911>)
+  * Contributors: Afonso da Fonseca Braga, Ivan Santiago Paunovic
+
+ -- Karsten Knese <karsten@openrobotics.org>  Mon, 26 Sep 2022 07:00:00 -0000
+
+ros-galactic-rosbag2-py (0.9.1-1focal) focal; urgency=high
+
+  * [backport galactic] Handle SIGTERM gracefully in recording (#792 <https://github.com/ros2/rosbag2/issues/792>) (#807 <https://github.com/ros2/rosbag2/issues/807>)
+    Backport #792 <https://github.com/ros2/rosbag2/issues/792> to galactic
+    * Handle SIGTERM gracefully in recording
+  * [backport galactic] Add delay option (#789 <https://github.com/ros2/rosbag2/issues/789>) (#812 <https://github.com/ros2/rosbag2/issues/812>)
+    Backport #789 <https://github.com/ros2/rosbag2/issues/789> to galactic
+    * Add delay option
+  * Contributors: Emerson Knapp, Kosuke Takeuchi
+
+ -- Karsten Knese <karsten@openrobotics.org>  Thu, 08 Jul 2021 07:00:00 -0000
+
+ros-galactic-rosbag2-py (0.9.0-1focal) focal; urgency=high
+
+  * remove rosbag2_transport header (#742 <https://github.com/ros2/rosbag2/issues/742>)
+  * Include utility to quiet cpplint. (#744 <https://github.com/ros2/rosbag2/issues/744>)
+  * player owns the reader (#725 <https://github.com/ros2/rosbag2/issues/725>)
+  * Contributors: Chris Lalancette, Karsten Knese
+
+ -- Karsten Knese <karsten@openrobotics.org>  Mon, 17 May 2021 07:00:00 -0000
+
+ros-galactic-rosbag2-py (0.8.0-1focal) focal; urgency=high
+
+  * Remove -Werror from builds, enable it in Action CI (#722 <https://github.com/ros2/rosbag2/issues/722>)
+  * Split Rosbag2Transport into Player and Recorder classes - first pass to enable further progress (#721 <https://github.com/ros2/rosbag2/issues/721>)
+  * /clock publisher in Player (#695 <https://github.com/ros2/rosbag2/issues/695>)
+  * Introducing Reindexer CLI (#699 <https://github.com/ros2/rosbag2/issues/699>)
+  * Fix rosbag2_py transport test for py capsule (#707 <https://github.com/ros2/rosbag2/issues/707>)
+  * rosbag2_py pybind wrapper for "record" - remove rosbag2_transport_py (#702 <https://github.com/ros2/rosbag2/issues/702>)
+  * Add rosbag2_py::Player::play to replace rosbag2_transport_python version (#693 <https://github.com/ros2/rosbag2/issues/693>)
+  * Explicitly add emersonknapp as maintainer (#692 <https://github.com/ros2/rosbag2/issues/692>)
+  * Contributors: Emerson Knapp, jhdcs
+
+ -- Karsten Knese <karsten@openrobotics.org>  Mon, 19 Apr 2021 07:00:00 -0000
+
+ros-galactic-rosbag2-py (0.7.0-1focal) focal; urgency=high
+
+  * RMW-implementation-searcher converter in rosbag2_cpp (#670 <https://github.com/ros2/rosbag2/issues/670>)
+  * use rosbag2_py for ros2 bag info (#673 <https://github.com/ros2/rosbag2/issues/673>)
+  * CLI query rosbag2_py for available storage implementations (#659 <https://github.com/ros2/rosbag2/issues/659>)
+  * Contributors: Emerson Knapp, Karsten Knese
+
+ -- Karsten Knese <karsten@openrobotics.org>  Thu, 18 Mar 2021 07:00:00 -0000
+
+ros-galactic-rosbag2-py (0.6.0-1focal) focal; urgency=high
+
+  * Fix build issues when rosbag2_storage is binary installed (#585 <https://github.com/ros2/rosbag2/issues/585>)
+  * Fix the tests on cyclonedds by translating qos duration values (#606 <https://github.com/ros2/rosbag2/issues/606>)
+  * Contributors: Emerson Knapp, P. J. Reed
+
+ -- Karsten Knese <karsten@openrobotics.org>  Mon, 01 Feb 2021 08:00:00 -0000
+
+ros-galactic-rosbag2-py (0.5.0-1focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Wed, 02 Dec 2020 08:00:00 -0000
+
+ros-galactic-rosbag2-py (0.4.0-1focal) focal; urgency=high
+
+  * add storage_config_uri (#493 <https://github.com/ros2/rosbag2/issues/493>)
+  * Workaround pybind11 bug on Windows when CMAKE_BUILD_TYPE=RelWithDebInfo (#538 <https://github.com/ros2/rosbag2/issues/538>)
+  * Update the package.xml files with the latest Open Robotics maintainers (#535 <https://github.com/ros2/rosbag2/issues/535>)
+  * Fix rosbag2_py on Windows debug and stop ignoring the package (#531 <https://github.com/ros2/rosbag2/issues/531>)
+  * Fix rosbag2_py bug when using libc++ (#529 <https://github.com/ros2/rosbag2/issues/529>)
+  * AMENT_IGNORE rosbag2_py for now (#509 <https://github.com/ros2/rosbag2/issues/509>)
+  * rosbag2_py reader and writer (#308 <https://github.com/ros2/rosbag2/issues/308>)
+  * Contributors: Ivan Santiago Paunovic, Karsten Knese, Mabel Zhang, Michael Jeronimo
+
+ -- Karsten Knese <karsten@openrobotics.org>  Thu, 19 Nov 2020 08:00:00 -0000
+
+ros-galactic-rosbag2-py (0.3.2-1focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Wed, 03 Jun 2020 07:00:00 -0000
+
+ros-galactic-rosbag2-py (0.3.1-1focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Mon, 01 Jun 2020 07:00:00 -0000
+
+ros-galactic-rosbag2-py (0.3.0-1focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Tue, 26 May 2020 07:00:00 -0000
+
+ros-galactic-rosbag2-py (0.2.8-1focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Mon, 18 May 2020 07:00:00 -0000
+
+ros-galactic-rosbag2-py (0.2.7-1focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Tue, 12 May 2020 07:00:00 -0000
+
+ros-galactic-rosbag2-py (0.2.6-1focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Thu, 07 May 2020 07:00:00 -0000
+
+ros-galactic-rosbag2-py (0.2.5-1focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Thu, 30 Apr 2020 07:00:00 -0000
+
+ros-galactic-rosbag2-py (0.2.4-1focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Tue, 19 Nov 2019 01:51:00 -0000
+
+ros-galactic-rosbag2-py (0.2.3-1focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Mon, 18 Nov 2019 21:55:00 -0000
+
+ros-galactic-rosbag2-py (0.2.2-1focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Wed, 13 Nov 2019 08:00:00 -0000
+
+ros-galactic-rosbag2-py (0.2.1-1focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Wed, 23 Oct 2019 07:00:00 -0000
+
+ros-galactic-rosbag2-py (0.2.0-1focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Thu, 26 Sep 2019 07:00:00 -0000
+
+ros-galactic-rosbag2-py (0.1.2-1focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Mon, 20 May 2019 07:00:00 -0000
+
+ros-galactic-rosbag2-py (0.1.1-1focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Thu, 09 May 2019 07:00:00 -0000
+
+ros-galactic-rosbag2-py (0.1.0-1focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Wed, 08 May 2019 07:00:00 -0000
+
+ros-galactic-rosbag2-py (0.0.5-1focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Thu, 27 Dec 2018 08:00:00 -0000
+
+ros-galactic-rosbag2-py (0.0.4-1focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Wed, 19 Dec 2018 08:00:00 -0000
+
+ros-galactic-rosbag2-py (0.0.3-1focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Fri, 14 Dec 2018 08:00:00 -0000
+
+ros-galactic-rosbag2-py (0.0.2-1focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Wed, 12 Dec 2018 08:00:00 -0000
+
+ros-galactic-rosbag2-py (0.0.1-1focal) focal; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Tue, 11 Dec 2018 08:00:00 -0000
+
+

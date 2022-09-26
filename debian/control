@@ -1,0 +1,12 @@
+Source: ros-galactic-rosbag2-py
+Section: misc
+Priority: optional
+Maintainer: Karsten Knese <karsten@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), python3-pytest <!nocheck>, ros-galactic-ament-cmake-python, ros-galactic-ament-cmake-ros, ros-galactic-ament-lint-auto <!nocheck>, ros-galactic-ament-lint-common <!nocheck>, ros-galactic-pybind11-vendor, ros-galactic-python-cmake-module, ros-galactic-rcl-interfaces <!nocheck>, ros-galactic-rclpy <!nocheck>, ros-galactic-rosbag2-compression, ros-galactic-rosbag2-cpp, ros-galactic-rosbag2-storage, ros-galactic-rosbag2-storage-default-plugins <!nocheck>, ros-galactic-rosbag2-transport, ros-galactic-rosidl-runtime-py <!nocheck>, ros-galactic-std-msgs <!nocheck>, ros-galactic-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-galactic-rosbag2-py
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-galactic-pybind11-vendor, ros-galactic-rosbag2-compression, ros-galactic-rosbag2-cpp, ros-galactic-rosbag2-storage, ros-galactic-rosbag2-transport, ros-galactic-rpyutils, ros-galactic-ros-workspace
+Description: Python API for rosbag2
