@@ -1,0 +1,12 @@
+Source: ros-galactic-rosbag2-storage
+Section: misc
+Priority: optional
+Maintainer: Karsten Knese <karsten@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), ros-galactic-ament-cmake, ros-galactic-ament-cmake-gmock <!nocheck>, ros-galactic-ament-cmake-gtest <!nocheck>, ros-galactic-ament-lint-auto <!nocheck>, ros-galactic-ament-lint-common <!nocheck>, ros-galactic-pluginlib, ros-galactic-rcpputils, ros-galactic-rcutils, ros-galactic-rosbag2-test-common <!nocheck>, ros-galactic-yaml-cpp-vendor, ros-galactic-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-galactic-rosbag2-storage
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-galactic-pluginlib, ros-galactic-rcpputils, ros-galactic-rcutils, ros-galactic-yaml-cpp-vendor, ros-galactic-ros-workspace
+Description: ROS2 independent storage format to store serialized ROS2 messages
