@@ -1,0 +1,12 @@
+Source: ros-galactic-ros2bag
+Section: misc
+Priority: optional
+Maintainer: Karsten Knese <karsten@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), python3-pytest <!nocheck>, ros-galactic-ament-copyright <!nocheck>, ros-galactic-ament-flake8 <!nocheck>, ros-galactic-ament-pep257 <!nocheck>, ros-galactic-launch-testing <!nocheck>, ros-galactic-launch-testing-ros <!nocheck>, ros-galactic-ros2cli, ros-galactic-rosbag2-py, ros-galactic-rosbag2-transport, ros-galactic-ros-workspace, python3-all, python3-setuptools, dh-python
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-galactic-ros2bag
+Architecture: any
+Depends: ${python3:Depends}, ${misc:Depends}, ros-galactic-ros2cli, ros-galactic-rosbag2-py, ros-galactic-rosbag2-transport, ros-galactic-ros-workspace
+Description: Entry point for rosbag in ROS 2
