@@ -1,0 +1,12 @@
+Source: ros-galactic-rosbag2-transport
+Section: misc
+Priority: optional
+Maintainer: Karsten Knese <karsten@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), ros-galactic-ament-cmake-gmock <!nocheck>, ros-galactic-ament-cmake-ros, ros-galactic-ament-index-cpp <!nocheck>, ros-galactic-ament-lint-auto <!nocheck>, ros-galactic-ament-lint-common <!nocheck>, ros-galactic-rclcpp, ros-galactic-rmw, ros-galactic-rmw-implementation-cmake <!nocheck>, ros-galactic-rosbag2-compression, ros-galactic-rosbag2-cpp, ros-galactic-rosbag2-interfaces, ros-galactic-rosbag2-storage, ros-galactic-rosbag2-test-common <!nocheck>, ros-galactic-shared-queues-vendor, ros-galactic-test-msgs <!nocheck>, ros-galactic-yaml-cpp-vendor, ros-galactic-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-galactic-rosbag2-transport
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-galactic-rclcpp, ros-galactic-rmw, ros-galactic-rosbag2-compression, ros-galactic-rosbag2-cpp, ros-galactic-rosbag2-interfaces, ros-galactic-rosbag2-storage, ros-galactic-shared-queues-vendor, ros-galactic-yaml-cpp-vendor, ros-galactic-ros-workspace
+Description: Layer encapsulating ROS middleware to allow rosbag2 to be used with or without middleware
