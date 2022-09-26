@@ -1,0 +1,12 @@
+Source: ros-galactic-rosbag2-tests
+Section: misc
+Priority: optional
+Maintainer: Karsten Knese <karsten@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), ros-galactic-ament-cmake, ros-galactic-ament-cmake-gmock <!nocheck>, ros-galactic-ament-index-cpp, ros-galactic-ament-lint-auto <!nocheck>, ros-galactic-ament-lint-common <!nocheck>, ros-galactic-rclcpp <!nocheck>, ros-galactic-rcpputils <!nocheck>, ros-galactic-ros2bag <!nocheck>, ros-galactic-rosbag2-compression <!nocheck>, ros-galactic-rosbag2-compression-zstd <!nocheck>, ros-galactic-rosbag2-cpp <!nocheck>, ros-galactic-rosbag2-storage <!nocheck>, ros-galactic-rosbag2-storage-default-plugins <!nocheck>, ros-galactic-rosbag2-test-common <!nocheck>, ros-galactic-std-msgs <!nocheck>, ros-galactic-test-msgs <!nocheck>, ros-galactic-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-galactic-rosbag2-tests
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-galactic-ament-index-cpp, ros-galactic-ros-workspace
+Description: Tests package for rosbag2
