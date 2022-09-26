@@ -1,1 +1,1 @@
-{"trim": "", "base": "8d4aed80", "trimbase": "", "parent": "rpm/galactic/rosbag2_compression_zstd", "previous": "2662a568"}
+{"base": "20b05de0", "parent": "rpm/galactic/rosbag2_compression_zstd", "previous": "92234f71", "trim": "", "trimbase": ""}
