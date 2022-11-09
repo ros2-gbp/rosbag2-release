@@ -1,0 +1,12 @@
+Source: ros-humble-rosbag2-cpp
+Section: misc
+Priority: optional
+Maintainer: Geoffrey Biggs <geoff@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), ros-humble-ament-cmake, ros-humble-ament-cmake-gmock <!nocheck>, ros-humble-ament-index-cpp, ros-humble-ament-lint-auto <!nocheck>, ros-humble-ament-lint-common <!nocheck>, ros-humble-pluginlib, ros-humble-rclcpp, ros-humble-rcpputils, ros-humble-rcutils, ros-humble-rmw, ros-humble-rmw-implementation, ros-humble-rosbag2-storage, ros-humble-rosbag2-test-common <!nocheck>, ros-humble-rosidl-runtime-c, ros-humble-rosidl-runtime-cpp, ros-humble-rosidl-typesupport-cpp, ros-humble-rosidl-typesupport-introspection-cpp, ros-humble-shared-queues-vendor, ros-humble-test-msgs <!nocheck>, ros-humble-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-humble-rosbag2-cpp
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-humble-ament-index-cpp, ros-humble-pluginlib, ros-humble-rclcpp, ros-humble-rcpputils, ros-humble-rcutils, ros-humble-rmw, ros-humble-rmw-implementation, ros-humble-rosbag2-storage, ros-humble-rosbag2-storage-default-plugins, ros-humble-rosidl-runtime-c, ros-humble-rosidl-runtime-cpp, ros-humble-rosidl-typesupport-cpp, ros-humble-rosidl-typesupport-introspection-cpp, ros-humble-shared-queues-vendor, ros-humble-ros-workspace
+Description: C++ ROSBag2 client library
