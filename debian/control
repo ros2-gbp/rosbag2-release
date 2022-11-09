@@ -1,0 +1,12 @@
+Source: ros-humble-rosbag2
+Section: misc
+Priority: optional
+Maintainer: Geoffrey Biggs <geoff@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), ros-humble-ament-cmake, ros-humble-rosbag2-test-common <!nocheck>, ros-humble-rosbag2-tests <!nocheck>, ros-humble-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-humble-rosbag2
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-humble-ros2bag, ros-humble-rosbag2-compression, ros-humble-rosbag2-compression-zstd, ros-humble-rosbag2-cpp, ros-humble-rosbag2-py, ros-humble-rosbag2-storage, ros-humble-rosbag2-storage-default-plugins, ros-humble-rosbag2-transport, ros-humble-shared-queues-vendor, ros-humble-sqlite3-vendor, ros-humble-ros-workspace
+Description: Meta package for rosbag2 related packages
