@@ -27,6 +27,7 @@
 #include "rclcpp/logging.hpp"
 #include "rclcpp/clock.hpp"
 
+#include "rosbag2_cpp/bag_events.hpp"
 #include "rosbag2_cpp/writer.hpp"
 
 #include "rosbag2_interfaces/srv/snapshot.hpp"
@@ -58,7 +59,12 @@ Recorder::Recorder(
   const rclcpp::NodeOptions & node_options)
 : Recorder(
     std::move(writer),
-    std::make_shared<KeyboardHandler>(),
+#ifndef _WIN32
+    std::make_shared<KeyboardHandler>(false),
+#else
+    // We don't have signal handler option in constructor for windows version
+    std::shared_ptr<KeyboardHandler>(new KeyboardHandler()),
+#endif
     storage_options,
     record_options,
     node_name,
@@ -72,7 +78,9 @@ Recorder::Recorder(
   const rosbag2_transport::RecordOptions & record_options,
   const std::string & node_name,
   const rclcpp::NodeOptions & node_options)
-: rclcpp::Node(node_name, rclcpp::NodeOptions(node_options).start_parameter_event_publisher(false)),
+: rclcpp::Node(node_name, rclcpp::NodeOptions(node_options)
+    .start_parameter_event_publisher(false)
+    .parameter_overrides({rclcpp::Parameter("use_sim_time", record_options.use_sim_time)})),
   writer_(std::move(writer)),
   storage_options_(storage_options),
   record_options_(record_options),
@@ -105,6 +113,15 @@ Recorder::~Recorder()
   }
 
   subscriptions_.clear();
+
+  {
+    std::lock_guard<std::mutex> lock(event_publisher_thread_mutex_);
+    event_publisher_thread_should_exit_ = true;
+  }
+  event_publisher_thread_wake_cv_.notify_all();
+  if (event_publisher_thread_.joinable()) {
+    event_publisher_thread_.join();
+  }
 }
 
 void Recorder::record()
@@ -131,6 +148,24 @@ void Recorder::record()
       });
   }
 
+  // Start the thread that will publish events
+  event_publisher_thread_ = std::thread(&Recorder::event_publisher_thread_main, this);
+
+  split_event_pub_ = create_publisher<rosbag2_interfaces::msg::WriteSplitEvent>(
+    "events/write_split",
+    1);
+  rosbag2_cpp::bag_events::WriterEventCallbacks callbacks;
+  callbacks.write_split_callback =
+    [this](rosbag2_cpp::bag_events::BagSplitInfo & info) {
+      {
+        std::lock_guard<std::mutex> lock(event_publisher_thread_mutex_);
+        bag_split_info_ = info;
+        write_split_has_occurred_ = true;
+      }
+      event_publisher_thread_wake_cv_.notify_all();
+    };
+  writer_->add_event_callbacks(callbacks);
+
   serialization_format_ = record_options_.rmw_serialization_format;
   RCLCPP_INFO(this->get_logger(), "Listening for topics...");
   subscribe_topics(get_requested_or_available_topics());
@@ -139,6 +174,38 @@ void Recorder::record()
     discovery_future_ =
       std::async(std::launch::async, std::bind(&Recorder::topics_discovery, this));
   }
+}
+
+void Recorder::event_publisher_thread_main()
+{
+  RCLCPP_INFO(get_logger(), "Event publisher thread: Starting");
+
+  bool should_exit = false;
+
+  while (!should_exit) {
+    std::unique_lock<std::mutex> lock(event_publisher_thread_mutex_);
+    event_publisher_thread_wake_cv_.wait(
+      lock,
+      [this] {return event_publisher_thread_should_wake();});
+
+    if (write_split_has_occurred_) {
+      write_split_has_occurred_ = false;
+
+      auto message = rosbag2_interfaces::msg::WriteSplitEvent();
+      message.closed_file = bag_split_info_.closed_file;
+      message.opened_file = bag_split_info_.opened_file;
+      split_event_pub_->publish(message);
+    }
+
+    should_exit = event_publisher_thread_should_exit_;
+  }
+
+  RCLCPP_INFO(get_logger(), "Event publisher thread: Exiting");
+}
+
+bool Recorder::event_publisher_thread_should_wake()
+{
+  return write_split_has_occurred_ || event_publisher_thread_should_exit_;
 }
 
 const rosbag2_cpp::Writer & Recorder::get_writer_handle()
@@ -258,7 +325,7 @@ Recorder::create_subscription(
     qos,
     [this, topic_name, topic_type](std::shared_ptr<rclcpp::SerializedMessage> message) {
       if (!paused_.load()) {
-        writer_->write(message, topic_name, topic_type, rclcpp::Clock(RCL_SYSTEM_TIME).now());
+        writer_->write(message, topic_name, topic_type, this->get_clock()->now());
       }
     });
   return subscription;
