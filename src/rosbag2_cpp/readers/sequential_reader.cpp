@@ -87,8 +87,7 @@ void SequentialReader::open(
   base_folder_ = storage_options.uri;
 
   // If there is a metadata.yaml file present, load it.
-  // If not, let's ask the storage with the given URI for its metadata.
-  // This is necessary for non ROS2 bags (aka ROS1 legacy bags).
+  // If not, assume a single storage file, attempt to load, and ask storage for metadata.
   if (metadata_io_->metadata_file_exists(storage_options.uri)) {
     metadata_ = metadata_io_->read_metadata(storage_options.uri);
     if (storage_options_.storage_id.empty()) {
@@ -103,14 +102,9 @@ void SequentialReader::open(
     current_file_iterator_ = file_paths_.begin();
     load_current_file();
   } else {
-    if (storage_options_.storage_id.empty()) {
-      throw std::runtime_error(
-              "No metadata found and no storage_id specified. "
-              "Can't open bag.");
-    }
     storage_ = storage_factory_->open_read_only(storage_options_);
     if (!storage_) {
-      throw std::runtime_error{"No storage could be initialized. Abort"};
+      throw std::runtime_error{"No storage could be initialized from the inputs."};
     }
     metadata_ = storage_->get_metadata();
     if (metadata_.relative_file_paths.empty()) {
@@ -235,8 +229,12 @@ void SequentialReader::load_current_file()
 void SequentialReader::load_next_file()
 {
   assert(current_file_iterator_ != file_paths_.end());
+  auto info = std::make_shared<bag_events::BagSplitInfo>();
+  info->closed_file = get_current_file();
   current_file_iterator_++;
+  info->opened_file = get_current_file();
   load_current_file();
+  callback_manager_.execute_callbacks(bag_events::BagEvent::READ_SPLIT, info);
 }
 
 std::string SequentialReader::get_current_file() const
@@ -290,6 +288,20 @@ void SequentialReader::fill_topics_metadata()
   for (const auto & topic_information : metadata_.topics_with_message_count) {
     topics_metadata_.push_back(topic_information.topic_metadata);
   }
+}
+
+void SequentialReader::add_event_callbacks(const bag_events::ReaderEventCallbacks & callbacks)
+{
+  if (callbacks.read_split_callback) {
+    callback_manager_.add_event_callback(
+      callbacks.read_split_callback,
+      bag_events::BagEvent::READ_SPLIT);
+  }
+}
+
+bool SequentialReader::has_callback_for_event(const bag_events::BagEvent event) const
+{
+  return callback_manager_.has_callback_for_event(event);
 }
 
 }  // namespace readers
