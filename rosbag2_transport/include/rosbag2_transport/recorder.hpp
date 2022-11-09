@@ -32,6 +32,8 @@
 
 #include "rosbag2_interfaces/srv/snapshot.hpp"
 
+#include "rosbag2_interfaces/msg/write_split_event.hpp"
+
 #include "rosbag2_storage/topic_metadata.hpp"
 
 #include "rosbag2_transport/record_options.hpp"
@@ -109,11 +111,16 @@ public:
 
   inline constexpr static const auto kPauseResumeToggleKey = KeyboardHandler::KeyCode::SPACE;
 
+protected:
+  ROSBAG2_TRANSPORT_EXPORT
+  std::unordered_map<std::string, std::string> get_requested_or_available_topics();
+  std::shared_ptr<rosbag2_cpp::Writer> writer_;
+  rosbag2_storage::StorageOptions storage_options_;
+  rosbag2_transport::RecordOptions record_options_;
+  std::atomic<bool> stop_discovery_;
+
 private:
   void topics_discovery();
-
-  std::unordered_map<std::string, std::string>
-  get_requested_or_available_topics();
 
   std::unordered_map<std::string, std::string>
   get_missing_topics(const std::unordered_map<std::string, std::string> & all_topics);
@@ -142,10 +149,6 @@ private:
 
   void warn_if_new_qos_for_subscribed_topic(const std::string & topic_name);
 
-  std::shared_ptr<rosbag2_cpp::Writer> writer_;
-  rosbag2_storage::StorageOptions storage_options_;
-  rosbag2_transport::RecordOptions record_options_;
-  std::atomic<bool> stop_discovery_;
   std::future<void> discovery_future_;
   std::unordered_map<std::string, std::shared_ptr<rclcpp::GenericSubscription>> subscriptions_;
   std::unordered_set<std::string> topics_warned_about_incompatibility_;
@@ -159,6 +162,18 @@ private:
   // Toogle paused key callback handle
   KeyboardHandler::callback_handle_t toggle_paused_key_callback_handle_ =
     KeyboardHandler::invalid_handle;
+
+  // Variables for event publishing
+  rclcpp::Publisher<rosbag2_interfaces::msg::WriteSplitEvent>::SharedPtr split_event_pub_;
+  bool event_publisher_thread_should_exit_ = false;
+  bool write_split_has_occurred_ = false;
+  rosbag2_cpp::bag_events::BagSplitInfo bag_split_info_;
+  std::mutex event_publisher_thread_mutex_;
+  std::condition_variable event_publisher_thread_wake_cv_;
+  std::thread event_publisher_thread_;
+
+  void event_publisher_thread_main();
+  bool event_publisher_thread_should_wake();
 };
 
 }  // namespace rosbag2_transport
