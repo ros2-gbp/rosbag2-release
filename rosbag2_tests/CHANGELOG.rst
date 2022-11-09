@@ -2,15 +2,62 @@
 Changelog for package rosbag2_tests
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.9.2 (2022-09-26)
-------------------
+0.15.3 (2022-11-07)
+-------------------
+* Fix for ros2 bag play exit with non-zero code on SIGINT (`#1126 <https://github.com/ros2/rosbag2/issues/1126>`_) (`#1147 <https://github.com/ros2/rosbag2/issues/1147>`_)
+* Get rid from attempt to open DB file in `wait_for_db()` test fixture (`#1141 <https://github.com/ros2/rosbag2/issues/1141>`_) (`#1148 <https://github.com/ros2/rosbag2/issues/1148>`_)
+* Readers/info can accept a single bag storage file, and detect its storage id automatically (`#1072 <https://github.com/ros2/rosbag2/issues/1072>`_) (`#1077 <https://github.com/ros2/rosbag2/issues/1077>`_)
+* Contributors: mergify[bot]
 
-0.9.1 (2021-07-08)
-------------------
-* [backport galactic] Handle SIGTERM gracefully in recording (`#792 <https://github.com/ros2/rosbag2/issues/792>`_) (`#807 <https://github.com/ros2/rosbag2/issues/807>`_)
-  Backport `#792 <https://github.com/ros2/rosbag2/issues/792>`_ to galactic
-  * Handle SIGTERM gracefully in recording
-* Contributors: Emerson Knapp
+0.15.2 (2022-05-11)
+-------------------
+
+0.15.1 (2022-04-06)
+-------------------
+* Revert "Add the ability to record any key/value pair in the 'custom' field in metadata.yaml (`#976 <https://github.com/ros2/rosbag2/issues/976>`_)" (`#984 <https://github.com/ros2/rosbag2/issues/984>`_)
+* Add the ability to record any key/value pair in the 'custom' field in metadata.yaml (`#976 <https://github.com/ros2/rosbag2/issues/976>`_)
+* Contributors: Audrow Nash, Jorge Perez, Tony Peng
+
+0.15.0 (2022-04-05)
+-------------------
+* Revert "Add the ability to record any key/value pair in the 'custom' field in metadata.yaml (`#976 <https://github.com/ros2/rosbag2/issues/976>`_)" (`#984 <https://github.com/ros2/rosbag2/issues/984>`_)
+* Add the ability to record any key/value pair in the 'custom' field in metadata.yaml (`#976 <https://github.com/ros2/rosbag2/issues/976>`_)
+* Contributors: Jorge Perez, Tony Peng
+
+0.14.1 (2022-03-29)
+-------------------
+* Bump version number to avoid conflict
+* Contributors: Chris Lalancette
+
+0.14.0 (2022-03-29)
+-------------------
+
+0.13.0 (2022-01-13)
+-------------------
+
+0.12.0 (2021-12-17)
+-------------------
+* Add pause/resume options to the bag recorder (`#905 <https://github.com/ros2/rosbag2/issues/905>`_)
+* Contributors: Ivan Santiago Paunovic
+
+0.11.0 (2021-11-08)
+-------------------
+* Update package maintainers (`#899 <https://github.com/ros2/rosbag2/issues/899>`_)
+* Contributors: Michel Hidalgo
+
+0.10.1 (2021-10-22)
+-------------------
+
+0.10.0 (2021-10-19)
+-------------------
+* Fix a bug on invalid pointer address when using "MESSAGE" compressio… (`#866 <https://github.com/ros2/rosbag2/issues/866>`_)
+* Metadata per file info (`#870 <https://github.com/ros2/rosbag2/issues/870>`_)
+* Fix record test to reflect plugin query changes (`#838 <https://github.com/ros2/rosbag2/issues/838>`_)
+* Make sure the subscription exists before publishing messages (`#804 <https://github.com/ros2/rosbag2/issues/804>`_)
+* Handle SIGTERM gracefully in recording (`#792 <https://github.com/ros2/rosbag2/issues/792>`_)
+* Add spin_and_wait_for_matched to PublicationManager and update test c… (`#797 <https://github.com/ros2/rosbag2/issues/797>`_)
+* Remove rmw_fastrtps_cpp find_package in rosbag2_tests (`#774 <https://github.com/ros2/rosbag2/issues/774>`_)
+* Contributors: Barry Xu, Cameron Miller, Emerson Knapp, Ivan Santiago Paunovic, Wojciech Jaworski
 
 0.9.0 (2021-05-17)
 ------------------

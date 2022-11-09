@@ -27,6 +27,7 @@
 #include "rcpputils/filesystem_helper.hpp"
 
 #include "rosbag2_cpp/info.hpp"
+#include "rosbag2_cpp/logging.hpp"
 
 #include "rosbag2_storage/storage_options.hpp"
 
@@ -40,24 +41,6 @@ namespace
 std::string strip_parent_path(const std::string & relative_path)
 {
   return rcpputils::fs::path(relative_path).filename().string();
-}
-
-rosbag2_cpp::cache::CacheConsumer::consume_callback_function_t make_callback(
-  std::shared_ptr<rosbag2_storage::storage_interfaces::ReadWriteInterface> storage_interface,
-  std::unordered_map<std::string, rosbag2_storage::TopicInformation> & topics_info_map,
-  std::mutex & topics_mutex)
-{
-  return [callback_interface = storage_interface, &topics_info_map, &topics_mutex](
-    const std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>> & msgs) {
-           callback_interface->write(msgs);
-           for (const auto & msg : msgs) {
-             // count messages as successfully written
-             std::lock_guard<std::mutex> lock(topics_mutex);
-             if (topics_info_map.find(msg->topic_name) != topics_info_map.end()) {
-               topics_info_map[msg->topic_name].message_count++;
-             }
-           }
-         };
 }
 }  // namespace
 
@@ -86,6 +69,12 @@ void SequentialWriter::init_metadata()
   metadata_.starting_time = std::chrono::time_point<std::chrono::high_resolution_clock>(
     std::chrono::nanoseconds::max());
   metadata_.relative_file_paths = {strip_parent_path(storage_->get_relative_file_path())};
+  rosbag2_storage::FileInformation file_info{};
+  file_info.path = strip_parent_path(storage_->get_relative_file_path());
+  file_info.starting_time = std::chrono::time_point<std::chrono::high_resolution_clock>(
+    std::chrono::nanoseconds::max());
+  file_info.message_count = 0;
+  metadata_.files = {file_info};
 }
 
 void SequentialWriter::open(
@@ -133,16 +122,24 @@ void SequentialWriter::open(
   }
 
   use_cache_ = storage_options.max_cache_size > 0u;
+  if (storage_options.snapshot_mode && !use_cache_) {
+    throw std::runtime_error(
+            "Max cache size must be greater than 0 when snapshot mode is enabled");
+  }
+
   if (use_cache_) {
-    message_cache_ = std::make_shared<rosbag2_cpp::cache::MessageCache>(
-      storage_options.max_cache_size);
+    if (storage_options.snapshot_mode) {
+      message_cache_ = std::make_shared<rosbag2_cpp::cache::CircularMessageCache>(
+        storage_options.max_cache_size);
+    } else {
+      message_cache_ = std::make_shared<rosbag2_cpp::cache::MessageCache>(
+        storage_options.max_cache_size);
+    }
     cache_consumer_ = std::make_unique<rosbag2_cpp::cache::CacheConsumer>(
       message_cache_,
-      make_callback(
-        storage_,
-        topics_names_to_info_,
-        topics_info_mutex_));
+      std::bind(&SequentialWriter::write_messages, this, std::placeholders::_1));
   }
+
   init_metadata();
 }
 
@@ -238,9 +235,9 @@ std::string SequentialWriter::format_storage_uri(
 
 void SequentialWriter::switch_to_next_storage()
 {
-  // consumer remaining message cache
+  // consume remaining message cache
   if (use_cache_) {
-    cache_consumer_->close();
+    cache_consumer_->stop();
     message_cache_->log_dropped();
   }
 
@@ -261,21 +258,26 @@ void SequentialWriter::switch_to_next_storage()
     storage_->create_topic(topic.second.topic_metadata);
   }
 
-  // Set new storage in buffer layer and restart consumer thread
   if (use_cache_) {
-    cache_consumer_->change_consume_callback(
-      make_callback(
-        storage_,
-        topics_names_to_info_,
-        topics_info_mutex_));
+    // restart consumer thread for cache
+    cache_consumer_->start();
   }
 }
 
 void SequentialWriter::split_bagfile()
 {
+  auto info = std::make_shared<bag_events::BagSplitInfo>();
+  info->closed_file = storage_->get_relative_file_path();
   switch_to_next_storage();
+  info->opened_file = storage_->get_relative_file_path();
 
   metadata_.relative_file_paths.push_back(strip_parent_path(storage_->get_relative_file_path()));
+
+  rosbag2_storage::FileInformation file_info{};
+  file_info.path = strip_parent_path(storage_->get_relative_file_path());
+  metadata_.files.push_back(file_info);
+
+  callback_manager_.execute_callbacks(bag_events::BagEvent::WRITE_SPLIT, info);
 }
 
 void SequentialWriter::write(std::shared_ptr<rosbag2_storage::SerializedBagMessage> message)
@@ -295,22 +297,30 @@ void SequentialWriter::write(std::shared_ptr<rosbag2_storage::SerializedBagMessa
     throw std::runtime_error(errmsg.str());
   }
 
-  if (should_split_bagfile()) {
-    split_bagfile();
-
-    // Update bagfile starting time
-    metadata_.starting_time = std::chrono::high_resolution_clock::now();
-  }
-
   const auto message_timestamp = std::chrono::time_point<std::chrono::high_resolution_clock>(
     std::chrono::nanoseconds(message->time_stamp));
+
+  if (should_split_bagfile(message_timestamp)) {
+    split_bagfile();
+    // Update bagfile starting time
+    metadata_.starting_time = message_timestamp;
+    metadata_.files.back().starting_time = message_timestamp;
+  }
+
   metadata_.starting_time = std::min(metadata_.starting_time, message_timestamp);
 
+  metadata_.files.back().starting_time =
+    std::min(metadata_.files.back().starting_time, message_timestamp);
   const auto duration = message_timestamp - metadata_.starting_time;
   metadata_.duration = std::max(metadata_.duration, duration);
 
+  const auto file_duration = message_timestamp - metadata_.files.back().starting_time;
+  metadata_.files.back().duration =
+    std::max(metadata_.files.back().duration, file_duration);
+
   auto converted_msg = get_writeable_message(message);
 
+  metadata_.files.back().message_count++;
   if (storage_options_.max_cache_size == 0u) {
     // If cache size is set to zero, we write to storage directly
     storage_->write(converted_msg);
@@ -321,6 +331,16 @@ void SequentialWriter::write(std::shared_ptr<rosbag2_storage::SerializedBagMessa
   }
 }
 
+bool SequentialWriter::take_snapshot()
+{
+  if (!storage_options_.snapshot_mode) {
+    ROSBAG2_CPP_LOG_WARN("SequentialWriter take_snaphot called when snapshot mode is disabled");
+    return false;
+  }
+  message_cache_->notify_data_ready();
+  return true;
+}
+
 std::shared_ptr<rosbag2_storage::SerializedBagMessage>
 SequentialWriter::get_writeable_message(
   std::shared_ptr<rosbag2_storage::SerializedBagMessage> message)
@@ -328,7 +348,8 @@ SequentialWriter::get_writeable_message(
   return converter_ ? converter_->convert(message) : message;
 }
 
-bool SequentialWriter::should_split_bagfile() const
+bool SequentialWriter::should_split_bagfile(
+  const std::chrono::time_point<std::chrono::high_resolution_clock> & current_time) const
 {
   // Assume we aren't splitting
   bool should_split = false;
@@ -337,8 +358,7 @@ bool SequentialWriter::should_split_bagfile() const
   if (storage_options_.max_bagfile_size !=
     rosbag2_storage::storage_interfaces::MAX_BAGFILE_SIZE_NO_SPLIT)
   {
-    should_split = should_split ||
-      (storage_->get_bagfile_size() > storage_options_.max_bagfile_size);
+    should_split = (storage_->get_bagfile_size() >= storage_options_.max_bagfile_size);
   }
 
   // Splitting by time
@@ -348,7 +368,7 @@ bool SequentialWriter::should_split_bagfile() const
     auto max_duration_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
       std::chrono::seconds(storage_options_.max_bagfile_duration));
     should_split = should_split ||
-      ((std::chrono::high_resolution_clock::now() - metadata_.starting_time) > max_duration_ns);
+      ((current_time - metadata_.starting_time) > max_duration_ns);
   }
 
   return should_split;
@@ -373,6 +393,30 @@ void SequentialWriter::finalize_metadata()
   for (const auto & topic : topics_names_to_info_) {
     metadata_.topics_with_message_count.push_back(topic.second);
     metadata_.message_count += topic.second.message_count;
+  }
+}
+
+void SequentialWriter::write_messages(
+  const std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>> & messages)
+{
+  if (messages.empty()) {
+    return;
+  }
+  storage_->write(messages);
+  std::lock_guard<std::mutex> lock(topics_info_mutex_);
+  for (const auto & msg : messages) {
+    if (topics_names_to_info_.find(msg->topic_name) != topics_names_to_info_.end()) {
+      topics_names_to_info_[msg->topic_name].message_count++;
+    }
+  }
+}
+
+void SequentialWriter::add_event_callbacks(const bag_events::WriterEventCallbacks & callbacks)
+{
+  if (callbacks.write_split_callback) {
+    callback_manager_.add_event_callback(
+      callbacks.write_split_callback,
+      bag_events::BagEvent::WRITE_SPLIT);
   }
 }
 

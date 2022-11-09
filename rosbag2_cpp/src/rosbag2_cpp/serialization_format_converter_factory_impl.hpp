@@ -44,15 +44,18 @@ public:
       converter_class_loader_ =
         std::make_unique<pluginlib::ClassLoader<
             converter_interfaces::SerializationFormatConverter>>(
-        "rosbag2_cpp", "rosbag2_cpp::converter_interfaces::SerializationFormatConverter");
+        "rosbag2_cpp",
+        converter_interfaces::SerializationFormatConverter::get_base_class_name());
       serializer_class_loader_ =
         std::make_shared<pluginlib::ClassLoader<
             converter_interfaces::SerializationFormatSerializer>>(
-        "rosbag2_cpp", "rosbag2_cpp::converter_interfaces::SerializationFormatSerializer");
+        "rosbag2_cpp",
+        converter_interfaces::SerializationFormatSerializer::get_base_class_name());
       deserializer_class_loader_ =
         std::make_shared<pluginlib::ClassLoader<
             converter_interfaces::SerializationFormatDeserializer>>(
-        "rosbag2_cpp", "rosbag2_cpp::converter_interfaces::SerializationFormatDeserializer");
+        "rosbag2_cpp",
+        converter_interfaces::SerializationFormatDeserializer::get_base_class_name());
     } catch (const std::exception & e) {
       ROSBAG2_CPP_LOG_ERROR_STREAM("Unable to create class loader instance: " << e.what());
       throw e;
@@ -71,6 +74,11 @@ public:
   load_serializer(const std::string & format)
   {
     return load_interface(format, serializer_class_loader_);
+  }
+
+  std::vector<std::string> get_declared_serialization_plugins() const
+  {
+    return serializer_class_loader_->getDeclaredClasses();
   }
 
 private:
@@ -120,9 +128,9 @@ private:
       }
     }
 
-    ROSBAG2_CPP_LOG_INFO(
-      "No plugin found providing serialization format. "
-      "Falling back to checking RMW implementations.");
+    ROSBAG2_CPP_LOG_INFO_STREAM(
+      "No plugin found providing serialization format '" << format << "'. " <<
+        "Falling back to checking RMW implementations.");
     try {
       return std::make_unique<RMWImplementedConverter>(format);
     } catch (const std::runtime_error & ex) {

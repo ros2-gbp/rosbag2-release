@@ -23,10 +23,16 @@
 #include <utility>
 #include <vector>
 
+#include "keyboard_handler/keyboard_handler.hpp"
+
 #include "rclcpp/node.hpp"
 #include "rclcpp/qos.hpp"
 
 #include "rosbag2_cpp/writer.hpp"
+
+#include "rosbag2_interfaces/srv/snapshot.hpp"
+
+#include "rosbag2_interfaces/msg/write_split_event.hpp"
 
 #include "rosbag2_storage/topic_metadata.hpp"
 
@@ -58,6 +64,15 @@ public:
     const rclcpp::NodeOptions & node_options = rclcpp::NodeOptions());
 
   ROSBAG2_TRANSPORT_PUBLIC
+  Recorder(
+    std::shared_ptr<rosbag2_cpp::Writer> writer,
+    std::shared_ptr<KeyboardHandler> keyboard_handler,
+    const rosbag2_storage::StorageOptions & storage_options,
+    const rosbag2_transport::RecordOptions & record_options,
+    const std::string & node_name = "rosbag2_recorder",
+    const rclcpp::NodeOptions & node_options = rclcpp::NodeOptions());
+
+  ROSBAG2_TRANSPORT_PUBLIC
   virtual ~Recorder();
 
   ROSBAG2_TRANSPORT_PUBLIC
@@ -78,7 +93,27 @@ public:
   ROSBAG2_TRANSPORT_PUBLIC
   const rosbag2_cpp::Writer & get_writer_handle();
 
+  /// Pause the recording.
+  ROSBAG2_TRANSPORT_PUBLIC
+  void pause();
+
+  /// Resume recording.
+  ROSBAG2_TRANSPORT_PUBLIC
+  void resume();
+
+  /// Pause if it was recording, continue recording if paused.
+  ROSBAG2_TRANSPORT_PUBLIC
+  void toggle_paused();
+
+  /// Return the current paused state.
+  ROSBAG2_TRANSPORT_PUBLIC
+  bool is_paused();
+
+  inline constexpr static const auto kPauseResumeToggleKey = KeyboardHandler::KeyCode::SPACE;
+
 protected:
+  ROSBAG2_TRANSPORT_EXPORT
+  std::unordered_map<std::string, std::string> get_requested_or_available_topics();
   std::shared_ptr<rosbag2_cpp::Writer> writer_;
   rosbag2_storage::StorageOptions storage_options_;
   rosbag2_transport::RecordOptions record_options_;
@@ -86,9 +121,6 @@ protected:
 
 private:
   void topics_discovery();
-
-  std::unordered_map<std::string, std::string>
-  get_requested_or_available_topics();
 
   std::unordered_map<std::string, std::string>
   get_missing_topics(const std::unordered_map<std::string, std::string> & all_topics);
@@ -123,6 +155,25 @@ private:
   std::string serialization_format_;
   std::unordered_map<std::string, rclcpp::QoS> topic_qos_profile_overrides_;
   std::unordered_set<std::string> topic_unknown_types_;
+  rclcpp::Service<rosbag2_interfaces::srv::Snapshot>::SharedPtr srv_snapshot_;
+  std::atomic<bool> paused_ = false;
+  // Keyboard handler
+  std::shared_ptr<KeyboardHandler> keyboard_handler_;
+  // Toogle paused key callback handle
+  KeyboardHandler::callback_handle_t toggle_paused_key_callback_handle_ =
+    KeyboardHandler::invalid_handle;
+
+  // Variables for event publishing
+  rclcpp::Publisher<rosbag2_interfaces::msg::WriteSplitEvent>::SharedPtr split_event_pub_;
+  bool event_publisher_thread_should_exit_ = false;
+  bool write_split_has_occurred_ = false;
+  rosbag2_cpp::bag_events::BagSplitInfo bag_split_info_;
+  std::mutex event_publisher_thread_mutex_;
+  std::condition_variable event_publisher_thread_wake_cv_;
+  std::thread event_publisher_thread_;
+
+  void event_publisher_thread_main();
+  bool event_publisher_thread_should_wake();
 };
 
 }  // namespace rosbag2_transport

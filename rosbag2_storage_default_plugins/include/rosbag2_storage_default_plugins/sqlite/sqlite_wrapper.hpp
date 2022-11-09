@@ -30,8 +30,6 @@
 namespace rosbag2_storage_plugins
 {
 
-using DBPtr = sqlite3 *;
-
 class ROSBAG2_STORAGE_DEFAULT_PLUGINS_PUBLIC SqliteWrapper
 {
 public:
@@ -42,6 +40,7 @@ public:
   SqliteWrapper();
   ~SqliteWrapper();
 
+  bool field_exists(const std::string & table_name, const std::string & field_name);
   SqliteStatement prepare_statement(const std::string & query);
   std::string query_pragma_value(const std::string & key);
 
@@ -49,12 +48,14 @@ public:
 
   operator bool();
 
+  sqlite3 * get_database();
+
 private:
   void apply_pragma_settings(
     std::unordered_map<std::string, std::string> & pragmas,
     rosbag2_storage::storage_interfaces::IOFlag io_flag);
 
-  DBPtr db_ptr;
+  sqlite3 * db_ptr;
 };
 
 

@@ -25,6 +25,7 @@
 #include "rclcpp/serialized_message.hpp"
 #include "rclcpp/time.hpp"
 
+#include "rosbag2_cpp/bag_events.hpp"
 #include "rosbag2_cpp/converter_options.hpp"
 #include "rosbag2_cpp/visibility_control.hpp"
 #include "rosbag2_cpp/writers/sequential_writer.hpp"
@@ -97,6 +98,12 @@ public:
   void create_topic(const rosbag2_storage::TopicMetadata & topic_with_type);
 
   /**
+   * Trigger a snapshot when snapshot mode is enabled.
+   * \returns true if snapshot is successful, false if snapshot fails or is not supported
+   */
+  bool take_snapshot();
+
+  /**
    * Remove a new topic in the underlying storage.
    * If creation of subscription fails remove the topic
    * from the db (more of cleanup)
@@ -138,10 +145,34 @@ public:
    * \param topic_name the string of the topic this messages belongs to
    * \param type_name the string of the type associated with this message
    * \param time The time stamp of the message
+   * \throws runtime_error if the Writer is not open or duplicating message is failed.
+   */
+  [[deprecated(
+    "Use write(std::shared_ptr<rclcpp::SerializedMessage> message," \
+    " const std::string & topic_name," \
+    " const std::string & type_name," \
+    " const rclcpp::Time & time) instead."
+  )]]
+  void write(
+    const rclcpp::SerializedMessage & message,
+    const std::string & topic_name,
+    const std::string & type_name,
+    const rclcpp::Time & time);
+
+  /**
+   * Write a serialized message to a bagfile.
+   * The topic will be created if it has not been created already.
+   *
+   * \warning after calling this function, the serialized data will no longer be managed by message.
+   *
+   * \param message rclcpp::SerializedMessage The serialized message to be written to the bagfile
+   * \param topic_name the string of the topic this messages belongs to
+   * \param type_name the string of the type associated with this message
+   * \param time The time stamp of the message
    * \throws runtime_error if the Writer is not open.
    */
   void write(
-    const rclcpp::SerializedMessage & message,
+    std::shared_ptr<rclcpp::SerializedMessage> message,
     const std::string & topic_name,
     const std::string & type_name,
     const rclcpp::Time & time);
@@ -150,7 +181,7 @@ public:
    * Write a non-serialized message to a bagfile.
    * The topic will be created if it has not been created already.
    *
-   * \param message MessageT The non-serialized message to be written to the bagfile
+   * \param message MessageT The serialized message to be written to the bagfile
    * \param topic_name the string of the topic this messages belongs to
    * \param type_name the string of the type associated with this message
    * \param time The time stamp of the message
@@ -162,10 +193,10 @@ public:
     const std::string & topic_name,
     const rclcpp::Time & time)
   {
-    rclcpp::SerializedMessage serialized_msg;
+    auto serialized_msg = std::make_shared<rclcpp::SerializedMessage>();
 
     rclcpp::Serialization<MessageT> serialization;
-    serialization.serialize_message(&message, &serialized_msg);
+    serialization.serialize_message(&message, serialized_msg.get());
     return write(serialized_msg, topic_name, rosidl_generator_traits::name<MessageT>(), time);
   }
 
@@ -173,6 +204,12 @@ public:
   {
     return *writer_impl_;
   }
+
+  /*
+   * \brief Add callbacks for events that may occur during bag writing.
+   * \param callbacks the structure containing the callback to add for each event.
+   */
+  void add_event_callbacks(bag_events::WriterEventCallbacks & callbacks);
 
 private:
   std::mutex writer_mutex_;

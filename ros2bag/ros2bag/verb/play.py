@@ -15,13 +15,13 @@
 from argparse import FileType
 
 from rclpy.qos import InvalidQoSProfileException
-from ros2bag.api import check_path_exists
+from ros2bag.api import add_standard_reader_args
+from ros2bag.api import check_not_negative_int
 from ros2bag.api import check_positive_float
 from ros2bag.api import convert_yaml_to_qos_profile
 from ros2bag.api import print_error
 from ros2bag.verb import VerbExtension
 from ros2cli.node import NODE_NAME_PREFIX
-from rosbag2_py import get_registered_readers
 from rosbag2_py import Player
 from rosbag2_py import PlayOptions
 from rosbag2_py import StorageOptions
@@ -39,14 +39,7 @@ class PlayVerb(VerbExtension):
     """Play back ROS data from a bag."""
 
     def add_arguments(self, parser, cli_name):  # noqa: D102
-        reader_choices = get_registered_readers()
-        default_reader = 'sqlite3' if 'sqlite3' in reader_choices else reader_choices[0]
-
-        parser.add_argument(
-            'bag_file', type=check_path_exists, help='bag file to replay')
-        parser.add_argument(
-            '-s', '--storage', default=default_reader, choices=reader_choices,
-            help=f"storage identifier to be used, defaults to '{default_reader}'")
+        add_standard_reader_args(parser)
         parser.add_argument(
             '--read-ahead-queue-size', type=int, default=1000,
             help='size of message queue rosbag tries to hold in memory to help deterministic '
@@ -83,8 +76,34 @@ class PlayVerb(VerbExtension):
             help='Publish to /clock at a specific frequency in Hz, to act as a ROS Time Source. '
                  'Value must be positive. Defaults to not publishing.')
         parser.add_argument(
-            '-d', '--delay', type=float, default=0.0,
-            help='Sleep SEC seconds before play. Valid range > 0.0')
+            '-d', '--delay', type=positive_float, default=0.0,
+            help='Sleep duration before play (each loop), in seconds. Negative durations invalid.')
+        parser.add_argument(
+            '--disable-keyboard-controls', action='store_true',
+            help='disables keyboard controls for playback')
+        parser.add_argument(
+            '-p', '--start-paused', action='store_true', default=False,
+            help='Start the playback player in a paused state.')
+        parser.add_argument(
+            '--start-offset', type=check_positive_float, default=0.0,
+            help='Start the playback player this many seconds into the bag file.')
+        parser.add_argument(
+            '--wait-for-all-acked', type=check_not_negative_int, default=-1,
+            help='Wait until all published messages are acknowledged by all subscribers or until '
+                 'the timeout elapses in millisecond before play is terminated. '
+                 'Especially for the case of sending message with big size in a short time. '
+                 'Negative timeout is invalid. '
+                 '0 means wait forever until all published messages are acknowledged by all '
+                 'subscribers. '
+                 "Note that this option is valid only if the publisher\'s QOS profile is "
+                 'RELIABLE.',
+            metavar='TIMEOUT')
+        parser.add_argument(
+            '--disable-loan-message', action='store_true', default=False,
+            help='Disable to publish as loaned message. '
+                 'By default, if loaned message can be used, messages are published as loaned '
+                 'message. It can help to reduce the number of data copies, so there is a greater '
+                 'benefit for sending big data.')
 
     def main(self, *, args):  # noqa: D102
         qos_profile_overrides = {}  # Specify a valid default
@@ -106,7 +125,7 @@ class PlayVerb(VerbExtension):
             topic_remapping.append(remap_rule)
 
         storage_options = StorageOptions(
-            uri=args.bag_file,
+            uri=args.bag_path,
             storage_id=args.storage,
             storage_config_uri=storage_config_file,
         )
@@ -120,6 +139,14 @@ class PlayVerb(VerbExtension):
         play_options.topic_remapping_options = topic_remapping
         play_options.clock_publish_frequency = args.clock
         play_options.delay = args.delay
+        play_options.disable_keyboard_controls = args.disable_keyboard_controls
+        play_options.start_paused = args.start_paused
+        play_options.start_offset = args.start_offset
+        play_options.wait_acked_timeout = args.wait_for_all_acked
+        play_options.disable_loan_message = args.disable_loan_message
 
         player = Player()
-        player.play(storage_options, play_options)
+        try:
+            player.play(storage_options, play_options)
+        except KeyboardInterrupt:
+            pass

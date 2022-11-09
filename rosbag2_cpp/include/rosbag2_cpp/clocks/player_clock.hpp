@@ -15,10 +15,12 @@
 #ifndef ROSBAG2_CPP__CLOCKS__PLAYER_CLOCK_HPP_
 #define ROSBAG2_CPP__CLOCKS__PLAYER_CLOCK_HPP_
 
+#include <atomic>
 #include <chrono>
 #include <functional>
 #include <memory>
 
+#include "rclcpp/clock.hpp"
 #include "rclcpp/time.hpp"
 #include "rcutils/time.h"
 #include "rosbag2_cpp/visibility_control.hpp"
@@ -101,16 +103,27 @@ public:
   virtual bool is_paused() const = 0;
 
   /**
-   * Change the current ROS time to an arbitrary time.
+   * \brief Change the current ROS time to an arbitrary time.
+   * \note This will wake any waiting `sleep_until` and trigger any registered JumpHandler
+   * callbacks.
+   * \param time_point Time point in ROS playback timeline.
    */
   ROSBAG2_CPP_PUBLIC
-  virtual void jump(rcutils_time_point_value_t) = 0;
+  virtual void jump(rcutils_time_point_value_t time_point) = 0;
 
   /**
    * \sa jump
    */
   ROSBAG2_CPP_PUBLIC
   virtual void jump(rclcpp::Time time) = 0;
+
+  /// Add a callback to invoke if the jump threshold is exceeded.
+  /// \sa rclcpp::Clock::create_jump_callback
+  ROSBAG2_CPP_PUBLIC
+  virtual rclcpp::JumpHandler::SharedPtr create_jump_callback(
+    rclcpp::JumpHandler::pre_callback_t pre_callback,
+    rclcpp::JumpHandler::post_callback_t post_callback,
+    const rcl_jump_threshold_t & threshold) = 0;
 };
 
 }  // namespace rosbag2_cpp

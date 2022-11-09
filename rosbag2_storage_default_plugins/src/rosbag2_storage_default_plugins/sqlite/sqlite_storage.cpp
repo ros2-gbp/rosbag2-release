@@ -31,22 +31,10 @@
 
 #include "rosbag2_storage/metadata_io.hpp"
 #include "rosbag2_storage/serialized_bag_message.hpp"
+#include "rosbag2_storage/yaml.hpp"
 #include "rosbag2_storage_default_plugins/sqlite/sqlite_exception.hpp"
 #include "rosbag2_storage_default_plugins/sqlite/sqlite_pragmas.hpp"
 #include "rosbag2_storage_default_plugins/sqlite/sqlite_statement_wrapper.hpp"
-
-#ifdef _WIN32
-// This is necessary because of a bug in yaml-cpp's cmake
-#define YAML_CPP_DLL
-// This is necessary because yaml-cpp does not always use dllimport/dllexport consistently
-# pragma warning(push)
-# pragma warning(disable:4251)
-# pragma warning(disable:4275)
-#endif
-#include "yaml-cpp/yaml.h"
-#ifdef _WIN32
-# pragma warning(pop)
-#endif
 
 #include "../logging.hpp"
 
@@ -260,7 +248,27 @@ void SqliteStorage::write_locked(
             "' has not been created yet! Call 'create_topic' first.");
   }
 
-  write_statement_->bind(message->time_stamp, topic_entry->second, message->serialized_data);
+  try {
+    write_statement_->bind(message->time_stamp, topic_entry->second, message->serialized_data);
+  } catch (const SqliteException & exc) {
+    if (SQLITE_TOOBIG == exc.get_sqlite_return_code()) {
+      // Get the sqlite string/blob limit.
+      const size_t sqlite_limit = sqlite3_limit(
+        this->get_sqlite_database_wrapper().get_database(),
+        SQLITE_LIMIT_LENGTH,
+        -1);
+      ROSBAG2_STORAGE_DEFAULT_PLUGINS_LOG_WARN_STREAM(
+        "Message on topic '" << message->topic_name << "' of size '" <<
+          message->serialized_data->buffer_length <<
+          "' bytes failed to write because it exceeds the maximum size sqlite can store ('" <<
+          sqlite_limit << "' bytes): " <<
+          exc.what());
+      return;
+    } else {
+      // Rethrow.
+      throw;
+    }
+  }
   write_statement_->execute_and_reset();
 }
 
@@ -300,6 +308,11 @@ std::shared_ptr<rosbag2_storage::SerializedBagMessage> SqliteStorage::read_next(
   bag_message->serialized_data = std::get<0>(*current_message_row_);
   bag_message->time_stamp = std::get<1>(*current_message_row_);
   bag_message->topic_name = std::get<2>(*current_message_row_);
+
+  // set start time to current time
+  // and set seek_row_id to the new row id up
+  seek_time_ = bag_message->time_stamp;
+  seek_row_id_ = std::get<3>(*current_message_row_) + 1;
 
   ++current_message_row_;
   return bag_message;
@@ -376,6 +389,10 @@ void SqliteStorage::prepare_for_writing()
 
 void SqliteStorage::prepare_for_reading()
 {
+  std::string statement_str = "SELECT data, timestamp, topics.name, messages.id "
+    "FROM messages JOIN topics ON messages.topic_id = topics.id WHERE ";
+
+  // add topic filter
   if (!storage_filter_.topics.empty()) {
     // Construct string for selected topics
     std::string topic_list{""};
@@ -385,20 +402,19 @@ void SqliteStorage::prepare_for_reading()
         topic_list += ",";
       }
     }
-
-    read_statement_ = database_->prepare_statement(
-      "SELECT data, timestamp, topics.name "
-      "FROM messages JOIN topics ON messages.topic_id = topics.id "
-      "WHERE topics.name IN (" + topic_list + ")"
-      "ORDER BY messages.timestamp;");
-  } else {
-    read_statement_ = database_->prepare_statement(
-      "SELECT data, timestamp, topics.name "
-      "FROM messages JOIN topics ON messages.topic_id = topics.id "
-      "ORDER BY messages.timestamp;");
+    statement_str += "(topics.name IN (" + topic_list + ")) AND ";
   }
+  // add start time filter
+  statement_str += "(((timestamp = " + std::to_string(seek_time_) + ") "
+    "AND (messages.id >= " + std::to_string(seek_row_id_) + ")) "
+    "OR (timestamp > " + std::to_string(seek_time_) + ")) ";
+
+  // add order by time then id
+  statement_str += "ORDER BY messages.timestamp, messages.id;";
+
+  read_statement_ = database_->prepare_statement(statement_str);
   message_result_ = read_statement_->execute_query<
-    std::shared_ptr<rcutils_uint8_array_t>, rcutils_time_point_value_t, std::string>();
+    std::shared_ptr<rcutils_uint8_array_t>, rcutils_time_point_value_t, std::string, int>();
   current_message_row_ = message_result_.begin();
 }
 
@@ -438,27 +454,54 @@ rosbag2_storage::BagMetadata SqliteStorage::get_metadata()
   metadata.message_count = 0;
   metadata.topics_with_message_count = {};
 
-  auto statement = database_->prepare_statement(
-    "SELECT name, type, serialization_format, COUNT(messages.id), MIN(messages.timestamp), "
-    "MAX(messages.timestamp), offered_qos_profiles "
-    "FROM messages JOIN topics on topics.id = messages.topic_id "
-    "GROUP BY topics.name;");
-  auto query_results = statement->execute_query<
-    std::string, std::string, std::string, int, rcutils_time_point_value_t,
-    rcutils_time_point_value_t, std::string>();
-
   rcutils_time_point_value_t min_time = INT64_MAX;
   rcutils_time_point_value_t max_time = 0;
-  for (auto result : query_results) {
-    metadata.topics_with_message_count.push_back(
-      {
-        {std::get<0>(result), std::get<1>(result), std::get<2>(result), std::get<6>(result)},
-        static_cast<size_t>(std::get<3>(result))
-      });
 
-    metadata.message_count += std::get<3>(result);
-    min_time = std::get<4>(result) < min_time ? std::get<4>(result) : min_time;
-    max_time = std::get<5>(result) > max_time ? std::get<5>(result) : max_time;
+  if (database_->field_exists("topics", "offered_qos_profiles")) {
+    std::string query =
+      "SELECT name, type, serialization_format, COUNT(messages.id), MIN(messages.timestamp), "
+      "MAX(messages.timestamp), offered_qos_profiles "
+      "FROM messages JOIN topics on topics.id = messages.topic_id "
+      "GROUP BY topics.name;";
+
+    auto statement = database_->prepare_statement(query);
+    auto query_results = statement->execute_query<
+      std::string, std::string, std::string, int, rcutils_time_point_value_t,
+      rcutils_time_point_value_t, std::string>();
+
+    for (auto result : query_results) {
+      metadata.topics_with_message_count.push_back(
+        {
+          {std::get<0>(result), std::get<1>(result), std::get<2>(result), std::get<6>(result)},
+          static_cast<size_t>(std::get<3>(result))
+        });
+
+      metadata.message_count += std::get<3>(result);
+      min_time = std::get<4>(result) < min_time ? std::get<4>(result) : min_time;
+      max_time = std::get<5>(result) > max_time ? std::get<5>(result) : max_time;
+    }
+  } else {
+    std::string query =
+      "SELECT name, type, serialization_format, COUNT(messages.id), MIN(messages.timestamp), "
+      "MAX(messages.timestamp) "
+      "FROM messages JOIN topics on topics.id = messages.topic_id "
+      "GROUP BY topics.name;";
+    auto statement = database_->prepare_statement(query);
+    auto query_results = statement->execute_query<
+      std::string, std::string, std::string, int, rcutils_time_point_value_t,
+      rcutils_time_point_value_t>();
+
+    for (auto result : query_results) {
+      metadata.topics_with_message_count.push_back(
+        {
+          {std::get<0>(result), std::get<1>(result), std::get<2>(result), ""},
+          static_cast<size_t>(std::get<3>(result))
+        });
+
+      metadata.message_count += std::get<3>(result);
+      min_time = std::get<4>(result) < min_time ? std::get<4>(result) : min_time;
+      max_time = std::get<5>(result) > max_time ? std::get<5>(result) : max_time;
+    }
   }
 
   if (metadata.message_count == 0) {
@@ -477,17 +520,37 @@ rosbag2_storage::BagMetadata SqliteStorage::get_metadata()
 void SqliteStorage::set_filter(
   const rosbag2_storage::StorageFilter & storage_filter)
 {
+  // keep current start time and start row_id
+  // set topic filter and reset read statement for re-read
   storage_filter_ = storage_filter;
+  read_statement_ = nullptr;
 }
 
 void SqliteStorage::reset_filter()
 {
-  storage_filter_ = rosbag2_storage::StorageFilter();
+  set_filter(rosbag2_storage::StorageFilter());
+}
+
+void SqliteStorage::seek(const rcutils_time_point_value_t & timestamp)
+{
+  // reset row id to 0 and set start time to input
+  // keep topic filter and reset read statement for re-read
+  seek_row_id_ = 0;
+  seek_time_ = timestamp;
+  read_statement_ = nullptr;
 }
 
 std::string SqliteStorage::get_storage_setting(const std::string & key)
 {
   return database_->query_pragma_value(key);
+}
+
+SqliteWrapper & SqliteStorage::get_sqlite_database_wrapper()
+{
+  if (nullptr == database_) {
+    throw std::runtime_error("database not open");
+  }
+  return *database_;
 }
 
 }  // namespace rosbag2_storage_plugins

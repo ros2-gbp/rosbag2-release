@@ -31,6 +31,9 @@ void TestReadOnlyPlugin::open(
   const rosbag2_storage::StorageOptions & storage_options,
   rosbag2_storage::storage_interfaces::IOFlag flag)
 {
+  if (storage_options.storage_id != test_constants::READ_ONLY_PLUGIN_IDENTIFIER) {
+    throw std::runtime_error{"storage_id did not match. TestReadOnlyPlugin won't open."};
+  }
   if (flag == rosbag2_storage::storage_interfaces::IOFlag::READ_ONLY) {
     std::cout << "opening testplugin read only: ";
   } else if (flag == rosbag2_storage::storage_interfaces::IOFlag::READ_WRITE) {
@@ -90,6 +93,11 @@ void TestReadOnlyPlugin::set_filter(
 void TestReadOnlyPlugin::reset_filter()
 {
   std::cout << "\nresetting storage filter\n";
+}
+
+void TestReadOnlyPlugin::seek(const rcutils_time_point_value_t & /*timestamp*/)
+{
+  std::cout << "\nseeking\n";
 }
 
 PLUGINLIB_EXPORT_CLASS(TestReadOnlyPlugin, rosbag2_storage::storage_interfaces::ReadOnlyInterface)
