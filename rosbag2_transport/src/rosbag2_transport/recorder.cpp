@@ -59,7 +59,12 @@ Recorder::Recorder(
   const rclcpp::NodeOptions & node_options)
 : Recorder(
     std::move(writer),
-    std::make_shared<KeyboardHandler>(),
+#ifndef _WIN32
+    std::make_shared<KeyboardHandler>(false),
+#else
+    // We don't have signal handler option in constructor for windows version
+    std::shared_ptr<KeyboardHandler>(new KeyboardHandler()),
+#endif
     storage_options,
     record_options,
     node_name,
@@ -143,6 +148,46 @@ void Recorder::record()
         response->success = writer_->take_snapshot();
       });
   }
+
+  srv_split_bagfile_ = create_service<rosbag2_interfaces::srv::SplitBagfile>(
+    "~/split_bagfile",
+    [this](
+      const std::shared_ptr<rmw_request_id_t>/* request_header */,
+      const std::shared_ptr<rosbag2_interfaces::srv::SplitBagfile::Request>/* request */,
+      const std::shared_ptr<rosbag2_interfaces::srv::SplitBagfile::Response>/* response */)
+    {
+      writer_->split_bagfile();
+    });
+
+  srv_pause_ = create_service<rosbag2_interfaces::srv::Pause>(
+    "~/pause",
+    [this](
+      const std::shared_ptr<rmw_request_id_t>/* request_header */,
+      const std::shared_ptr<rosbag2_interfaces::srv::Pause::Request>/* request */,
+      const std::shared_ptr<rosbag2_interfaces::srv::Pause::Response>/* response */)
+    {
+      pause();
+    });
+
+  srv_resume_ = create_service<rosbag2_interfaces::srv::Resume>(
+    "~/resume",
+    [this](
+      const std::shared_ptr<rmw_request_id_t>/* request_header */,
+      const std::shared_ptr<rosbag2_interfaces::srv::Resume::Request>/* request */,
+      const std::shared_ptr<rosbag2_interfaces::srv::Resume::Response>/* response */)
+    {
+      resume();
+    });
+
+  srv_is_paused_ = create_service<rosbag2_interfaces::srv::IsPaused>(
+    "~/is_paused",
+    [this](
+      const std::shared_ptr<rmw_request_id_t>/* request_header */,
+      const std::shared_ptr<rosbag2_interfaces::srv::IsPaused::Request>/* request */,
+      const std::shared_ptr<rosbag2_interfaces::srv::IsPaused::Response> response)
+    {
+      response->paused = is_paused();
+    });
 
   // Start the thread that will publish events
   event_publisher_thread_ = std::thread(&Recorder::event_publisher_thread_main, this);

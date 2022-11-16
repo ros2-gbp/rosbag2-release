@@ -116,7 +116,12 @@ Player::Player(
   const rclcpp::NodeOptions & node_options)
 : Player(std::move(reader),
     // only call KeyboardHandler when using default keyboard handler implementation
+#ifndef _WIN32
+    std::make_shared<KeyboardHandler>(false),
+#else
+    // We don't have signal handler option in constructor for windows version
     std::shared_ptr<KeyboardHandler>(new KeyboardHandler()),
+#endif
     storage_options, play_options,
     node_name, node_options)
 {}
@@ -597,6 +602,7 @@ void Player::prepare_publishers()
   rosbag2_storage::StorageFilter storage_filter;
   storage_filter.topics = play_options_.topics_to_filter;
   storage_filter.topics_regex = play_options_.topics_regex_to_filter;
+  storage_filter.topics_regex_to_exclude = play_options_.topics_regex_to_exclude;
   reader_->set_filter(storage_filter);
 
   // Create /clock publisher
@@ -720,7 +726,7 @@ bool Player::publish_message(rosbag2_storage::SerializedBagMessageSharedPtr mess
     } catch (const std::exception & e) {
       RCLCPP_ERROR_STREAM(
         get_logger(), "Failed to publish message on '" << message->topic_name <<
-          "' topic. \nError: %s" << e.what());
+          "' topic. \nError: " << e.what());
     }
 
     // Calling on play message post-callbacks
