@@ -1,0 +1,12 @@
+Source: ros-rolling-rosbag2-storage-default-plugins
+Section: misc
+Priority: optional
+Maintainer: Geoffrey Biggs <geoff@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), ros-rolling-ament-cmake, ros-rolling-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-rolling-rosbag2-storage-default-plugins
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-rolling-rosbag2-storage-sqlite3, ros-rolling-ros-workspace
+Description: Intermediate metapackage to point at default storage plugin(s) for rosbag2
