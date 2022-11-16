@@ -1,4 +1,4 @@
-// Copyright 2018, Bosch Software Innovations GmbH.
+// Copyright 2022, Foxglove Technologies. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,16 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ROSBAG2_CPP__STORAGE_OPTIONS_HPP_
-#define ROSBAG2_CPP__STORAGE_OPTIONS_HPP_
+#ifndef ROSBAG2_CPP__FAKE_DATA_HPP_
+#define ROSBAG2_CPP__FAKE_DATA_HPP_
 
-#include "rosbag2_storage/storage_options.hpp"
+#include <utility>
+#include <vector>
 
-namespace rosbag2_cpp
-{
+#include "rosbag2_cpp/writers/sequential_writer.hpp"
 
-using StorageOptions [[deprecated("use rosbag2_storage::StorageOptions instead")]] =
-  rosbag2_storage::StorageOptions;
+// Write vector of <timestamp, uint32_data_value> pairs to bag files, splitting every N messages
+void write_sample_split_bag(
+  const rosbag2_storage::StorageOptions & storage_options,
+  const std::vector<std::pair<rcutils_time_point_value_t, uint32_t>> & fake_messages,
+  size_t split_every);
 
-}  // namespace rosbag2_cpp
-#endif  // ROSBAG2_CPP__STORAGE_OPTIONS_HPP_
+#endif  // ROSBAG2_CPP__FAKE_DATA_HPP_
