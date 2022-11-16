@@ -1,0 +1,12 @@
+Source: ros-rolling-rosbag2-cpp
+Section: misc
+Priority: optional
+Maintainer: Geoffrey Biggs <geoff@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), ros-rolling-ament-cmake, ros-rolling-ament-cmake-gmock <!nocheck>, ros-rolling-ament-index-cpp, ros-rolling-ament-lint-auto <!nocheck>, ros-rolling-ament-lint-common <!nocheck>, ros-rolling-pluginlib, ros-rolling-rclcpp, ros-rolling-rcpputils, ros-rolling-rcutils, ros-rolling-rmw, ros-rolling-rmw-implementation, ros-rolling-rosbag2-storage, ros-rolling-rosbag2-test-common <!nocheck>, ros-rolling-rosidl-runtime-c, ros-rolling-rosidl-runtime-cpp, ros-rolling-rosidl-typesupport-cpp, ros-rolling-rosidl-typesupport-introspection-cpp, ros-rolling-shared-queues-vendor, ros-rolling-test-msgs <!nocheck>, ros-rolling-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-rolling-rosbag2-cpp
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-rolling-ament-index-cpp, ros-rolling-pluginlib, ros-rolling-rclcpp, ros-rolling-rcpputils, ros-rolling-rcutils, ros-rolling-rmw, ros-rolling-rmw-implementation, ros-rolling-rosbag2-storage, ros-rolling-rosbag2-storage-default-plugins, ros-rolling-rosidl-runtime-c, ros-rolling-rosidl-runtime-cpp, ros-rolling-rosidl-typesupport-cpp, ros-rolling-rosidl-typesupport-introspection-cpp, ros-rolling-shared-queues-vendor, ros-rolling-ros-workspace
+Description: C++ ROSBag2 client library
