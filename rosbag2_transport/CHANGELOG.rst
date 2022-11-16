@@ -2,23 +2,60 @@
 Changelog for package rosbag2_transport
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.15.3 (2022-11-07)
+0.18.0 (2022-11-15)
 -------------------
-* Mark `test_play_services` as xfail for FastRTPS and CycloneDDS (`#1091 <https://github.com/ros2/rosbag2/issues/1091>`_) (`#1136 <https://github.com/ros2/rosbag2/issues/1136>`_)
-* Fix hangout in rosbag2 player and recorder when pressing `CTRL+C` (`#1081 <https://github.com/ros2/rosbag2/issues/1081>`_) (`#1085 <https://github.com/ros2/rosbag2/issues/1085>`_)
-* make writer and option variables private instead of protected (`#1097 <https://github.com/ros2/rosbag2/issues/1097>`_)
-* Revert "[humble] Backport. Added support for filtering topics via regular expressions (`#1034 <https://github.com/ros2/rosbag2/issues/1034>`_)- (`#1039 <https://github.com/ros2/rosbag2/issues/1039>`_)" (`#1069 <https://github.com/ros2/rosbag2/issues/1069>`_)
-* Notification of significant events during bag recording and playback (`#908 <https://github.com/ros2/rosbag2/issues/908>`_) (`#1037 <https://github.com/ros2/rosbag2/issues/1037>`_)
-* Backport. Add use_sim_time option to record verb (`#1017 <https://github.com/ros2/rosbag2/issues/1017>`_)
-* Fix for rosbag2::Player freeze when ctrl+c in pause mode (`#1002 <https://github.com/ros2/rosbag2/issues/1002>`_) (`#1016 <https://github.com/ros2/rosbag2/issues/1016>`_)
-* Make unpublished topics unrecorded by default (`#968 <https://github.com/ros2/rosbag2/issues/968>`_) (`#1008 <https://github.com/ros2/rosbag2/issues/1008>`_)
-* Contributors: Bernardo Taveira, Esteve Fernandez, Geoffrey Biggs, Keisuke Shima, Michael Orlov, Sean Kelly, mergify[bot]
+* Add pause and resume service calls for rosbag2 recorder (`#1131 <https://github.com/ros2/rosbag2/issues/1131>`_)
+* Redesign record_services tests to make them more deterministic (`#1122 <https://github.com/ros2/rosbag2/issues/1122>`_)
+* Add SplitBagfile recording service. (`#1115 <https://github.com/ros2/rosbag2/issues/1115>`_)
+* Reverse read order API and sqlite storage implementation (`#1083 <https://github.com/ros2/rosbag2/issues/1083>`_)
+* make recorder node composable by inheritance (`#1093 <https://github.com/ros2/rosbag2/issues/1093>`_)
+* Mark `test_play_services` as xfail for FastRTPS and CycloneDDS (`#1091 <https://github.com/ros2/rosbag2/issues/1091>`_)
+* fixed typo (`#1057 <https://github.com/ros2/rosbag2/issues/1057>`_)
+* Fix hangout in rosbag2 player and recorder when pressing `CTRL+C` (`#1081 <https://github.com/ros2/rosbag2/issues/1081>`_)
+* Added support for excluding topics via regular expressions (`#1046 <https://github.com/ros2/rosbag2/issues/1046>`_)
+* Contributors: Bernardo Taveira, Cristóbal Arroyo, DensoADAS, Emerson Knapp, Esteve Fernandez, Michael Orlov, rshanor
 
-0.15.2 (2022-05-11)
+0.17.0 (2022-07-30)
 -------------------
+* Use a single variable for evaluating the filter regex (`#1053 <https://github.com/ros2/rosbag2/issues/1053>`_)
+* Add additional mode of publishing sim time updates triggered by replayed messages (`#1050 <https://github.com/ros2/rosbag2/issues/1050>`_)
+ * When this mode is active, /clock updates are triggered whenever messages are replayed rather
+   than at a fixed rate. Optionally, a list of triggering topics can be set so that only a subset
+   of replayed messages will trigger the /clock update. This mode is most useful when replaying
+   applications which do some sanity checking or correlation of message data to system timestamps.
+   If the application does not need the sim time to be updated at a consistent rate, this mode can
+   substantially reduce the overhead of having sim time enabled in rosbag2.
+* Speed optimization: Preparing copyless publish/subscribing by using const message for writing (`#1010 <https://github.com/ros2/rosbag2/issues/1010>`_)
+ * Update compression to make copy instead of in-place operation
+ * Get rid of extra data copying operation in writer by refrencing to received message
+* Renamed --topics-regex to --regex and -e in Player class to be consistent with Recorder (`#1045 <https://github.com/ros2/rosbag2/issues/1045>`_)
+* Refactor play until and duration tests (`#1024 <https://github.com/ros2/rosbag2/issues/1024>`_)
+* Added support for filtering topics via regular expressions on Playback (`#1034 <https://github.com/ros2/rosbag2/issues/1034>`_)
+* Adds stop operation for rosbag2::Player (`#1007 <https://github.com/ros2/rosbag2/issues/1007>`_)
+  Stop will unpause if in pause mode, stop playback and exit from `play()` method.
+* Fix incorrect boundary check for `playback_duration` and `play_until_timestamp` (`#1032 <https://github.com/ros2/rosbag2/issues/1032>`_)
+ * Add initialization for `metadata  starting time` in MockSequentialReader
+ * Fixed one false positive and one flaky test in test_play_until
+* Split up the include of rclcpp.hpp (`#1027 <https://github.com/ros2/rosbag2/issues/1027>`_)
+* Notification of significant events during bag recording and playback (`#908 <https://github.com/ros2/rosbag2/issues/908>`_)
+* Adds play until timestamp functionality (`#1005 <https://github.com/ros2/rosbag2/issues/1005>`_)
+* Add CLI verb for burst mode of playback (`#980 <https://github.com/ros2/rosbag2/issues/980>`_)
+* Add on play message callbacks to the `rosbag2::Player` class (`#1004 <https://github.com/ros2/rosbag2/issues/1004>`_)
+* Add play-for specified number of seconds functionality (`#960 <https://github.com/ros2/rosbag2/issues/960>`_)
+* Reduce message spam when topics to be recorded do not exist (`#1018 <https://github.com/ros2/rosbag2/issues/1018>`_)
+* Address flakiness in record_all_with_sim_time test (`#1014 <https://github.com/ros2/rosbag2/issues/1014>`_)
+* Add debug instrumentation for `test_play_services` (`#1013 <https://github.com/ros2/rosbag2/issues/1013>`_)
+* Fix for rosbag2::Player freeze when pressing ctrl+c in pause mode (`#1002 <https://github.com/ros2/rosbag2/issues/1002>`_)
+* Contributors: Agustin Alba Chicar, Brian, Chris Lalancette, DensoADAS, Joshua Hampp,
+  Esteve Fernandez, Geoffrey Biggs, Jorge Perez, Michael Orlov, kylemarcey, Misha Shalem, Tony Peng
+
+0.16.0 (2022-05-11)
+-------------------
+* Add the /bigobj flag to Windows Debug builds. (`#1009 <https://github.com/ros2/rosbag2/issues/1009>`_)
+* Make unpublished topics unrecorded by default (`#968 <https://github.com/ros2/rosbag2/issues/968>`_)
 * Make peek_next_message_from_queue return a SharedPtr. (`#993 <https://github.com/ros2/rosbag2/issues/993>`_)
 * Change the topic names in test_record.cpp (`#988 <https://github.com/ros2/rosbag2/issues/988>`_)
-* Contributors: Chris Lalancette
+* Contributors: Chris Lalancette, Michael Orlov, Sean Kelly
 
 0.15.1 (2022-04-06)
 -------------------

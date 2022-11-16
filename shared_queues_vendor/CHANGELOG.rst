@@ -2,12 +2,15 @@
 Changelog for package shared_queues_vendor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.15.3 (2022-11-07)
+0.18.0 (2022-11-15)
 -------------------
-* :man_farmer: Fixes policy CMP0135 warning for CMake >= 3.24 (`#1084 <https://github.com/ros2/rosbag2/issues/1084>`_) (`#1096 <https://github.com/ros2/rosbag2/issues/1096>`_)
-* Contributors: mergify[bot]
+* Fixes policy CMP0135 warning for CMake >= 3.24 (`#1084 <https://github.com/ros2/rosbag2/issues/1084>`_)
+* Contributors: Cristóbal Arroyo
 
-0.15.2 (2022-05-11)
+0.17.0 (2022-07-30)
+-------------------
+
+0.16.0 (2022-05-11)
 -------------------
 
 0.15.1 (2022-04-06)

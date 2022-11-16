@@ -35,7 +35,7 @@
 #include "rosbag2_storage/yaml.hpp"
 #include "rosbag2_transport/qos.hpp"
 
-#include "topic_filter.hpp"
+#include "rosbag2_transport/topic_filter.hpp"
 
 namespace rosbag2_transport
 {
@@ -94,6 +94,7 @@ Recorder::Recorder(
     [this](KeyboardHandler::KeyCode /*key_code*/,
     KeyboardHandler::KeyModifiers /*key_modifiers*/) {this->toggle_paused();},
     Recorder::kPauseResumeToggleKey);
+  topic_filter_ = std::make_unique<TopicFilter>(record_options, this->get_node_graph_interface());
   // show instructions
   RCLCPP_INFO_STREAM(
     get_logger(),
@@ -147,6 +148,46 @@ void Recorder::record()
         response->success = writer_->take_snapshot();
       });
   }
+
+  srv_split_bagfile_ = create_service<rosbag2_interfaces::srv::SplitBagfile>(
+    "~/split_bagfile",
+    [this](
+      const std::shared_ptr<rmw_request_id_t>/* request_header */,
+      const std::shared_ptr<rosbag2_interfaces::srv::SplitBagfile::Request>/* request */,
+      const std::shared_ptr<rosbag2_interfaces::srv::SplitBagfile::Response>/* response */)
+    {
+      writer_->split_bagfile();
+    });
+
+  srv_pause_ = create_service<rosbag2_interfaces::srv::Pause>(
+    "~/pause",
+    [this](
+      const std::shared_ptr<rmw_request_id_t>/* request_header */,
+      const std::shared_ptr<rosbag2_interfaces::srv::Pause::Request>/* request */,
+      const std::shared_ptr<rosbag2_interfaces::srv::Pause::Response>/* response */)
+    {
+      pause();
+    });
+
+  srv_resume_ = create_service<rosbag2_interfaces::srv::Resume>(
+    "~/resume",
+    [this](
+      const std::shared_ptr<rmw_request_id_t>/* request_header */,
+      const std::shared_ptr<rosbag2_interfaces::srv::Resume::Request>/* request */,
+      const std::shared_ptr<rosbag2_interfaces::srv::Resume::Response>/* response */)
+    {
+      resume();
+    });
+
+  srv_is_paused_ = create_service<rosbag2_interfaces::srv::IsPaused>(
+    "~/is_paused",
+    [this](
+      const std::shared_ptr<rmw_request_id_t>/* request_header */,
+      const std::shared_ptr<rosbag2_interfaces::srv::IsPaused::Request>/* request */,
+      const std::shared_ptr<rosbag2_interfaces::srv::IsPaused::Response> response)
+    {
+      response->paused = is_paused();
+    });
 
   // Start the thread that will publish events
   event_publisher_thread_ = std::thread(&Recorder::event_publisher_thread_main, this);
@@ -264,8 +305,7 @@ std::unordered_map<std::string, std::string>
 Recorder::get_requested_or_available_topics()
 {
   auto all_topics_and_types = this->get_topic_names_and_types();
-  TopicFilter topic_filter{record_options_, this->get_node_graph_interface()};
-  return topic_filter.filter_topics(all_topics_and_types);
+  return topic_filter_->filter_topics(all_topics_and_types);
 }
 
 std::unordered_map<std::string, std::string>
@@ -323,7 +363,7 @@ Recorder::create_subscription(
     topic_name,
     topic_type,
     qos,
-    [this, topic_name, topic_type](std::shared_ptr<rclcpp::SerializedMessage> message) {
+    [this, topic_name, topic_type](std::shared_ptr<const rclcpp::SerializedMessage> message) {
       if (!paused_.load()) {
         writer_->write(message, topic_name, topic_type, this->get_clock()->now());
       }

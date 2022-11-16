@@ -21,6 +21,7 @@ from ros2bag.api import convert_yaml_to_qos_profile
 from ros2bag.api import print_error
 from ros2bag.verb import VerbExtension
 from ros2cli.node import NODE_NAME_PREFIX
+from rosbag2_py import get_default_storage_id
 from rosbag2_py import get_registered_compressors
 from rosbag2_py import get_registered_serializers
 from rosbag2_py import get_registered_writers
@@ -35,7 +36,9 @@ class RecordVerb(VerbExtension):
 
     def add_arguments(self, parser, cli_name):  # noqa: D102
         writer_choices = get_registered_writers()
-        default_writer = 'sqlite3' if 'sqlite3' in writer_choices else writer_choices[0]
+        default_storage_id = get_default_storage_id()
+        default_writer = default_storage_id if default_storage_id in writer_choices else \
+            next(iter(writer_choices))
 
         compression_format_choices = get_registered_compressors()
         serialization_choices = get_registered_serializers()
@@ -145,14 +148,18 @@ class RecordVerb(VerbExtension):
             help='Path to a yaml file defining overrides of the QoS profile for specific topics.'
         )
         parser.add_argument(
-            '--storage-preset-profile', type=str, default='none', choices=['none', 'resilient'],
-            help='Select a configuration preset for storage.'
-                 'resilient (sqlite3):'
-                 'indicate preference for avoiding data corruption in case of crashes,'
-                 'at the cost of performance. Setting this flag disables optimization settings '
-                 'for storage (the defaut). This flag settings can still be overriden by '
+            '--storage-preset-profile', type=str, default='',
+            help='Select a configuration preset for storage. '
+                 'This flag settings can still be overriden by '
                  'corresponding settings in the config passed with --storage-config-file.'
         )
+        parser.add_argument(
+            '--custom-data', type=str, metavar='KEY=VALUE', nargs='*',
+            help='Store the custom data in metadata.yaml'
+                 'under "rosbag2_bagfile_information/custom_data". The key=value pair can '
+                 'appear more than once. The last value will override the former ones.'
+        )
+
         parser.add_argument(
             '--storage-config-file', type=FileType('r'),
             help='Path to a yaml file defining storage specific configurations. '
@@ -193,8 +200,8 @@ class RecordVerb(VerbExtension):
             return print_error('Invalid choice: Cannot specify compression format '
                                'without a compression mode.')
 
-        if args.compression_queue_size < 1:
-            return print_error('Compression queue size must be at least 1.')
+        if args.compression_queue_size < 0:
+            return print_error('Compression queue size must be at least 0.')
 
         args.compression_mode = args.compression_mode.upper()
 
@@ -206,6 +213,12 @@ class RecordVerb(VerbExtension):
                     qos_profile_dict)
             except (InvalidQoSProfileException, ValueError) as e:
                 return print_error(str(e))
+
+        # Prepare custom_data dictionary
+        custom_data = {}
+        if args.custom_data:
+            key_value_pairs = [pair.split('=') for pair in args.custom_data]
+            custom_data = {pair[0]: pair[1] for pair in key_value_pairs}
 
         storage_config_file = ''
         if args.storage_config_file:
@@ -219,7 +232,8 @@ class RecordVerb(VerbExtension):
             max_cache_size=args.max_cache_size,
             storage_preset_profile=args.storage_preset_profile,
             storage_config_uri=storage_config_file,
-            snapshot_mode=args.snapshot_mode
+            snapshot_mode=args.snapshot_mode,
+            custom_data=custom_data
         )
         record_options = RecordOptions()
         record_options.all = args.all

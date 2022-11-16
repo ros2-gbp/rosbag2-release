@@ -14,6 +14,11 @@ endif()
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
+if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND MSVC)
+  # /bigobj is needed to avoid error C1128:
+  #   https://msdn.microsoft.com/en-us/library/8578y171.aspx
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
+endif()
 
 # Windows supplies macros for min and max by default. We should only use min and max from stl
 if(WIN32)
@@ -122,6 +127,16 @@ function(create_tests_for_rmw_implementation)
     LINK_LIBS rosbag2_transport
     AMENT_DEPS test_msgs rosbag2_test_common)
 
+  rosbag2_transport_add_gmock(test_play_callbacks
+    test/rosbag2_transport/test_play_callbacks.cpp
+    LINK_LIBS rosbag2_transport
+    AMENT_DEPS test_msgs rosbag2_test_common)
+
+  rosbag2_transport_add_gmock(test_player_stop
+    test/rosbag2_transport/test_player_stop.cpp
+    LINK_LIBS rosbag2_transport
+    AMENT_DEPS test_msgs rosbag2_test_common)
+
   rosbag2_transport_add_gmock(test_play_seek
     test/rosbag2_transport/test_play_seek.cpp
     LINK_LIBS rosbag2_transport
@@ -138,13 +153,25 @@ function(create_tests_for_rmw_implementation)
     AMENT_DEPS test_msgs rosbag2_test_common
     ${SKIP_TEST})
 
+  rosbag2_transport_add_gmock(test_play_duration
+      test/rosbag2_transport/test_play_duration.cpp
+      INCLUDE_DIRS $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/rosbag2_transport>
+      LINK_LIBS rosbag2_transport
+      AMENT_DEPS test_msgs rosbag2_test_common)
+
   rosbag2_transport_add_gmock(test_play_next
       test/rosbag2_transport/test_play_next.cpp
       INCLUDE_DIRS $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/rosbag2_transport>
       LINK_LIBS rosbag2_transport
       AMENT_DEPS test_msgs rosbag2_test_common)
 
-  rosbag2_transport_add_gmock(test_burst
+  rosbag2_transport_add_gmock(test_play_until
+      test/rosbag2_transport/test_play_until.cpp
+      INCLUDE_DIRS $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/rosbag2_transport>
+      LINK_LIBS rosbag2_transport
+      AMENT_DEPS test_msgs rosbag2_test_common)
+
+    rosbag2_transport_add_gmock(test_burst
       test/rosbag2_transport/test_burst.cpp
       INCLUDE_DIRS $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/rosbag2_transport>
       LINK_LIBS rosbag2_transport

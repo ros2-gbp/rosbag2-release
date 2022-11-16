@@ -35,61 +35,25 @@ namespace rosbag2_py
 {
 
 template<typename T>
-class Reader
+class Reader : public rosbag2_cpp::Reader
 {
 public:
   Reader()
-  : reader_(std::make_unique<rosbag2_cpp::Reader>(std::make_unique<T>()))
+  : rosbag2_cpp::Reader(std::make_unique<T>())
   {
-  }
-
-  void open(
-    rosbag2_storage::StorageOptions & storage_options,
-    rosbag2_cpp::ConverterOptions & converter_options)
-  {
-    reader_->open(storage_options, converter_options);
-  }
-
-  bool has_next()
-  {
-    return reader_->has_next();
   }
 
   /// Return a tuple containing the topic name, the serialized ROS message, and
   /// the timestamp.
   pybind11::tuple read_next()
   {
-    const auto next = reader_->read_next();
+    const auto next = rosbag2_cpp::Reader::read_next();
     rcutils_uint8_array_t rcutils_data = *next->serialized_data.get();
     std::string serialized_data(rcutils_data.buffer,
       rcutils_data.buffer + rcutils_data.buffer_length);
     return pybind11::make_tuple(
       next->topic_name, pybind11::bytes(serialized_data), next->time_stamp);
   }
-
-  /// Return a mapping from topic name to topic type.
-  std::vector<rosbag2_storage::TopicMetadata> get_all_topics_and_types()
-  {
-    return reader_->get_all_topics_and_types();
-  }
-
-  void set_filter(const rosbag2_storage::StorageFilter & storage_filter)
-  {
-    return reader_->set_filter(storage_filter);
-  }
-
-  void reset_filter()
-  {
-    reader_->reset_filter();
-  }
-
-  void seek(const rcutils_time_point_value_t & timestamp)
-  {
-    reader_->seek(timestamp);
-  }
-
-protected:
-  std::unique_ptr<rosbag2_cpp::Reader> reader_;
 };
 
 std::unordered_set<std::string> get_registered_readers()
@@ -108,44 +72,45 @@ std::unordered_set<std::string> get_registered_readers()
 
 }  // namespace rosbag2_py
 
+using PyReader = rosbag2_py::Reader<rosbag2_cpp::readers::SequentialReader>;
+using PyCompressionReader = rosbag2_py::Reader<rosbag2_compression::SequentialCompressionReader>;
+
 PYBIND11_MODULE(_reader, m) {
   m.doc() = "Python wrapper of the rosbag2_cpp reader API";
 
-  pybind11::class_<rosbag2_py::Reader<rosbag2_cpp::readers::SequentialReader>>(
-    m, "SequentialReader")
+  pybind11::class_<PyReader>(m, "SequentialReader")
   .def(pybind11::init())
-  .def("open", &rosbag2_py::Reader<rosbag2_cpp::readers::SequentialReader>::open)
-  .def("read_next", &rosbag2_py::Reader<rosbag2_cpp::readers::SequentialReader>::read_next)
-  .def("has_next", &rosbag2_py::Reader<rosbag2_cpp::readers::SequentialReader>::has_next)
+  .def("open_uri", pybind11::overload_cast<const std::string &>(&PyReader::open))
   .def(
-    "get_all_topics_and_types",
-    &rosbag2_py::Reader<rosbag2_cpp::readers::SequentialReader>::get_all_topics_and_types)
-  .def("set_filter", &rosbag2_py::Reader<rosbag2_cpp::readers::SequentialReader>::set_filter)
-  .def("reset_filter", &rosbag2_py::Reader<rosbag2_cpp::readers::SequentialReader>::reset_filter)
-  .def("seek", &rosbag2_py::Reader<rosbag2_cpp::readers::SequentialReader>::seek);
+    "open",
+    pybind11::overload_cast<
+      const rosbag2_storage::StorageOptions &, const rosbag2_cpp::ConverterOptions &
+    >(&PyReader::open))
+  .def("set_read_order", &PyReader::set_read_order)
+  .def("read_next", &PyReader::read_next)
+  .def("has_next", &PyReader::has_next)
+  .def("get_metadata", &PyReader::get_metadata)
+  .def("get_all_topics_and_types", &PyReader::get_all_topics_and_types)
+  .def("set_filter", &PyReader::set_filter)
+  .def("reset_filter", &PyReader::reset_filter)
+  .def("seek", &PyReader::seek);
 
-  pybind11::class_<rosbag2_py::Reader<rosbag2_compression::SequentialCompressionReader>>(
-    m, "SequentialCompressionReader")
+  pybind11::class_<PyCompressionReader>(m, "SequentialCompressionReader")
   .def(pybind11::init())
-  .def("open", &rosbag2_py::Reader<rosbag2_compression::SequentialCompressionReader>::open)
+  .def("open_uri", pybind11::overload_cast<const std::string &>(&PyCompressionReader::open))
   .def(
-    "read_next", &rosbag2_py::Reader<rosbag2_compression::SequentialCompressionReader>::read_next)
-  .def("has_next", &rosbag2_py::Reader<rosbag2_compression::SequentialCompressionReader>::has_next)
-  .def(
-    "get_all_topics_and_types",
-    &rosbag2_py::Reader<
-      rosbag2_compression::SequentialCompressionReader
-    >::get_all_topics_and_types)
-  .def(
-    "set_filter",
-    &rosbag2_py::Reader<rosbag2_compression::SequentialCompressionReader>::set_filter)
-  .def(
-    "reset_filter",
-    &rosbag2_py::Reader<rosbag2_compression::SequentialCompressionReader>::reset_filter)
-  .def(
-    "seek",
-    &rosbag2_py::Reader<rosbag2_compression::SequentialCompressionReader>::seek);
-
+    "open",
+    pybind11::overload_cast<
+      const rosbag2_storage::StorageOptions &, const rosbag2_cpp::ConverterOptions &
+    >(&PyCompressionReader::open))
+  .def("set_read_order", &PyCompressionReader::set_read_order)
+  .def("read_next", &PyCompressionReader::read_next)
+  .def("has_next", &PyCompressionReader::has_next)
+  .def("get_metadata", &PyCompressionReader::get_metadata)
+  .def("get_all_topics_and_types", &PyCompressionReader::get_all_topics_and_types)
+  .def("set_filter", &PyCompressionReader::set_filter)
+  .def("reset_filter", &PyCompressionReader::reset_filter)
+  .def("seek", &PyCompressionReader::seek);
   m.def(
     "get_registered_readers",
     &rosbag2_py::get_registered_readers,
