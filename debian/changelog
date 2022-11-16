@@ -1,0 +1,302 @@
+ros-rolling-rosbag2-compression (0.18.0-2bullseye) bullseye; urgency=high
+
+  * Reverse read order API and sqlite storage implementation (#1083 <https://github.com/ros2/rosbag2/issues/1083>)
+  * Add option to prevent message loss while converting (#1058 <https://github.com/ros2/rosbag2/issues/1058>)
+  * set default metadata of compressed message (in case compressor does not set it) (#1060 <https://github.com/ros2/rosbag2/issues/1060>)
+  * Contributors: DensoADAS, Emerson Knapp
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 15 Nov 2022 08:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.17.0-2bullseye) bullseye; urgency=high
+
+  * Speed optimization: Preparing copyless publish/subscribing by using const message for writing (#1010 <https://github.com/ros2/rosbag2/issues/1010>)
+  * Add the ability to record any key/value pair in 'custom' field in metadata.yaml (#1038 <https://github.com/ros2/rosbag2/issues/1038>)
+  * Contributors: DensoADAS, Hunter L. Allen, Joshua Hampp, Michael Orlov, Tony Peng
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Sat, 30 Jul 2022 07:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.16.0-2bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 11 May 2022 07:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.15.1-2bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 06 Apr 2022 07:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.15.0-2bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 05 Apr 2022 07:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.14.1-2bullseye) bullseye; urgency=high
+
+  * Bump version number to avoid conflict
+  * Contributors: Chris Lalancette
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 29 Mar 2022 07:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.14.0-2bullseye) bullseye; urgency=high
+
+  * Install headers to include/${PROJECT_NAME} (#958 <https://github.com/ros2/rosbag2/issues/958>)
+  * Remove unnecessary public definition. (#950 <https://github.com/ros2/rosbag2/issues/950>)
+  * Contributors: Chris Lalancette, Shane Loretz
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 29 Mar 2022 07:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.13.0-2bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 13 Jan 2022 08:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.12.0-2bullseye) bullseye; urgency=high
+
+  * Changes for uncrustify 0.72 (#937 <https://github.com/ros2/rosbag2/issues/937>)
+  * Bugfix for broken bag split when using cache (#936 <https://github.com/ros2/rosbag2/issues/936>)
+  * Contributors: Chris Lalancette, Michael Orlov
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Fri, 17 Dec 2021 08:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.11.0-2bullseye) bullseye; urgency=high
+
+  * Update package maintainers (#899 <https://github.com/ros2/rosbag2/issues/899>)
+  * Don't preprocess a storage file more than once (#895 <https://github.com/ros2/rosbag2/issues/895>)
+  * Contributors: Michel Hidalgo, sonia
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 08 Nov 2021 08:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.10.1-2bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Fri, 22 Oct 2021 07:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.10.0-2bullseye) bullseye; urgency=high
+
+  * added seek interface (#836 <https://github.com/ros2/rosbag2/issues/836>)
+  * Refactor plugin query mechanism and standardize trait management (#833 <https://github.com/ros2/rosbag2/issues/833>)
+  * fix sequential reader rollover-to-next-file strategy: (#839 <https://github.com/ros2/rosbag2/issues/839>)
+  * Load compression and serialization choices via plugin query (#827 <https://github.com/ros2/rosbag2/issues/827>)
+  * Contributors: Cameron Miller, sonia
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 19 Oct 2021 07:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.9.0-2bullseye) bullseye; urgency=high
+
+  * Rename Reader/Writer 'reset' to 'close' (#760 <https://github.com/ros2/rosbag2/issues/760>)
+  * Contributors: Emerson Knapp
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 17 May 2021 07:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.8.0-2bullseye) bullseye; urgency=high
+
+  * Explicitly add emersonknapp as maintainer (#692 <https://github.com/ros2/rosbag2/issues/692>)
+  * Reindexer core (#641 <https://github.com/ros2/rosbag2/issues/641>)
+    Add a new C++ Reindexer class for reconstructing metadata from bags that are missing it.
+  * Contributors: Emerson Knapp, jhdcs
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 19 Apr 2021 07:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.7.0-2bullseye) bullseye; urgency=high
+
+  * CLI query rosbag2_py for available storage implementations (#659 <https://github.com/ros2/rosbag2/issues/659>)
+  * Move zstd compressor to its own package (#636 <https://github.com/ros2/rosbag2/issues/636>)
+  * Remove rosbag2_compression test dependencies on zstd implementation in prep for moving it into a separate package (#637 <https://github.com/ros2/rosbag2/issues/637>)
+  * Contributors: Emerson Knapp
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 18 Mar 2021 07:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.6.0-2bullseye) bullseye; urgency=high
+
+  * Make compressor implementations into a plugin via pluginlib (#624 <https://github.com/ros2/rosbag2/issues/624>)
+  * Use ZSTD's streaming interface for [de]compressing files (#543 <https://github.com/ros2/rosbag2/issues/543>)
+  * Fix build issues when rosbag2_storage is binary installed (#585 <https://github.com/ros2/rosbag2/issues/585>)
+  * Fix relative metadata paths in SequentialCompressionWriter (#613 <https://github.com/ros2/rosbag2/issues/613>)
+  * Fix deadlock race condition on compression shutdown (#616 <https://github.com/ros2/rosbag2/issues/616>)
+  * Deduplicate SequentialCompressionReader business logic, add fallback to find bagfiles in incorrectly-written metadata (#612 <https://github.com/ros2/rosbag2/issues/612>)
+  * Compress bag files in separate threads (#506 <https://github.com/ros2/rosbag2/issues/506>)
+  * Contributors: Emerson Knapp, P. J. Reed
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 01 Feb 2021 08:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.5.0-2bullseye) bullseye; urgency=high
+
+  * Sqlite storage double buffering (#546 <https://github.com/ros2/rosbag2/issues/546>)
+  * Contributors: Adam Dąbrowski
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 02 Dec 2020 08:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.4.0-2bullseye) bullseye; urgency=high
+
+  * add storage_config_uri (#493 <https://github.com/ros2/rosbag2/issues/493>)
+  * Update the package.xml files with the latest Open Robotics maintainers (#535 <https://github.com/ros2/rosbag2/issues/535>)
+  * Do not expect empty StorageOptions URI to work in CompressionWriterTest (#526 <https://github.com/ros2/rosbag2/issues/526>)
+  * Remove some code duplication between SequentialWriter and SequentialCompressionWriter (#527 <https://github.com/ros2/rosbag2/issues/527>)
+  * Fix exception thrown given invalid arguments with compression enabled (#488 <https://github.com/ros2/rosbag2/issues/488>)
+  * Adding db directory creation to rosbag2_cpp (#450 <https://github.com/ros2/rosbag2/issues/450>)
+  * Consolidate ZSTD utility functions (#459 <https://github.com/ros2/rosbag2/issues/459>)
+  * Add per-message ZSTD compression (#418 <https://github.com/ros2/rosbag2/issues/418>)
+  * Contributors: Christophe Bedard, Devin Bonnie, Jaison Titus, Karsten Knese, Marwan Taher, Michael Jeronimo, P. J. Reed
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 19 Nov 2020 08:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.3.2-2bullseye) bullseye; urgency=high
+
+  * Add user provided split size to error message (#430 <https://github.com/ros2/rosbag2/issues/430>)
+  * Contributors: Anas Abou Allaban
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 03 Jun 2020 07:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.3.1-2bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 01 Jun 2020 07:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.3.0-2bullseye) bullseye; urgency=high
+
+  * Fix playback of compressed bagfiles (#417 <https://github.com/ros2/rosbag2/issues/417>)
+  * Export targets (#403 <https://github.com/ros2/rosbag2/issues/403>)
+  * Contributors: Emerson Knapp, Karsten Knese
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 26 May 2020 07:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.2.8-2bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 18 May 2020 07:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.2.7-2bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 12 May 2020 07:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.2.6-2bullseye) bullseye; urgency=high
+
+  * Remove relative include paths in rosbag2_compression tests (#405 <https://github.com/ros2/rosbag2/issues/405>)
+  * Contributors: Karsten Knese, Zachary Michaels
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 07 May 2020 07:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.2.5-2bullseye) bullseye; urgency=high
+
+  * Don't fail build if lsan isn't available. (#397 <https://github.com/ros2/rosbag2/issues/397>)
+  * Correctly set all test dependencies. (#392 <https://github.com/ros2/rosbag2/issues/392>)
+  * Deduplicate code in SequentialCompressionReader. (#372 <https://github.com/ros2/rosbag2/issues/372>)
+  * Add filter for reading selective topics. (#302 <https://github.com/ros2/rosbag2/issues/302>)
+  * Add QoS profiles field to metadata struct and provide serialization utilities. (#330 <https://github.com/ros2/rosbag2/issues/330>)
+  * Fix compression log logic. (#320 <https://github.com/ros2/rosbag2/issues/320>)
+  * Fix throw in playback of split+compressed bagfiles. (#294 <https://github.com/ros2/rosbag2/issues/294>)
+  * Refactor Compression Reader/Writers to use the CompressionFactory. (#315 <https://github.com/ros2/rosbag2/issues/315>)
+  * Add compression factory implementation. (#313 <https://github.com/ros2/rosbag2/issues/313>)
+  * Include stdexcept. (#314 <https://github.com/ros2/rosbag2/issues/314>)
+  * Add compression factory stubs. (#311 <https://github.com/ros2/rosbag2/issues/311>)
+  * Replace rcutils_get_file_size with rcpputils::fs::file_size. (#291 <https://github.com/ros2/rosbag2/issues/291>)
+  * [compression] Enable compression through ros2bag cli. (#263 <https://github.com/ros2/rosbag2/issues/263>)
+  * [compression] Close storage before compression. (#284 <https://github.com/ros2/rosbag2/issues/284>)
+  * Improve logging in rosbag2_compression. (#287 <https://github.com/ros2/rosbag2/issues/287>)
+  * Change validation functions to accept output type of ZSTD_getFrameContentSize. (#285 <https://github.com/ros2/rosbag2/issues/285>)
+  * code style only: wrap after open parenthesis if not in one line. (#280 <https://github.com/ros2/rosbag2/issues/280>)
+  * Add more assertions on rosbag2_compression. (#279 <https://github.com/ros2/rosbag2/issues/279>)
+  * [compression] Add SequentialCompressionWriter. (#260 <https://github.com/ros2/rosbag2/issues/260>)
+  * Add a SequentialCompressionReader. (#258 <https://github.com/ros2/rosbag2/issues/258>)
+  * Move compression artifacts from rosbag2_cpp to rosbag2_compression. (#257 <https://github.com/ros2/rosbag2/issues/257>)
+  * remove rosbag2 filesystem helper. (#249 <https://github.com/ros2/rosbag2/issues/249>)
+  * [Compression - 8] Enable reader to read from compressed files/messages. (#246 <https://github.com/ros2/rosbag2/issues/246>)
+  * [compression] Follow ROS2 style conventions better and throw eagerly. (#245 <https://github.com/ros2/rosbag2/issues/245>)
+  * [Compression] Use vector resize instead of reserve. (#243 <https://github.com/ros2/rosbag2/issues/243>)
+  * [Compression - 6] Add Zstd file decompression implementation. (#230 <https://github.com/ros2/rosbag2/issues/230>)
+  * Check output of fread/fwrite in compression. (#237 <https://github.com/ros2/rosbag2/issues/237>)
+  * Fix compress uri. (#234 <https://github.com/ros2/rosbag2/issues/234>)
+  * [Compression - 5] Add Zstd file compression. (#220 <https://github.com/ros2/rosbag2/issues/220>)
+  * [Compression - 4] Add decompressor interface. (#219 <https://github.com/ros2/rosbag2/issues/219>)
+  * Contributors: Anas Abou Allaban, Dirk Thomas, Emerson Knapp, Karsten Knese, Mabel Zhang, Scott K Logan, Thomas Moulard, Zachary Michaels
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 30 Apr 2020 07:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.2.4-2bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 19 Nov 2019 01:51:00 -0000
+
+ros-rolling-rosbag2-compression (0.2.3-2bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 18 Nov 2019 21:55:00 -0000
+
+ros-rolling-rosbag2-compression (0.2.2-2bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 13 Nov 2019 08:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.2.1-2bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 23 Oct 2019 07:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.2.0-2bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 26 Sep 2019 07:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.1.2-2bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 20 May 2019 07:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.1.1-2bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 09 May 2019 07:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.1.0-2bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 08 May 2019 07:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.0.5-2bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 27 Dec 2018 08:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.0.4-2bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 19 Dec 2018 08:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.0.3-2bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Fri, 14 Dec 2018 08:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.0.2-2bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 12 Dec 2018 08:00:00 -0000
+
+ros-rolling-rosbag2-compression (0.0.1-2bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 11 Dec 2018 08:00:00 -0000
+
+
