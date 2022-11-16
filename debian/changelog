@@ -1,0 +1,98 @@
+ros-rolling-rosbag2-interfaces (0.18.0-1jammy) jammy; urgency=high
+
+  * Add SplitBagfile recording service. (#1115 <https://github.com/ros2/rosbag2/issues/1115>)
+  * Contributors: rshanor
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 15 Nov 2022 08:00:00 -0000
+
+ros-rolling-rosbag2-interfaces (0.17.0-1jammy) jammy; urgency=high
+
+  * Adds stop operation for rosbag2::Player (#1007 <https://github.com/ros2/rosbag2/issues/1007>)
+  * Notification of significant events during bag recording and playback (#908 <https://github.com/ros2/rosbag2/issues/908>)
+  * Adds play until timestamp functionality (#1005 <https://github.com/ros2/rosbag2/issues/1005>)
+  * Add CLI verb for burst mode of playback (#980 <https://github.com/ros2/rosbag2/issues/980>)
+  * Add play-for specified number of seconds functionality (#960 <https://github.com/ros2/rosbag2/issues/960>)
+  * Contributors: Agustin Alba Chicar, Geoffrey Biggs, Michael Orlov, Misha Shalem
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Sat, 30 Jul 2022 07:00:00 -0000
+
+ros-rolling-rosbag2-interfaces (0.16.0-1jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 11 May 2022 07:00:00 -0000
+
+ros-rolling-rosbag2-interfaces (0.15.1-1jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 06 Apr 2022 07:00:00 -0000
+
+ros-rolling-rosbag2-interfaces (0.15.0-1jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 05 Apr 2022 07:00:00 -0000
+
+ros-rolling-rosbag2-interfaces (0.14.1-1jammy) jammy; urgency=high
+
+  * Bump version number to avoid conflict
+  * Contributors: Chris Lalancette
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 29 Mar 2022 07:00:00 -0000
+
+ros-rolling-rosbag2-interfaces (0.14.0-1jammy) jammy; urgency=high
+
+  * Add burst-mode to Player (#977 <https://github.com/ros2/rosbag2/issues/977>)
+  * Contributors: Geoffrey Biggs
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 29 Mar 2022 07:00:00 -0000
+
+ros-rolling-rosbag2-interfaces (0.13.0-1jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 13 Jan 2022 08:00:00 -0000
+
+ros-rolling-rosbag2-interfaces (0.12.0-1jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Fri, 17 Dec 2021 08:00:00 -0000
+
+ros-rolling-rosbag2-interfaces (0.11.0-1jammy) jammy; urgency=high
+
+  * Update package maintainers (#899 <https://github.com/ros2/rosbag2/issues/899>)
+  * Contributors: Michel Hidalgo
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 08 Nov 2021 08:00:00 -0000
+
+ros-rolling-rosbag2-interfaces (0.10.1-1jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Fri, 22 Oct 2021 07:00:00 -0000
+
+ros-rolling-rosbag2-interfaces (0.10.0-1jammy) jammy; urgency=high
+
+  * Implement snapshot mechanism and corresponding ROS Service (#850 <https://github.com/ros2/rosbag2/issues/850>)
+    * Add snapshot service to recorder node
+    * Simplify and clarify double buffering patterns
+  * Contributors: Cameron Miller
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 19 Oct 2021 07:00:00 -0000
+
+ros-rolling-rosbag2-interfaces (0.9.0-1jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 17 May 2021 07:00:00 -0000
+
+ros-rolling-rosbag2-interfaces (0.8.0-1jammy) jammy; urgency=high
+
+  * Add rosbag2_interfaces package with playback service definitions (#728 <https://github.com/ros2/rosbag2/issues/728>)
+  * Contributors: Emerson Knapp
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 19 Apr 2021 07:00:00 -0000
+
+
