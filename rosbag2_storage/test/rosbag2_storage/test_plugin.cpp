@@ -34,6 +34,9 @@ void TestPlugin::open(
   const rosbag2_storage::StorageOptions & storage_options,
   rosbag2_storage::storage_interfaces::IOFlag flag)
 {
+  if (storage_options.storage_id != test_constants::READ_WRITE_PLUGIN_IDENTIFIER) {
+    throw std::runtime_error{"storage_id did not match. TestReadOnlyPlugin won't open."};
+  }
   if (flag == rosbag2_storage::storage_interfaces::IOFlag::READ_ONLY) {
     std::cout << "opening testplugin read only: ";
   } else if (flag == rosbag2_storage::storage_interfaces::IOFlag::READ_WRITE) {
@@ -41,6 +44,11 @@ void TestPlugin::open(
   }
   std::cout << "storage uri: " << storage_options.uri << ".\n";
   std::cout << "config file uri: " << storage_options.storage_config_uri << ".\n";
+}
+
+void TestPlugin::set_read_order(const rosbag2_storage::ReadOrder & order)
+{
+  std::cout << "Set read order " << order.sort_by << " " << order.reverse << std::endl;
 }
 
 bool TestPlugin::has_next()
