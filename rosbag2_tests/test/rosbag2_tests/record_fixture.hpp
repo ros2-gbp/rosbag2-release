@@ -26,7 +26,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 
-#include "rosbag2_storage_default_plugins/sqlite/sqlite_storage.hpp"
+#include "rosbag2_storage_sqlite3/sqlite_storage.hpp"
 
 #include "rosbag2_test_common/temporary_directory_fixture.hpp"
 #include "rosbag2_test_common/memory_management.hpp"
@@ -99,14 +99,12 @@ public:
     return rcpputils::fs::path(get_bag_file_name(split_index) + ".db3");
   }
 
-  void wait_for_metadata()
+  void wait_for_metadata(std::chrono::duration<float> timeout = std::chrono::seconds(5)) const
   {
     const auto metadata_path = root_bag_path_ / "metadata.yaml";
     const auto start_time = std::chrono::steady_clock::now();
 
-    while (std::chrono::steady_clock::now() - start_time < std::chrono::seconds(5) &&
-      rclcpp::ok())
-    {
+    while (std::chrono::steady_clock::now() - start_time < timeout && rclcpp::ok()) {
       if (metadata_path.exists()) {
         return;
       }
@@ -117,22 +115,19 @@ public:
       metadata_path.string() << "\"";
   }
 
-  void wait_for_db()
+  void wait_for_db(std::chrono::duration<float> timeout = std::chrono::seconds(10))
   {
     const auto database_path = get_bag_file_path(0);
-
-    while (true) {
-      try {
-        std::this_thread::sleep_for(50ms);  // wait a bit to not query constantly
-        if (database_path.exists()) {
-          rosbag2_storage_plugins::SqliteWrapper db{
-            database_path.string(), rosbag2_storage::storage_interfaces::IOFlag::READ_ONLY};
-          return;
-        }
-      } catch (const rosbag2_storage_plugins::SqliteException & ex) {
-        (void) ex;  // still waiting
+    const auto start_time = std::chrono::steady_clock::now();
+    while (std::chrono::steady_clock::now() - start_time < timeout && rclcpp::ok()) {
+      if (database_path.exists()) {
+        return;
       }
+      std::this_thread::sleep_for(50ms);  // wait a bit to not query constantly
     }
+    // Final check for metadata if we timeout. Fail otherwise
+    ASSERT_EQ(database_path.exists(), true) << "Could not find database file: \"" <<
+      database_path.string() << "\"";
   }
 
   size_t count_stored_messages(
