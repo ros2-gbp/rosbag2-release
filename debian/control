@@ -1,0 +1,12 @@
+Source: ros-humble-zstd-vendor
+Section: misc
+Priority: optional
+Maintainer: Geoffrey Biggs <geoff@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), git, libzstd-dev, ros-humble-ament-cmake, ros-humble-ros-workspace
+Homepage: https://facebook.github.io/zstd/
+Standards-Version: 3.9.2
+
+Package: ros-humble-zstd-vendor
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libzstd-dev, ros-humble-ros-workspace
+Description: Zstd compression vendor package, providing a dependency for Zstd.
