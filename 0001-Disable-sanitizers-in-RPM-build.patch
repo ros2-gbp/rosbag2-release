@@ -1,4 +1,4 @@
-From 428341187bdfbb10133d22bb127275e09a36c7cf Mon Sep 17 00:00:00 2001
+From bd1e1cc8f583d4595b9b00cc1d81921fded6a942 Mon Sep 17 00:00:00 2001
 From: Scott K Logan <logans@cottsay.net>
 Date: Fri, 18 Feb 2022 10:47:45 -0800
 Subject: [PATCH] Disable sanitizers in RPM build
@@ -8,7 +8,7 @@ Subject: [PATCH] Disable sanitizers in RPM build
  1 file changed, 1 insertion(+)
 
 diff --git a/rpm/template.spec.em b/rpm/template.spec.em
-index bebb96b6..0e5d2f54 100644
+index bebb96b6a..0e5d2f547 100644
 --- a/rpm/template.spec.em
 +++ b/rpm/template.spec.em
 @@ -52,6 +52,7 @@ mkdir -p .obj-%{_target_platform} && cd .obj-%{_target_platform}
