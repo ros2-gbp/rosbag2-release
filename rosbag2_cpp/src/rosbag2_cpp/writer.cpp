@@ -32,13 +32,11 @@
 #include "rosbag2_storage/serialized_bag_message.hpp"
 #include "rosbag2_storage/storage_options.hpp"
 #include "rosbag2_storage/topic_metadata.hpp"
-#include "rosbag2_storage/default_storage_id.hpp"
 
 #include "rmw/rmw.h"
 
 namespace rosbag2_cpp
 {
-
 
 Writer::Writer(std::unique_ptr<rosbag2_cpp::writer_interfaces::BaseWriterInterface> writer_impl)
 : writer_impl_(std::move(writer_impl))
@@ -53,7 +51,6 @@ void Writer::open(const std::string & uri)
 {
   rosbag2_storage::StorageOptions storage_options;
   storage_options.uri = uri;
-  storage_options.storage_id = rosbag2_storage::get_default_storage_id();
 
   rosbag2_cpp::ConverterOptions converter_options{};
   return open(storage_options, converter_options);
@@ -83,20 +80,14 @@ bool Writer::take_snapshot()
   return writer_impl_->take_snapshot();
 }
 
-void Writer::split_bagfile()
-{
-  std::lock_guard<std::mutex> writer_lock(writer_mutex_);
-  return writer_impl_->split_bagfile();
-}
-
-void Writer::write(std::shared_ptr<const rosbag2_storage::SerializedBagMessage> message)
+void Writer::write(std::shared_ptr<rosbag2_storage::SerializedBagMessage> message)
 {
   std::lock_guard<std::mutex> writer_lock(writer_mutex_);
   writer_impl_->write(message);
 }
 
 void Writer::write(
-  std::shared_ptr<const rosbag2_storage::SerializedBagMessage> message,
+  std::shared_ptr<rosbag2_storage::SerializedBagMessage> message,
   const std::string & topic_name,
   const std::string & type_name,
   const std::string & serialization_format)
@@ -166,7 +157,7 @@ void Writer::write(
 }
 
 void Writer::write(
-  std::shared_ptr<const rclcpp::SerializedMessage> message,
+  std::shared_ptr<rclcpp::SerializedMessage> message,
   const std::string & topic_name,
   const std::string & type_name,
   const rclcpp::Time & time)
@@ -174,16 +165,20 @@ void Writer::write(
   auto serialized_bag_message = std::make_shared<rosbag2_storage::SerializedBagMessage>();
   serialized_bag_message->topic_name = topic_name;
   serialized_bag_message->time_stamp = time.nanoseconds();
-  // point to actual data and keep reference to original message to avoid premature releasing
+
   serialized_bag_message->serialized_data = std::shared_ptr<rcutils_uint8_array_t>(
-    new rcutils_uint8_array_t(message->get_rcl_serialized_message()),
-    [message](rcutils_uint8_array_t * data) {
-      (void)message;
-      if (data != nullptr) {
-        data->buffer = nullptr;
-        delete data;
+    new rcutils_uint8_array_t,
+    [](rcutils_uint8_array_t * msg) {
+      auto fini_return = rcutils_uint8_array_fini(msg);
+      delete msg;
+      if (fini_return != RCUTILS_RET_OK) {
+        RCLCPP_ERROR_STREAM(
+          rclcpp::get_logger("rosbag2_cpp"),
+          "Failed to destroy serialized message: " << rcutils_get_error_string().str);
       }
     });
+
+  *serialized_bag_message->serialized_data = message->release_rcl_serialized_message();
 
   return write(serialized_bag_message, topic_name, type_name, rmw_get_serialization_format());
 }

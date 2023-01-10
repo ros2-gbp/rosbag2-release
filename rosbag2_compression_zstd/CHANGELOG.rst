@@ -2,15 +2,13 @@
 Changelog for package rosbag2_compression_zstd
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.18.0 (2022-11-15)
+0.15.4 (2023-01-10)
 -------------------
 
-0.17.0 (2022-07-30)
+0.15.3 (2022-11-07)
 -------------------
-* Speed optimization: Preparing copyless publish/subscribing by using const message for writing (`#1010 <https://github.com/ros2/rosbag2/issues/1010>`_)
-* Contributors: DensoADAS, Joshua Hampp
 
-0.16.0 (2022-05-11)
+0.15.2 (2022-05-11)
 -------------------
 
 0.15.1 (2022-04-06)

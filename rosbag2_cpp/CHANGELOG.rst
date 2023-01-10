@@ -2,33 +2,19 @@
 Changelog for package rosbag2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.18.0 (2022-11-15)
+0.15.4 (2023-01-10)
 -------------------
-* rosbag2_storage: expose default storage ID as method (`#1146 <https://github.com/ros2/rosbag2/issues/1146>`_)
-* Don't reopen file for every seek if we don't have to. Search directionally for the correct file (`#1117 <https://github.com/ros2/rosbag2/issues/1117>`_)
-* Add SplitBagfile recording service. (`#1115 <https://github.com/ros2/rosbag2/issues/1115>`_)
-* Reverse read order API and sqlite storage implementation (`#1083 <https://github.com/ros2/rosbag2/issues/1083>`_)
-* Replace `std::filesystem::path(..)` with `rcpputils::fs::path(..)` (`#1104 <https://github.com/ros2/rosbag2/issues/1104>`_)
-* Fix issue where sequentialwriter only sets metadata duration to the duration of the final file (`#1098 <https://github.com/ros2/rosbag2/issues/1098>`_)
-* Delete obsolete compression_options.cpp from rosbag2_cpp (`#1078 <https://github.com/ros2/rosbag2/issues/1078>`_)
-* Readers/info can accept a single bag storage file, and detect its storage id automatically (`#1072 <https://github.com/ros2/rosbag2/issues/1072>`_)
-* Remove deprecated rosbag2_cpp/storage_options.hpp, for post-Humble releases (`#1064 <https://github.com/ros2/rosbag2/issues/1064>`_)
-* Contributors: Emerson Knapp, Michael Orlov, james-rms, rshanor
+* [Humble] Reader and writer can use default storage by not specifying (backport `#1167 <https://github.com/ros2/rosbag2/issues/1167>`_) (`#1174 <https://github.com/ros2/rosbag2/issues/1174>`_)
+* Contributors: mergify[bot]
 
-0.17.0 (2022-07-30)
+0.15.3 (2022-11-07)
 -------------------
-* Speed optimization: Preparing copyless publish/subscribing by using const message for writing (`#1010 <https://github.com/ros2/rosbag2/issues/1010>`_)
- * Update compression to make copy instead of in-place operation
- * Get rid of extra data copying operation in writer by refrencing to received message
-* Add the ability to record any key/value pair in 'custom' field in metadata.yaml (`#1038 <https://github.com/ros2/rosbag2/issues/1038>`_)
-* Notification of significant events during bag recording and playback (`#908 <https://github.com/ros2/rosbag2/issues/908>`_)
-* Bugfix for "Playing the bags recorded with split by duration/size is playing only the last
-  recorded .db3." (`#1022 <https://github.com/ros2/rosbag2/issues/1022>`_)
-* Improve test_time_controller test (`#1012 <https://github.com/ros2/rosbag2/issues/1012>`_)
-* Contributors: DensoADAS, Geoffrey Biggs, Hunter L. Allen, Jorge Perez, Kaju-Bubanja,
-  Michael Orlov, Joshua Hampp, Tony Peng
+* Readers/info can accept a single bag storage file, and detect its storage id automatically (`#1072 <https://github.com/ros2/rosbag2/issues/1072>`_) (`#1077 <https://github.com/ros2/rosbag2/issues/1077>`_)
+* Notification of significant events during bag recording and playback (`#908 <https://github.com/ros2/rosbag2/issues/908>`_) (`#1037 <https://github.com/ros2/rosbag2/issues/1037>`_)
+* Backport. Add use_sim_time option to record verb (`#1017 <https://github.com/ros2/rosbag2/issues/1017>`_)
+* Contributors: Geoffrey Biggs, Keisuke Shima, mergify[bot]
 
-0.16.0 (2022-05-11)
+0.15.2 (2022-05-11)
 -------------------
 
 0.15.1 (2022-04-06)

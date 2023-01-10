@@ -2,16 +2,15 @@
 Changelog for package zstd_vendor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.18.0 (2022-11-15)
+0.15.4 (2023-01-10)
 -------------------
-* Bump zstd to 1.4.8 in zstd_vendor package (`#1132 <https://github.com/ros2/rosbag2/issues/1132>`_)
-* Fix/zstd vendor does not find system zstd (`#1111 <https://github.com/ros2/rosbag2/issues/1111>`_)
-* Contributors: DasRoteSkelett, Michael Orlov
+* [Humble backport] rosbag2_storage_mcap: merge into rosbag2 repo (`#1163 <https://github.com/ros2/rosbag2/issues/1163>`_) (`#1189 <https://github.com/ros2/rosbag2/issues/1189>`_)
+* Contributors: james-rms
 
-0.17.0 (2022-07-30)
+0.15.3 (2022-11-07)
 -------------------
 
-0.16.0 (2022-05-11)
+0.15.2 (2022-05-11)
 -------------------
 
 0.15.1 (2022-04-06)

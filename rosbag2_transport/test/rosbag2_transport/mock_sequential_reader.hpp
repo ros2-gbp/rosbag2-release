@@ -36,9 +36,6 @@ public:
 
   void close() override {}
 
-  void set_read_order(const rosbag2_storage::ReadOrder &) override
-  {}
-
   bool has_next() override
   {
     if (filter_.topics.empty()) {
@@ -110,12 +107,6 @@ public:
     std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages,
     std::vector<rosbag2_storage::TopicMetadata> topics)
   {
-    metadata_.message_count = messages.size();
-    if (!messages.empty()) {
-      const auto message_timestamp = std::chrono::time_point<std::chrono::high_resolution_clock>(
-        std::chrono::nanoseconds(messages[0]->time_stamp));
-      metadata_.starting_time = message_timestamp;
-    }
     messages_ = std::move(messages);
     topics_ = std::move(topics);
   }

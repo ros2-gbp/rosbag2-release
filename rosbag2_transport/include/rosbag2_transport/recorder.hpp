@@ -30,11 +30,7 @@
 
 #include "rosbag2_cpp/writer.hpp"
 
-#include "rosbag2_interfaces/srv/is_paused.hpp"
-#include "rosbag2_interfaces/srv/pause.hpp"
-#include "rosbag2_interfaces/srv/resume.hpp"
 #include "rosbag2_interfaces/srv/snapshot.hpp"
-#include "rosbag2_interfaces/srv/split_bagfile.hpp"
 
 #include "rosbag2_interfaces/msg/write_split_event.hpp"
 
@@ -42,7 +38,6 @@
 
 #include "rosbag2_transport/record_options.hpp"
 #include "rosbag2_transport/visibility_control.hpp"
-#include "rosbag2_transport/topic_filter.hpp"
 
 namespace rosbag2_cpp
 {
@@ -154,18 +149,13 @@ private:
 
   void warn_if_new_qos_for_subscribed_topic(const std::string & topic_name);
 
-  std::unique_ptr<TopicFilter> topic_filter_;
   std::future<void> discovery_future_;
   std::unordered_map<std::string, std::shared_ptr<rclcpp::GenericSubscription>> subscriptions_;
   std::unordered_set<std::string> topics_warned_about_incompatibility_;
   std::string serialization_format_;
   std::unordered_map<std::string, rclcpp::QoS> topic_qos_profile_overrides_;
   std::unordered_set<std::string> topic_unknown_types_;
-  rclcpp::Service<rosbag2_interfaces::srv::IsPaused>::SharedPtr srv_is_paused_;
-  rclcpp::Service<rosbag2_interfaces::srv::Pause>::SharedPtr srv_pause_;
-  rclcpp::Service<rosbag2_interfaces::srv::Resume>::SharedPtr srv_resume_;
   rclcpp::Service<rosbag2_interfaces::srv::Snapshot>::SharedPtr srv_snapshot_;
-  rclcpp::Service<rosbag2_interfaces::srv::SplitBagfile>::SharedPtr srv_split_bagfile_;
   std::atomic<bool> paused_ = false;
   // Keyboard handler
   std::shared_ptr<KeyboardHandler> keyboard_handler_;
