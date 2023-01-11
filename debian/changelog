@@ -1,0 +1,298 @@
+ros-humble-rosbag2-storage-default-plugins (0.15.4-2jammy) jammy; urgency=high
+
+  * ros2bag: move storage preset validation to sqlite3 plugin (#1135 <https://github.com/ros2/rosbag2/issues/1135>) (#1184 <https://github.com/ros2/rosbag2/issues/1184>)
+  * [humble] Store db schema version and ROS_DISTRO name in db3 files (backport #1156 <https://github.com/ros2/rosbag2/issues/1156>) (#1175 <https://github.com/ros2/rosbag2/issues/1175>)
+  * Contributors: Daisuke Nishimatsu, mergify[bot]
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 10 Jan 2023 06:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.15.3-2jammy) jammy; urgency=high
+
+  * Add support for old db3 schema used on distros prior to Foxy (#1090 <https://github.com/ros2/rosbag2/issues/1090>) (#1094 <https://github.com/ros2/rosbag2/issues/1094>)
+  * Revert "[humble] Backport. Added support for filtering topics via regular expressions (#1034 <https://github.com/ros2/rosbag2/issues/1034>)- (#1039 <https://github.com/ros2/rosbag2/issues/1039>)" (#1069 <https://github.com/ros2/rosbag2/issues/1069>)
+  * [humble] Backport. Added support for filtering topics via regular expressions (#1034 <https://github.com/ros2/rosbag2/issues/1034>)- (#1039 <https://github.com/ros2/rosbag2/issues/1039>)
+  * Contributors: Esteve Fernandez, mergify[bot]
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 07 Nov 2022 06:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.15.2-2jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 11 May 2022 05:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.15.1-2jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 06 Apr 2022 05:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.15.0-2jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 05 Apr 2022 05:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.14.1-2jammy) jammy; urgency=high
+
+  * Bump version number to avoid conflict
+  * Contributors: Chris Lalancette
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 29 Mar 2022 05:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.14.0-2jammy) jammy; urgency=high
+
+  * Install headers to include/${PROJECT_NAME} (#958 <https://github.com/ros2/rosbag2/issues/958>)
+  * Contributors: Shane Loretz
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 29 Mar 2022 05:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.13.0-2jammy) jammy; urgency=high
+
+  * Emit a warning rather than crash when a message is too big for sqlite (#919 <https://github.com/ros2/rosbag2/issues/919>)
+  * Contributors: William Woodall
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 13 Jan 2022 06:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.12.0-2jammy) jammy; urgency=high
+
+  * Enable YAML encoding/decoding for RecordOptions and StorageOptions (#916 <https://github.com/ros2/rosbag2/issues/916>)
+  * Contributors: Emerson Knapp
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Fri, 17 Dec 2021 06:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.11.0-2jammy) jammy; urgency=high
+
+  * Update package maintainers (#899 <https://github.com/ros2/rosbag2/issues/899>)
+  * Contributors: Michel Hidalgo
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 08 Nov 2021 06:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.10.1-2jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Fri, 22 Oct 2021 05:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.10.0-2jammy) jammy; urgency=high
+
+  * added seek interface (#836 <https://github.com/ros2/rosbag2/issues/836>)
+  * Contributors: sonia
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 19 Oct 2021 05:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.9.0-2jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 17 May 2021 05:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.8.0-2jammy) jammy; urgency=high
+
+  * Remove -Werror from builds, enable it in Action CI (#722 <https://github.com/ros2/rosbag2/issues/722>)
+  * Explicitly add emersonknapp as maintainer (#692 <https://github.com/ros2/rosbag2/issues/692>)
+  * Reindexer core (#641 <https://github.com/ros2/rosbag2/issues/641>)
+    Add a new C++ Reindexer class for reconstructing metadata from bags that are missing it.
+  * Contributors: Emerson Knapp, jhdcs
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 19 Apr 2021 05:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.7.0-2jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 18 Mar 2021 05:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.6.0-2jammy) jammy; urgency=high
+
+  * Fix build issues when rosbag2_storage is binary installed (#585 <https://github.com/ros2/rosbag2/issues/585>)
+  * Mutex protection for db writing and stl collections in writer & storage (#603 <https://github.com/ros2/rosbag2/issues/603>)
+  * SQLite storage optimized by default (#568 <https://github.com/ros2/rosbag2/issues/568>)
+  * Contributors: Adam Dąbrowski, P. J. Reed
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 01 Feb 2021 06:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.5.0-2jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 02 Dec 2020 06:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.4.0-2jammy) jammy; urgency=high
+
+  * read yaml config file (#497 <https://github.com/ros2/rosbag2/issues/497>)
+  * add storage_config_uri (#493 <https://github.com/ros2/rosbag2/issues/493>)
+  * Update the package.xml files with the latest Open Robotics maintainers (#535 <https://github.com/ros2/rosbag2/issues/535>)
+  * Contributors: Karsten Knese, Michael Jeronimo
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 19 Nov 2020 06:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.3.2-2jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 03 Jun 2020 05:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.3.1-2jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 01 Jun 2020 05:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.3.0-2jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 26 May 2020 05:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.2.8-2jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 18 May 2020 05:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.2.7-2jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 12 May 2020 05:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.2.6-2jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 07 May 2020 05:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.2.5-2jammy) jammy; urgency=high
+
+  * Add filter for reading selective topics (#302 <https://github.com/ros2/rosbag2/issues/302>)
+  * Transaction based sqlite3 inserts (#225 <https://github.com/ros2/rosbag2/issues/225>)
+  * Add QoS profiles field to metadata struct and provide serialization utilities (#330 <https://github.com/ros2/rosbag2/issues/330>)
+  * Replace rcutils_get_file_size with rcpputils::fs::file_size (#291 <https://github.com/ros2/rosbag2/issues/291>)
+  * code style only: wrap after open parenthesis if not in one line (#280 <https://github.com/ros2/rosbag2/issues/280>)
+  * Improve SQLite error messages (#269 <https://github.com/ros2/rosbag2/issues/269>)
+  * remove rosbag2 filesystem helper (#249 <https://github.com/ros2/rosbag2/issues/249>)
+  * Sanitize bagfile splitting CLI input (#226 <https://github.com/ros2/rosbag2/issues/226>)
+  * make ros tooling working group maintainer (#211 <https://github.com/ros2/rosbag2/issues/211>)
+  * Contributors: Dirk Thomas, Emerson Knapp, Karsten Knese, Mabel Zhang, Prajakta Gokhale, Sriram Raghunathan, Zachary Michaels
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 30 Apr 2020 05:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.2.4-2jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 18 Nov 2019 06:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.2.3-2jammy) jammy; urgency=high
+
+  * Enhance rosbag writer capabilities to split bag files. (#185 <https://github.com/ros2/rosbag2/issues/185>)
+  * Contributors: Zachary Michaels
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 18 Nov 2019 06:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.2.2-2jammy) jammy; urgency=high
+
+  * (API) Generate bagfile metadata in Writer (#184 <https://github.com/ros2/rosbag2/issues/184>)
+  * Contributors: Zachary Michaels
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 13 Nov 2019 06:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.2.1-2jammy) jammy; urgency=high
+
+  * Add get_identifier to storage io-interface for support in bagfile splitting. (#183 <https://github.com/ros2/rosbag2/issues/183>)
+  * Change storage interfaces for bagfile splitting feature (#170 <https://github.com/ros2/rosbag2/issues/170>)
+  * Add error checking on SqliteWrapper deconstructor. (#169 <https://github.com/ros2/rosbag2/issues/169>)
+  * Contributors: Zachary Michaels
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 23 Oct 2019 05:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.2.0-2jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 26 Sep 2019 05:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.1.2-2jammy) jammy; urgency=high
+
+  * Indexing of messages.timestamp to avoid runtime-copy. (#121 <https://github.com/ros2/rosbag2/issues/121>)
+    Extended SqliteStorage::initialize() to add an index for the message table's timestamp column.
+    Without this, the ORDER BY query in prepare_for_reading() causes expensive table duplication,
+    which also has potential for out-of-disk or out-of-memory errors.
+  * Fixes an init race condition (#93 <https://github.com/ros2/rosbag2/issues/93>)
+    * This could probably be a race condition, for ex: When we've create a subscriber in the API, and the subscriber has the data already available in the callback (Cause of existing publishers) the db entry for the particular topic would not be availalble, which in turn returns an SqliteException. This is cause write_->create_topic() call is where we add the db entry for a particular topic. And, this leads to crashing before any recording.
+    Locally I solved it by adding the db entry first, and if
+    create_subscription fails, remove the topic entry from the db and also
+    erase the subscription.
+    Signed-off-by: Sriram Raghunathan <mailto:rsriram7@visteon.com>
+    * Fix comments for pull request https://github.com/ros2/rosbag2/pull/93
+    Signed-off-by: Sriram Raghunathan <mailto:rsriram7@visteon.com>
+    * Added unit test case for remove_topics from db
+    Signed-off-by: Sriram Raghunathan <mailto:rsriram7@visteon.com>
+    * Fix unit tests failing by adding dependent test macros
+    Signed-off-by: Sriram Raghunathan <mailto:rsriram7@visteon.com>
+    * Fixes the linter errors
+  * Contributors: Felix-El, Sriram Raghunathan
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 20 May 2019 05:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.1.1-2jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 09 May 2019 05:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.1.0-2jammy) jammy; urgency=high
+
+  * fix line length of logging macros (#110 <https://github.com/ros2/rosbag2/issues/110>)
+  * fix logging signature (#107 <https://github.com/ros2/rosbag2/issues/107>)
+  * Contributors: Dirk Thomas, Karsten Knese
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 08 May 2019 05:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.0.5-2jammy) jammy; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 27 Dec 2018 06:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.0.4-2jammy) jammy; urgency=high
+
+  * 0.0.3
+  * Play old bagfiles (#69 <https://github.com/bsinno/rosbag2/issues/69>)
+  * Contributors: Karsten Knese, Martin Idel
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 19 Dec 2018 06:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.0.2-2jammy) jammy; urgency=high
+
+  * update maintainer email
+  * fix unused variable warning when in release
+  * Contributors: Karsten Knese
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 12 Dec 2018 06:00:00 -0000
+
+ros-humble-rosbag2-storage-default-plugins (0.0.1-2jammy) jammy; urgency=high
+
+  * rename topic_with_types to topic_metadata
+  * GH-142 replace map with unordered map where possible (#65 <https://github.com/ros2/rosbag2/issues/65>)
+  * Use converters when recording a bag file (#57 <https://github.com/ros2/rosbag2/issues/57>)
+  * use uint8 for serialized message (#61 <https://github.com/ros2/rosbag2/issues/61>)
+  * Renaming struct members for consistency (#64 <https://github.com/ros2/rosbag2/issues/64>)
+  * Display bag summary using ros2 bag info (#45 <https://github.com/ros2/rosbag2/issues/45>)
+  * Use directory as bagfile and add additonal record options (#43 <https://github.com/ros2/rosbag2/issues/43>)
+  * Introduce rosbag2_transport layer and CLI (#38 <https://github.com/ros2/rosbag2/issues/38>)
+  * Add correct timing behaviour for rosbag play (#32 <https://github.com/ros2/rosbag2/issues/32>)
+  * Improve sqlite iterator interface (#33 <https://github.com/ros2/rosbag2/issues/33>)
+  * Improve sqlite usage and test stability (#31 <https://github.com/ros2/rosbag2/issues/31>)
+  * Record all topics (#30 <https://github.com/ros2/rosbag2/issues/30>)
+  * Record and play multiple topics (#27 <https://github.com/ros2/rosbag2/issues/27>)
+  * Allow an arbitrary topic to be recorded (#26 <https://github.com/ros2/rosbag2/issues/26>)
+  * Use serialized message directly (#24 <https://github.com/ros2/rosbag2/issues/24>)
+  * add visibility macros (#28 <https://github.com/ros2/rosbag2/issues/28>)
+  * initial version of plugin based storage api (#7 <https://github.com/ros2/rosbag2/issues/7>)
+  * Contributors: Alessandro Bottero, Andreas Greimel, Andreas Holzner, Karsten Knese, Martin Idel
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 11 Dec 2018 06:00:00 -0000
+
+
