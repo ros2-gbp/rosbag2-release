@@ -1,4 +1,4 @@
-From bd1e1cc8f583d4595b9b00cc1d81921fded6a942 Mon Sep 17 00:00:00 2001
+From 7434da8ee9d86f27eb59dcc15fea1dac31462f70 Mon Sep 17 00:00:00 2001
 From: Scott K Logan <logans@cottsay.net>
 Date: Fri, 18 Feb 2022 10:47:45 -0800
 Subject: [PATCH] Disable sanitizers in RPM build
