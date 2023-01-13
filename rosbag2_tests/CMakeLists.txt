@@ -35,7 +35,6 @@ if(BUILD_TESTING)
   find_package(rosbag2_compression REQUIRED)
   find_package(rosbag2_cpp REQUIRED)
   find_package(rosbag2_storage REQUIRED)
-  find_package(rosbag2_storage_sqlite3 REQUIRED)
   find_package(rosbag2_storage_default_plugins REQUIRED)
   find_package(rosbag2_test_common REQUIRED)
   find_package(std_msgs REQUIRED)
@@ -43,14 +42,15 @@ if(BUILD_TESTING)
 
   ament_add_gmock(test_rosbag2_record_end_to_end
     test/rosbag2_tests/test_rosbag2_record_end_to_end.cpp
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    TIMEOUT 120)
   if(TARGET test_rosbag2_record_end_to_end)
     ament_target_dependencies(test_rosbag2_record_end_to_end
       rclcpp
       rosbag2_compression
       rosbag2_compression_zstd
       rosbag2_storage
-      rosbag2_storage_sqlite3
+      rosbag2_storage_default_plugins
       rosbag2_test_common
       test_msgs)
     ament_add_test_label(test_rosbag2_record_end_to_end xfail)
@@ -63,7 +63,7 @@ if(BUILD_TESTING)
     ament_target_dependencies(test_rosbag2_play_end_to_end
       rclcpp
       rosbag2_storage
-      rosbag2_storage_sqlite3
+      rosbag2_storage_default_plugins
       rosbag2_test_common
       test_msgs)
     ament_add_test_label(test_rosbag2_play_end_to_end xfail)
@@ -97,7 +97,8 @@ if(BUILD_TESTING)
       rosbag2_cpp
       rosbag2_storage
       rosbag2_storage_default_plugins
-      rosbag2_test_common)
+      rosbag2_test_common
+      std_msgs)
   endif()
 
 
