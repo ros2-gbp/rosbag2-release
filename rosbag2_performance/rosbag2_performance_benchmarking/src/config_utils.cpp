@@ -19,6 +19,7 @@
 
 #include "rclcpp/qos.hpp"
 #include "rosbag2_performance_benchmarking/producer_config.hpp"
+#include "rosbag2_storage/default_storage_id.hpp"
 
 namespace config_utils
 {
@@ -69,8 +70,9 @@ std::vector<PublisherGroupConfig> publisher_groups_from_node_parameters(
     auto group_prefix = parameters_ns + "." + group_name;
     node.declare_parameter<int>(group_prefix + ".publishers_count");
     node.declare_parameter<std::string>(group_prefix + ".topic_root");
-    node.declare_parameter<int>(group_prefix + ".msg_size_bytes");
+    node.declare_parameter<int>(group_prefix + ".msg_size_bytes", 0);
     node.declare_parameter<int>(group_prefix + ".msg_count_each");
+    node.declare_parameter(group_prefix + ".msg_type", std::string(DEFAULT_MESSAGE_TYPE));
     node.declare_parameter<int>(group_prefix + ".rate_hz");
 
     PublisherGroupConfig group_config;
@@ -87,6 +89,9 @@ std::vector<PublisherGroupConfig> publisher_groups_from_node_parameters(
       group_prefix + ".msg_count_each",
       group_config.producer_config.max_count);
     node.get_parameter(
+      group_prefix + ".msg_type",
+      group_config.producer_config.message_type);
+    node.get_parameter(
       group_prefix + ".rate_hz",
       group_config.producer_config.frequency);
 
@@ -94,6 +99,16 @@ std::vector<PublisherGroupConfig> publisher_groups_from_node_parameters(
       RCLCPP_ERROR(node.get_logger(), "Frequency can't be 0. Exiting.");
       rclcpp::shutdown(nullptr, "Invalid frequency parameter");
       return configurations;
+    }
+
+    if (group_config.producer_config.message_type == DEFAULT_MESSAGE_TYPE) {
+      if (group_config.producer_config.message_size == 0) {
+        RCLCPP_ERROR(
+          node.get_logger(),
+          "Message size is zero or unset when using default message type. Exiting.");
+        rclcpp::shutdown(nullptr, "msg_size parameter is zero or unset");
+        return configurations;
+      }
     }
 
     config_utils::load_qos_configuration(node, group_config, group_prefix);
@@ -109,10 +124,10 @@ BagConfig bag_config_from_node_parameters(
   const std::string default_bag_folder("/tmp/rosbag2_test");
   BagConfig bag_config;
 
-  node.declare_parameter<std::string>("storage_id", "sqlite3");
+  node.declare_parameter<std::string>("storage_id", rosbag2_storage::get_default_storage_id());
   node.declare_parameter<int>("max_cache_size", 10000000);
   node.declare_parameter<int>("max_bag_size", 0);
-  node.declare_parameter<std::string>("db_folder", default_bag_folder);
+  node.declare_parameter<std::string>("bag_folder", default_bag_folder);
   node.declare_parameter<std::string>("storage_config_file", "");
   node.declare_parameter<std::string>("compression_format", "");
   node.declare_parameter<int>("compression_queue_size", 1);
@@ -121,7 +136,7 @@ BagConfig bag_config_from_node_parameters(
   node.get_parameter("storage_id", bag_config.storage_options.storage_id);
   node.get_parameter("max_cache_size", bag_config.storage_options.max_cache_size);
   node.get_parameter("max_bag_size", bag_config.storage_options.max_bagfile_size);
-  node.get_parameter("db_folder", bag_config.storage_options.uri);
+  node.get_parameter("bag_folder", bag_config.storage_options.uri);
   node.get_parameter("storage_config_file", bag_config.storage_options.storage_config_uri);
   node.get_parameter("compression_format", bag_config.compression_format);
   node.get_parameter("compression_queue_size", bag_config.compression_queue_size);
