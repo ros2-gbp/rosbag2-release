@@ -28,16 +28,18 @@
 #include "rosbag2_storage/metadata_io.hpp"
 
 #include "rosbag2_test_common/temporary_directory_fixture.hpp"
+#include "rosbag2_test_common/tested_storage_ids.hpp"
 
 #include "test_msgs/msg/basic_types.hpp"
 
 using namespace ::testing;  // NOLINT
-using rosbag2_test_common::TemporaryDirectoryFixture;
+using rosbag2_test_common::ParametrizedTemporaryDirectoryFixture;
 
-TEST_F(TemporaryDirectoryFixture, read_metadata_supports_version_2) {
+TEST_P(ParametrizedTemporaryDirectoryFixture, read_metadata_supports_version_2) {
+  const auto expected_storage_id = GetParam();
   const std::string bagfile = "rosbag2_bagfile_information:\n"
     "  version: 2\n"
-    "  storage_identifier: sqlite3\n"
+    "  storage_identifier: " + expected_storage_id + "\n"
     "  relative_file_paths:\n"
     "    - some_relative_path\n"
     "    - some_other_relative_path\n"
@@ -69,7 +71,7 @@ TEST_F(TemporaryDirectoryFixture, read_metadata_supports_version_2) {
   const auto metadata = info.read_metadata(temporary_dir_path_);
 
   EXPECT_EQ(metadata.version, 2);
-  EXPECT_EQ(metadata.storage_identifier, "sqlite3");
+  EXPECT_EQ(metadata.storage_identifier, expected_storage_id);
 
   const auto expected_paths =
     std::vector<std::string>{"some_relative_path", "some_other_relative_path"};
@@ -100,10 +102,12 @@ TEST_F(TemporaryDirectoryFixture, read_metadata_supports_version_2) {
   }
 }
 
-TEST_F(TemporaryDirectoryFixture, read_metadata_supports_version_6) {
+TEST_P(ParametrizedTemporaryDirectoryFixture, read_metadata_supports_version_6) {
+  const auto expected_storage_id = GetParam();
+  const auto expected_storage_file = "test.testbag";
   const std::string bagfile = "rosbag2_bagfile_information:\n"
     "  version: 6\n"
-    "  storage_identifier: sqlite3\n"
+    "  storage_identifier: " + expected_storage_id + "\n"
     "  relative_file_paths:\n"
     "    - some_relative_path\n"
     "    - some_other_relative_path\n"
@@ -128,7 +132,7 @@ TEST_F(TemporaryDirectoryFixture, read_metadata_supports_version_6) {
     "  compression_format: \"zstd\"\n"
     "  compression_mode: \"FILE\"\n"
     "  files:\n"
-    "    - path: test.db3\n"
+    "    - path: " + expected_storage_file + "\n"
     "      starting_time:\n"
     "        nanoseconds_since_epoch: 0\n"
     "      duration:\n"
@@ -149,7 +153,7 @@ TEST_F(TemporaryDirectoryFixture, read_metadata_supports_version_6) {
   const auto metadata = info.read_metadata(temporary_dir_path_);
 
   EXPECT_EQ(metadata.version, 6);
-  EXPECT_EQ(metadata.storage_identifier, "sqlite3");
+  EXPECT_EQ(metadata.storage_identifier, expected_storage_id);
 
   const auto expected_paths =
     std::vector<std::string>{"some_relative_path", "some_other_relative_path"};
@@ -173,7 +177,7 @@ TEST_F(TemporaryDirectoryFixture, read_metadata_supports_version_6) {
 
   {
     EXPECT_EQ(metadata.files.size(), 1U);
-    EXPECT_EQ(metadata.files[0].path, "test.db3");
+    EXPECT_EQ(metadata.files[0].path, expected_storage_file);
     EXPECT_EQ(metadata.files[0].starting_time.time_since_epoch().count(), 0U);
     EXPECT_EQ(metadata.files[0].duration, std::chrono::nanoseconds{100000000});
     EXPECT_EQ(metadata.files[0].message_count, 200U);
@@ -198,11 +202,14 @@ TEST_F(TemporaryDirectoryFixture, read_metadata_supports_version_6) {
   }
 }
 
-TEST_F(TemporaryDirectoryFixture, read_metadata_makes_appropriate_call_to_metadata_io_method) {
+TEST_P(
+  ParametrizedTemporaryDirectoryFixture,
+  read_metadata_makes_appropriate_call_to_metadata_io_method) {
+  const auto expected_storage_id = GetParam();
   std::string bagfile(
     "rosbag2_bagfile_information:\n"
     "  version: 3\n"
-    "  storage_identifier: sqlite3\n"
+    "  storage_identifier: " + expected_storage_id + "\n"
     "  relative_file_paths:\n"
     "    - some_relative_path\n"
     "    - some_other_relative_path\n"
@@ -235,7 +242,7 @@ TEST_F(TemporaryDirectoryFixture, read_metadata_makes_appropriate_call_to_metada
   rosbag2_cpp::Info info;
   auto read_metadata = info.read_metadata(temporary_dir_path_);
 
-  EXPECT_THAT(read_metadata.storage_identifier, Eq("sqlite3"));
+  EXPECT_EQ(read_metadata.storage_identifier, expected_storage_id);
   EXPECT_THAT(
     read_metadata.relative_file_paths,
     Eq(std::vector<std::string>({"some_relative_path", "some_other_relative_path"})));
@@ -276,21 +283,36 @@ TEST_F(TemporaryDirectoryFixture, read_metadata_makes_appropriate_call_to_metada
   EXPECT_EQ(read_metadata.compression_mode, "FILE");
 }
 
-TEST_F(TemporaryDirectoryFixture, info_for_standalone_bagfile) {
+TEST_P(ParametrizedTemporaryDirectoryFixture, info_for_standalone_bagfile) {
+  const auto storage_id = GetParam();
   const auto bag_path = rcpputils::fs::path(temporary_dir_path_) / "bag";
-  const auto expected_bagfile_path = bag_path / "bag_0.db3";
   {
     // Create an empty bag with default storage
     rosbag2_cpp::Writer writer;
-    writer.open(bag_path.string());
+    rosbag2_storage::StorageOptions storage_options;
+    storage_options.storage_id = storage_id;
+    storage_options.uri = bag_path.string();
+    writer.open(storage_options);
     test_msgs::msg::BasicTypes msg;
     writer.write(msg, "testtopic", rclcpp::Time{});
+  }
+  std::string first_storage_file_path;
+  {
+    rosbag2_storage::MetadataIo metadata_io;
+    auto metadata = metadata_io.read_metadata(bag_path.string());
+    first_storage_file_path = (bag_path / metadata.relative_file_paths[0]).string();
   }
 
   rosbag2_cpp::Info info;
   rosbag2_storage::BagMetadata metadata;
   EXPECT_NO_THROW(
-    metadata = info.read_metadata(expected_bagfile_path.string())
+    metadata = info.read_metadata(first_storage_file_path)
   );
   EXPECT_THAT(metadata.topics_with_message_count, SizeIs(1));
 }
+
+INSTANTIATE_TEST_SUITE_P(
+  RosbagInfoTests,
+  ParametrizedTemporaryDirectoryFixture,
+  ValuesIn(rosbag2_test_common::kTestedStorageIDs)
+);

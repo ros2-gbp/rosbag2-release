@@ -67,10 +67,11 @@ public:
   void close() override;
 
   /**
+   * \throws runtime_error if the Reader is not open.
    * \note Calling set_read_order(order) concurrently with has_next(), seek(t), has_next_file()
-   * or load_next_file() will cause undefined behavior
+   * or load_next_file() will cause undefined behavior.
    */
-  void set_read_order(const rosbag2_storage::ReadOrder & order) override;
+  bool set_read_order(const rosbag2_storage::ReadOrder & order) override;
 
   bool has_next() override;
 
@@ -196,9 +197,9 @@ protected:
   rcutils_time_point_value_t seek_time_ = 0;
   rosbag2_storage::StorageFilter topics_filter_{};
   std::vector<rosbag2_storage::TopicMetadata> topics_metadata_{};
-  std::vector<std::string> file_paths_{};  // List of database files.
-  std::vector<std::string>::iterator current_file_iterator_{};  // Index of file to read from
-  std::unordered_set<std::string> preprocessed_file_paths_;  // List of preprocessed paths
+  std::vector<std::string> file_paths_{};
+  std::vector<std::string>::iterator current_file_iterator_{};
+  std::unordered_set<std::string> preprocessed_file_paths_;
 
   // Hang on to this because storage_options_ is mutated to point at individual files
   std::string base_folder_;
