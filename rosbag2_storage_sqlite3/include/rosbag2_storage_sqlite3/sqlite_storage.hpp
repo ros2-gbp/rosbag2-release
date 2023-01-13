@@ -27,6 +27,7 @@
 #include "rosbag2_storage/serialized_bag_message.hpp"
 #include "rosbag2_storage/storage_filter.hpp"
 #include "rosbag2_storage/topic_metadata.hpp"
+#include "rosbag2_storage/bag_metadata.hpp"
 #include "rosbag2_storage_sqlite3/sqlite_wrapper.hpp"
 #include "rosbag2_storage_sqlite3/visibility_control.hpp"
 
@@ -54,6 +55,8 @@ public:
     rosbag2_storage::storage_interfaces::IOFlag io_flag =
     rosbag2_storage::storage_interfaces::IOFlag::READ_WRITE) override;
 
+  void update_metadata(const rosbag2_storage::BagMetadata & metadata) override;
+
   void remove_topic(const rosbag2_storage::TopicMetadata & topic) override;
 
   void create_topic(const rosbag2_storage::TopicMetadata & topic) override;
@@ -64,7 +67,7 @@ public:
     const std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>> & messages)
   override;
 
-  void set_read_order(const rosbag2_storage::ReadOrder &) override;
+  bool set_read_order(const rosbag2_storage::ReadOrder &) override;
 
   bool has_next() override;
 
@@ -96,6 +99,9 @@ public:
    */
   SqliteWrapper & get_sqlite_database_wrapper();
 
+  int get_db_schema_version() const;
+  std::string get_recorded_ros_distro() const;
+
   enum class PresetProfile
   {
     Resilient,
@@ -105,6 +111,7 @@ public:
 
 private:
   void initialize();
+  void read_metadata();
   void prepare_for_writing();
   void prepare_for_reading();
   void fill_topics_and_types();
@@ -113,6 +120,7 @@ private:
   void write_locked(std::shared_ptr<const rosbag2_storage::SerializedBagMessage> message)
   RCPPUTILS_TSA_REQUIRES(database_write_mutex_);
   int get_last_rowid();
+  int read_db_schema_version();
 
   using ReadQueryResult = SqliteStatementWrapper::QueryResult<
     std::shared_ptr<rcutils_uint8_array_t>, rcutils_time_point_value_t, std::string, int>;
@@ -132,11 +140,17 @@ private:
   int seek_row_id_ = 0;
   rosbag2_storage::ReadOrder read_order_{};
   rosbag2_storage::StorageFilter storage_filter_ {};
+  rosbag2_storage::storage_interfaces::IOFlag storage_mode_{
+    rosbag2_storage::storage_interfaces::IOFlag::READ_WRITE};
 
   // This mutex is necessary to protect:
   // a) database access (this could also be done with FULLMUTEX), but see b)
   // b) topics_ collection - since we could be writing and reading it at the same time
   std::mutex database_write_mutex_;
+
+  const int kDBSchemaVersion_ = 3;
+  int db_schema_version_ = -1;  //  Valid version number starting from 1
+  rosbag2_storage::BagMetadata metadata_{};
 };
 
 

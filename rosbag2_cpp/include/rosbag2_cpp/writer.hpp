@@ -53,7 +53,7 @@ class BaseWriterInterface;
  * The Writer allows writing messages to a new bag. For every topic, information about its type
  * needs to be added before writing the first message.
  */
-class ROSBAG2_CPP_PUBLIC Writer final
+class ROSBAG2_CPP_PUBLIC Writer
 {
 public:
   explicit Writer(
@@ -67,7 +67,7 @@ public:
    * This must be called before any other function is used.
    *
    * \note This will open URI with the default storage options
-   * * using sqlite3 storage backend
+   * * using default storage backend
    * * using no converter options, storing messages with the incoming serialization format
    * \sa rmw_get_serialization_format.
    * For specifications, please see \sa open, which let's you specify

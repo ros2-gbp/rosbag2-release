@@ -33,11 +33,13 @@ public:
     const rosbag2_storage::StorageOptions & storage_options,
     rosbag2_storage::storage_interfaces::IOFlag flag) override;
 
+  void update_metadata(const rosbag2_storage::BagMetadata & metadata) override;
+
   void create_topic(const rosbag2_storage::TopicMetadata & topic) override;
 
   void remove_topic(const rosbag2_storage::TopicMetadata & topic) override;
 
-  void set_read_order(const rosbag2_storage::ReadOrder &) override;
+  bool set_read_order(const rosbag2_storage::ReadOrder &) override;
 
   bool has_next() override;
 
