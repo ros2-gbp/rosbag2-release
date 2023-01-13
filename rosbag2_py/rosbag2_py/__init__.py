@@ -24,15 +24,17 @@ with add_dll_directories_from_env('PATH'):
         get_registered_readers,
     )
     from rosbag2_py._storage import (
+        BagMetadata,
         ConverterOptions,
         FileInformation,
+        MetadataIo,
         ReadOrder,
         ReadOrderSortBy,
         StorageFilter,
         StorageOptions,
         TopicMetadata,
         TopicInformation,
-        BagMetadata,
+        get_default_storage_id,
     )
     from rosbag2_py._writer import (
         SequentialCompressionWriter,
@@ -40,17 +42,16 @@ with add_dll_directories_from_env('PATH'):
         get_registered_writers,
         get_registered_compressors,
         get_registered_serializers,
-        get_default_storage_id,
     )
     from rosbag2_py._info import (
         Info,
     )
     from rosbag2_py._transport import (
-        bag_rewrite,
         Player,
         PlayOptions,
         Recorder,
         RecordOptions,
+        bag_rewrite,
     )
     from rosbag2_py._reindexer import (
         Reindexer
@@ -77,6 +78,7 @@ __all__ = [
     'TopicMetadata',
     'TopicInformation',
     'BagMetadata',
+    'MetadataIo',
     'Info',
     'Player',
     'PlayOptions',
