@@ -56,6 +56,11 @@ void Reader::close()
   reader_impl_->close();
 }
 
+bool Reader::set_read_order(const rosbag2_storage::ReadOrder & order)
+{
+  return reader_impl_->set_read_order(order);
+}
+
 bool Reader::has_next()
 {
   return reader_impl_->has_next();

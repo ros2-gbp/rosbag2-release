@@ -2,10 +2,11 @@
 Changelog for package rosbag2_storage_mcap_testdata
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.15.4 (2023-01-10)
+0.19.0 (2023-01-13)
 -------------------
-* [Humble backport] rosbag2_storage_mcap: merge into rosbag2 repo (`#1163 <https://github.com/ros2/rosbag2/issues/1163>`_) (`#1189 <https://github.com/ros2/rosbag2/issues/1189>`_)
-* Contributors: james-rms
+* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_)
+* rosbag2_storage_mcap: merge into rosbag2 repo (`#1163 <https://github.com/ros2/rosbag2/issues/1163>`_)
+* Contributors: Michael Orlov, james-rms
 
 0.6.0 (2022-11-28)
 ------------------

@@ -19,11 +19,14 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/GetRate.srv"
   "srv/IsPaused.srv"
   "srv/Pause.srv"
+  "srv/Play.srv"
   "srv/PlayNext.srv"
   "srv/Resume.srv"
   "srv/Seek.srv"
   "srv/SetRate.srv"
   "srv/Snapshot.srv"
+  "srv/SplitBagfile.srv"
+  "srv/Stop.srv"
   "srv/TogglePaused.srv"
   DEPENDENCIES builtin_interfaces
   ADD_LINTER_TESTS

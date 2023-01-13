@@ -14,29 +14,26 @@
 
 import os
 from pathlib import Path
-import sys
+
+from common import get_rosbag_options
+
+import pytest
 
 from rcl_interfaces.msg import Log
 from rclpy.serialization import deserialize_message
+import rosbag2_py
+from rosbag2_test_common import TESTED_STORAGE_IDS
 from rosidl_runtime_py.utilities import get_message
 from std_msgs.msg import String
 
-if os.environ.get('ROSBAG2_PY_TEST_WITH_RTLD_GLOBAL', None) is not None:
-    # This is needed on Linux when compiling with clang/libc++.
-    # TL;DR This makes class_loader work when using a python extension compiled with libc++.
-    #
-    # For the fun RTTI ABI details, see https://whatofhow.wordpress.com/2015/03/17/odr-rtti-dso/.
-    sys.setdlopenflags(os.RTLD_GLOBAL | os.RTLD_LAZY)
-
-from common import get_rosbag_options  # noqa
-import rosbag2_py  # noqa
 
 RESOURCES_PATH = Path(os.environ['ROSBAG2_PY_TEST_RESOURCES_DIR'])
 
 
-def test_sequential_reader():
-    bag_path = str(RESOURCES_PATH / 'talker')
-    storage_options, converter_options = get_rosbag_options(bag_path)
+@pytest.mark.parametrize('storage_id', TESTED_STORAGE_IDS)
+def test_sequential_reader(storage_id):
+    bag_path = str(RESOURCES_PATH / storage_id / 'talker')
+    storage_options, converter_options = get_rosbag_options(bag_path, storage_id)
 
     reader = rosbag2_py.SequentialReader()
     reader.open(storage_options, converter_options)
@@ -82,9 +79,10 @@ def test_sequential_reader():
             msg_counter += 1
 
 
-def test_sequential_reader_seek():
-    bag_path = str(RESOURCES_PATH / 'talker')
-    storage_options, converter_options = get_rosbag_options(bag_path)
+@pytest.mark.parametrize('storage_id', TESTED_STORAGE_IDS)
+def test_sequential_reader_seek(storage_id):
+    bag_path = str(RESOURCES_PATH / storage_id / 'talker')
+    storage_options, converter_options = get_rosbag_options(bag_path, storage_id)
 
     reader = rosbag2_py.SequentialReader()
     reader.open(storage_options, converter_options)

@@ -2,15 +2,26 @@
 Changelog for package rosbag2_interfaces
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.15.4 (2023-01-10)
+0.19.0 (2023-01-13)
 -------------------
+* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_)
+* Contributors: Michael Orlov
 
-0.15.3 (2022-11-07)
+0.18.0 (2022-11-15)
 -------------------
-* Notification of significant events during bag recording and playback (`#908 <https://github.com/ros2/rosbag2/issues/908>`_) (`#1037 <https://github.com/ros2/rosbag2/issues/1037>`_)
-* Contributors: Geoffrey Biggs
+* Add SplitBagfile recording service. (`#1115 <https://github.com/ros2/rosbag2/issues/1115>`_)
+* Contributors: rshanor
 
-0.15.2 (2022-05-11)
+0.17.0 (2022-07-30)
+-------------------
+* Adds stop operation for rosbag2::Player (`#1007 <https://github.com/ros2/rosbag2/issues/1007>`_)
+* Notification of significant events during bag recording and playback (`#908 <https://github.com/ros2/rosbag2/issues/908>`_)
+* Adds play until timestamp functionality (`#1005 <https://github.com/ros2/rosbag2/issues/1005>`_)
+* Add CLI verb for burst mode of playback (`#980 <https://github.com/ros2/rosbag2/issues/980>`_)
+* Add play-for specified number of seconds functionality (`#960 <https://github.com/ros2/rosbag2/issues/960>`_)
+* Contributors: Agustin Alba Chicar, Geoffrey Biggs, Michael Orlov, Misha Shalem
+
+0.16.0 (2022-05-11)
 -------------------
 
 0.15.1 (2022-04-06)

@@ -2,13 +2,21 @@
 Changelog for package rosbag2_performance_benchmarking
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.15.4 (2023-01-10)
+0.19.0 (2023-01-13)
+-------------------
+* Add option to specify a message type (`#1153 <https://github.com/ros2/rosbag2/issues/1153>`_)
+* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_)
+* Replace language for "db3"/"db"/"database" (`#1194 <https://github.com/ros2/rosbag2/issues/1194>`_)
+* Remove explicit sqlite3 from code (`#1166 <https://github.com/ros2/rosbag2/issues/1166>`_)
+* Contributors: Emerson Knapp, Michael Orlov, carlossvg
+
+0.18.0 (2022-11-15)
 -------------------
 
-0.15.3 (2022-11-07)
+0.17.0 (2022-07-30)
 -------------------
 
-0.15.2 (2022-05-11)
+0.16.0 (2022-05-11)
 -------------------
 
 0.15.1 (2022-04-06)

@@ -69,6 +69,17 @@ public:
       static_cast<rcl_duration_value_t>(RCUTILS_S_TO_NS(delay)));
   }
 
+  double getPlaybackDuration() const
+  {
+    return RCUTILS_NS_TO_S(static_cast<double>(this->playback_duration.nanoseconds()));
+  }
+
+  void setPlaybackDuration(double playback_duration)
+  {
+    this->playback_duration = rclcpp::Duration::from_nanoseconds(
+      static_cast<rcl_duration_value_t>(RCUTILS_S_TO_NS(playback_duration)));
+  }
+
   double getDelay() const
   {
     return RCUTILS_NS_TO_S(static_cast<double>(this->delay.nanoseconds()));
@@ -82,6 +93,17 @@ public:
   double getStartOffset() const
   {
     return RCUTILS_NS_TO_S(static_cast<double>(this->start_offset));
+  }
+
+  void setPlaybackUntilTimestamp(int64_t playback_until_timestamp)
+  {
+    this->playback_until_timestamp =
+      static_cast<rcutils_time_point_value_t>(playback_until_timestamp);
+  }
+
+  int64_t getPlaybackUntilTimestamp() const
+  {
+    return this->playback_until_timestamp;
   }
 
   void setTopicQoSProfileOverrides(const py::dict & overrides)
@@ -137,6 +159,32 @@ public:
     exec.cancel();
     spin_thread.join();
   }
+
+  void burst(
+    const rosbag2_storage::StorageOptions & storage_options,
+    PlayOptions & play_options,
+    size_t num_messages)
+  {
+    auto reader = rosbag2_transport::ReaderWriterFactory::make_reader(storage_options);
+    auto player = std::make_shared<rosbag2_transport::Player>(
+      std::move(reader), storage_options, play_options);
+
+    rclcpp::executors::SingleThreadedExecutor exec;
+    exec.add_node(player);
+    auto spin_thread = std::thread(
+      [&exec]() {
+        exec.spin();
+      });
+    auto play_thread = std::thread(
+      [&player]() {
+        player->play();
+      });
+    player->burst(num_messages);
+
+    exec.cancel();
+    spin_thread.join();
+    play_thread.join();
+  }
 };
 
 class Recorder
@@ -162,7 +210,8 @@ public:
 
   void record(
     const rosbag2_storage::StorageOptions & storage_options,
-    RecordOptions & record_options)
+    RecordOptions & record_options,
+    std::string & node_name)
   {
     if (record_options.rmw_serialization_format.empty()) {
       record_options.rmw_serialization_format = std::string(rmw_get_serialization_format());
@@ -170,7 +219,7 @@ public:
 
     auto writer = rosbag2_transport::ReaderWriterFactory::make_writer(record_options);
     auto recorder = std::make_shared<rosbag2_transport::Recorder>(
-      std::move(writer), storage_options, record_options);
+      std::move(writer), storage_options, record_options, node_name);
     recorder->record();
 
     exec_->add_node(recorder);
@@ -186,6 +235,16 @@ public:
     exec_->cancel();
   }
 };
+
+// Return a RecordOptions struct with defaults set for rewriting bags.
+rosbag2_transport::RecordOptions bag_rewrite_default_record_options()
+{
+  rosbag2_transport::RecordOptions options{};
+  // We never want to drop messages when converting bags, so set the compression queue size to 0
+  // (unbounded).
+  options.compression_queue_size = 0;
+  return options;
+}
 
 // Simple wrapper to read the output config YAML into structs
 void bag_rewrite(
@@ -206,8 +265,10 @@ void bag_rewrite(
   std::vector<
     std::pair<rosbag2_storage::StorageOptions, rosbag2_transport::RecordOptions>> output_options;
   for (const auto & bag_node : bag_nodes) {
-    auto storage_options = bag_node.as<rosbag2_storage::StorageOptions>();
-    auto record_options = bag_node.as<rosbag2_transport::RecordOptions>();
+    rosbag2_storage::StorageOptions storage_options{};
+    YAML::convert<rosbag2_storage::StorageOptions>::decode(bag_node, storage_options);
+    rosbag2_transport::RecordOptions record_options = bag_rewrite_default_record_options();
+    YAML::convert<rosbag2_transport::RecordOptions>::decode(bag_node, record_options);
     output_options.push_back(std::make_pair(storage_options, record_options));
   }
   rosbag2_transport::bag_rewrite(input_options, output_options);
@@ -230,6 +291,8 @@ PYBIND11_MODULE(_transport, m) {
   .def_readwrite("node_prefix", &PlayOptions::node_prefix)
   .def_readwrite("rate", &PlayOptions::rate)
   .def_readwrite("topics_to_filter", &PlayOptions::topics_to_filter)
+  .def_readwrite("topics_regex_to_filter", &PlayOptions::topics_regex_to_filter)
+  .def_readwrite("topics_regex_to_exclude", &PlayOptions::topics_regex_to_exclude)
   .def_property(
     "topic_qos_profile_overrides",
     &PlayOptions::getTopicQoSProfileOverrides,
@@ -237,16 +300,26 @@ PYBIND11_MODULE(_transport, m) {
   .def_readwrite("loop", &PlayOptions::loop)
   .def_readwrite("topic_remapping_options", &PlayOptions::topic_remapping_options)
   .def_readwrite("clock_publish_frequency", &PlayOptions::clock_publish_frequency)
+  .def_readwrite("clock_publish_on_topic_publish", &PlayOptions::clock_publish_on_topic_publish)
+  .def_readwrite("clock_topics", &PlayOptions::clock_trigger_topics)
   .def_property(
     "delay",
     &PlayOptions::getDelay,
     &PlayOptions::setDelay)
+  .def_property(
+    "playback_duration",
+    &PlayOptions::getPlaybackDuration,
+    &PlayOptions::setPlaybackDuration)
   .def_readwrite("disable_keyboard_controls", &PlayOptions::disable_keyboard_controls)
   .def_readwrite("start_paused", &PlayOptions::start_paused)
   .def_property(
     "start_offset",
     &PlayOptions::getStartOffset,
     &PlayOptions::setStartOffset)
+  .def_property(
+    "playback_until_timestamp",
+    &PlayOptions::getPlaybackUntilTimestamp,
+    &PlayOptions::setPlaybackUntilTimestamp)
   .def_readwrite("wait_acked_timeout", &PlayOptions::wait_acked_timeout)
   .def_readwrite("disable_loan_message", &PlayOptions::disable_loan_message)
   ;
@@ -278,12 +351,15 @@ PYBIND11_MODULE(_transport, m) {
 
   py::class_<rosbag2_py::Player>(m, "Player")
   .def(py::init())
-  .def("play", &rosbag2_py::Player::play)
+  .def("play", &rosbag2_py::Player::play, py::arg("storage_options"), py::arg("play_options"))
+  .def("burst", &rosbag2_py::Player::burst)
   ;
 
   py::class_<rosbag2_py::Recorder>(m, "Recorder")
   .def(py::init())
-  .def("record", &rosbag2_py::Recorder::record)
+  .def(
+    "record", &rosbag2_py::Recorder::record, py::arg("storage_options"), py::arg("record_options"),
+    py::arg("node_name") = "rosbag2_recorder")
   .def("cancel", &rosbag2_py::Recorder::cancel)
   ;
 

@@ -13,24 +13,18 @@
 # limitations under the License.
 
 import datetime
-import os
 from pathlib import Path
-import sys
 import threading
 
-
 from common import get_rosbag_options, wait_for
+
+import pytest
+
 import rclpy
 from rclpy.qos import QoSProfile
 import rosbag2_py
+from rosbag2_test_common import TESTED_STORAGE_IDS
 from std_msgs.msg import String
-
-if os.environ.get('ROSBAG2_PY_TEST_WITH_RTLD_GLOBAL', None) is not None:
-    # This is needed on Linux when compiling with clang/libc++.
-    # TL;DR This makes class_loader work when using a python extension compiled with libc++.
-    #
-    # For the fun RTTI ABI details, see https://whatofhow.wordpress.com/2015/03/17/odr-rtti-dso/.
-    sys.setdlopenflags(os.RTLD_GLOBAL | os.RTLD_LAZY)
 
 
 def test_options_qos_conversion():
@@ -48,9 +42,10 @@ def test_options_qos_conversion():
     assert record_options.topic_qos_profile_overrides == simple_overrides
 
 
-def test_record_cancel(tmp_path):
+@pytest.mark.parametrize('storage_id', TESTED_STORAGE_IDS)
+def test_record_cancel(tmp_path, storage_id):
     bag_path = str(tmp_path / 'test_record_cancel')
-    storage_options, converter_options = get_rosbag_options(bag_path)
+    storage_options, converter_options = get_rosbag_options(bag_path, storage_id)
 
     recorder = rosbag2_py.Recorder()
 
@@ -59,15 +54,16 @@ def test_record_cancel(tmp_path):
     record_options.is_discovery_disabled = False
     record_options.topic_polling_interval = datetime.timedelta(milliseconds=100)
 
-    rclpy.init()
+    ctx = rclpy.Context()
+    ctx.init()
     record_thread = threading.Thread(
         target=recorder.record,
         args=(storage_options, record_options),
         daemon=True)
     record_thread.start()
 
-    node = rclpy.create_node('test_record_cancel')
-    executor = rclpy.executors.SingleThreadedExecutor()
+    node = rclpy.create_node('test_record_cancel', context=ctx)
+    executor = rclpy.executors.SingleThreadedExecutor(context=ctx)
     executor.add_node(node)
     pub = node.create_publisher(String, 'chatter', 10)
 
@@ -81,7 +77,12 @@ def test_record_cancel(tmp_path):
 
     recorder.cancel()
 
-    metadata_path = Path(bag_path) / 'metadata.yaml'
-    db3_path = Path(bag_path) / 'test_record_cancel_0.db3'
-    assert wait_for(lambda: metadata_path.is_file() and db3_path.is_file(),
+    metadata_io = rosbag2_py.MetadataIo()
+    assert wait_for(lambda: metadata_io.metadata_file_exists(bag_path),
+                    timeout=rclpy.duration.Duration(seconds=3))
+
+    metadata = metadata_io.read_metadata(bag_path)
+    assert(len(metadata.relative_file_paths))
+    storage_path = Path(metadata.relative_file_paths[0])
+    assert wait_for(lambda: storage_path.is_file(),
                     timeout=rclpy.duration.Duration(seconds=3))

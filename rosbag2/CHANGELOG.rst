@@ -2,13 +2,20 @@
 Changelog for package rosbag2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.15.4 (2023-01-10)
+0.19.0 (2023-01-13)
+-------------------
+* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_)
+* Contributors: Michael Orlov
+
+0.18.0 (2022-11-15)
+-------------------
+* Move sqlite3 storage implementation to rosbag2_storage_sqlite3 package (`#1113 <https://github.com/ros2/rosbag2/issues/1113>`_)
+* Contributors: Emerson Knapp
+
+0.17.0 (2022-07-30)
 -------------------
 
-0.15.3 (2022-11-07)
--------------------
-
-0.15.2 (2022-05-11)
+0.16.0 (2022-05-11)
 -------------------
 
 0.15.1 (2022-04-06)

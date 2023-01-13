@@ -14,25 +14,22 @@
 
 import os
 from pathlib import Path
-import sys
 
+from common import get_rosbag_options
 
-if os.environ.get('ROSBAG2_PY_TEST_WITH_RTLD_GLOBAL', None) is not None:
-    # This is needed on Linux when compiling with clang/libc++.
-    # TL;DR This makes class_loader work when using a python extension compiled with libc++.
-    #
-    # For the fun RTTI ABI details, see https://whatofhow.wordpress.com/2015/03/17/odr-rtti-dso/.
-    sys.setdlopenflags(os.RTLD_GLOBAL | os.RTLD_LAZY)
+import pytest
 
-from common import get_rosbag_options  # noqa
-import rosbag2_py  # noqa
+import rosbag2_py
+from rosbag2_test_common import TESTED_STORAGE_IDS
+
 
 RESOURCES_PATH = Path(os.environ['ROSBAG2_PY_TEST_RESOURCES_DIR'])
 
 
-def test_reset_filter():
-    bag_path = str(RESOURCES_PATH / 'wbag')
-    storage_options, converter_options = get_rosbag_options(bag_path)
+@pytest.mark.parametrize('storage_id', TESTED_STORAGE_IDS)
+def test_reset_filter(storage_id):
+    bag_path = str(RESOURCES_PATH / storage_id / 'wbag')
+    storage_options, converter_options = get_rosbag_options(bag_path, storage_id=storage_id)
 
     reader = rosbag2_py.SequentialReader()
     reader.open(storage_options, converter_options)
@@ -75,9 +72,10 @@ def test_reset_filter():
     assert t == 1005
 
 
-def test_seek_forward():
-    bag_path = str(RESOURCES_PATH / 'wbag')
-    storage_options, converter_options = get_rosbag_options(bag_path)
+@pytest.mark.parametrize('storage_id', TESTED_STORAGE_IDS)
+def test_seek_forward(storage_id):
+    bag_path = str(RESOURCES_PATH / storage_id / 'wbag')
+    storage_options, converter_options = get_rosbag_options(bag_path, storage_id)
 
     reader = rosbag2_py.SequentialReader()
     reader.open(storage_options, converter_options)
@@ -110,9 +108,10 @@ def test_seek_forward():
     assert t == 1826
 
 
-def test_seek_backward():
-    bag_path = str(RESOURCES_PATH / 'wbag')
-    storage_options, converter_options = get_rosbag_options(bag_path)
+@pytest.mark.parametrize('storage_id', TESTED_STORAGE_IDS)
+def test_seek_backward(storage_id):
+    bag_path = str(RESOURCES_PATH / storage_id / 'wbag')
+    storage_options, converter_options = get_rosbag_options(bag_path, storage_id)
 
     reader = rosbag2_py.SequentialReader()
     reader.open(storage_options, converter_options)

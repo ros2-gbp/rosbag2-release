@@ -29,14 +29,13 @@
 #include "rosbag2_cpp/info.hpp"
 #include "rosbag2_cpp/logging.hpp"
 
+#include "rosbag2_storage/default_storage_id.hpp"
 #include "rosbag2_storage/storage_options.hpp"
 
 namespace rosbag2_cpp
 {
 namespace writers
 {
-
-static constexpr char const * kDefaultStorageID = "sqlite3";
 
 namespace
 {
@@ -76,6 +75,7 @@ void SequentialWriter::init_metadata()
   file_info.starting_time = std::chrono::time_point<std::chrono::high_resolution_clock>(
     std::chrono::nanoseconds::max());
   file_info.message_count = 0;
+  metadata_.custom_data = storage_options_.custom_data;
   metadata_.files = {file_info};
 }
 
@@ -86,7 +86,7 @@ void SequentialWriter::open(
   base_folder_ = storage_options.uri;
   storage_options_ = storage_options;
   if (storage_options_.storage_id.empty()) {
-    storage_options_.storage_id = kDefaultStorageID;
+    storage_options_.storage_id = rosbag2_storage::get_default_storage_id();
   }
 
   if (converter_options.output_serialization_format !=
@@ -95,18 +95,18 @@ void SequentialWriter::open(
     converter_ = std::make_unique<Converter>(converter_options, converter_factory_);
   }
 
-  rcpputils::fs::path db_path(storage_options.uri);
-  if (db_path.is_directory()) {
+  rcpputils::fs::path storage_path(storage_options.uri);
+  if (storage_path.is_directory()) {
     std::stringstream error;
-    error << "Database directory already exists (" << db_path.string() <<
-      "), can't overwrite existing database";
+    error << "Bag directory already exists (" << storage_path.string() <<
+      "), can't overwrite existing bag";
     throw std::runtime_error{error.str()};
   }
 
-  bool dir_created = rcpputils::fs::create_directories(db_path);
+  bool dir_created = rcpputils::fs::create_directories(storage_path);
   if (!dir_created) {
     std::stringstream error;
-    error << "Failed to create database directory (" << db_path.string() << ").";
+    error << "Failed to create bag directory (" << storage_path.string() << ").";
     throw std::runtime_error{error.str()};
   }
 
@@ -146,6 +146,7 @@ void SequentialWriter::open(
   }
 
   init_metadata();
+  storage_->update_metadata(metadata_);
 }
 
 void SequentialWriter::close()
@@ -158,6 +159,9 @@ void SequentialWriter::close()
 
   if (!base_folder_.empty()) {
     finalize_metadata();
+    if (storage_) {
+      storage_->update_metadata(metadata_);
+    }
     metadata_io_->write_metadata(base_folder_, metadata_);
   }
 
@@ -246,10 +250,12 @@ void SequentialWriter::switch_to_next_storage()
     message_cache_->log_dropped();
   }
 
+  storage_->update_metadata(metadata_);
   storage_options_.uri = format_storage_uri(
     base_folder_,
     metadata_.relative_file_paths.size());
   storage_ = storage_factory_->open_read_write(storage_options_);
+  storage_->update_metadata(metadata_);
 
   if (!storage_) {
     std::stringstream errmsg;
@@ -279,13 +285,15 @@ void SequentialWriter::split_bagfile()
   metadata_.relative_file_paths.push_back(strip_parent_path(storage_->get_relative_file_path()));
 
   rosbag2_storage::FileInformation file_info{};
+  file_info.starting_time = std::chrono::time_point<std::chrono::high_resolution_clock>(
+    std::chrono::nanoseconds::max());
   file_info.path = strip_parent_path(storage_->get_relative_file_path());
   metadata_.files.push_back(file_info);
 
   callback_manager_.execute_callbacks(bag_events::BagEvent::WRITE_SPLIT, info);
 }
 
-void SequentialWriter::write(std::shared_ptr<rosbag2_storage::SerializedBagMessage> message)
+void SequentialWriter::write(std::shared_ptr<const rosbag2_storage::SerializedBagMessage> message)
 {
   if (!storage_) {
     throw std::runtime_error("Bag is not open. Call open() before writing.");
@@ -305,10 +313,14 @@ void SequentialWriter::write(std::shared_ptr<rosbag2_storage::SerializedBagMessa
   const auto message_timestamp = std::chrono::time_point<std::chrono::high_resolution_clock>(
     std::chrono::nanoseconds(message->time_stamp));
 
-  if (should_split_bagfile(message_timestamp)) {
-    split_bagfile();
+  if (is_first_message_) {
     // Update bagfile starting time
     metadata_.starting_time = message_timestamp;
+    is_first_message_ = false;
+  }
+
+  if (should_split_bagfile(message_timestamp)) {
+    split_bagfile();
     metadata_.files.back().starting_time = message_timestamp;
   }
 
@@ -346,9 +358,9 @@ bool SequentialWriter::take_snapshot()
   return true;
 }
 
-std::shared_ptr<rosbag2_storage::SerializedBagMessage>
+std::shared_ptr<const rosbag2_storage::SerializedBagMessage>
 SequentialWriter::get_writeable_message(
-  std::shared_ptr<rosbag2_storage::SerializedBagMessage> message)
+  std::shared_ptr<const rosbag2_storage::SerializedBagMessage> message)
 {
   return converter_ ? converter_->convert(message) : message;
 }
@@ -373,7 +385,7 @@ bool SequentialWriter::should_split_bagfile(
     auto max_duration_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
       std::chrono::seconds(storage_options_.max_bagfile_duration));
     should_split = should_split ||
-      ((current_time - metadata_.starting_time) > max_duration_ns);
+      ((current_time - metadata_.files.back().starting_time) > max_duration_ns);
   }
 
   return should_split;

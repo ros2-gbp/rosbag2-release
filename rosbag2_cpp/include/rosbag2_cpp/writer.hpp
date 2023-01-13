@@ -53,7 +53,7 @@ class BaseWriterInterface;
  * The Writer allows writing messages to a new bag. For every topic, information about its type
  * needs to be added before writing the first message.
  */
-class ROSBAG2_CPP_PUBLIC Writer final
+class ROSBAG2_CPP_PUBLIC Writer
 {
 public:
   explicit Writer(
@@ -67,7 +67,7 @@ public:
    * This must be called before any other function is used.
    *
    * \note This will open URI with the default storage options
-   * * using sqlite3 storage backend
+   * * using default storage backend
    * * using no converter options, storing messages with the incoming serialization format
    * \sa rmw_get_serialization_format.
    * For specifications, please see \sa open, which let's you specify
@@ -104,6 +104,11 @@ public:
   bool take_snapshot();
 
   /**
+   * Close the current bagfile and opens the next bagfile.
+   */
+  void split_bagfile();
+
+  /**
    * Remove a new topic in the underlying storage.
    * If creation of subscription fails remove the topic
    * from the db (more of cleanup)
@@ -119,7 +124,7 @@ public:
    * \param message to be written to the bagfile
    * \throws runtime_error if the Writer is not open.
    */
-  void write(std::shared_ptr<rosbag2_storage::SerializedBagMessage> message);
+  void write(std::shared_ptr<const rosbag2_storage::SerializedBagMessage> message);
 
   /**
    * Write a message to a bagfile.
@@ -132,7 +137,7 @@ public:
    * \throws runtime_error if the Writer is not open.
    */
   void write(
-    std::shared_ptr<rosbag2_storage::SerializedBagMessage> message,
+    std::shared_ptr<const rosbag2_storage::SerializedBagMessage> message,
     const std::string & topic_name,
     const std::string & type_name,
     const std::string & serialization_format = "cdr");
@@ -172,7 +177,7 @@ public:
    * \throws runtime_error if the Writer is not open.
    */
   void write(
-    std::shared_ptr<rclcpp::SerializedMessage> message,
+    std::shared_ptr<const rclcpp::SerializedMessage> message,
     const std::string & topic_name,
     const std::string & type_name,
     const rclcpp::Time & time);
