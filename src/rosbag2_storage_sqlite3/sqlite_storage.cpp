@@ -27,6 +27,7 @@
 #include <utility>
 #include <vector>
 
+#include "rcpputils/env.hpp"
 #include "rcpputils/filesystem_helper.hpp"
 
 #include "rosbag2_storage/metadata_io.hpp"
@@ -180,6 +181,7 @@ void SqliteStorage::open(
   const rosbag2_storage::StorageOptions & storage_options,
   rosbag2_storage::storage_interfaces::IOFlag io_flag)
 {
+  storage_mode_ = io_flag;
   const auto preset = parse_preset_profile(storage_options.storage_preset_profile);
   auto pragmas = parse_pragmas(storage_options.storage_config_uri, io_flag);
   if (preset == PresetProfile::Resilient && is_read_write(io_flag)) {
@@ -212,7 +214,11 @@ void SqliteStorage::open(
 
   // initialize only for READ_WRITE since the DB is already initialized if in APPEND.
   if (is_read_write(io_flag)) {
+    db_schema_version_ = kDBSchemaVersion_;
     initialize();
+  } else {
+    db_schema_version_ = read_db_schema_version();
+    read_metadata();
   }
 
   // Reset the read and write statements in case the database changed.
@@ -222,6 +228,12 @@ void SqliteStorage::open(
 
   ROSBAG2_STORAGE_DEFAULT_PLUGINS_LOG_INFO_STREAM(
     "Opened database '" << relative_path_ << "' for " << to_string(io_flag) << ".");
+}
+
+void SqliteStorage::update_metadata(const rosbag2_storage::BagMetadata & metadata)
+{
+  metadata_ = metadata;
+  // TODO(morlov:) update BagMetadata in DB
 }
 
 void SqliteStorage::activate_transaction()
@@ -308,17 +320,20 @@ void SqliteStorage::write(
   commit_transaction();
 }
 
-void SqliteStorage::set_read_order(const rosbag2_storage::ReadOrder & read_order)
+bool SqliteStorage::set_read_order(const rosbag2_storage::ReadOrder & read_order)
 {
   if (read_order.sort_by == rosbag2_storage::ReadOrder::PublishedTimestamp) {
-    throw std::runtime_error("Not Implemented - PublishedTimestamp read order.");
+    ROSBAG2_STORAGE_DEFAULT_PLUGINS_LOG_DEBUG("ReadOrder::PublishedTimestamp not implemented");
+    return false;
   }
   if (read_order.sort_by == rosbag2_storage::ReadOrder::File) {
-    throw std::runtime_error("Not Implemented - File read order");
+    ROSBAG2_STORAGE_DEFAULT_PLUGINS_LOG_DEBUG("ReadOrder::File not implemented");
+    return false;
   }
 
   read_order_ = read_order;
   read_statement_ = nullptr;
+  return true;
 }
 
 bool SqliteStorage::has_next()
@@ -368,21 +383,41 @@ uint64_t SqliteStorage::get_bagfile_size() const
 
 void SqliteStorage::initialize()
 {
-  std::string create_stmt = "CREATE TABLE topics(" \
+  std::string create_stmt = "CREATE TABLE schema(" \
+    "schema_version INTEGER PRIMARY KEY," \
+    "ros_distro TEXT NOT NULL);";
+  database_->prepare_statement(create_stmt)->execute_and_reset();
+
+  create_stmt = "CREATE TABLE metadata(" \
+    "id INTEGER PRIMARY KEY," \
+    "metadata_version INTEGER NOT NULL," \
+    "metadata TEXT NOT NULL);";
+  database_->prepare_statement(create_stmt)->execute_and_reset();
+
+  create_stmt = "CREATE TABLE topics(" \
     "id INTEGER PRIMARY KEY," \
     "name TEXT NOT NULL," \
     "type TEXT NOT NULL," \
     "serialization_format TEXT NOT NULL," \
     "offered_qos_profiles TEXT NOT NULL);";
   database_->prepare_statement(create_stmt)->execute_and_reset();
+
   create_stmt = "CREATE TABLE messages(" \
     "id INTEGER PRIMARY KEY," \
     "topic_id INTEGER NOT NULL," \
     "timestamp INTEGER NOT NULL, " \
     "data BLOB NOT NULL);";
   database_->prepare_statement(create_stmt)->execute_and_reset();
+
   create_stmt = "CREATE INDEX timestamp_idx ON messages (timestamp ASC);";
   database_->prepare_statement(create_stmt)->execute_and_reset();
+
+  std::string ros_distro = rcpputils::get_env_var("ROS_DISTRO");
+  auto insert_db_schema =
+    database_->prepare_statement(
+    "INSERT INTO schema (schema_version, ros_distro) VALUES (?, ?)");
+  insert_db_schema->bind(kDBSchemaVersion_, ros_distro);
+  insert_db_schema->execute_and_reset();
 }
 
 void SqliteStorage::create_topic(const rosbag2_storage::TopicMetadata & topic)
@@ -511,14 +546,13 @@ uint64_t SqliteStorage::get_minimum_split_file_size() const
   return MIN_SPLIT_FILE_SIZE;
 }
 
-rosbag2_storage::BagMetadata SqliteStorage::get_metadata()
+void SqliteStorage::read_metadata()
 {
-  rosbag2_storage::BagMetadata metadata;
-  metadata.storage_identifier = get_storage_identifier();
-  metadata.relative_file_paths = {get_relative_file_path()};
+  metadata_.storage_identifier = get_storage_identifier();
+  metadata_.relative_file_paths = {get_relative_file_path()};
 
-  metadata.message_count = 0;
-  metadata.topics_with_message_count = {};
+  metadata_.message_count = 0;
+  metadata_.topics_with_message_count = {};
 
   rcutils_time_point_value_t min_time = INT64_MAX;
   rcutils_time_point_value_t max_time = 0;
@@ -536,13 +570,13 @@ rosbag2_storage::BagMetadata SqliteStorage::get_metadata()
       rcutils_time_point_value_t, std::string>();
 
     for (auto result : query_results) {
-      metadata.topics_with_message_count.push_back(
+      metadata_.topics_with_message_count.push_back(
         {
           {std::get<0>(result), std::get<1>(result), std::get<2>(result), std::get<6>(result)},
           static_cast<size_t>(std::get<3>(result))
         });
 
-      metadata.message_count += std::get<3>(result);
+      metadata_.message_count += std::get<3>(result);
       min_time = std::get<4>(result) < min_time ? std::get<4>(result) : min_time;
       max_time = std::get<5>(result) > max_time ? std::get<5>(result) : max_time;
     }
@@ -558,29 +592,35 @@ rosbag2_storage::BagMetadata SqliteStorage::get_metadata()
       rcutils_time_point_value_t>();
 
     for (auto result : query_results) {
-      metadata.topics_with_message_count.push_back(
+      metadata_.topics_with_message_count.push_back(
         {
           {std::get<0>(result), std::get<1>(result), std::get<2>(result), ""},
           static_cast<size_t>(std::get<3>(result))
         });
 
-      metadata.message_count += std::get<3>(result);
+      metadata_.message_count += std::get<3>(result);
       min_time = std::get<4>(result) < min_time ? std::get<4>(result) : min_time;
       max_time = std::get<5>(result) > max_time ? std::get<5>(result) : max_time;
     }
   }
 
-  if (metadata.message_count == 0) {
+  if (metadata_.message_count == 0) {
     min_time = 0;
     max_time = 0;
   }
 
-  metadata.starting_time =
+  metadata_.starting_time =
     std::chrono::time_point<std::chrono::high_resolution_clock>(std::chrono::nanoseconds(min_time));
-  metadata.duration = std::chrono::nanoseconds(max_time) - std::chrono::nanoseconds(min_time);
-  metadata.bag_size = get_bagfile_size();
+  metadata_.duration = std::chrono::nanoseconds(max_time) - std::chrono::nanoseconds(min_time);
+  metadata_.bag_size = get_bagfile_size();
+}
 
-  return metadata;
+rosbag2_storage::BagMetadata SqliteStorage::get_metadata()
+{
+  if (storage_mode_ != rosbag2_storage::storage_interfaces::IOFlag::READ_ONLY) {
+    read_metadata();
+  }
+  return metadata_;
 }
 
 void SqliteStorage::set_filter(
@@ -619,11 +659,47 @@ SqliteWrapper & SqliteStorage::get_sqlite_database_wrapper()
   return *database_;
 }
 
+int SqliteStorage::get_db_schema_version() const
+{
+  return db_schema_version_;
+}
+
+std::string SqliteStorage::get_recorded_ros_distro() const
+{
+  std::string ros_distro;
+  if (db_schema_version_ >= 3 && database_->table_exists("schema")) {
+    // Read schema version
+    auto statement = database_->prepare_statement("SELECT ros_distro from schema;");
+    auto query_results = statement->execute_query<std::string>();
+    ros_distro = std::get<0>(*query_results.begin());
+  }
+  return ros_distro;
+}
+
 int SqliteStorage::get_last_rowid()
 {
   auto statement = database_->prepare_statement("SELECT max(rowid) from messages;");
   auto query_results = statement->execute_query<int>();
   return std::get<0>(*query_results.begin());
+}
+
+int SqliteStorage::read_db_schema_version()
+{
+  int schema_version = -1;
+  if (database_->table_exists("schema")) {
+    // Read schema version
+    auto statement = database_->prepare_statement("SELECT schema_version from schema;");
+    auto query_results = statement->execute_query<int>();
+    schema_version = std::get<0>(*query_results.begin());
+  } else {
+    if (database_->field_exists("topics", "offered_qos_profiles")) {
+      schema_version = 2;
+    } else {
+      schema_version = 1;
+    }
+  }
+
+  return schema_version;
 }
 
 }  // namespace rosbag2_storage_plugins
