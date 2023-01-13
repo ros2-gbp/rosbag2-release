@@ -20,7 +20,7 @@
 #include "rosbag2_compression/sequential_compression_writer.hpp"
 #include "rosbag2_storage/serialized_bag_message.hpp"
 #include "rmw/rmw.h"
-#include "std_msgs/msg/byte_multi_array.hpp"
+#include "rosbag2_performance_benchmarking_msgs/msg/byte_array.hpp"
 
 #include "rosbag2_performance_benchmarking/config_utils.hpp"
 #include "rosbag2_performance_benchmarking/result_utils.hpp"
@@ -41,10 +41,6 @@ WriterBenchmark::WriterBenchmark(const std::string & name)
   }
 
   bag_config_ = config_utils::bag_config_from_node_parameters(*this);
-  if (bag_config_.storage_options.storage_id != "sqlite3") {
-    RCLCPP_ERROR(get_logger(), "Benchmarking only supported for sqlite3 for now");
-    return;
-  }
 
   this->declare_parameter("results_file", bag_config_.storage_options.uri + "/results.csv");
   this->get_parameter("results_file", results_file_);
@@ -161,7 +157,7 @@ void WriterBenchmark::create_producers()
         std::make_unique<ByteProducer>(
           c.producer_config,
           [] { /* empty lambda */},
-          [queue](std::shared_ptr<std_msgs::msg::ByteMultiArray> msg) {
+          [queue](std::shared_ptr<rosbag2_performance_benchmarking_msgs::msg::ByteArray> msg) {
             queue->push(msg);
           },
           [queue] {
