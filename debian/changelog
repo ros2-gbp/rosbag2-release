@@ -1,0 +1,334 @@
+ros-rolling-rosbag2-storage (0.20.0-1bullseye) bullseye; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Tue, 14 Feb 2023 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.19.0-1bullseye) bullseye; urgency=high
+
+  * rosbag2_storage: set MCAP as default plugin (#1160 <https://github.com/ros2/rosbag2/issues/1160>)
+  * Add Michael Orlov as maintainer in rosbag2 packages (#1215 <https://github.com/ros2/rosbag2/issues/1215>)
+  * set_read_order: return success (#1177 <https://github.com/ros2/rosbag2/issues/1177>)
+  * Remove explicit sqlite3 from code (#1166 <https://github.com/ros2/rosbag2/issues/1166>)
+  * Add update_metadata(BagMetadata) API for storage plugin interface (#1149 <https://github.com/ros2/rosbag2/issues/1149>)
+  * Contributors: Emerson Knapp, Michael Orlov, james-rms
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Fri, 13 Jan 2023 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.18.0-1bullseye) bullseye; urgency=high
+
+  * rosbag2_storage: expose default storage ID as method (#1146 <https://github.com/ros2/rosbag2/issues/1146>)
+  * Don't reopen file for every seek if we don't have to. Search directionally for the correct file (#1117 <https://github.com/ros2/rosbag2/issues/1117>)
+  * Reverse read order API and sqlite storage implementation (#1083 <https://github.com/ros2/rosbag2/issues/1083>)
+  * Remove YAML_CPP_DLL define (#964 <https://github.com/ros2/rosbag2/issues/964>)
+  * Added support for excluding topics via regular expressions (#1046 <https://github.com/ros2/rosbag2/issues/1046>)
+  * Readers/info can accept a single bag storage file, and detect its storage id automatically (#1072 <https://github.com/ros2/rosbag2/issues/1072>)
+  * Contributors: Akash, Emerson Knapp, Esteve Fernandez, james-rms
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 15 Nov 2022 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.17.0-1bullseye) bullseye; urgency=high
+
+  * Use a single variable for evaluating the filter regex (#1053 <https://github.com/ros2/rosbag2/issues/1053>)
+  * Speed optimization: Preparing copyless publish/subscribing by using const message for writing (#1010 <https://github.com/ros2/rosbag2/issues/1010>)
+  * Renamed --topics-regex to --regex and -e in Player class to be consistent with Recorder (#1045 <https://github.com/ros2/rosbag2/issues/1045>)
+  * Add the ability to record any key/value pair in 'custom' field in metadata.yaml (#1038 <https://github.com/ros2/rosbag2/issues/1038>)
+  * Added support for filtering topics via regular expressions on Playback (#1034 <https://github.com/ros2/rosbag2/issues/1034>)
+  * Contributors: DensoADAS, Joshua Hampp, Esteve Fernandez, Hunter L. Allen, Michael Orlov, Tony Peng
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Sat, 30 Jul 2022 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.16.0-1bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 11 May 2022 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.15.1-1bullseye) bullseye; urgency=high
+
+  * Revert "Add the ability to record any key/value pair in the 'custom' field in metadata.yaml (#976 <https://github.com/ros2/rosbag2/issues/976>)" (#984 <https://github.com/ros2/rosbag2/issues/984>)
+  * Add the ability to record any key/value pair in the 'custom' field in metadata.yaml (#976 <https://github.com/ros2/rosbag2/issues/976>)
+  * Contributors: Audrow Nash, Jorge Perez, Tony Peng
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 06 Apr 2022 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.15.0-1bullseye) bullseye; urgency=high
+
+  * Revert "Add the ability to record any key/value pair in the 'custom' field in metadata.yaml (#976 <https://github.com/ros2/rosbag2/issues/976>)" (#984 <https://github.com/ros2/rosbag2/issues/984>)
+  * Add the ability to record any key/value pair in the 'custom' field in metadata.yaml (#976 <https://github.com/ros2/rosbag2/issues/976>)
+  * Contributors: Jorge Perez, Tony Peng
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 05 Apr 2022 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.14.1-1bullseye) bullseye; urgency=high
+
+  * Bump version number to avoid conflict
+  * Contributors: Chris Lalancette
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 29 Mar 2022 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.14.0-1bullseye) bullseye; urgency=high
+
+  * Install headers to include/${PROJECT_NAME} (#958 <https://github.com/ros2/rosbag2/issues/958>)
+  * Remove unnecessary public definition. (#950 <https://github.com/ros2/rosbag2/issues/950>)
+  * Contributors: Chris Lalancette, Shane Loretz
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 29 Mar 2022 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.13.0-1bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 13 Jan 2022 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.12.0-1bullseye) bullseye; urgency=high
+
+  * Enable YAML encoding/decoding for RecordOptions and StorageOptions (#916 <https://github.com/ros2/rosbag2/issues/916>)
+  * Contributors: Emerson Knapp
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Fri, 17 Dec 2021 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.11.0-1bullseye) bullseye; urgency=high
+
+  * Update package maintainers (#899 <https://github.com/ros2/rosbag2/issues/899>)
+  * Provide MetadataIO interface to convert metadata to a string in memory, alongside file IO versions (#894 <https://github.com/ros2/rosbag2/issues/894>)
+  * Contributors: Emerson Knapp, Michel Hidalgo
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 08 Nov 2021 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.10.1-1bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Fri, 22 Oct 2021 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.10.0-1bullseye) bullseye; urgency=high
+
+  * Metadata per file info (#870 <https://github.com/ros2/rosbag2/issues/870>)
+  * Implement snapshot mechanism and corresponding ROS Service (#850 <https://github.com/ros2/rosbag2/issues/850>)
+  * added seek interface (#836 <https://github.com/ros2/rosbag2/issues/836>)
+  * Refactor plugin query mechanism and standardize trait management (#833 <https://github.com/ros2/rosbag2/issues/833>)
+  * Contributors: Cameron Miller, Wojciech Jaworski, sonia
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 19 Oct 2021 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.9.0-1bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 17 May 2021 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.8.0-1bullseye) bullseye; urgency=high
+
+  * Remove -Werror from builds, enable it in Action CI (#722 <https://github.com/ros2/rosbag2/issues/722>)
+  * PlayerClock initial implementation - Player functionally unchanged (#689 <https://github.com/ros2/rosbag2/issues/689>)
+  * Explicitly add emersonknapp as maintainer (#692 <https://github.com/ros2/rosbag2/issues/692>)
+  * Reindexer core (#641 <https://github.com/ros2/rosbag2/issues/641>)
+    Add a new C++ Reindexer class for reconstructing metadata from bags that are missing it.
+  * Contributors: Emerson Knapp, jhdcs
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 19 Apr 2021 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.7.0-1bullseye) bullseye; urgency=high
+
+  * Remove outdated pluginlib cmake script from rosbag2_storage (#661 <https://github.com/ros2/rosbag2/issues/661>)
+  * CLI query rosbag2_py for available storage implementations (#659 <https://github.com/ros2/rosbag2/issues/659>)
+  * Shorten some excessively long lines of CMake (#648 <https://github.com/ros2/rosbag2/issues/648>)
+  * Contributors: Emerson Knapp, Scott K Logan
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 18 Mar 2021 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.6.0-1bullseye) bullseye; urgency=high
+
+  * SQLite storage optimized by default (#568 <https://github.com/ros2/rosbag2/issues/568>)
+    * Use optimized pragmas by default in sqlite storage. Added option to use former behavior
+  * Use std::filesystem compliant non-member exists function for path object (#593 <https://github.com/ros2/rosbag2/issues/593>)
+  * Contributors: Adam Dąbrowski, Josh Langsfeld
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 01 Feb 2021 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.5.0-1bullseye) bullseye; urgency=high
+
+  * Update codes since rcutils_calculate_directory_size() is changed (#567 <https://github.com/ros2/rosbag2/issues/567>)
+  * Contributors: Barry Xu
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 02 Dec 2020 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.4.0-1bullseye) bullseye; urgency=high
+
+  * add storage_config_uri (#493 <https://github.com/ros2/rosbag2/issues/493>)
+  * Update the package.xml files with the latest Open Robotics maintainers (#535 <https://github.com/ros2/rosbag2/issues/535>)
+  * Add split by time to recording (#409 <https://github.com/ros2/rosbag2/issues/409>)
+  * Contributors: Karsten Knese, Michael Jeronimo, jhdcs
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 19 Nov 2020 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.3.2-1bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 03 Jun 2020 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.3.1-1bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 01 Jun 2020 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.3.0-1bullseye) bullseye; urgency=high
+
+  * Export targets (#403 <https://github.com/ros2/rosbag2/issues/403>)
+  * Contributors: Karsten Knese
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 26 May 2020 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.2.8-1bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 18 May 2020 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.2.7-1bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 12 May 2020 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.2.6-1bullseye) bullseye; urgency=high
+
+  * Correct usage of rclcpp::SharedLibrary loading. (#400 <https://github.com/ros2/rosbag2/issues/400>)
+  * Contributors: Karsten Knese
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 07 May 2020 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.2.5-1bullseye) bullseye; urgency=high
+
+  * Read serialized qos profiles out of the metadata (#359 <https://github.com/ros2/rosbag2/issues/359>)
+  * Add filter for reading selective topics (#302 <https://github.com/ros2/rosbag2/issues/302>)
+  * Transaction based sqlite3 inserts (#225 <https://github.com/ros2/rosbag2/issues/225>)
+  * Add QoS profiles field to metadata struct and provide serialization utilities (#330 <https://github.com/ros2/rosbag2/issues/330>)
+  * code style only: wrap after open parenthesis if not in one line (#280 <https://github.com/ros2/rosbag2/issues/280>)
+  * remove rosbag2 filesystem helper (#249 <https://github.com/ros2/rosbag2/issues/249>)
+  * [Compression - 7] Add compression metadata (#221 <https://github.com/ros2/rosbag2/issues/221>)
+  * Sanitize bagfile splitting CLI input (#226 <https://github.com/ros2/rosbag2/issues/226>)
+  * Move get_storage_identifier and get_bagfile_size (#209 <https://github.com/ros2/rosbag2/issues/209>)
+  * make ros tooling working group maintainer (#211 <https://github.com/ros2/rosbag2/issues/211>)
+  * Contributors: Anas Abou Allaban, Dirk Thomas, Emerson Knapp, Karsten Knese, Mabel Zhang, Prajakta Gokhale, Sriram Raghunathan, Zachary Michaels
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 30 Apr 2020 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.2.4-1bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 18 Nov 2019 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.2.3-1bullseye) bullseye; urgency=high
+
+  * Enhance rosbag writer capabilities to split bag files. (#185 <https://github.com/ros2/rosbag2/issues/185>)
+  * Contributors: Zachary Michaels
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 18 Nov 2019 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.2.2-1bullseye) bullseye; urgency=high
+
+  * (API) Generate bagfile metadata in Writer (#184 <https://github.com/ros2/rosbag2/issues/184>)
+  * Contributors: Zachary Michaels
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 13 Nov 2019 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.2.1-1bullseye) bullseye; urgency=high
+
+  * Add get_identifier to base io-interfaces for support in bagfile splitting (#183 <https://github.com/ros2/rosbag2/issues/183>)
+  * Add bagfile splitting support to storage_options (#182 <https://github.com/ros2/rosbag2/issues/182>)
+  * Change storage interfaces for bagfile splitting feature (#170 <https://github.com/ros2/rosbag2/issues/170>)
+  * Contributors: Zachary Michaels
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 23 Oct 2019 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.2.0-1bullseye) bullseye; urgency=high
+
+  * Fix test failures on armhf (#135 <https://github.com/ros2/rosbag2/issues/135>)
+  * Export pluginlib to downstream packages (#113 <https://github.com/ros2/rosbag2/issues/113>)
+  * Contributors: Esteve Fernandez, Prajakta Gokhale
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 26 Sep 2019 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.1.2-1bullseye) bullseye; urgency=high
+
+  * Fixes an init race condition (#93 <https://github.com/ros2/rosbag2/issues/93>)
+    * This could probably be a race condition, for ex: When we've create a subscriber in the API, and the subscriber has the data already available in the callback (Cause of existing publishers) the db entry for the particular topic would not be availalble, which in turn returns an SqliteException. This is cause write_->create_topic() call is where we add the db entry for a particular topic. And, this leads to crashing before any recording.
+    Locally I solved it by adding the db entry first, and if
+    create_subscription fails, remove the topic entry from the db and also
+    erase the subscription.
+    Signed-off-by: Sriram Raghunathan <mailto:rsriram7@visteon.com>
+    * Fix comments for pull request https://github.com/ros2/rosbag2/pull/93
+    Signed-off-by: Sriram Raghunathan <mailto:rsriram7@visteon.com>
+    * Added unit test case for remove_topics from db
+    Signed-off-by: Sriram Raghunathan <mailto:rsriram7@visteon.com>
+    * Fix unit tests failing by adding dependent test macros
+    Signed-off-by: Sriram Raghunathan <mailto:rsriram7@visteon.com>
+    * Fixes the linter errors
+  * Contributors: Sriram Raghunathan
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Mon, 20 May 2019 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.1.1-1bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 09 May 2019 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.1.0-1bullseye) bullseye; urgency=high
+
+  * fix logging signature (#107 <https://github.com/ros2/rosbag2/issues/107>)
+  * Contributors: Dirk Thomas
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 08 May 2019 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.0.5-1bullseye) bullseye; urgency=high
+
+
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Thu, 27 Dec 2018 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.0.4-1bullseye) bullseye; urgency=high
+
+  * 0.0.3
+  * Play old bagfiles (#69 <https://github.com/bsinno/rosbag2/issues/69>)
+  * Contributors: Karsten Knese, Martin Idel
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 19 Dec 2018 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.0.2-1bullseye) bullseye; urgency=high
+
+  * update maintainer email
+  * Contributors: Karsten Knese
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Wed, 12 Dec 2018 00:00:00 -0000
+
+ros-rolling-rosbag2-storage (0.0.1-1bullseye) bullseye; urgency=high
+
+  * rename topic_with_types to topic_metadata
+  * GH-142 replace map with unordered map where possible (#65 <https://github.com/ros2/rosbag2/issues/65>)
+  * Use converters when recording a bag file (#57 <https://github.com/ros2/rosbag2/issues/57>)
+  * use uint8 for serialized message (#61 <https://github.com/ros2/rosbag2/issues/61>)
+  * Renaming struct members for consistency (#64 <https://github.com/ros2/rosbag2/issues/64>)
+  * Use converters when playing back files (#56 <https://github.com/ros2/rosbag2/issues/56>)
+  * Implement converter plugin for CDR format and add converter plugins package (#48 <https://github.com/ros2/rosbag2/issues/48>)
+  * Display bag summary using ros2 bag info (#45 <https://github.com/ros2/rosbag2/issues/45>)
+  * Use directory as bagfile and add additonal record options (#43 <https://github.com/ros2/rosbag2/issues/43>)
+  * Introduce rosbag2_transport layer and CLI (#38 <https://github.com/ros2/rosbag2/issues/38>)
+  * Add correct timing behaviour for rosbag play (#32 <https://github.com/ros2/rosbag2/issues/32>)
+  * Improve sqlite usage and test stability (#31 <https://github.com/ros2/rosbag2/issues/31>)
+  * Record and play multiple topics (#27 <https://github.com/ros2/rosbag2/issues/27>)
+  * Allow an arbitrary topic to be recorded (#26 <https://github.com/ros2/rosbag2/issues/26>)
+  * Use serialized message directly (#24 <https://github.com/ros2/rosbag2/issues/24>)
+  * initial version of plugin based storage api (#7 <https://github.com/ros2/rosbag2/issues/7>)
+  * (demo, sqlite3) First working rosbag2 implementation (#6 <https://github.com/ros2/rosbag2/issues/6>)
+  * initial setup
+  * Contributors: Alessandro Bottero, Andreas Greimel, Andreas Holzner, Karsten Knese, Martin Idel
+
+ -- Geoffrey Biggs <geoff@openrobotics.org>  Tue, 11 Dec 2018 00:00:00 -0000
+
+
