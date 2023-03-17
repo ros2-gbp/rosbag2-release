@@ -24,9 +24,10 @@
 // rclcpp must be included before process_execution_helpers.hpp
 #include "rclcpp/rclcpp.hpp"
 
-#include "rosbag2_test_common/process_execution_helpers.hpp"
+#include "rosbag2_storage_default_plugins/sqlite/sqlite_storage.hpp"
+
 #include "rosbag2_test_common/subscription_manager.hpp"
-#include "rosbag2_test_common/tested_storage_ids.hpp"
+#include "rosbag2_test_common/process_execution_helpers.hpp"
 
 #include "test_msgs/msg/arrays.hpp"
 #include "test_msgs/msg/basic_types.hpp"
@@ -35,13 +36,12 @@
 using namespace ::testing;  // NOLINT
 using namespace rosbag2_test_common;  // NOLINT
 
-class PlayEndToEndTestFixture : public Test, public WithParamInterface<std::string>
+class PlayEndToEndTestFixture : public Test
 {
 public:
   PlayEndToEndTestFixture()
   {
-    // _SRC_RESOURCES_DIR_PATH defined in CMakeLists.txt
-    bags_path_ = (rcpputils::fs::path(_SRC_RESOURCES_DIR_PATH) / GetParam()).string();
+    database_path_ = _SRC_RESOURCES_DIR_PATH;  // variable defined in CMakeLists.txt
     sub_ = std::make_unique<SubscriptionManager>();
   }
 
@@ -55,18 +55,18 @@ public:
     rclcpp::shutdown();
   }
 
-  std::string bags_path_;
+  std::string database_path_;
   std::unique_ptr<SubscriptionManager> sub_;
 };
 
 #ifndef _WIN32
-TEST_P(PlayEndToEndTestFixture, play_end_to_end_test) {
+TEST_F(PlayEndToEndTestFixture, play_end_to_end_test) {
   sub_->add_subscription<test_msgs::msg::Arrays>("/array_topic", 2);
   sub_->add_subscription<test_msgs::msg::BasicTypes>("/test_topic", 3);
 
   auto subscription_future = sub_->spin_subscriptions();
 
-  auto exit_code = execute_and_wait_until_completion("ros2 bag play cdr_test", bags_path_);
+  auto exit_code = execute_and_wait_until_completion("ros2 bag play cdr_test", database_path_);
 
   subscription_future.get();
 
@@ -98,10 +98,10 @@ TEST_P(PlayEndToEndTestFixture, play_end_to_end_test) {
 }
 #endif
 
-TEST_P(PlayEndToEndTestFixture, play_fails_gracefully_if_bag_does_not_exist) {
+TEST_F(PlayEndToEndTestFixture, play_fails_gracefully_if_bag_does_not_exist) {
   internal::CaptureStderr();
   auto exit_code =
-    execute_and_wait_until_completion("ros2 bag play does_not_exist", bags_path_);
+    execute_and_wait_until_completion("ros2 bag play does_not_exist", database_path_);
   auto error_output = internal::GetCapturedStderr();
 
   // Exit code could be EXIT_FAILURE (1) or 2 (no such file or directory)
@@ -109,15 +109,15 @@ TEST_P(PlayEndToEndTestFixture, play_fails_gracefully_if_bag_does_not_exist) {
   EXPECT_THAT(error_output, HasSubstr("'does_not_exist' does not exist"));
 }
 
-TEST_P(PlayEndToEndTestFixture, play_fails_gracefully_if_needed_coverter_plugin_does_not_exist) {
+TEST_F(PlayEndToEndTestFixture, play_fails_gracefully_if_needed_coverter_plugin_does_not_exist) {
   internal::CaptureStderr();
   auto exit_code =
-    execute_and_wait_until_completion("ros2 bag play wrong_rmw_test", bags_path_);
+    execute_and_wait_until_completion("ros2 bag play wrong_rmw_test", database_path_);
   auto error_output = internal::GetCapturedStderr();
 
-  EXPECT_THAT(exit_code, Eq(EXIT_FAILURE));
+  EXPECT_THAT(exit_code, Eq(EXIT_SUCCESS));
   EXPECT_THAT(
-    error_output, HasSubstr("Could not find converter for format wrong_format"));
+    error_output, HasSubstr("Requested converter for format 'wrong_format' does not exist"));
 }
 
 /*
@@ -136,7 +136,7 @@ TEST_F(PlayEndToEndTestFixture, play_filters_by_topic) {
 
   auto exit_code = execute_and_wait_until_completion(
     "ros2 bag play cdr_test --topics /test_topic",
-    bags_path_);
+    database_path_);
 
   subscription_future.get();
 
@@ -157,7 +157,7 @@ TEST_F(PlayEndToEndTestFixture, play_filters_by_topic) {
 
   exit_code = execute_and_wait_until_completion(
     "ros2 bag play --topics /array_topic -- cdr_test",
-    bags_path_);
+    database_path_);
 
   subscription_future.get();
 
@@ -178,7 +178,7 @@ TEST_F(PlayEndToEndTestFixture, play_filters_by_topic) {
 
   exit_code = execute_and_wait_until_completion(
     "ros2 bag play --topics /test_topic /array_topic -- cdr_test",
-    bags_path_);
+    database_path_);
 
   subscription_future.get();
 
@@ -198,7 +198,7 @@ TEST_F(PlayEndToEndTestFixture, play_filters_by_topic) {
   subscription_future = sub_->spin_subscriptions();
 
   exit_code = execute_and_wait_until_completion(
-    "ros2 bag play --topics /nonexistent_topic -- cdr_test", bags_path_);
+    "ros2 bag play --topics /nonexistent_topic -- cdr_test", database_path_);
 
   subscription_future.get();
 
@@ -211,33 +211,3 @@ TEST_F(PlayEndToEndTestFixture, play_filters_by_topic) {
   EXPECT_THAT(array_messages, SizeIs(Ge(0u)));
 }
 */
-
-#ifndef _WIN32
-TEST_P(PlayEndToEndTestFixture, play_end_to_end_exits_gracefully_on_sigint) {
-  sub_->add_subscription<test_msgs::msg::BasicTypes>("/test_topic", 3);
-  sub_->add_subscription<test_msgs::msg::Arrays>("/array_topic", 2);
-
-  // Start playback in child process
-  auto process_id = start_execution("ros2 bag play --loop " + bags_path_ + "/cdr_test");
-  auto cleanup_process_handle = rcpputils::make_scope_exit(
-    [process_id]() {
-      stop_execution(process_id);
-    });
-
-  // Wait for a few messages to arrive. This way we deterministically check that playback has been
-  // successfully started at this point.
-  sub_->spin_subscriptions_sync();
-  auto primitive_messages = sub_->get_received_messages<test_msgs::msg::BasicTypes>("/test_topic");
-  ASSERT_THAT(primitive_messages, SizeIs(Ge(3u)));
-
-  // Send SIGINT to child process and check exit code
-  stop_execution(process_id, SIGINT);
-  cleanup_process_handle.cancel();
-}
-#endif  // #ifndef _WIN32
-
-INSTANTIATE_TEST_SUITE_P(
-  TestPlayEndToEnd,
-  PlayEndToEndTestFixture,
-  ::testing::ValuesIn(rosbag2_test_common::kTestedStorageIDs)
-);

@@ -18,16 +18,13 @@
 #include <memory>
 #include <vector>
 
-#include "rcutils/types.h"
-#include "rosbag2_cpp/bag_events.hpp"
 #include "rosbag2_cpp/converter_options.hpp"
+#include "rosbag2_cpp/storage_options.hpp"
 #include "rosbag2_cpp/visibility_control.hpp"
 
 #include "rosbag2_storage/bag_metadata.hpp"
 #include "rosbag2_storage/serialized_bag_message.hpp"
 #include "rosbag2_storage/storage_filter.hpp"
-#include "rosbag2_storage/storage_interfaces/base_read_interface.hpp"
-#include "rosbag2_storage/storage_options.hpp"
 #include "rosbag2_storage/topic_metadata.hpp"
 
 namespace rosbag2_cpp
@@ -41,12 +38,9 @@ public:
   virtual ~BaseReaderInterface() {}
 
   virtual void open(
-    const rosbag2_storage::StorageOptions & storage_options,
-    const ConverterOptions & converter_options) = 0;
+    const StorageOptions & storage_options, const ConverterOptions & converter_options) = 0;
 
-  virtual void close() = 0;
-
-  virtual bool set_read_order(const rosbag2_storage::ReadOrder &) = 0;
+  virtual void reset() = 0;
 
   virtual bool has_next() = 0;
 
@@ -59,10 +53,6 @@ public:
   virtual void set_filter(const rosbag2_storage::StorageFilter & storage_filter) = 0;
 
   virtual void reset_filter() = 0;
-
-  virtual void seek(const rcutils_time_point_value_t & timestamp) = 0;
-
-  virtual void add_event_callbacks(const bag_events::ReaderEventCallbacks & callbacks) = 0;
 };
 
 }  // namespace reader_interfaces

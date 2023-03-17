@@ -2,212 +2,38 @@
 Changelog for package ros2bag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.20.0 (2023-02-14)
+0.3.10 (2023-03-16)
 -------------------
-* CLI: Get storage-specific values from plugin (`#1209 <https://github.com/ros2/rosbag2/issues/1209>`_)
+* Check & create database dirs before writing bags (`#1133 <https://github.com/ros2/rosbag2/issues/1133>`_)
+* Contributors: Homalozoa X
+
+0.3.9 (2022-02-03)
+------------------
+
+0.3.8 (2021-07-19)
+------------------
+
+0.3.7 (2021-02-15)
+------------------
+
+0.3.6 (2021-01-05)
+------------------
+* Update maintainer list for Foxy (`#551 <https://github.com/ros2/rosbag2/issues/551>`_)
+* Contributors: Michael Jeronimo
+
+0.3.5 (2020-08-31)
+------------------
+* Add pytest.ini so local tests don't display warning. (`#446 <https://github.com/ros2/rosbag2/issues/446>`_) (`#514 <https://github.com/ros2/rosbag2/issues/514>`_)
 * Contributors: Emerson Knapp
 
-0.19.0 (2023-01-13)
--------------------
-* Fix up some of the wording in the record help text. (`#1228 <https://github.com/ros2/rosbag2/issues/1228>`_)
-* Add topic_name option to info verb (`#1217 <https://github.com/ros2/rosbag2/issues/1217>`_)
-* rosbag2_storage: set MCAP as default plugin (`#1160 <https://github.com/ros2/rosbag2/issues/1160>`_)
-* rosbag2_py: parametrize tests across storage plugins (`#1203 <https://github.com/ros2/rosbag2/issues/1203>`_)
-* Added option to change node name for the recorder from the Python API (`#1180 <https://github.com/ros2/rosbag2/issues/1180>`_)
-* rosbag2_cpp: test more than one storage plugin (`#1196 <https://github.com/ros2/rosbag2/issues/1196>`_)
-* Contributors: Chris Lalancette, Keisuke Shima, Michael Orlov, james-rms, ricardo-manriquez
-
-0.18.0 (2022-11-15)
--------------------
-* rosbag2_storage: expose default storage ID as method (`#1146 <https://github.com/ros2/rosbag2/issues/1146>`_)
-* Fix for ros2 bag play exit with non-zero code on SIGINT (`#1126 <https://github.com/ros2/rosbag2/issues/1126>`_)
-* ros2bag: move storage preset validation to sqlite3 plugin (`#1135 <https://github.com/ros2/rosbag2/issues/1135>`_)
-* Add option to prevent message loss while converting (`#1058 <https://github.com/ros2/rosbag2/issues/1058>`_)
-* Added support for excluding topics via regular expressions (`#1046 <https://github.com/ros2/rosbag2/issues/1046>`_)
-* Readers/info can accept a single bag storage file, and detect its storage id automatically (`#1072 <https://github.com/ros2/rosbag2/issues/1072>`_)
-* Add short -v option to ros2 bag list for verbose (`#1065 <https://github.com/ros2/rosbag2/issues/1065>`_)
-* Contributors: DensoADAS, Emerson Knapp, Esteve Fernandez, Michael Orlov, james-rms
-
-0.17.0 (2022-07-30)
--------------------
-* Use a single variable for evaluating the filter regex (`#1053 <https://github.com/ros2/rosbag2/issues/1053>`_)
-* Add additional mode of publishing sim time updates triggered by replayed messages (`#1050 <https://github.com/ros2/rosbag2/issues/1050>`_)
-* Renamed --topics-regex to --regex and -e in Player class to be consistent with Recorder (`#1045 <https://github.com/ros2/rosbag2/issues/1045>`_)
-* Use first available writer in recording if default `sqlite3` not available. (`#1044 <https://github.com/ros2/rosbag2/issues/1044>`_)
-* Add the ability to record any key/value pair in 'custom' field in metadata.yaml (`#1038 <https://github.com/ros2/rosbag2/issues/1038>`_)
-* Added support for filtering topics via regular expressions on Playback (`#1034 <https://github.com/ros2/rosbag2/issues/1034>`_)
-* Fix incorrect boundary check for `playback_duration` and `play_until_timestamp` (`#1032 <https://github.com/ros2/rosbag2/issues/1032>`_)
-* Adds play until timestamp functionality (`#1005 <https://github.com/ros2/rosbag2/issues/1005>`_)
-* Add CLI verb for burst mode of playback (`#980 <https://github.com/ros2/rosbag2/issues/980>`_)
-* Add play-for specified number of seconds functionality (`#960 <https://github.com/ros2/rosbag2/issues/960>`_)
-* Contributors: Agustin Alba Chicar, EsipovPA, Esteve Fernandez, Geoffrey Biggs, Hunter L.Allen, Michael Orlov, kylemarcey, Tony Peng
-
-0.16.0 (2022-05-11)
--------------------
-* Make unpublished topics unrecorded by default (`#968 <https://github.com/ros2/rosbag2/issues/968>`_)
-* Contributors: Michael Orlov, Sean Kelly
-
-0.15.1 (2022-04-06)
--------------------
-* support to publish as loaned message (`#981 <https://github.com/ros2/rosbag2/issues/981>`_)
-* Revert "Add the ability to record any key/value pair in the 'custom' field in metadata.yaml (`#976 <https://github.com/ros2/rosbag2/issues/976>`_)" (`#984 <https://github.com/ros2/rosbag2/issues/984>`_)
-* Add the ability to record any key/value pair in the 'custom' field in metadata.yaml (`#976 <https://github.com/ros2/rosbag2/issues/976>`_)
-* Contributors: Audrow Nash, Barry Xu, Jorge Perez, Tony Peng
-
-0.15.0 (2022-04-05)
--------------------
-* support to publish as loaned message (`#981 <https://github.com/ros2/rosbag2/issues/981>`_)
-* Revert "Add the ability to record any key/value pair in the 'custom' field in metadata.yaml (`#976 <https://github.com/ros2/rosbag2/issues/976>`_)" (`#984 <https://github.com/ros2/rosbag2/issues/984>`_)
-* Add the ability to record any key/value pair in the 'custom' field in metadata.yaml (`#976 <https://github.com/ros2/rosbag2/issues/976>`_)
-* Contributors: Barry Xu, Jorge Perez, Tony Peng
-
-0.14.1 (2022-03-29)
--------------------
-* Bump version number to avoid conflict
-* Contributors: Chris Lalancette
-
-0.14.0 (2022-03-29)
--------------------
-* Make sure published messages are acknowledged for play mode (`#951 <https://github.com/ros2/rosbag2/issues/951>`_)
-* Contributors: Barry Xu
-
-0.13.0 (2022-01-13)
--------------------
-
-0.12.0 (2021-12-17)
--------------------
-* TopicFilter use regex_search instead of regex_match (`#932 <https://github.com/ros2/rosbag2/issues/932>`_)
-* Add start-offset play option (`#931 <https://github.com/ros2/rosbag2/issues/931>`_)
-* Expose bag_rewrite as `ros2 bag convert` (`#921 <https://github.com/ros2/rosbag2/issues/921>`_)
-* Add "ignore leaf topics" option to recorder (`#925 <https://github.com/ros2/rosbag2/issues/925>`_)
-* Auto-detect storage_id for Reader (if possible) (`#918 <https://github.com/ros2/rosbag2/issues/918>`_)
-* Add pause/resume options to the bag recorder (`#905 <https://github.com/ros2/rosbag2/issues/905>`_)
-* Contributors: Abrar Rahman Protyasha, Emerson Knapp, Ivan Santiago Paunovic
-
-0.11.0 (2021-11-08)
--------------------
-* Add --start-paused option to `ros2 bag play` (`#904 <https://github.com/ros2/rosbag2/issues/904>`_)
-* Update package maintainers (`#899 <https://github.com/ros2/rosbag2/issues/899>`_)
-* Fix converter plugin choices for record (`#897 <https://github.com/ros2/rosbag2/issues/897>`_)
-* Contributors: Emerson Knapp, Ivan Santiago Paunovic, Michel Hidalgo
-
-0.10.1 (2021-10-22)
--------------------
-
-0.10.0 (2021-10-19)
--------------------
-* Add missing spaces to error message (`#875 <https://github.com/ros2/rosbag2/issues/875>`_)
-* keyboard controls for pause/resume toggle and play-next: (`#847 <https://github.com/ros2/rosbag2/issues/847>`_)
-* Add --snapshot-mode argument to the "record" verb (`#851 <https://github.com/ros2/rosbag2/issues/851>`_)
-* Refactor plugin query mechanism and standardize trait management (`#833 <https://github.com/ros2/rosbag2/issues/833>`_)
-* Update `PlayOptions::delay` to `rclcpp::Duration` to get nanosecond resolution (`#843 <https://github.com/ros2/rosbag2/issues/843>`_)
-* Load compression and serialization choices via plugin query (`#827 <https://github.com/ros2/rosbag2/issues/827>`_)
-* Add delay option (`#789 <https://github.com/ros2/rosbag2/issues/789>`_)
-* Avoid passing exception KeyboardInterrupt to the upper layer (`#788 <https://github.com/ros2/rosbag2/issues/788>`_)
-* Contributors: Barry Xu, Cameron Miller, Emerson Knapp, Jacob Perron, Kosuke Takeuchi, Sonia Jin
-
-0.9.0 (2021-05-17)
+0.3.4 (2020-08-05)
 ------------------
+* Validate QoS profile values are not negative. (`#483 <https://github.com/ros2/rosbag2/issues/483>`_) (`#490 <https://github.com/ros2/rosbag2/issues/490>`_)
+  Co-authored-by: Jesse Ikawa <64169356+jikawa-az@users.noreply.github.com>
+* Contributors: Devin Bonnie
 
-0.8.0 (2021-04-19)
+0.3.3 (2020-06-23)
 ------------------
-* /clock publisher in Player (`#695 <https://github.com/ros2/rosbag2/issues/695>`_)
-* Introducing Reindexer CLI (`#699 <https://github.com/ros2/rosbag2/issues/699>`_)
-* rosbag2_py pybind wrapper for "record" - remove rosbag2_transport_py (`#702 <https://github.com/ros2/rosbag2/issues/702>`_)
-* Add rosbag2_py::Player::play to replace rosbag2_transport_python version (`#693 <https://github.com/ros2/rosbag2/issues/693>`_)
-* Explicitly add emersonknapp as maintainer (`#692 <https://github.com/ros2/rosbag2/issues/692>`_)
-* Contributors: Emerson Knapp, jhdcs
-
-0.7.0 (2021-03-18)
-------------------
-* use rosbag2_py for ros2 bag info (`#673 <https://github.com/ros2/rosbag2/issues/673>`_)
-* CLI query rosbag2_py for available storage implementations (`#659 <https://github.com/ros2/rosbag2/issues/659>`_)
-* Contributors: Emerson Knapp, Karsten Knese
-
-0.6.0 (2021-02-01)
-------------------
-* Recorder --regex and --exclude options (`#604 <https://github.com/ros2/rosbag2/issues/604>`_)
-* Fix the tests on cyclonedds by translating qos duration values (`#606 <https://github.com/ros2/rosbag2/issues/606>`_)
-* SQLite storage optimized by default (`#568 <https://github.com/ros2/rosbag2/issues/568>`_)
-* Fix a bug on parsing wrong description in plugin xml file (`#578 <https://github.com/ros2/rosbag2/issues/578>`_)
-* Compress bag files in separate threads (`#506 <https://github.com/ros2/rosbag2/issues/506>`_)
-* Contributors: Adam Dąbrowski, Barry Xu, Emerson Knapp, P. J. Reed
-
-0.5.0 (2020-12-02)
-------------------
-* Sqlite storage double buffering (`#546 <https://github.com/ros2/rosbag2/issues/546>`_)
-  * Double buffers
-  * Circular queue and FLUSH option as define
-  * Minor naming and lexical fixes.
-  * Removed FLUSH_BUFFERS define check.
-  * Sqlite3 storage logging fixes.
-  * Sqlite3 storage circular buffer with pre allocated memory.
-  * Sqlite3 storage buffers moved to shared_ptrs.
-  * Uncrustify
-  * Moved double buffers to writer
-  * Buffer layer reset in seq compression writer in rosbag2 cpp
-  * Buffer layer for rosbag2 writer refactor
-  * Changed buffers in BufferLayer to std vectors.
-  * BufferLayer uncrustify
-  * Removed non-applicable test for writer cache.
-  * BufferLayer review fixes
-  * Rosbag metadata msgs count fixed for BufferLayer
-  * Condition variable for buffer layer sync.
-  * Fixed buffer locks
-  * Buffers in BufferLayer refactored, moved into new class
-  * Buffer layer split bags fixed.
-  * Storage options include fix in buffer layer header.
-  * Mutex around swapping buffers in buffer layer.
-  * Fixed cache 0 bug in buffer layer.
-  * Minor buffer layer refactor.
-  * Counting messages in writer refactored.
-  * Changed default cache size to 100Mb and updated parameter description
-  * Applied review remarks:
-  - significant refactoring: separation of cache classes
-  - applied suggested improvements
-  - some renaming
-  - reduce code duplication that would otherwise increase with cache refactor, between compression and plain writers
-  * Applied review comments
-  - cache consumer now takes a callback and is independent of storage
-  - namespace changes, renaming, cleaning
-  - counting and logging messages by topic
-  * linter
-  * Changes after review: fixing flushing, topic counts, and more
-  * Fix for splitting - flushing state now correctly turns off
-  * cache classes documentation
-  * simplified signature
-  * a couple of tests for cache
-  * address review: explicit constructor and doxygen styling
-  * Windows warnings fix
-  * fixed type mismatch warning on Windows
-  * added minor comment
-  Co-authored-by: Piotr Jaroszek <piotr.jaroszek@robotec.ai>
-* Contributors: Adam Dąbrowski
-
-0.4.0 (2020-11-19)
-------------------
-* read yaml config file (`#497 <https://github.com/ros2/rosbag2/issues/497>`_)
-* List all storage plugins in plugin xml file (`#554 <https://github.com/ros2/rosbag2/issues/554>`_)
-* add storage_config_uri (`#493 <https://github.com/ros2/rosbag2/issues/493>`_)
-* Update deprecated qos policy value names (`#548 <https://github.com/ros2/rosbag2/issues/548>`_)
-* Add record test for ros2bag (`#523 <https://github.com/ros2/rosbag2/issues/523>`_)
-* Removed duplicated code in record (`#534 <https://github.com/ros2/rosbag2/issues/534>`_)
-* Change default cache size for sequential_writer to a non zero value (`#533 <https://github.com/ros2/rosbag2/issues/533>`_)
-* Update the package.xml files with the latest Open Robotics maintainers (`#535 <https://github.com/ros2/rosbag2/issues/535>`_)
-* [ros2bag test_record] Gets rid of time.sleep and move to using command.wait_for_output (`#525 <https://github.com/ros2/rosbag2/issues/525>`_)
-* Add pytest.ini back to ros2bag. (`#492 <https://github.com/ros2/rosbag2/issues/492>`_)
-* performance testing packages (`#442 <https://github.com/ros2/rosbag2/issues/442>`_)
-* Validate QoS profile values are not negative. (`#483 <https://github.com/ros2/rosbag2/issues/483>`_)
-* catch parent exception (`#472 <https://github.com/ros2/rosbag2/issues/472>`_)
-* add wait for closed file handles on Windows (`#470 <https://github.com/ros2/rosbag2/issues/470>`_)
-* introduce ros2 bag list <plugins> (`#468 <https://github.com/ros2/rosbag2/issues/468>`_)
-* move wait_for_shutdown() call out of the context manager (`#466 <https://github.com/ros2/rosbag2/issues/466>`_)
-* Adding db directory creation to rosbag2_cpp (`#450 <https://github.com/ros2/rosbag2/issues/450>`_)
-* use a single temp dir for the test class (`#462 <https://github.com/ros2/rosbag2/issues/462>`_)
-* Add per-message ZSTD compression (`#418 <https://github.com/ros2/rosbag2/issues/418>`_)
-* Add split by time to recording (`#409 <https://github.com/ros2/rosbag2/issues/409>`_)
-* Add pytest.ini so local tests don't display warning (`#446 <https://github.com/ros2/rosbag2/issues/446>`_)
-* Contributors: Adam Dąbrowski, Barry Xu, Chris Lalancette, Dirk Thomas, Ivan Santiago Paunovic, Jacob Perron, Jaison Titus, Jesse Ikawa, Karsten Knese, Marwan Taher, Michael Jeronimo, P. J. Reed, jhdcs
 
 0.3.2 (2020-06-03)
 ------------------

@@ -67,9 +67,8 @@ public:
 
     EXPECT_CALL(*storage_, get_all_topics_and_types())
     .Times(AtMost(1)).WillRepeatedly(Return(topics_and_types));
-    ON_CALL(*storage_, set_read_order).WillByDefault(Return(true));
     ON_CALL(*storage_, read_next()).WillByDefault(Return(message));
-    EXPECT_CALL(*storage_factory, open_read_only(_)).WillRepeatedly(Return(storage_));
+    EXPECT_CALL(*storage_factory, open_read_only(_, _)).WillRepeatedly(Return(storage_));
 
     auto sequential_reader = std::make_unique<rosbag2_cpp::readers::SequentialReader>(
       std::move(storage_factory), converter_factory_, std::move(metadata_io));
@@ -84,7 +83,6 @@ public:
 
     metadata.relative_file_paths =
     {relative_path_1_, relative_path_2_, absolute_path_1_};
-    metadata.version = 4;
 
     return metadata;
   }
@@ -97,7 +95,7 @@ public:
   std::string relative_path_1_;
   std::string relative_path_2_;
   std::string absolute_path_1_;
-  rosbag2_storage::StorageOptions default_storage_options_;
+  rosbag2_cpp::StorageOptions default_storage_options_;
 };
 
 class MultifileReaderTestVersion3 : public MultifileReaderTest
@@ -124,12 +122,13 @@ TEST_F(MultifileReaderTest, has_next_reads_next_file)
 {
   init();
 
-  EXPECT_CALL(*storage_, has_next()).Times(5)
-  .WillOnce(Return(false))
-  .WillOnce(Return(true))
-  .WillOnce(Return(false))
-  .WillOnce(Return(true))
-  .WillOnce(Return(true));
+  // storage::has_next() is called twice when reader::has_next() is called
+  EXPECT_CALL(*storage_, has_next()).Times(6)
+  .WillOnce(Return(true)).WillOnce(Return(true))  // We have a message
+  .WillOnce(Return(false))  // No message, load next file
+  .WillOnce(Return(true))  // True since we now have a message
+  .WillOnce(Return(false))  // No message, load next file
+  .WillOnce(Return(true));  // True since we now have a message
   EXPECT_CALL(*converter_factory_, load_deserializer(storage_serialization_format_)).Times(0);
   EXPECT_CALL(*converter_factory_, load_serializer(storage_serialization_format_)).Times(0);
   reader_->open(default_storage_options_, {"", storage_serialization_format_});
@@ -144,10 +143,12 @@ TEST_F(MultifileReaderTest, has_next_reads_next_file)
   auto resolved_absolute_path_1 =
     rcpputils::fs::path(absolute_path_1_).string();
   EXPECT_EQ(sr.get_current_file(), resolved_relative_path_1);
-  reader_->read_next();  // calls has_next false then true
+  reader_->has_next();
+  reader_->read_next();
+  reader_->has_next();
   EXPECT_EQ(sr.get_current_file(), resolved_relative_path_2);
-  reader_->has_next();  // calls has_next false then true
-  reader_->read_next();  // calls has_next true
+  reader_->read_next();
+  reader_->has_next();
   EXPECT_EQ(sr.get_current_file(), resolved_absolute_path_1);
 }
 
@@ -155,12 +156,13 @@ TEST_F(MultifileReaderTestVersion3, has_next_reads_next_file_version3)
 {
   init();
 
-  EXPECT_CALL(*storage_, has_next()).Times(5)
-  .WillOnce(Return(false))
-  .WillOnce(Return(true))
-  .WillOnce(Return(false))
-  .WillOnce(Return(true))
-  .WillOnce(Return(true));
+  // storage::has_next() is called twice when reader::has_next() is called
+  EXPECT_CALL(*storage_, has_next()).Times(6)
+  .WillOnce(Return(true)).WillOnce(Return(true))  // We have a message
+  .WillOnce(Return(false))  // No message, load next file
+  .WillOnce(Return(true))  // True since we now have a message
+  .WillOnce(Return(false))  // No message, load next file
+  .WillOnce(Return(true));  // True since we now have a message
   EXPECT_CALL(*converter_factory_, load_deserializer(storage_serialization_format_)).Times(0);
   EXPECT_CALL(*converter_factory_, load_serializer(storage_serialization_format_)).Times(0);
   reader_->open(default_storage_options_, {"", storage_serialization_format_});
@@ -176,10 +178,12 @@ TEST_F(MultifileReaderTestVersion3, has_next_reads_next_file_version3)
   auto resolved_absolute_path_1 =
     rcpputils::fs::path(absolute_path_1_).string();
   EXPECT_EQ(sr.get_current_file(), resolved_relative_path_1);
-  reader_->read_next();  // calls has_next false then true
+  reader_->has_next();
+  reader_->read_next();
+  reader_->has_next();
   EXPECT_EQ(sr.get_current_file(), resolved_relative_path_2);
-  reader_->has_next();  // calls has_next false then true
-  reader_->read_next();  // calls has_next true
+  reader_->read_next();
+  reader_->has_next();
   EXPECT_EQ(sr.get_current_file(), resolved_absolute_path_1);
 }
 
@@ -223,14 +227,4 @@ TEST_F(MultifileReaderTest, get_all_topics_and_types_returns_from_io_metadata)
   reader_->open(default_storage_options_, {"", storage_serialization_format_});
   const auto all_topics_and_types = reader_->get_all_topics_and_types();
   EXPECT_FALSE(all_topics_and_types.empty());
-}
-
-TEST_F(MultifileReaderTest, seek_bag)
-{
-  init();
-  reader_->open(default_storage_options_, {"", storage_serialization_format_});
-  EXPECT_CALL(*storage_, has_next()).Times(1).WillRepeatedly(Return(false));
-  EXPECT_CALL(*storage_, seek(_)).Times(3);
-  reader_->seek(9999999999999);
-  reader_->has_next();
 }

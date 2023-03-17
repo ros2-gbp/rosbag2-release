@@ -17,12 +17,11 @@
 
 #include <memory>
 
-#include "rosbag2_cpp/bag_events.hpp"
 #include "rosbag2_cpp/converter_options.hpp"
+#include "rosbag2_cpp/storage_options.hpp"
 #include "rosbag2_cpp/visibility_control.hpp"
 
 #include "rosbag2_storage/serialized_bag_message.hpp"
-#include "rosbag2_storage/storage_options.hpp"
 #include "rosbag2_storage/topic_metadata.hpp"
 
 namespace rosbag2_cpp
@@ -36,29 +35,15 @@ public:
   virtual ~BaseWriterInterface() {}
 
   virtual void open(
-    const rosbag2_storage::StorageOptions & storage_options,
-    const ConverterOptions & converter_options) = 0;
+    const StorageOptions & storage_options, const ConverterOptions & converter_options) = 0;
 
-  virtual void close() = 0;
+  virtual void reset() = 0;
 
   virtual void create_topic(const rosbag2_storage::TopicMetadata & topic_with_type) = 0;
 
   virtual void remove_topic(const rosbag2_storage::TopicMetadata & topic_with_type) = 0;
 
-  virtual void write(std::shared_ptr<const rosbag2_storage::SerializedBagMessage> message) = 0;
-
-  /**
-   * Triggers a snapshot for writers that support it.
-   * \returns true if snapshot is successful, false if snapshot fails or is not supported
-   */
-  virtual bool take_snapshot() = 0;
-
-  /**
-   * Close the current bagfile and opens the next bagfile.
-   */
-  virtual void split_bagfile() = 0;
-
-  virtual void add_event_callbacks(const bag_events::WriterEventCallbacks & callbacks) = 0;
+  virtual void write(std::shared_ptr<rosbag2_storage::SerializedBagMessage> message) = 0;
 };
 
 }  // namespace writer_interfaces

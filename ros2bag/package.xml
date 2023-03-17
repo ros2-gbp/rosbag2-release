@@ -2,19 +2,16 @@
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="2">
   <name>ros2bag</name>
-  <version>0.20.0</version>
+  <version>0.3.10</version>
   <description>
     Entry point for rosbag in ROS 2
   </description>
-  <maintainer email="michael.orlov@apex.ai">Michael Orlov</maintainer>
-  <maintainer email="geoff@openrobotics.org">Geoffrey Biggs</maintainer>
-  <maintainer email="michel@ekumenlabs.com">Michel Hidalgo</maintainer>
-  <maintainer email="me@emersonknapp.com">Emerson Knapp</maintainer>
+  <maintainer email="karsten@openrobotics.org">Karsten Knese</maintainer>
+  <maintainer email="michael.jeronimo@openrobotics.org">Michael Jeronimo</maintainer>
   <maintainer email="ros-tooling@googlegroups.com">ROS Tooling Working Group</maintainer>
   <license>Apache License 2.0</license>
 
   <depend>ros2cli</depend>
-  <depend>rosbag2_py</depend>
   <depend>rosbag2_transport</depend>
 
   <test_depend>ament_copyright</test_depend>
@@ -23,8 +20,6 @@
   <test_depend>launch_testing</test_depend>
   <test_depend>launch_testing_ros</test_depend>
   <test_depend>python3-pytest</test_depend>
-  <test_depend>rosbag2_storage_default_plugins</test_depend>
-  <test_depend>rosbag2_test_common</test_depend>
 
   <export>
     <build_type>ament_python</build_type>

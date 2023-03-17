@@ -3,11 +3,6 @@ project(sqlite3_vendor)
 
 find_package(ament_cmake REQUIRED)
 
-# Avoid DOWNLOAD_EXTRACT_TIMESTAMP warning for CMake >= 3.24
-if (POLICY CMP0135)
-  cmake_policy(SET CMP0135 NEW)
-endif()
-
 option(FORCE_BUILD_VENDOR_PKG
   "Build SQLite3 from source, even if system-installed package is available"
   OFF)
@@ -38,10 +33,7 @@ if (NOT SQLite3_FOUND)
     )
 
   # The external project will install to the build folder, but we'll install that on make install.
-  install(
-    DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/sqlite3_install/
-    DESTINATION ${CMAKE_INSTALL_PREFIX}
-    USE_SOURCE_PERMISSIONS)
+  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/sqlite3_install/ DESTINATION ${CMAKE_INSTALL_PREFIX})
 else ()
   message(STATUS "Found SQLite3. Using SQLite3 from system.")
 endif ()

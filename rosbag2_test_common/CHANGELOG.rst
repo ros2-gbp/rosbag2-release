@@ -2,99 +2,33 @@
 Changelog for package rosbag2_test_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.20.0 (2023-02-14)
+0.3.10 (2023-03-16)
 -------------------
 
-0.19.0 (2023-01-13)
--------------------
-* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_)
-* rosbag2_py: parametrize tests across storage plugins (`#1203 <https://github.com/ros2/rosbag2/issues/1203>`_)
-* Contributors: Michael Orlov, james-rms
-
-0.18.0 (2022-11-15)
--------------------
-* Fix for ros2 bag play exit with non-zero code on SIGINT (`#1126 <https://github.com/ros2/rosbag2/issues/1126>`_)
-* Contributors: Michael Orlov
-
-0.17.0 (2022-07-30)
--------------------
-* Split up the include of rclcpp.hpp (`#1027 <https://github.com/ros2/rosbag2/issues/1027>`_)
-* Contributors: Chris Lalancette
-
-0.16.0 (2022-05-11)
--------------------
-
-0.15.1 (2022-04-06)
--------------------
-
-0.15.0 (2022-04-05)
--------------------
-
-0.14.1 (2022-03-29)
--------------------
-* Bump version number to avoid conflict
-* Contributors: Chris Lalancette
-
-0.14.0 (2022-03-29)
--------------------
-* Install headers to include/${PROJECT_NAME} (`#958 <https://github.com/ros2/rosbag2/issues/958>`_)
-* Contributors: Shane Loretz
-
-0.13.0 (2022-01-13)
--------------------
-
-0.12.0 (2021-12-17)
--------------------
-
-0.11.0 (2021-11-08)
--------------------
-* Update package maintainers (`#899 <https://github.com/ros2/rosbag2/issues/899>`_)
-* Contributors: Michel Hidalgo
-
-0.10.1 (2021-10-22)
--------------------
-
-0.10.0 (2021-10-19)
--------------------
-* Make sure the subscription exists before publishing messages (`#804 <https://github.com/ros2/rosbag2/issues/804>`_)
-* Handle SIGTERM gracefully in recording (`#792 <https://github.com/ros2/rosbag2/issues/792>`_)
-* Add spin_and_wait_for_matched to PublicationManager and update test c… (`#797 <https://github.com/ros2/rosbag2/issues/797>`_)
-* Avoid passing exception KeyboardInterrupt to the upper layer (`#788 <https://github.com/ros2/rosbag2/issues/788>`_)
-* Contributors: Barry Xu, Emerson Knapp
-
-0.9.0 (2021-05-17)
+0.3.9 (2022-02-03)
 ------------------
-* Add play_next() API to the player class (`#762 <https://github.com/ros2/rosbag2/issues/762>`_)
-* use rclcpp::SerializedMessage in MemoryManagement (`#750 <https://github.com/ros2/rosbag2/issues/750>`_)
-* remodel publication manager (`#749 <https://github.com/ros2/rosbag2/issues/749>`_)
-* use public recorder api in tests (`#741 <https://github.com/ros2/rosbag2/issues/741>`_)
-* player owns the reader (`#725 <https://github.com/ros2/rosbag2/issues/725>`_)
-* Contributors: Karsten Knese, Michael Orlov
 
-0.8.0 (2021-04-19)
+0.3.8 (2021-07-19)
 ------------------
-* Remove -Werror from builds, enable it in Action CI (`#722 <https://github.com/ros2/rosbag2/issues/722>`_)
-* Fix bad_function_call by replacing rclcpp::spin_some with SingleThreadedExecutor (`#705 <https://github.com/ros2/rosbag2/issues/705>`_)
-* Explicitly add emersonknapp as maintainer (`#692 <https://github.com/ros2/rosbag2/issues/692>`_)
+* Handle SIGTERM gracefully in recording (`#809 <https://github.com/ros2/rosbag2/issues/809>`_)
 * Contributors: Emerson Knapp
 
-0.7.0 (2021-03-18)
-------------------
-* Remove temporary directory platform-specific logic from test fixture (`#660 <https://github.com/ros2/rosbag2/issues/660>`_)
-* Contributors: Emerson Knapp
-
-0.6.0 (2021-02-01)
-------------------
-* Stabilize test_record by reducing copies of executors and messages (`#576 <https://github.com/ros2/rosbag2/issues/576>`_)
-* Contributors: Emerson Knapp
-
-0.5.0 (2020-12-02)
+0.3.7 (2021-02-15)
 ------------------
 
-0.4.0 (2020-11-19)
+0.3.6 (2021-01-05)
 ------------------
-* Update the package.xml files with the latest Open Robotics maintainers (`#535 <https://github.com/ros2/rosbag2/issues/535>`_)
+* Update maintainer list for Foxy (`#551 <https://github.com/ros2/rosbag2/issues/551>`_)
 * Contributors: Michael Jeronimo
+
+0.3.5 (2020-08-31)
+------------------
+
+0.3.4 (2020-08-05)
+------------------
+
+0.3.3 (2020-06-23)
+------------------
 
 0.3.2 (2020-06-03)
 ------------------

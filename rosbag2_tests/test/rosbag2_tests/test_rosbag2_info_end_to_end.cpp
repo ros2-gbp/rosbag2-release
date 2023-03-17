@@ -18,39 +18,33 @@
 #include <string>
 #include <thread>
 
-#include "rcpputils/filesystem_helper.hpp"
-
 #include "rosbag2_test_common/process_execution_helpers.hpp"
-#include "rosbag2_test_common/tested_storage_ids.hpp"
 
 using namespace ::testing;  // NOLINT
 
-class InfoEndToEndTestFixture : public Test, public WithParamInterface<std::string>
+class InfoEndToEndTestFixture : public Test
 {
 public:
   InfoEndToEndTestFixture()
   {
-    // _SRC_RESOURCES_DIR_PATH defined in CMakeLists.txt
-    bags_path_ = (rcpputils::fs::path(_SRC_RESOURCES_DIR_PATH) / GetParam()).string();
+    database_path_ = _SRC_RESOURCES_DIR_PATH;  // variable defined in CMakeLists.txt
   }
 
-  std::string bags_path_;
+  std::string database_path_;
 };
 
-TEST_P(InfoEndToEndTestFixture, info_end_to_end_test) {
+TEST_F(InfoEndToEndTestFixture, info_end_to_end_test) {
   internal::CaptureStdout();
-  auto exit_code = execute_and_wait_until_completion("ros2 bag info cdr_test", bags_path_);
+  auto exit_code = execute_and_wait_until_completion("ros2 bag info cdr_test", database_path_);
   std::string output = internal::GetCapturedStdout();
-  auto expected_storage = GetParam();
-  auto expected_file = rosbag2_test_common::bag_filename_for_storage_id("cdr_test_0", GetParam());
 
   EXPECT_THAT(exit_code, Eq(EXIT_SUCCESS));
   // The bag size depends on the os and is not asserted, the time is asserted time zone independent
   EXPECT_THAT(
     output, ContainsRegex(
-      "\nFiles:             " + expected_file +
+      "\nFiles:             cdr_test_0\\.db3"
       "\nBag size:          .*B"
-      "\nStorage id:        " + expected_storage +
+      "\nStorage id:        sqlite3"
       "\nDuration:          0\\.151s"
       "\nStart:             Apr  .+ 2020 .*:.*:36.763 \\(1586406456\\.763\\)"
       "\nEnd:               Apr  .+ 2020 .*:.*:36.914 \\(1586406456\\.914\\)"
@@ -67,28 +61,22 @@ TEST_P(InfoEndToEndTestFixture, info_end_to_end_test) {
 }
 
 // TODO(Martin-Idel-SI): Revisit exit code non-zero here, gracefully should be exit code zero
-TEST_P(InfoEndToEndTestFixture, info_fails_gracefully_if_bag_does_not_exist) {
+TEST_F(InfoEndToEndTestFixture, info_fails_gracefully_if_bag_does_not_exist) {
   internal::CaptureStderr();
   auto exit_code =
-    execute_and_wait_until_completion("ros2 bag info does_not_exist", bags_path_);
-  auto error_output = internal::GetCapturedStderr();
-
-  EXPECT_THAT(exit_code, Ne(EXIT_SUCCESS));
-  EXPECT_THAT(error_output, HasSubstr("'does_not_exist' does not exist"));
-}
-
-TEST_P(InfoEndToEndTestFixture, info_fails_gracefully_if_metadata_yaml_file_does_not_exist) {
-  internal::CaptureStderr();
-  auto exit_code =
-    execute_and_wait_until_completion("ros2 bag info " + bags_path_, bags_path_);
+    execute_and_wait_until_completion("ros2 bag info does_not_exist", database_path_);
   auto error_output = internal::GetCapturedStderr();
 
   EXPECT_THAT(exit_code, Eq(EXIT_FAILURE));
-  EXPECT_THAT(error_output, HasSubstr("Could not find metadata"));
+  EXPECT_THAT(error_output, HasSubstr("'does_not_exist' does not exist"));
 }
 
-INSTANTIATE_TEST_SUITE_P(
-  TestInfoEndToEnd,
-  InfoEndToEndTestFixture,
-  ::testing::ValuesIn(rosbag2_test_common::kTestedStorageIDs)
-);
+TEST_F(InfoEndToEndTestFixture, info_fails_gracefully_if_metadata_yaml_file_does_not_exist) {
+  internal::CaptureStderr();
+  auto exit_code =
+    execute_and_wait_until_completion("ros2 bag info " + database_path_, database_path_);
+  auto error_output = internal::GetCapturedStderr();
+
+  EXPECT_THAT(exit_code, Eq(EXIT_SUCCESS));
+  EXPECT_THAT(error_output, HasSubstr("Could not read metadata for " + database_path_));
+}

@@ -17,7 +17,6 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "base_compressor_interface.hpp"
 #include "base_decompressor_interface.hpp"
@@ -51,28 +50,21 @@ public:
    * Create a compressor based on the specified compression format.
    *
    * \param compression_format The compression format as a string.
-   * \return A shared pointer to the newly created compressor.
+   * \return A unique pointer to the newly created compressor.
    * \throw invalid_argument If the compression format does not exist.
    */
-  virtual std::shared_ptr<rosbag2_compression::BaseCompressorInterface>
+  virtual std::unique_ptr<rosbag2_compression::BaseCompressorInterface>
   create_compressor(const std::string & compression_format);
 
   /**
    * Create a decompressor based on the specified compression format.
    *
    * \param compression_format The compression format as a string.
-   * \return A shared pointer to the newly created decompressor.
+   * \return A unique pointer to the newly created decompressor.
    * \throw invalid_argument If the compression format does not exist.
    */
-  virtual std::shared_ptr<rosbag2_compression::BaseDecompressorInterface>
+  virtual std::unique_ptr<rosbag2_compression::BaseDecompressorInterface>
   create_decompressor(const std::string & compression_format);
-
-  /**
-   * Determine which compression plugins are available.
-   *
-   * \return A vector of all available compression plugins.
-   */
-  virtual std::vector<std::string> get_declared_compressor_plugins() const;
 
 private:
   std::unique_ptr<CompressionFactoryImpl> impl_;

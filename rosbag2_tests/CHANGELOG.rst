@@ -2,128 +2,37 @@
 Changelog for package rosbag2_tests
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.20.0 (2023-02-14)
+
+0.3.10 (2023-03-16)
 -------------------
 
-0.19.0 (2023-01-13)
--------------------
-* rosbag2_storage: set MCAP as default plugin (`#1160 <https://github.com/ros2/rosbag2/issues/1160>`_)
-* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_)
-* Parametrize all rosbag2_tests for both supported storage plugins (`#1221 <https://github.com/ros2/rosbag2/issues/1221>`_)
-* Make rosbag2_tests agnostic to storage implementation (`#1192 <https://github.com/ros2/rosbag2/issues/1192>`_)
-* Contributors: Emerson Knapp, Michael Orlov, james-rms
-
-0.18.0 (2022-11-15)
--------------------
-* Get rid from attempt to open DB file in `wait_for_db()` test fixture (`#1141 <https://github.com/ros2/rosbag2/issues/1141>`_)
-* Fix for ros2 bag play exit with non-zero code on SIGINT (`#1126 <https://github.com/ros2/rosbag2/issues/1126>`_)
-* Move sqlite3 storage implementation to rosbag2_storage_sqlite3 package (`#1113 <https://github.com/ros2/rosbag2/issues/1113>`_)
-* Readers/info can accept a single bag storage file, and detect its storage id automatically (`#1072 <https://github.com/ros2/rosbag2/issues/1072>`_)
-* Contributors: Emerson Knapp, Michael Orlov
-
-0.17.0 (2022-07-30)
--------------------
-* Add the ability to record any key/value pair in 'custom' field in metadata.yaml (`#1038 <https://github.com/ros2/rosbag2/issues/1038>`_)
-* Contributors: Hunter L. Allen, Tony Peng
-
-0.16.0 (2022-05-11)
--------------------
-
-0.15.1 (2022-04-06)
--------------------
-* Revert "Add the ability to record any key/value pair in the 'custom' field in metadata.yaml (`#976 <https://github.com/ros2/rosbag2/issues/976>`_)" (`#984 <https://github.com/ros2/rosbag2/issues/984>`_)
-* Add the ability to record any key/value pair in the 'custom' field in metadata.yaml (`#976 <https://github.com/ros2/rosbag2/issues/976>`_)
-* Contributors: Audrow Nash, Jorge Perez, Tony Peng
-
-0.15.0 (2022-04-05)
--------------------
-* Revert "Add the ability to record any key/value pair in the 'custom' field in metadata.yaml (`#976 <https://github.com/ros2/rosbag2/issues/976>`_)" (`#984 <https://github.com/ros2/rosbag2/issues/984>`_)
-* Add the ability to record any key/value pair in the 'custom' field in metadata.yaml (`#976 <https://github.com/ros2/rosbag2/issues/976>`_)
-* Contributors: Jorge Perez, Tony Peng
-
-0.14.1 (2022-03-29)
--------------------
-* Bump version number to avoid conflict
-* Contributors: Chris Lalancette
-
-0.14.0 (2022-03-29)
--------------------
-
-0.13.0 (2022-01-13)
--------------------
-
-0.12.0 (2021-12-17)
--------------------
-* Add pause/resume options to the bag recorder (`#905 <https://github.com/ros2/rosbag2/issues/905>`_)
-* Contributors: Ivan Santiago Paunovic
-
-0.11.0 (2021-11-08)
--------------------
-* Update package maintainers (`#899 <https://github.com/ros2/rosbag2/issues/899>`_)
-* Contributors: Michel Hidalgo
-
-0.10.1 (2021-10-22)
--------------------
-
-0.10.0 (2021-10-19)
--------------------
-* Fix a bug on invalid pointer address when using "MESSAGE" compressio… (`#866 <https://github.com/ros2/rosbag2/issues/866>`_)
-* Metadata per file info (`#870 <https://github.com/ros2/rosbag2/issues/870>`_)
-* Fix record test to reflect plugin query changes (`#838 <https://github.com/ros2/rosbag2/issues/838>`_)
-* Make sure the subscription exists before publishing messages (`#804 <https://github.com/ros2/rosbag2/issues/804>`_)
-* Handle SIGTERM gracefully in recording (`#792 <https://github.com/ros2/rosbag2/issues/792>`_)
-* Add spin_and_wait_for_matched to PublicationManager and update test c… (`#797 <https://github.com/ros2/rosbag2/issues/797>`_)
-* Remove rmw_fastrtps_cpp find_package in rosbag2_tests (`#774 <https://github.com/ros2/rosbag2/issues/774>`_)
-* Contributors: Barry Xu, Cameron Miller, Emerson Knapp, Ivan Santiago Paunovic, Wojciech Jaworski
-
-0.9.0 (2021-05-17)
-------------------
-* Correct expectation for exit code in play_end_to_end test since after redesign we are getting exception in constructor. (`#763 <https://github.com/ros2/rosbag2/issues/763>`_)
-* remodel publication manager (`#749 <https://github.com/ros2/rosbag2/issues/749>`_)
-* correct exit code assertion (`#747 <https://github.com/ros2/rosbag2/issues/747>`_)
-* Contributors: Karsten Knese, Michael Orlov
-
-0.8.0 (2021-04-19)
-------------------
-* Remove -Werror from builds, enable it in Action CI (`#722 <https://github.com/ros2/rosbag2/issues/722>`_)
-* Explicitly add emersonknapp as maintainer (`#692 <https://github.com/ros2/rosbag2/issues/692>`_)
-* Reindexer core (`#641 <https://github.com/ros2/rosbag2/issues/641>`_)
-  Add a new C++ Reindexer class for reconstructing metadata from bags that are missing it.
-* use rclcpp serialized messages to write data (`#457 <https://github.com/ros2/rosbag2/issues/457>`_)
-* Contributors: Emerson Knapp, Karsten Knese, jhdcs
-
-0.7.0 (2021-03-18)
-------------------
-* Alternative write api (`#676 <https://github.com/ros2/rosbag2/issues/676>`_)
-* RMW-implementation-searcher converter in rosbag2_cpp (`#670 <https://github.com/ros2/rosbag2/issues/670>`_)
-* Use rosbag2_py for ros2 bag info (`#673 <https://github.com/ros2/rosbag2/issues/673>`_)
-* Remove temporary directory platform-specific logic from test fixture (`#660 <https://github.com/ros2/rosbag2/issues/660>`_)
-* Fix --topics flag for ros2 bag play being ignored for all bags after the first one. (`#619 <https://github.com/ros2/rosbag2/issues/619>`_)
-* Move zstd compressor to its own package (`#636 <https://github.com/ros2/rosbag2/issues/636>`_)
-* Contributors: Alexander, Emerson Knapp, Karsten Knese
-
-0.6.0 (2021-02-01)
-------------------
-* Fix relative metadata paths in SequentialCompressionWriter (`#613 <https://github.com/ros2/rosbag2/issues/613>`_)
-* Recorder --regex and --exclude options (`#604 <https://github.com/ros2/rosbag2/issues/604>`_)
-* Fix the tests on cyclonedds by translating qos duration values (`#606 <https://github.com/ros2/rosbag2/issues/606>`_)
-* Contributors: Adam Dąbrowski, Emerson Knapp
-
-0.5.0 (2020-12-02)
+0.3.9 (2022-02-03)
 ------------------
 
-0.4.0 (2020-11-19)
+0.3.8 (2021-07-19)
 ------------------
-* add storage_config_uri (`#493 <https://github.com/ros2/rosbag2/issues/493>`_)
-* Removed duplicated code in record (`#534 <https://github.com/ros2/rosbag2/issues/534>`_)
-* Change default cache size for sequential_writer to a non zero value (`#533 <https://github.com/ros2/rosbag2/issues/533>`_)
-* Update the package.xml files with the latest Open Robotics maintainers (`#535 <https://github.com/ros2/rosbag2/issues/535>`_)
-* Mark flaky tests as xfail for now (`#520 <https://github.com/ros2/rosbag2/issues/520>`_)
-* introduce defaults for the C++ API (`#452 <https://github.com/ros2/rosbag2/issues/452>`_)
-* Adding db directory creation to rosbag2_cpp (`#450 <https://github.com/ros2/rosbag2/issues/450>`_)
-* minimal c++ API test (`#451 <https://github.com/ros2/rosbag2/issues/451>`_)
-* Add split by time to recording (`#409 <https://github.com/ros2/rosbag2/issues/409>`_)
-* Contributors: Emerson Knapp, Jaison Titus, Karsten Knese, Marwan Taher, Michael Jeronimo, jhdcs
+* Disable SIGTERM test on Windows in Foxy due to shutdown behavior in tests on that platform. (`#818 <https://github.com/ros2/rosbag2/issues/818>`_)
+* Handle SIGTERM gracefully in recording (`#809 <https://github.com/ros2/rosbag2/issues/809>`_)
+* Contributors: Emerson Knapp
+
+0.3.7 (2021-02-15)
+------------------
+* [foxy backport] Fix --topics flag for ros2 bag play being ignored for all bags after the first one (`#619 <https://github.com/ros2/rosbag2/issues/619>`_) (`#654 <https://github.com/ros2/rosbag2/issues/654>`_)
+* Contributors: Aleksandr Rozhdestvenskii
+
+0.3.6 (2021-01-05)
+------------------
+* Update maintainer list for Foxy (`#551 <https://github.com/ros2/rosbag2/issues/551>`_)
+* Contributors: Michael Jeronimo
+
+0.3.5 (2020-08-31)
+------------------
+
+0.3.4 (2020-08-05)
+------------------
+
+0.3.3 (2020-06-23)
+------------------
 
 0.3.2 (2020-06-03)
 ------------------

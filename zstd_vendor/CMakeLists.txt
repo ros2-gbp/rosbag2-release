@@ -4,15 +4,12 @@ project(zstd_vendor)
 
 find_package(ament_cmake REQUIRED)
 
-list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
-
 option(FORCE_BUILD_VENDOR_PKG
   "Build zstd from source, even if system-installed package is available"
   OFF)
 
 if(NOT FORCE_BUILD_VENDOR_PKG)
-  # We need at least VERSION 1.4.8, version check is done in Findzstd.cmake
-  find_package(zstd 1.4.8 QUIET)
+  find_package(zstd QUIET)
 endif()
 
 macro(build_zstd)
@@ -29,17 +26,12 @@ macro(build_zstd)
   endif()
   list(APPEND extra_cmake_args "-DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}")
 
-  set(zstd_version 1.4.8)
   include(ExternalProject)
   # The CMakeLists.txt file for zstd is in a subdirectory.
   # We need to configure the CMake command to build from there instead.
-  externalproject_add(zstd-${zstd_version}
-    GIT_REPOSITORY https://github.com/facebook/zstd.git
-    GIT_TAG 97a3da1df009d4dc67251de0c4b1c9d7fe286fc1 # v1.4.8
-    GIT_CONFIG advice.detachedHead=false
-    # Suppress git update due to https://gitlab.kitware.com/cmake/cmake/-/issues/16419
-    # See https://github.com/ament/uncrustify_vendor/pull/22 for details
-    UPDATE_COMMAND ""
+  ExternalProject_Add(zstd-1.4.4
+    URL https://github.com/facebook/zstd/archive/v1.4.4.zip
+    URL_MD5 3a5c3a535280b7f4dfdbd739fcc7173f
     TIMEOUT 60
     SOURCE_SUBDIR build/cmake
     CMAKE_ARGS
@@ -48,15 +40,18 @@ macro(build_zstd)
       -DZSTD_BUILD_SHARED=ON
       -DZSTD_BUILD_PROGRAMS=OFF
       ${extra_cmake_args}
+    # Note: zstd v1.4.6 will include the following fix. When that is released, upgrade and remove this patch.
+    PATCH_COMMAND
+      patch -p1 -d . < ${CMAKE_CURRENT_SOURCE_DIR}/cmake_minimum_required_2.8.12.patch &&
+      patch -p1 -d . < ${CMAKE_CURRENT_SOURCE_DIR}/no_internal_headers.patch
   )
 
   install(
     DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_install/
-    DESTINATION ${CMAKE_INSTALL_PREFIX}
-    USE_SOURCE_PERMISSIONS)
+    DESTINATION ${CMAKE_INSTALL_PREFIX})
 endmacro()
 
-if(NOT zstd_FOUND)
+if (NOT zstd_FOUND OR "${zstd_VERSION}" VERSION_LESS 1.4.4)
   build_zstd()
 else()
   message(STATUS "Found Zstd, skipping build.")

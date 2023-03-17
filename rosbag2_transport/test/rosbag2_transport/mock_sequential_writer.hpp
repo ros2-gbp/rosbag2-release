@@ -18,7 +18,6 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
-#include <utility>
 #include <vector>
 
 #include "rosbag2_cpp/writer_interfaces/base_writer_interface.hpp"
@@ -27,15 +26,14 @@ class MockSequentialWriter : public rosbag2_cpp::writer_interfaces::BaseWriterIn
 {
 public:
   void open(
-    const rosbag2_storage::StorageOptions & storage_options,
+    const rosbag2_cpp::StorageOptions & storage_options,
     const rosbag2_cpp::ConverterOptions & converter_options) override
   {
-    snapshot_mode_ = storage_options.snapshot_mode;
     (void) storage_options;
     (void) converter_options;
   }
 
-  void close() override {}
+  void reset() override {}
 
   void create_topic(const rosbag2_storage::TopicMetadata & topic_with_type) override
   {
@@ -47,88 +45,31 @@ public:
     (void) topic_with_type;
   }
 
-  void write(std::shared_ptr<const rosbag2_storage::SerializedBagMessage> message) override
+  void write(std::shared_ptr<rosbag2_storage::SerializedBagMessage> message) override
   {
-    if (!snapshot_mode_) {
-      messages_.push_back(message);
-    } else {
-      snapshot_buffer_.push_back(message);
-    }
+    messages_.push_back(message);
     messages_per_topic_[message->topic_name] += 1;
-    messages_per_file_ += 1;
-    if (messages_per_file_ == max_messages_per_file_) {  // "Split" the bag every few messages
-      this->split_bagfile();
-    }
   }
 
-  bool take_snapshot() override
-  {
-    std::swap(snapshot_buffer_, messages_);
-    snapshot_buffer_.clear();
-    return true;
-  }
-
-  void split_bagfile() override
-  {
-    auto info = std::make_shared<rosbag2_cpp::bag_events::BagSplitInfo>();
-    info->closed_file = "BagFile" + std::to_string(file_number_);
-    file_number_ += 1;
-    info->opened_file = "BagFile" + std::to_string(file_number_);
-    callback_manager_.execute_callbacks(rosbag2_cpp::bag_events::BagEvent::WRITE_SPLIT, info);
-    messages_per_file_ = 0;
-  }
-
-  void
-  add_event_callbacks(const rosbag2_cpp::bag_events::WriterEventCallbacks & callbacks) override
-  {
-    if (callbacks.write_split_callback) {
-      callback_manager_.add_event_callback(
-        callbacks.write_split_callback,
-        rosbag2_cpp::bag_events::BagEvent::WRITE_SPLIT);
-    }
-  }
-
-  const std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>> & get_messages()
+  std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> get_messages()
   {
     return messages_;
   }
 
-  const std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>> &
-  get_snapshot_buffer()
-  {
-    return snapshot_buffer_;
-  }
-
-  const std::unordered_map<std::string, size_t> & messages_per_topic()
+  std::unordered_map<std::string, size_t> messages_per_topic()
   {
     return messages_per_topic_;
   }
 
-  const std::unordered_map<std::string, rosbag2_storage::TopicMetadata> & get_topics()
+  std::unordered_map<std::string, rosbag2_storage::TopicMetadata> get_topics()
   {
     return topics_;
   }
 
-  void set_max_messages_per_file(size_t max_messages_per_file)
-  {
-    max_messages_per_file_ = max_messages_per_file;
-  }
-
-  size_t max_messages_per_file() const
-  {
-    return max_messages_per_file_;
-  }
-
 private:
   std::unordered_map<std::string, rosbag2_storage::TopicMetadata> topics_;
-  std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>> messages_;
-  std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>> snapshot_buffer_;
+  std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages_;
   std::unordered_map<std::string, size_t> messages_per_topic_;
-  size_t messages_per_file_ = 0;
-  bool snapshot_mode_ = false;
-  rosbag2_cpp::bag_events::EventCallbackManager callback_manager_;
-  size_t file_number_ = 0;
-  size_t max_messages_per_file_ = 0;
 };
 
 #endif  // ROSBAG2_TRANSPORT__MOCK_SEQUENTIAL_WRITER_HPP_

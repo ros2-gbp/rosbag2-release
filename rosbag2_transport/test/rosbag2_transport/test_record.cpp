@@ -17,20 +17,18 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
-#include <utility>
 #include <vector>
 
 #include "rclcpp/rclcpp.hpp"
 
-#include "rosbag2_test_common/publication_manager.hpp"
 #include "rosbag2_test_common/wait_for.hpp"
 
-#include "rosbag2_transport/recorder.hpp"
+#include "rosbag2_transport/rosbag2_transport.hpp"
 
 #include "test_msgs/msg/arrays.hpp"
 #include "test_msgs/message_fixtures.hpp"
 
-#include "rosbag2_transport/qos.hpp"
+#include "qos.hpp"
 #include "record_integration_fixture.hpp"
 
 TEST_F(RecordIntegrationTestFixture, published_messages_from_multiple_topics_are_recorded)
@@ -41,38 +39,20 @@ TEST_F(RecordIntegrationTestFixture, published_messages_from_multiple_topics_are
   auto string_message = get_messages_strings()[1];
   std::string string_topic = "/string_topic";
 
-  rosbag2_test_common::PublicationManager pub_manager;
-  pub_manager.setup_publisher(array_topic, array_message, 2);
-  pub_manager.setup_publisher(string_topic, string_message, 2);
+  start_recording({false, false, {string_topic, array_topic}, "rmw_format", 100ms});
 
-  rosbag2_transport::RecordOptions record_options =
-  {false, false, {string_topic, array_topic}, "rmw_format", 100ms};
-  auto recorder = std::make_shared<rosbag2_transport::Recorder>(
-    std::move(writer_), storage_options_, record_options);
-  recorder->record();
+  pub_man_.add_publisher<test_msgs::msg::Strings>(
+    string_topic, string_message, 2);
+  pub_man_.add_publisher<test_msgs::msg::Arrays>(
+    array_topic, array_message, 2);
+  run_publishers();
+  stop_recording();
 
-  start_async_spin(recorder);
+  MockSequentialWriter & writer =
+    static_cast<MockSequentialWriter &>(writer_->get_implementation_handle());
+  auto recorded_messages = writer.get_messages();
+  auto recorded_topics = writer.get_topics();
 
-  ASSERT_TRUE(pub_manager.wait_for_matched(array_topic.c_str()));
-  ASSERT_TRUE(pub_manager.wait_for_matched(string_topic.c_str()));
-
-  pub_manager.run_publishers();
-
-  auto & writer = recorder->get_writer_handle();
-  MockSequentialWriter & mock_writer =
-    static_cast<MockSequentialWriter &>(writer.get_implementation_handle());
-
-  size_t expected_messages = 4;
-  auto ret = rosbag2_test_common::wait_until_shutdown(
-    std::chrono::seconds(5),
-    [&mock_writer, &expected_messages]() {
-      return mock_writer.get_messages().size() >= expected_messages;
-    });
-  auto recorded_messages = mock_writer.get_messages();
-  EXPECT_TRUE(ret) << "failed to capture expected messages in time";
-  EXPECT_THAT(recorded_messages, SizeIs(expected_messages));
-
-  auto recorded_topics = mock_writer.get_topics();
   ASSERT_THAT(recorded_topics, SizeIs(2));
   EXPECT_THAT(recorded_topics.at(string_topic).serialization_format, Eq("rmw_format"));
   EXPECT_THAT(recorded_topics.at(array_topic).serialization_format, Eq("rmw_format"));
@@ -91,38 +71,15 @@ TEST_F(RecordIntegrationTestFixture, published_messages_from_multiple_topics_are
 TEST_F(RecordIntegrationTestFixture, qos_is_stored_in_metadata)
 {
   auto string_message = get_messages_strings()[1];
-  std::string topic = "/qos_chatter";
+  std::string topic = "/chatter";
+  start_recording({false, false, {topic}, "rmw_format", 100ms});
+  pub_man_.add_publisher<test_msgs::msg::Strings>(topic, string_message, 2);
+  run_publishers();
+  stop_recording();
 
-  rosbag2_test_common::PublicationManager pub_manager;
-  pub_manager.setup_publisher(topic, string_message, 2);
-
-  rosbag2_transport::RecordOptions record_options =
-  {false, false, {topic}, "rmw_format", 100ms};
-  auto recorder = std::make_shared<rosbag2_transport::Recorder>(
-    std::move(writer_), storage_options_, record_options);
-  recorder->record();
-
-  start_async_spin(recorder);
-
-  ASSERT_TRUE(pub_manager.wait_for_matched(topic.c_str()));
-
-  pub_manager.run_publishers();
-
-  auto & writer = recorder->get_writer_handle();
-  MockSequentialWriter & mock_writer =
-    static_cast<MockSequentialWriter &>(writer.get_implementation_handle());
-
-  size_t expected_messages = 2;
-  auto ret = rosbag2_test_common::wait_until_shutdown(
-    std::chrono::seconds(5),
-    [&mock_writer, &expected_messages]() {
-      return mock_writer.get_messages().size() >= expected_messages;
-    });
-  auto recorded_messages = mock_writer.get_messages();
-  EXPECT_TRUE(ret) << "failed to capture expected messages in time";
-  EXPECT_THAT(recorded_messages, SizeIs(expected_messages));
-
-  auto recorded_topics = mock_writer.get_topics();
+  MockSequentialWriter & writer =
+    static_cast<MockSequentialWriter &>(writer_->get_implementation_handle());
+  auto recorded_topics = writer.get_topics();
   std::string serialized_profiles = recorded_topics.at(topic).offered_qos_profiles;
   // Basic smoke test that the profile was serialized into the metadata as a string.
   EXPECT_THAT(serialized_profiles, ContainsRegex("reliability: 1\n"));
@@ -150,81 +107,67 @@ TEST_F(RecordIntegrationTestFixture, qos_is_stored_in_metadata)
 
 TEST_F(RecordIntegrationTestFixture, records_sensor_data)
 {
-  auto string_message = get_messages_strings()[1];
-  std::string topic = "/sensor_chatter";
+  std::string topic = "/string_topic";
+  start_recording({false, false, {topic}, "rmw_format", 100ms});
 
-  rosbag2_test_common::PublicationManager pub_manager;
-  pub_manager.setup_publisher(topic, string_message, 2, rclcpp::SensorDataQoS());
+  auto publisher_node = std::make_shared<rclcpp::Node>("publisher_for_qos_test");
+  auto publisher = publisher_node->create_publisher<test_msgs::msg::Strings>(
+    topic, rclcpp::SensorDataQoS());
+  auto publish_timer = publisher_node->create_wall_timer(
+    50ms, [publisher]() -> void {
+      test_msgs::msg::Strings msg;
+      msg.string_value = "Hello";
+      publisher->publish(msg);
+    }
+  );
+  auto & writer = static_cast<MockSequentialWriter &>(writer_->get_implementation_handle());
 
-  rosbag2_transport::RecordOptions record_options =
-  {false, false, {topic}, "rmw_format", 100ms};
-  auto recorder = std::make_shared<rosbag2_transport::Recorder>(
-    std::move(writer_), storage_options_, record_options);
-  recorder->record();
-
-  start_async_spin(recorder);
-
-  ASSERT_TRUE(pub_manager.wait_for_matched(topic.c_str()));
-
-  pub_manager.run_publishers();
-
-  auto & writer = recorder->get_writer_handle();
-  MockSequentialWriter & mock_writer =
-    static_cast<MockSequentialWriter &>(writer.get_implementation_handle());
-
-  size_t expected_messages = 2;
-  auto ret = rosbag2_test_common::wait_until_shutdown(
-    std::chrono::seconds(5),
-    [&mock_writer, &expected_messages]() {
-      return mock_writer.get_messages().size() >= expected_messages;
+  // Takes ~200ms in local testing, 5s chosen as a very long timeout
+  bool succeeded = rosbag2_test_common::spin_and_wait_for(
+    std::chrono::seconds(5), publisher_node,
+    [&writer]() {
+      return writer.get_messages().size() > 0;
     });
-  auto recorded_messages = mock_writer.get_messages();
-  auto recorded_topics = mock_writer.get_topics();
-  EXPECT_TRUE(ret) << "failed to capture expected messages in time";
-  EXPECT_THAT(recorded_messages, SizeIs(expected_messages));
+  ASSERT_TRUE(succeeded);
+  stop_recording();
+
+  auto recorded_messages = writer.get_messages();
+  auto recorded_topics = writer.get_topics();
   EXPECT_EQ(recorded_topics.size(), 1u);
   EXPECT_FALSE(recorded_messages.empty());
 }
 
 TEST_F(RecordIntegrationTestFixture, receives_latched_messages)
 {
-  auto string_message = get_messages_strings()[1];
-  std::string topic = "/latched_chatter";
+  // Ensure rosbag2 can receive Transient Local Durability "latched messages"
+  const std::string topic = "/latched_topic";
+  const size_t num_latched_messages = 3;
 
-  size_t num_latched_messages = 3;
+  auto publisher_node = std::make_shared<rclcpp::Node>("publisher_for_latched_test");
   auto profile_transient_local = rclcpp::QoS(num_latched_messages).transient_local();
-  rosbag2_test_common::PublicationManager pub_manager;
-  pub_manager.setup_publisher(
-    topic, string_message, num_latched_messages, profile_transient_local);
+  auto publisher_transient_local = publisher_node->create_publisher<test_msgs::msg::Strings>(
+    topic, profile_transient_local);
+
   // Publish messages before starting recording
-  pub_manager.run_publishers();
+  test_msgs::msg::Strings msg;
+  msg.string_value = "Hello";
+  for (size_t i = 0; i < num_latched_messages; i++) {
+    publisher_transient_local->publish(msg);
+    rclcpp::spin_some(publisher_node);
+  }
+  start_recording({false, false, {topic}, "rmw_format", 100ms});
+  auto & writer = static_cast<MockSequentialWriter &>(writer_->get_implementation_handle());
 
-  rosbag2_transport::RecordOptions record_options =
-  {false, false, {topic}, "rmw_format", 100ms};
-  auto recorder = std::make_shared<rosbag2_transport::Recorder>(
-    std::move(writer_), storage_options_, record_options);
-  recorder->record();
-
-  start_async_spin(recorder);
-
-  ASSERT_TRUE(pub_manager.wait_for_matched(topic.c_str()));
-
-  auto & writer = recorder->get_writer_handle();
-  MockSequentialWriter & mock_writer =
-    static_cast<MockSequentialWriter &>(writer.get_implementation_handle());
-
-  size_t expected_messages = num_latched_messages;
-  auto ret = rosbag2_test_common::wait_until_shutdown(
-    std::chrono::seconds(5),
-    [&mock_writer, &expected_messages]() {
-      return mock_writer.get_messages().size() >= expected_messages;
+  // Takes ~100ms in local testing, 5s chosen as a very long timeout
+  bool succeeded = rosbag2_test_common::spin_and_wait_for(
+    std::chrono::seconds(5), publisher_node,
+    // The = is necessary due to an implementation difference between clang and windows
+    // Clang claims capture is unecessary (and we use -Werror), but windows needs it
+    [&writer, num_latched_messages = num_latched_messages]() {
+      return writer.get_messages().size() == num_latched_messages;
     });
-  auto recorded_messages = mock_writer.get_messages();
-  auto recorded_topics = mock_writer.get_topics();
-  EXPECT_TRUE(ret) << "failed to capture expected messages in time";
-  EXPECT_THAT(recorded_messages, SizeIs(expected_messages));
-  EXPECT_EQ(recorded_topics.size(), 1u);
-  EXPECT_FALSE(recorded_messages.empty());
+  stop_recording();
+  ASSERT_TRUE(succeeded);
 }
 
 TEST_F(RecordIntegrationTestFixture, mixed_qos_subscribes) {
@@ -238,26 +181,23 @@ TEST_F(RecordIntegrationTestFixture, mixed_qos_subscribes) {
   auto profile_volatile = rclcpp::QoS(arbitrary_history).reliable().durability_volatile();
   auto profile_transient_local = rclcpp::QoS(arbitrary_history).reliable().transient_local();
 
-  auto publisher_node = std::make_shared<rclcpp::Node>("rosbag2_test_record_5");
+  auto publisher_node = std::make_shared<rclcpp::Node>("publisher_for_qos_test");
   auto publisher_volatile = publisher_node->create_publisher<test_msgs::msg::Strings>(
     topic, profile_volatile);
   auto publisher_transient_local = publisher_node->create_publisher<test_msgs::msg::Strings>(
     topic, profile_transient_local);
 
-  rosbag2_transport::RecordOptions record_options = {false, false, {topic}, "rmw_format", 100ms};
-  auto recorder = std::make_shared<rosbag2_transport::Recorder>(
-    std::move(writer_), storage_options_, record_options);
-  recorder->record();
-
+  start_recording({false, false, {topic}, "rmw_format", 100ms});
   // Takes ~100ms in local testing, 5s chosen as a very long timeout
   bool succeeded = rosbag2_test_common::spin_and_wait_for(
-    std::chrono::seconds(5), recorder,
+    std::chrono::seconds(5), publisher_node,
     [publisher_volatile, publisher_transient_local]() {
       // This test is a success if rosbag2 has connected to both publishers
       return
       publisher_volatile->get_subscription_count() &&
       publisher_transient_local->get_subscription_count();
     });
+  stop_recording();
   ASSERT_TRUE(succeeded);
 }
 
@@ -272,7 +212,7 @@ TEST_F(RecordIntegrationTestFixture, duration_and_noncompatibility_policies_mixe
   const auto liveliness = RMW_QOS_POLICY_LIVELINESS_MANUAL_BY_TOPIC;
   const rmw_time_t liveliness_lease_duration{0, 5000000};
 
-  auto publisher_node = std::make_shared<rclcpp::Node>("rosbag2_test_record_6");
+  auto publisher_node = std::make_shared<rclcpp::Node>("publisher_for");
   auto create_pub = [publisher_node, topic](auto qos) {
       return publisher_node->create_publisher<test_msgs::msg::Strings>(topic, qos);
     };
@@ -290,14 +230,10 @@ TEST_F(RecordIntegrationTestFixture, duration_and_noncompatibility_policies_mixe
     .liveliness(liveliness).liveliness_lease_duration(liveliness_lease_duration);
   auto publisher_liveliness = create_pub(profile_liveliness);
 
-  rosbag2_transport::RecordOptions record_options = {false, false, {topic}, "rmw_format", 100ms};
-  auto recorder = std::make_shared<rosbag2_transport::Recorder>(
-    std::move(writer_), storage_options_, record_options);
-  recorder->record();
-
+  start_recording({false, false, {topic}, "rmw_format", 100ms});
   // Takes ~200ms in local testing, 5s chosen as a very long timeout
   bool succeeded = rosbag2_test_common::spin_and_wait_for(
-    std::chrono::seconds(5), recorder,
+    std::chrono::seconds(5), publisher_node,
     [publisher_history, publisher_lifespan, publisher_deadline, publisher_liveliness]() {
       return
       publisher_history->get_subscription_count() &&
@@ -305,57 +241,42 @@ TEST_F(RecordIntegrationTestFixture, duration_and_noncompatibility_policies_mixe
       publisher_deadline->get_subscription_count() &&
       publisher_liveliness->get_subscription_count();
     });
+  stop_recording();
   ASSERT_TRUE(succeeded);
 }
 
-TEST_F(RecordIntegrationTestFixture, write_split_callback_is_called)
+TEST_F(RecordIntegrationTestFixture, topic_qos_overrides)
 {
-  auto string_message = get_messages_strings()[1];
-  std::string string_topic = "/string_topic";
-
-  bool callback_called = false;
-  std::string closed_file, opened_file;
-  rosbag2_cpp::bag_events::WriterEventCallbacks callbacks;
-  callbacks.write_split_callback =
-    [&callback_called, &closed_file, &opened_file](rosbag2_cpp::bag_events::BagSplitInfo & info) {
-      closed_file = info.closed_file;
-      opened_file = info.opened_file;
-      callback_called = true;
-    };
-  writer_->add_event_callbacks(callbacks);
-
-  auto & mock_writer = dynamic_cast<MockSequentialWriter &>(writer_->get_implementation_handle());
-  mock_writer.set_max_messages_per_file(5);
+  const auto num_msgs = 3;
+  auto strict_msg = std::make_shared<test_msgs::msg::Strings>();
+  strict_msg->string_value = "strict";
+  const auto strict_topic = "/strict_topic";
 
   rosbag2_transport::RecordOptions record_options =
-  {false, false, {string_topic}, "rmw_format", 100ms};
-  auto recorder = std::make_shared<rosbag2_transport::Recorder>(
-    std::move(writer_), storage_options_, record_options);
-  recorder->record();
+  {false, false, {strict_topic}, "rmw_format", 100ms};
+  const auto profile_override = rclcpp::QoS{rclcpp::KeepAll()}
+  .best_effort().durability_volatile().avoid_ros_namespace_conventions(false);
+  std::unordered_map<std::string, rclcpp::QoS> topic_qos_profile_overrides = {
+    {strict_topic, profile_override}
+  };
+  record_options.topic_qos_profile_overrides = topic_qos_profile_overrides;
 
-  start_async_spin(recorder);
+  // Create two BEST_EFFORT publishers on the same topic with different Durability policies.
+  // If no override is specified, then the recorder cannot see any published messages.
+  auto profile1 = rosbag2_transport::Rosbag2QoS{}.best_effort().durability_volatile();
+  auto profile2 = rosbag2_transport::Rosbag2QoS{}.best_effort().transient_local();
+  pub_man_.add_publisher<test_msgs::msg::Strings>(
+    strict_topic, strict_msg, num_msgs, profile1);
+  pub_man_.add_publisher<test_msgs::msg::Strings>(
+    strict_topic, strict_msg, num_msgs, profile2);
 
-  auto & writer = recorder->get_writer_handle();
-  mock_writer = dynamic_cast<MockSequentialWriter &>(writer.get_implementation_handle());
+  start_recording(record_options);
+  run_publishers();
+  stop_recording();
 
-  const size_t expected_messages = mock_writer.max_messages_per_file() + 1;
+  auto & writer =
+    static_cast<MockSequentialWriter &>(writer_->get_implementation_handle());
+  auto recorded_messages = writer.get_messages();
 
-  rosbag2_test_common::PublicationManager pub_manager;
-  pub_manager.setup_publisher(string_topic, string_message, expected_messages);
-  ASSERT_TRUE(pub_manager.wait_for_matched(string_topic.c_str()));
-  pub_manager.run_publishers();
-
-  auto ret = rosbag2_test_common::wait_until_shutdown(
-    std::chrono::seconds(5),
-    [&mock_writer, &expected_messages]() {
-      return mock_writer.get_messages().size() >= expected_messages;
-    });
-  auto recorded_messages = mock_writer.get_messages();
-  EXPECT_TRUE(ret) << "failed to capture expected messages in time";
-  EXPECT_THAT(recorded_messages, SizeIs(expected_messages));
-
-  // Confirm that the callback was called and the file names have been sent with the event
-  ASSERT_TRUE(callback_called);
-  EXPECT_EQ(closed_file, "BagFile0");
-  EXPECT_EQ(opened_file, "BagFile1");
+  ASSERT_GE(recorded_messages.size(), 0u);
 }

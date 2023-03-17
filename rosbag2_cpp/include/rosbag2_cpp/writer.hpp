@@ -21,17 +21,11 @@
 #include <unordered_map>
 #include <vector>
 
-#include "rclcpp/serialization.hpp"
-#include "rclcpp/serialized_message.hpp"
-#include "rclcpp/time.hpp"
-
-#include "rosbag2_cpp/bag_events.hpp"
 #include "rosbag2_cpp/converter_options.hpp"
+#include "rosbag2_cpp/storage_options.hpp"
 #include "rosbag2_cpp/visibility_control.hpp"
-#include "rosbag2_cpp/writers/sequential_writer.hpp"
 
 #include "rosbag2_storage/serialized_bag_message.hpp"
-#include "rosbag2_storage/storage_options.hpp"
 #include "rosbag2_storage/topic_metadata.hpp"
 
 // This is necessary because of using stl types here. It is completely safe, because
@@ -53,29 +47,12 @@ class BaseWriterInterface;
  * The Writer allows writing messages to a new bag. For every topic, information about its type
  * needs to be added before writing the first message.
  */
-class ROSBAG2_CPP_PUBLIC Writer
+class ROSBAG2_CPP_PUBLIC Writer final
 {
 public:
-  explicit Writer(
-    std::unique_ptr<rosbag2_cpp::writer_interfaces::BaseWriterInterface> writer_impl =
-    std::make_unique<writers::SequentialWriter>());
+  explicit Writer(std::unique_ptr<rosbag2_cpp::writer_interfaces::BaseWriterInterface> writer_impl);
 
   ~Writer();
-
-  /**
-   * Opens a new bagfile and prepare it for writing messages. The bagfile must not exist.
-   * This must be called before any other function is used.
-   *
-   * \note This will open URI with the default storage options
-   * * using default storage backend
-   * * using no converter options, storing messages with the incoming serialization format
-   * \sa rmw_get_serialization_format.
-   * For specifications, please see \sa open, which let's you specify
-   * more storage and converter options.
-   *
-   * \param storage_uri URI of the storage to open.
-   **/
-  void open(const std::string & uri);
 
   /**
    * Opens a new bagfile and prepare it for writing messages. The bagfile must not exist.
@@ -84,9 +61,7 @@ public:
    * \param storage_options Options to configure the storage
    * \param converter_options options to define in which format incoming messages are stored
    **/
-  void open(
-    const rosbag2_storage::StorageOptions & storage_options,
-    const ConverterOptions & converter_options = ConverterOptions());
+  void open(const StorageOptions & storage_options, const ConverterOptions & converter_options);
 
   /**
    * Create a new topic in the underlying storage. Needs to be called for every topic used within
@@ -96,17 +71,6 @@ public:
    * \throws runtime_error if the Writer is not open.
    */
   void create_topic(const rosbag2_storage::TopicMetadata & topic_with_type);
-
-  /**
-   * Trigger a snapshot when snapshot mode is enabled.
-   * \returns true if snapshot is successful, false if snapshot fails or is not supported
-   */
-  bool take_snapshot();
-
-  /**
-   * Close the current bagfile and opens the next bagfile.
-   */
-  void split_bagfile();
 
   /**
    * Remove a new topic in the underlying storage.
@@ -124,97 +88,12 @@ public:
    * \param message to be written to the bagfile
    * \throws runtime_error if the Writer is not open.
    */
-  void write(std::shared_ptr<const rosbag2_storage::SerializedBagMessage> message);
-
-  /**
-   * Write a message to a bagfile.
-   * The topic will be created if it has not been created already.
-   *
-   * \param message to be written to the bagfile
-   * \param topic_name the string of the topic this messages belongs to
-   * \param type_name the string of the type associated with this message
-   * \param serialization_format the format in which this message is serialized
-   * \throws runtime_error if the Writer is not open.
-   */
-  void write(
-    std::shared_ptr<const rosbag2_storage::SerializedBagMessage> message,
-    const std::string & topic_name,
-    const std::string & type_name,
-    const std::string & serialization_format = "cdr");
-
-  /**
-   * Write a serialized message to a bagfile.
-   * The topic will be created if it has not been created already.
-   *
-   * \param message rclcpp::SerializedMessage The serialized message to be written to the bagfile
-   * \param topic_name the string of the topic this messages belongs to
-   * \param type_name the string of the type associated with this message
-   * \param time The time stamp of the message
-   * \throws runtime_error if the Writer is not open or duplicating message is failed.
-   */
-  [[deprecated(
-    "Use write(std::shared_ptr<rclcpp::SerializedMessage> message," \
-    " const std::string & topic_name," \
-    " const std::string & type_name," \
-    " const rclcpp::Time & time) instead."
-  )]]
-  void write(
-    const rclcpp::SerializedMessage & message,
-    const std::string & topic_name,
-    const std::string & type_name,
-    const rclcpp::Time & time);
-
-  /**
-   * Write a serialized message to a bagfile.
-   * The topic will be created if it has not been created already.
-   *
-   * \warning after calling this function, the serialized data will no longer be managed by message.
-   *
-   * \param message rclcpp::SerializedMessage The serialized message to be written to the bagfile
-   * \param topic_name the string of the topic this messages belongs to
-   * \param type_name the string of the type associated with this message
-   * \param time The time stamp of the message
-   * \throws runtime_error if the Writer is not open.
-   */
-  void write(
-    std::shared_ptr<const rclcpp::SerializedMessage> message,
-    const std::string & topic_name,
-    const std::string & type_name,
-    const rclcpp::Time & time);
-
-  /**
-   * Write a non-serialized message to a bagfile.
-   * The topic will be created if it has not been created already.
-   *
-   * \param message MessageT The serialized message to be written to the bagfile
-   * \param topic_name the string of the topic this messages belongs to
-   * \param type_name the string of the type associated with this message
-   * \param time The time stamp of the message
-   * \throws runtime_error if the Writer is not open.
-   */
-  template<class MessageT>
-  void write(
-    const MessageT & message,
-    const std::string & topic_name,
-    const rclcpp::Time & time)
-  {
-    auto serialized_msg = std::make_shared<rclcpp::SerializedMessage>();
-
-    rclcpp::Serialization<MessageT> serialization;
-    serialization.serialize_message(&message, serialized_msg.get());
-    return write(serialized_msg, topic_name, rosidl_generator_traits::name<MessageT>(), time);
-  }
+  void write(std::shared_ptr<rosbag2_storage::SerializedBagMessage> message);
 
   writer_interfaces::BaseWriterInterface & get_implementation_handle() const
   {
     return *writer_impl_;
   }
-
-  /*
-   * \brief Add callbacks for events that may occur during bag writing.
-   * \param callbacks the structure containing the callback to add for each event.
-   */
-  void add_event_callbacks(bag_events::WriterEventCallbacks & callbacks);
 
 private:
   std::mutex writer_mutex_;

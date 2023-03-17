@@ -2,119 +2,35 @@
 Changelog for package rosbag2_compression
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.20.0 (2023-02-14)
+0.3.10 (2023-03-16)
 -------------------
+* Check & create database dirs before writing bags (`#1133 <https://github.com/ros2/rosbag2/issues/1133>`_)
+* Contributors: Homalozoa X
 
-0.19.0 (2023-01-13)
--------------------
-* set_read_order: return success (`#1177 <https://github.com/ros2/rosbag2/issues/1177>`_)
-* Add `update_metadata(BagMetadata)` API for storage plugin interface (`#1149 <https://github.com/ros2/rosbag2/issues/1149>`_)
-* Contributors: Michael Orlov, james-rms
-
-0.18.0 (2022-11-15)
--------------------
-* Reverse read order API and sqlite storage implementation (`#1083 <https://github.com/ros2/rosbag2/issues/1083>`_)
-* Add option to prevent message loss while converting (`#1058 <https://github.com/ros2/rosbag2/issues/1058>`_)
-* set default metadata of compressed message (in case compressor does not set it) (`#1060 <https://github.com/ros2/rosbag2/issues/1060>`_)
-* Contributors: DensoADAS, Emerson Knapp
-
-0.17.0 (2022-07-30)
--------------------
-* Speed optimization: Preparing copyless publish/subscribing by using const message for writing (`#1010 <https://github.com/ros2/rosbag2/issues/1010>`_)
-* Add the ability to record any key/value pair in 'custom' field in metadata.yaml (`#1038 <https://github.com/ros2/rosbag2/issues/1038>`_)
-* Contributors: DensoADAS, Hunter L. Allen, Joshua Hampp, Michael Orlov, Tony Peng
-
-0.16.0 (2022-05-11)
--------------------
-
-0.15.1 (2022-04-06)
--------------------
-
-0.15.0 (2022-04-05)
--------------------
-
-0.14.1 (2022-03-29)
--------------------
-* Bump version number to avoid conflict
-* Contributors: Chris Lalancette
-
-0.14.0 (2022-03-29)
--------------------
-* Install headers to include/${PROJECT_NAME} (`#958 <https://github.com/ros2/rosbag2/issues/958>`_)
-* Remove unnecessary public definition. (`#950 <https://github.com/ros2/rosbag2/issues/950>`_)
-* Contributors: Chris Lalancette, Shane Loretz
-
-0.13.0 (2022-01-13)
--------------------
-
-0.12.0 (2021-12-17)
--------------------
-* Changes for uncrustify 0.72 (`#937 <https://github.com/ros2/rosbag2/issues/937>`_)
-* Bugfix for broken bag split when using cache (`#936 <https://github.com/ros2/rosbag2/issues/936>`_)
-* Contributors: Chris Lalancette, Michael Orlov
-
-0.11.0 (2021-11-08)
--------------------
-* Update package maintainers (`#899 <https://github.com/ros2/rosbag2/issues/899>`_)
-* Don't preprocess a storage file more than once (`#895 <https://github.com/ros2/rosbag2/issues/895>`_)
-* Contributors: Michel Hidalgo, sonia
-
-0.10.1 (2021-10-22)
--------------------
-
-0.10.0 (2021-10-19)
--------------------
-* added seek interface (`#836 <https://github.com/ros2/rosbag2/issues/836>`_)
-* Refactor plugin query mechanism and standardize trait management (`#833 <https://github.com/ros2/rosbag2/issues/833>`_)
-* fix sequential reader rollover-to-next-file strategy: (`#839 <https://github.com/ros2/rosbag2/issues/839>`_)
-* Load compression and serialization choices via plugin query (`#827 <https://github.com/ros2/rosbag2/issues/827>`_)
-* Contributors: Cameron Miller, sonia
-
-0.9.0 (2021-05-17)
+0.3.9 (2022-02-03)
 ------------------
-* Rename Reader/Writer 'reset' to 'close' (`#760 <https://github.com/ros2/rosbag2/issues/760>`_)
-* Contributors: Emerson Knapp
 
-0.8.0 (2021-04-19)
+0.3.8 (2021-07-19)
 ------------------
-* Explicitly add emersonknapp as maintainer (`#692 <https://github.com/ros2/rosbag2/issues/692>`_)
-* Reindexer core (`#641 <https://github.com/ros2/rosbag2/issues/641>`_)
-* Contributors: Emerson Knapp, jhdcs
 
-0.7.0 (2021-03-18)
+0.3.7 (2021-02-15)
 ------------------
-* CLI query rosbag2_py for available storage implementations (`#659 <https://github.com/ros2/rosbag2/issues/659>`_)
-* Move zstd compressor to its own package (`#636 <https://github.com/ros2/rosbag2/issues/636>`_)
-* Remove rosbag2_compression test dependencies on zstd implementation in prep for moving it into a separate package (`#637 <https://github.com/ros2/rosbag2/issues/637>`_)
-* Contributors: Emerson Knapp
 
-0.6.0 (2021-02-01)
+0.3.6 (2021-01-05)
 ------------------
-* Make compressor implementations into a plugin via pluginlib (`#624 <https://github.com/ros2/rosbag2/issues/624>`_)
-* Use ZSTD's streaming interface for [de]compressing files (`#543 <https://github.com/ros2/rosbag2/issues/543>`_)
-* Fix build issues when rosbag2_storage is binary installed (`#585 <https://github.com/ros2/rosbag2/issues/585>`_)
-* Fix relative metadata paths in SequentialCompressionWriter (`#613 <https://github.com/ros2/rosbag2/issues/613>`_)
-* Fix deadlock race condition on compression shutdown (`#616 <https://github.com/ros2/rosbag2/issues/616>`_)
-* Deduplicate SequentialCompressionReader business logic, add fallback to find bagfiles in incorrectly-written metadata (`#612 <https://github.com/ros2/rosbag2/issues/612>`_)
-* Compress bag files in separate threads (`#506 <https://github.com/ros2/rosbag2/issues/506>`_)
-* Contributors: Emerson Knapp, P. J. Reed
+* Update maintainer list for Foxy (`#551 <https://github.com/ros2/rosbag2/issues/551>`_)
+* Contributors: Michael Jeronimo
 
-0.5.0 (2020-12-02)
+0.3.5 (2020-08-31)
 ------------------
-* Sqlite storage double buffering (`#546 <https://github.com/ros2/rosbag2/issues/546>`_)
-* Contributors: Adam Dąbrowski
 
-0.4.0 (2020-11-19)
+0.3.4 (2020-08-05)
 ------------------
-* add storage_config_uri (`#493 <https://github.com/ros2/rosbag2/issues/493>`_)
-* Update the package.xml files with the latest Open Robotics maintainers (`#535 <https://github.com/ros2/rosbag2/issues/535>`_)
-* Do not expect empty StorageOptions URI to work in CompressionWriterTest (`#526 <https://github.com/ros2/rosbag2/issues/526>`_)
-* Remove some code duplication between SequentialWriter and SequentialCompressionWriter (`#527 <https://github.com/ros2/rosbag2/issues/527>`_)
-* Fix exception thrown given invalid arguments with compression enabled (`#488 <https://github.com/ros2/rosbag2/issues/488>`_)
-* Adding db directory creation to rosbag2_cpp (`#450 <https://github.com/ros2/rosbag2/issues/450>`_)
-* Consolidate ZSTD utility functions (`#459 <https://github.com/ros2/rosbag2/issues/459>`_)
-* Add per-message ZSTD compression (`#418 <https://github.com/ros2/rosbag2/issues/418>`_)
-* Contributors: Christophe Bedard, Devin Bonnie, Jaison Titus, Karsten Knese, Marwan Taher, Michael Jeronimo, P. J. Reed
+* Fix exception thrown given invalid arguments with compression enabled (`#488 <https://github.com/ros2/rosbag2/issues/488>`_) (`#489 <https://github.com/ros2/rosbag2/issues/489>`_)
+* Contributors: Devin Bonnie
+
+0.3.3 (2020-06-23)
+------------------
 
 0.3.2 (2020-06-03)
 ------------------

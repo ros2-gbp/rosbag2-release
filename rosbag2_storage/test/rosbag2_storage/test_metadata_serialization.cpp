@@ -26,7 +26,6 @@
 #endif
 
 #include "rosbag2_storage/bag_metadata.hpp"
-#include "rosbag2_storage/default_storage_id.hpp"
 #include "rosbag2_storage/metadata_io.hpp"
 #include "rosbag2_test_common/temporary_directory_fixture.hpp"
 
@@ -47,7 +46,7 @@ TEST_F(MetadataFixture, test_writing_and_reading_yaml)
 {
   BagMetadata metadata{};
   metadata.version = 1;
-  metadata.storage_identifier = get_default_storage_id();
+  metadata.storage_identifier = "sqlite3";
   metadata.relative_file_paths.emplace_back("some_relative_path");
   metadata.relative_file_paths.emplace_back("some_other_relative_path");
   metadata.duration = std::chrono::nanoseconds(100);
@@ -132,17 +131,4 @@ TEST_F(MetadataFixture, metadata_reads_v4_fills_offered_qos_profiles)
     SizeIs(metadata.topics_with_message_count.size()));
   auto actual_first_topic = read_metadata.topics_with_message_count[0];
   EXPECT_THAT(actual_first_topic.topic_metadata.offered_qos_profiles, Eq(offered_qos_profiles));
-}
-
-TEST_F(MetadataFixture, metadata_reads_v6_custom_data)
-{
-  BagMetadata metadata{};
-  metadata.version = 6;
-  metadata.custom_data["key1"] = "value1";
-  metadata.custom_data["key2"] = "value2";
-
-  metadata_io_->write_metadata(temporary_dir_path_, metadata);
-  auto read_metadata = metadata_io_->read_metadata(temporary_dir_path_);
-
-  EXPECT_THAT(read_metadata.custom_data, Eq(metadata.custom_data));
 }

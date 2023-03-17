@@ -20,18 +20,13 @@
 #include <string>
 #include <vector>
 
-#include "rclcpp/serialization.hpp"
-#include "rclcpp/serialized_message.hpp"
-
-#include "rosbag2_cpp/bag_events.hpp"
 #include "rosbag2_cpp/converter_options.hpp"
-#include "rosbag2_cpp/readers/sequential_reader.hpp"
+#include "rosbag2_cpp/storage_options.hpp"
 #include "rosbag2_cpp/visibility_control.hpp"
 
 #include "rosbag2_storage/bag_metadata.hpp"
 #include "rosbag2_storage/serialized_bag_message.hpp"
 #include "rosbag2_storage/storage_filter.hpp"
-#include "rosbag2_storage/storage_options.hpp"
 #include "rosbag2_storage/topic_metadata.hpp"
 
 // This is necessary because of using stl types here. It is completely safe, because
@@ -52,30 +47,12 @@ class BaseReaderInterface;
 /**
  * The Reader allows opening and reading messages of a bag.
  */
-class ROSBAG2_CPP_PUBLIC Reader
+class ROSBAG2_CPP_PUBLIC Reader final
 {
 public:
-  explicit Reader(
-    std::unique_ptr<reader_interfaces::BaseReaderInterface> reader_impl =
-    std::make_unique<readers::SequentialReader>());
+  explicit Reader(std::unique_ptr<reader_interfaces::BaseReaderInterface> reader_impl);
 
   ~Reader();
-
-  /**
-   * Opens an existing bagfile and prepare it for reading messages.
-   * The bagfile must exist.
-   * This must be called before any other function is used.
-   *
-   * \note This will open URI with the default storage options
-   * * using default storage backend
-   * * using no converter options, storing messages with the incoming serialization format
-   * \sa rmw_get_serialization_format.
-   * For specifications, please see \sa open, which let's you specify
-   * more storage and converter options.
-   *
-   * \param storage_uri URI of the storage to open.
-   **/
-  void open(const std::string & uri);
 
   /**
    * Throws if file could not be opened.
@@ -90,26 +67,7 @@ public:
    * \param storage_options Options to configure the storage
    * \param converter_options Options for specifying the output data format
    */
-  void open(
-    const rosbag2_storage::StorageOptions & storage_options,
-    const ConverterOptions & converter_options = ConverterOptions());
-
-  /**
-   * Closing the reader instance.
-   */
-  void close();
-
-  /**
-   * Set the read order for continued iteration of messages, without changing the current
-   * read head timestamp.
-   *
-   * \param read_order Sorting criterion and direction to read messages in
-   * \throws runtime_error if the Reader is not open.
-   * \return true if the requested read order has been successfully set.
-   * \note Calling set_read_order(order) concurrently with has_next(), seek(t), has_next_file()
-   * or load_next_file() will cause undefined behavior.
-   */
-  bool set_read_order(const rosbag2_storage::ReadOrder & read_order);
+  void open(const StorageOptions & storage_options, const ConverterOptions & converter_options);
 
   /**
    * Ask whether the underlying bagfile contains at least one more message.
@@ -130,28 +88,6 @@ public:
    * \throws runtime_error if the Reader is not open.
    */
   std::shared_ptr<rosbag2_storage::SerializedBagMessage> read_next();
-
-  /**
-   * Read next message from storage. Will throw if no more messages are available.
-   * The message will be serialized in the format given to `open`.
-   *
-   * Expected usage:
-   * if (writer.has_next()) message = writer.read_next();
-   *
-   * \return next message in non-serialized form
-   * \throws runtime_error if the Reader is not open.
-   */
-  template<class MessageT>
-  MessageT read_next()
-  {
-    MessageT msg;
-    auto bag_message = read_next();
-    rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
-    rclcpp::Serialization<MessageT> serialization;
-    serialization.deserialize_message(&extracted_serialized_msg, &msg);
-
-    return msg;
-  }
 
   /**
     * Ask bagfile for its full metadata.
@@ -182,21 +118,10 @@ public:
    */
   void reset_filter();
 
-  /**
-   * Skip to a specific timestamp for reading.
-   */
-  void seek(const rcutils_time_point_value_t & timestamp);
-
   reader_interfaces::BaseReaderInterface & get_implementation_handle() const
   {
     return *reader_impl_;
   }
-
-  /**
-   * \brief Add callbacks for events that may occur during bag reading.
-   * \param callbacks the structure containing the callback to add for each event.
-   */
-  void add_event_callbacks(bag_events::ReaderEventCallbacks & callbacks);
 
 private:
   std::unique_ptr<reader_interfaces::BaseReaderInterface> reader_impl_;
