@@ -3,7 +3,7 @@ on:
   pull_request:
   push:
     branches:
-      - master
+      - rolling
   schedule:
     # Run every hour. This helps detect flakiness,
     # and broken external dependencies.
@@ -31,16 +31,16 @@ jobs:
           rosbag2_py
           rosbag2_storage
           rosbag2_storage_mcap
-          rosbag2_storage_mcap_testdata
           rosbag2_storage_sqlite3
           rosbag2_test_common
+          rosbag2_test_msgdefs
           rosbag2_tests
           rosbag2_transport
           shared_queues_vendor
           sqlite3_vendor
           zstd_vendor
         target-ros2-distro: rolling
-        vcs-repo-file-url: https://raw.githubusercontent.com/ros2/ros2/master/ros2.repos
+        vcs-repo-file-url: https://raw.githubusercontent.com/ros2/ros2/rolling/ros2.repos
         colcon-defaults: |
           {
             "build": {
