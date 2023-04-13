@@ -6,9 +6,10 @@ if(NOT CMAKE_C_STANDARD)
   set(CMAKE_C_STANDARD 99)
 endif()
 
-# Default to C++14
+# Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -40,12 +41,12 @@ target_include_directories(${PROJECT_NAME}
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
 )
-ament_target_dependencies(
-  ${PROJECT_NAME}
-  pluginlib
-  rcpputils
-  rcutils
-  yaml_cpp_vendor)
+target_link_libraries(${PROJECT_NAME}
+  pluginlib::pluginlib
+  rcpputils::rcpputils
+  rcutils::rcutils
+  yaml-cpp
+)
 
 # Causes the visibility macros to use dllexport rather than dllimport,
 # which is appropriate when building the dll but not consuming it.
@@ -106,14 +107,18 @@ if(BUILD_TESTING)
   ament_add_gmock(test_metadata_serialization
     test/rosbag2_storage/test_metadata_serialization.cpp)
   if(TARGET test_metadata_serialization)
-    target_link_libraries(test_metadata_serialization ${PROJECT_NAME})
-    ament_target_dependencies(test_metadata_serialization rosbag2_test_common)
+    target_link_libraries(test_metadata_serialization
+      ${PROJECT_NAME}
+      rosbag2_test_common::rosbag2_test_common
+    )
   endif()
 
   ament_add_gmock(test_storage_options
     test/rosbag2_storage/test_storage_options.cpp)
-  target_link_libraries(test_storage_options ${PROJECT_NAME})
-  ament_target_dependencies(test_storage_options rosbag2_test_common)
+  target_link_libraries(test_storage_options
+    ${PROJECT_NAME}
+    rosbag2_test_common::rosbag2_test_common
+  )
 endif()
 
 ament_package()
