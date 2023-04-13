@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="2">
   <name>ros2bag</name>
-  <version>0.20.0</version>
+  <version>0.21.0</version>
   <description>
     Entry point for rosbag in ROS 2
   </description>
@@ -13,9 +13,10 @@
   <maintainer email="ros-tooling@googlegroups.com">ROS Tooling Working Group</maintainer>
   <license>Apache License 2.0</license>
 
-  <depend>ros2cli</depend>
-  <depend>rosbag2_py</depend>
-  <depend>rosbag2_transport</depend>
+  <exec_depend>ament_index_python</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>ros2cli</exec_depend>
+  <exec_depend>rosbag2_py</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
