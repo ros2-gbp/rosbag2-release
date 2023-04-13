@@ -1,13 +1,14 @@
 cmake_minimum_required(VERSION 3.5)
 project(rosbag2_performance_benchmarking)
 
-if (NOT BUILD_ROSBAG2_BENCHMARKS)
+if(NOT BUILD_ROSBAG2_BENCHMARKS)
   return()
 endif()
 
-# Default to C++14
+# Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -26,10 +27,11 @@ find_package(rosbag2_performance_benchmarking_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(yaml_cpp_vendor REQUIRED)
 
-add_executable(writer_benchmark
-  src/config_utils.cpp
-  src/result_utils.cpp
-  src/writer_benchmark.cpp)
+  add_executable(writer_benchmark
+    src/config_utils.cpp
+    src/result_utils.cpp
+    src/writer_benchmark.cpp
+    src/msg_utils/helpers.cpp)
 
 add_executable(benchmark_publishers
   src/benchmark_publishers.cpp
@@ -41,27 +43,27 @@ add_executable(results_writer
   src/result_utils.cpp
   src/results_writer.cpp)
 
-ament_target_dependencies(writer_benchmark
-  rclcpp
-  rosbag2_performance_benchmarking_msgs
-  sensor_msgs
-  rosbag2_compression
-  rosbag2_cpp
-  rosbag2_storage
-  yaml_cpp_vendor
+target_link_libraries(writer_benchmark
+  rclcpp::rclcpp
+  ${rosbag2_performance_benchmarking_msgs_TARGETS}
+  ${sensor_msgs_TARGETS}
+  rosbag2_compression::rosbag2_compression
+  rosbag2_cpp::rosbag2_cpp
+  rosbag2_storage::rosbag2_storage
+  yaml-cpp
 )
 
-ament_target_dependencies(benchmark_publishers
-  rclcpp
-  rosbag2_storage
-  rosbag2_performance_benchmarking_msgs
-  sensor_msgs
-  yaml_cpp_vendor
+target_link_libraries(benchmark_publishers
+  rclcpp::rclcpp
+  rosbag2_storage::rosbag2_storage
+  ${rosbag2_performance_benchmarking_msgs_TARGETS}
+  ${sensor_msgs_TARGETS}
+  yaml-cpp
 )
 
-ament_target_dependencies(results_writer
-  rclcpp
-  rosbag2_storage
+target_link_libraries(results_writer
+  rclcpp::rclcpp
+  rosbag2_storage::rosbag2_storage
 )
 
 target_include_directories(writer_benchmark
