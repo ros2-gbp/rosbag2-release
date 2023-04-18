@@ -77,6 +77,9 @@ public:
 
   std::vector<rosbag2_storage::TopicMetadata> get_all_topics_and_types() override;
 
+  void get_all_message_definitions(
+    std::vector<rosbag2_storage::MessageDefinition> & definitons) override;
+
   rosbag2_storage::BagMetadata get_metadata() override;
 
   std::string get_relative_file_path() const override;
@@ -134,6 +137,8 @@ private:
   ReadQueryResult::Iterator current_message_row_ {
     nullptr, SqliteStatementWrapper::QueryResult<>::Iterator::POSITION_END};
   std::unordered_map<std::string, int> topics_ RCPPUTILS_TSA_GUARDED_BY(database_write_mutex_);
+  std::unordered_map<std::string, int> msg_definitions_ RCPPUTILS_TSA_GUARDED_BY(
+    database_write_mutex_);
   std::vector<rosbag2_storage::TopicMetadata> all_topics_and_types_;
   std::string relative_path_;
   std::atomic_bool active_transaction_ {false};
@@ -150,7 +155,7 @@ private:
   // b) topics_ collection - since we could be writing and reading it at the same time
   std::mutex database_write_mutex_;
 
-  const int kDBSchemaVersion_ = 3;
+  const int kDBSchemaVersion_ = 4;
   int db_schema_version_ = -1;  //  Valid version number starting from 1
   rosbag2_storage::BagMetadata metadata_{};
 };
