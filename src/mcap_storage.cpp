@@ -201,6 +201,8 @@ public:
   bool has_next() override;
   std::shared_ptr<rosbag2_storage::SerializedBagMessage> read_next() override;
   std::vector<rosbag2_storage::TopicMetadata> get_all_topics_and_types() override;
+  void get_all_message_definitions(
+    std::vector<rosbag2_storage::MessageDefinition> & definitions) override;
 
   /** ReadOnlyInterface **/
   void set_filter(const rosbag2_storage::StorageFilter & storage_filter) override;
@@ -405,6 +407,10 @@ rosbag2_storage::BagMetadata MCAPStorage::get_metadata()
     const auto metadata_it = channel.metadata.find("offered_qos_profiles");
     if (metadata_it != channel.metadata.end()) {
       topic_info.topic_metadata.offered_qos_profiles = metadata_it->second;
+    }
+    const auto type_hash_it = channel.metadata.find("topic_type_hash");
+    if (type_hash_it != channel.metadata.end()) {
+      topic_info.topic_metadata.type_description_hash = type_hash_it->second;
     }
 
     // Look up the message count for this Channel
@@ -637,6 +643,25 @@ std::vector<rosbag2_storage::TopicMetadata> MCAPStorage::get_all_topics_and_type
   return out;
 }
 
+void MCAPStorage::get_all_message_definitions(
+  std::vector<rosbag2_storage::MessageDefinition> & definitions)
+{
+  ensure_summary_read();
+  auto schema_map = mcap_reader_->schemas();
+  definitions.clear();
+  definitions.reserve(schema_map.size());
+  for (const auto & [id, schema_ptr] : schema_map) {
+    std::string encoded_message_definition;
+    if (!schema_ptr->data.empty()) {
+      encoded_message_definition = std::string(
+        reinterpret_cast<const char *>(&(schema_ptr->data[0])), schema_ptr->data.size());
+    }
+    std::string type_hash;  // TODO(jrms): save and get type_hash in mcap schema
+    definitions.push_back(
+      {schema_ptr->name, schema_ptr->encoding, encoded_message_definition, type_hash});
+  }
+}
+
 /** ReadOnlyInterface **/
 void MCAPStorage::set_filter(const rosbag2_storage::StorageFilter & storage_filter)
 {
@@ -737,6 +762,7 @@ void MCAPStorage::create_topic(const rosbag2_storage::TopicMetadata & topic,
     const auto & full_text = message_definition.encoded_message_definition;
     schema.data.assign(reinterpret_cast<const std::byte *>(full_text.data()),
                        reinterpret_cast<const std::byte *>(full_text.data() + full_text.size()));
+    // TODO(jrms): save message_definition.type_hash in mcap schema
     mcap_writer_->addSchema(schema);
     schema_ids_.emplace(datatype, schema.id);
     schema_id = schema.id;
@@ -753,6 +779,7 @@ void MCAPStorage::create_topic(const rosbag2_storage::TopicMetadata & topic,
     channel.schemaId = schema_id;
     channel.metadata.emplace("offered_qos_profiles",
                              topic_info.topic_metadata.offered_qos_profiles);
+    channel.metadata.emplace("topic_type_hash", topic_info.topic_metadata.type_description_hash);
     mcap_writer_->addChannel(channel);
     channel_ids_.emplace(topic.name, channel.id);
   }
