@@ -1,0 +1,12 @@
+Source: ros-iron-mcap-vendor
+Section: misc
+Priority: optional
+Maintainer: Foxglove <ros-tooling@foxglove.dev>
+Build-Depends: debhelper (>= 9.0.0), git, ros-iron-ament-cmake, ros-iron-zstd-vendor, ros-iron-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-iron-mcap-vendor
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-iron-zstd-vendor, ros-iron-ros-workspace
+Description: mcap vendor package
