@@ -273,11 +273,10 @@ TEST_F(CompressionHelperFixture, zstd_compress_serialized_bag_message)
   msg->serialized_data = rosbag2_storage::make_serialized_message(
     message_.data(), message_.length());
 
-  auto compressed_msg = std::make_unique<rosbag2_storage::SerializedBagMessage>();
   rosbag2_compression_zstd::ZstdCompressor compressor;
-  compressor.compress_serialized_bag_message(msg.get(), compressed_msg.get());
+  compressor.compress_serialized_bag_message(msg.get());
 
-  ASSERT_EQ(compressed_length_, compressed_msg->serialized_data->buffer_length);
+  ASSERT_EQ(compressed_length_, msg->serialized_data->buffer_length);
 }
 
 TEST_F(CompressionHelperFixture, zstd_decompress_serialized_bag_message)
@@ -287,15 +286,14 @@ TEST_F(CompressionHelperFixture, zstd_decompress_serialized_bag_message)
   msg->serialized_data = rosbag2_storage::make_serialized_message(
     message_.data(), message_.length());
 
-  auto compressed_msg = std::make_unique<rosbag2_storage::SerializedBagMessage>();
   rosbag2_compression_zstd::ZstdCompressor compressor;
-  compressor.compress_serialized_bag_message(msg.get(), compressed_msg.get());
+  compressor.compress_serialized_bag_message(msg.get());
 
-  const auto compressed_length = compressed_msg->serialized_data->buffer_length;
+  const auto compressed_length = msg->serialized_data->buffer_length;
   EXPECT_EQ(compressed_length_, compressed_length);
 
   rosbag2_compression_zstd::ZstdDecompressor decompressor;
-  EXPECT_NO_THROW(decompressor.decompress_serialized_bag_message(compressed_msg.get()));
+  EXPECT_NO_THROW(decompressor.decompress_serialized_bag_message(msg.get()));
   std::string new_msg = deserialize_message(msg->serialized_data);
   EXPECT_EQ(new_msg, message_);
 }

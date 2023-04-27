@@ -53,7 +53,7 @@ public:
     auto metadata = get_metadata();
 
     auto topic_with_type = rosbag2_storage::TopicMetadata{
-      "topic", "test_msgs/BasicTypes", storage_serialization_format_, "", ""};
+      "topic", "test_msgs/BasicTypes", storage_serialization_format_, ""};
     auto topics_and_types = std::vector<rosbag2_storage::TopicMetadata>{topic_with_type};
     metadata.topics_with_message_count.push_back({topic_with_type, 10});
 
@@ -67,7 +67,6 @@ public:
 
     EXPECT_CALL(*storage_, get_all_topics_and_types())
     .Times(AtMost(1)).WillRepeatedly(Return(topics_and_types));
-    ON_CALL(*storage_, set_read_order).WillByDefault(Return(true));
     ON_CALL(*storage_, read_next()).WillByDefault(Return(message));
     EXPECT_CALL(*storage_factory, open_read_only(_)).WillRepeatedly(Return(storage_));
 
@@ -229,8 +228,9 @@ TEST_F(MultifileReaderTest, seek_bag)
 {
   init();
   reader_->open(default_storage_options_, {"", storage_serialization_format_});
-  EXPECT_CALL(*storage_, has_next()).Times(1).WillRepeatedly(Return(false));
+  EXPECT_CALL(*storage_, has_next()).Times(3).WillRepeatedly(Return(false));
   EXPECT_CALL(*storage_, seek(_)).Times(3);
+  EXPECT_CALL(*storage_, set_filter(_)).Times(3);
   reader_->seek(9999999999999);
   reader_->has_next();
 }

@@ -25,7 +25,7 @@
 #include "rosbag2_cpp/typesupport_helpers.hpp"
 
 #include "logging.hpp"
-#include "rosbag2_transport/topic_filter.hpp"
+#include "topic_filter.hpp"
 
 namespace
 {
@@ -127,8 +127,7 @@ bool TopicFilter::take_topic(
   }
 
   if (!record_options_.include_hidden_topics && topic_is_hidden(topic_name)) {
-    RCUTILS_LOG_WARN_ONCE_NAMED(
-      ROSBAG2_TRANSPORT_PACKAGE_NAME,
+    ROSBAG2_TRANSPORT_LOG_WARN_STREAM(
       "Hidden topics are not recorded. Enable them with --include-hidden-topics");
     return false;
   }

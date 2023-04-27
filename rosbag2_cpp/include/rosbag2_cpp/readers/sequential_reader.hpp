@@ -66,13 +66,6 @@ public:
 
   void close() override;
 
-  /**
-   * \throws runtime_error if the Reader is not open.
-   * \note Calling set_read_order(order) concurrently with has_next(), seek(t), has_next_file()
-   * or load_next_file() will cause undefined behavior.
-   */
-  bool set_read_order(const rosbag2_storage::ReadOrder & order) override;
-
   bool has_next() override;
 
   std::shared_ptr<rosbag2_storage::SerializedBagMessage> read_next() override;
@@ -80,9 +73,6 @@ public:
   const rosbag2_storage::BagMetadata & get_metadata() const override;
 
   std::vector<rosbag2_storage::TopicMetadata> get_all_topics_and_types() const override;
-
-  void get_all_message_definitions(
-    std::vector<rosbag2_storage::MessageDefinition> & definitions) override;
 
   void set_filter(const rosbag2_storage::StorageFilter & storage_filter) override;
 
@@ -95,18 +85,12 @@ public:
   void seek(const rcutils_time_point_value_t & timestamp) override;
 
   /**
-   * Ask whether there is another storage file to read from the list of relative file paths.
+   * Ask whether there is another database file to read from the list of relative
+   * file paths.
    *
-   * \return true if iteration is not on the last file
+   * \return true if there are still files to read in the list
    */
   virtual bool has_next_file() const;
-
-  /**
-   * Ask whether there is a previous file to read from the list of relative file paths.
-   *
-   * \return true if iteration is not on the first file
-   */
-  virtual bool has_prev_file() const;
 
   /**
   * Return the relative file path pointed to by the current file iterator.
@@ -137,24 +121,14 @@ protected:
   */
   virtual void load_current_file();
 
-
   /**
   * Increment the current file iterator to point to the next file in the list of relative file
-  * paths, and opens that file by calling open_current_file()
+  * paths, and opens the next file by calling open_current_file()
   *
   * Expected usage:
   * if (has_next_file()) load_next_file();
   */
   virtual void load_next_file();
-
-  /**
-  * Increment the current file iterator to point to the previous file in the list of relative file
-  * paths, and opens that file by calling open_current_file()
-  *
-  * Expected usage:
-  * if (has_prev_file()) load_prev_file();
-  */
-  virtual void load_prev_file();
 
   /**
    * Checks if all topics in the bagfile have the same RMW serialization format.
@@ -167,6 +141,7 @@ protected:
     const std::vector<rosbag2_storage::TopicInformation> & topics);
 
   /**
+
   * Checks if the serialization format of the converter factory is the same as that of the storage
   * factory.
   * If not, changes the serialization format of the converter factory to use the serialization
@@ -200,9 +175,9 @@ protected:
   rcutils_time_point_value_t seek_time_ = 0;
   rosbag2_storage::StorageFilter topics_filter_{};
   std::vector<rosbag2_storage::TopicMetadata> topics_metadata_{};
-  std::vector<std::string> file_paths_{};
-  std::vector<std::string>::iterator current_file_iterator_{};
-  std::unordered_set<std::string> preprocessed_file_paths_;
+  std::vector<std::string> file_paths_{};  // List of database files.
+  std::vector<std::string>::iterator current_file_iterator_{};  // Index of file to read from
+  std::unordered_set<std::string> preprocessed_file_paths_;  // List of preprocessed paths
 
   // Hang on to this because storage_options_ is mutated to point at individual files
   std::string base_folder_;
@@ -212,7 +187,6 @@ private:
   std::shared_ptr<SerializationFormatConverterFactoryInterface> converter_factory_{};
 
   bag_events::EventCallbackManager callback_manager_;
-  rosbag2_storage::ReadOrder read_order_{};
 };
 
 }  // namespace readers
