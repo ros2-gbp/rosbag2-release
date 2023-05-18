@@ -2,8 +2,11 @@
 Changelog for package rosbag2_compression
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.23.0 (2023-04-28)
+0.22.1 (2023-05-18)
 -------------------
+* Add in a missing cstdint include. (`#1321 <https://github.com/ros2/rosbag2/issues/1321>`_) (`#1322 <https://github.com/ros2/rosbag2/issues/1322>`_)
+* Fix warning from ClassLoader in sequential compression reader and writer (`#1299 <https://github.com/ros2/rosbag2/issues/1299>`_) (`#1316 <https://github.com/ros2/rosbag2/issues/1316>`_)
+* Contributors: mergify[bot]
 
 0.22.0 (2023-04-18)
 -------------------
