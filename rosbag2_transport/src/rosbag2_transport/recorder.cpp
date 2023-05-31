@@ -33,7 +33,9 @@
 
 #ifdef _WIN32
 // This is necessary because of a bug in yaml-cpp's cmake
+#ifndef YAML_CPP_DLL
 #define YAML_CPP_DLL
+#endif
 // This is necessary because yaml-cpp does not always use dllimport/dllexport consistently
 # pragma warning(push)
 # pragma warning(disable:4251)
@@ -229,7 +231,8 @@ void Recorder::warn_if_new_qos_for_subscribed_topic(const std::string & topic_na
     // Already warned about this topic
     return;
   }
-  const auto & used_profile = existing_subscription->second->qos_profile().get_rmw_qos_profile();
+  const auto actual_qos = existing_subscription->second->get_actual_qos();
+  const auto & used_profile = actual_qos.get_rmw_qos_profile();
   auto publishers_info = node_->get_publishers_info_by_topic(topic_name);
   for (const auto & info : publishers_info) {
     auto new_profile = info.qos_profile().get_rmw_qos_profile();
