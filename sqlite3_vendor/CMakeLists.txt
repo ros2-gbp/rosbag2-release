@@ -3,11 +3,6 @@ project(sqlite3_vendor)
 
 find_package(ament_cmake REQUIRED)
 
-# Avoid DOWNLOAD_EXTRACT_TIMESTAMP warning for CMake >= 3.24
-if (POLICY CMP0135)
-  cmake_policy(SET CMP0135 NEW)
-endif()
-
 option(FORCE_BUILD_VENDOR_PKG
   "Build SQLite3 from source, even if system-installed package is available"
   OFF)
@@ -25,10 +20,10 @@ if (NOT SQLite3_FOUND)
   endif()
 
   include(ExternalProject)
-  ExternalProject_Add(sqlite3-3.37.2
-    PREFIX sqlite3-3.27.2
-    URL https://www.sqlite.org/2022/sqlite-amalgamation-3370200.zip
-    URL_MD5 8d9b74229cec934c4fcb61f57aa01ff8
+  ExternalProject_Add(sqlite3-3.24.0
+    PREFIX sqlite3-3.24.0
+    URL https://www.sqlite.org/2018/sqlite-amalgamation-3240000.zip
+    URL_MD5 4ea1e0c6e7e82cb0490d4753d6878698
     CMAKE_ARGS
       -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/sqlite3_install
       ${extra_cmake_args}
@@ -38,10 +33,7 @@ if (NOT SQLite3_FOUND)
     )
 
   # The external project will install to the build folder, but we'll install that on make install.
-  install(
-    DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/sqlite3_install/
-    DESTINATION ${CMAKE_INSTALL_PREFIX}
-    USE_SOURCE_PERMISSIONS)
+  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/sqlite3_install/ DESTINATION ${CMAKE_INSTALL_PREFIX})
 else ()
   message(STATUS "Found SQLite3. Using SQLite3 from system.")
 endif ()

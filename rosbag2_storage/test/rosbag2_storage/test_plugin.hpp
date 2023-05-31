@@ -29,19 +29,11 @@ class TestPlugin : public rosbag2_storage::storage_interfaces::ReadWriteInterfac
 public:
   ~TestPlugin() override;
 
-  void open(
-    const rosbag2_storage::StorageOptions & storage_options,
-    rosbag2_storage::storage_interfaces::IOFlag flag) override;
+  void open(const std::string & uri, rosbag2_storage::storage_interfaces::IOFlag flag) override;
 
-  void update_metadata(const rosbag2_storage::BagMetadata & metadata) override;
-
-  void create_topic(
-    const rosbag2_storage::TopicMetadata & topic,
-    const rosbag2_storage::MessageDefinition & message_definition) override;
+  void create_topic(const rosbag2_storage::TopicMetadata & topic) override;
 
   void remove_topic(const rosbag2_storage::TopicMetadata & topic) override;
-
-  bool set_read_order(const rosbag2_storage::ReadOrder &) override;
 
   bool has_next() override;
 
@@ -53,9 +45,6 @@ public:
   override;
 
   std::vector<rosbag2_storage::TopicMetadata> get_all_topics_and_types() override;
-
-  void get_all_message_definitions(
-    std::vector<rosbag2_storage::MessageDefinition> & definitions) override;
 
   rosbag2_storage::BagMetadata get_metadata() override;
 
@@ -70,8 +59,6 @@ public:
   void set_filter(const rosbag2_storage::StorageFilter & storage_filter) override;
 
   void reset_filter() override;
-
-  void seek(const rcutils_time_point_value_t & timestamp) override;
 };
 
 #endif  // ROSBAG2_STORAGE__TEST_PLUGIN_HPP_

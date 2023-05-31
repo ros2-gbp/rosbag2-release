@@ -31,31 +31,14 @@ TestPlugin::~TestPlugin()
 }
 
 void TestPlugin::open(
-  const rosbag2_storage::StorageOptions & storage_options,
-  rosbag2_storage::storage_interfaces::IOFlag flag)
+  const std::string & uri, rosbag2_storage::storage_interfaces::IOFlag flag)
 {
-  if (storage_options.storage_id != test_constants::READ_WRITE_PLUGIN_IDENTIFIER) {
-    throw std::runtime_error{"storage_id did not match. TestReadOnlyPlugin won't open."};
-  }
   if (flag == rosbag2_storage::storage_interfaces::IOFlag::READ_ONLY) {
     std::cout << "opening testplugin read only: ";
   } else if (flag == rosbag2_storage::storage_interfaces::IOFlag::READ_WRITE) {
     std::cout << "opening testplugin read write: ";
   }
-  std::cout << "storage uri: " << storage_options.uri << ".\n";
-  std::cout << "config file uri: " << storage_options.storage_config_uri << ".\n";
-}
-
-void TestPlugin::update_metadata(const rosbag2_storage::BagMetadata & metadata)
-{
-  std::cout << "Set metadata" << std::endl;
-  (void)metadata;
-}
-
-bool TestPlugin::set_read_order(const rosbag2_storage::ReadOrder & order)
-{
-  std::cout << "Set read order " << order.sort_by << " " << order.reverse << std::endl;
-  return true;
+  std::cout << uri << ".\n";
 }
 
 bool TestPlugin::has_next()
@@ -69,12 +52,9 @@ std::shared_ptr<rosbag2_storage::SerializedBagMessage> TestPlugin::read_next()
   return std::shared_ptr<rosbag2_storage::SerializedBagMessage>();
 }
 
-void TestPlugin::create_topic(
-  const rosbag2_storage::TopicMetadata & topic,
-  const rosbag2_storage::MessageDefinition & message_definition)
+void TestPlugin::create_topic(const rosbag2_storage::TopicMetadata & topic)
 {
-  std::cout << "Created topic with name =" << topic.name << ", type =" << topic.type <<
-    "and message definition encoding " << message_definition.encoding << ".\n";
+  std::cout << "Created topic with name =" << topic.name << " and type =" << topic.type << ".\n";
 }
 
 void TestPlugin::remove_topic(const rosbag2_storage::TopicMetadata & topic)
@@ -100,8 +80,6 @@ std::vector<rosbag2_storage::TopicMetadata> TestPlugin::get_all_topics_and_types
   std::cout << "\nreading topics and types\n";
   return std::vector<rosbag2_storage::TopicMetadata>();
 }
-
-void TestPlugin::get_all_message_definitions(std::vector<rosbag2_storage::MessageDefinition> &) {}
 
 rosbag2_storage::BagMetadata TestPlugin::get_metadata()
 {
@@ -142,11 +120,6 @@ void TestPlugin::set_filter(
 void TestPlugin::reset_filter()
 {
   std::cout << "\nresetting storage filter\n";
-}
-
-void TestPlugin::seek(const rcutils_time_point_value_t & /*timestamp*/)
-{
-  std::cout << "\nseeking\n";
 }
 
 PLUGINLIB_EXPORT_CLASS(TestPlugin, rosbag2_storage::storage_interfaces::ReadWriteInterface)

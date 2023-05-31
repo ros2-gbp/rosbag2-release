@@ -33,14 +33,16 @@ class StorageFactoryTest : public ::testing::Test
 public:
   rosbag2_storage::StorageFactory factory;
 
-  std::string bag_file_path = "path/to/be/loaded.bag";
+  std::string bag_file_path = "file/to/be/loaded.bag";
+  std::string test_plugin_id = "my_test_plugin";
+  std::string test_read_only_plugin_id = "my_read_only_test_plugin";
   std::string test_unavailable_plugin_id = "my_unavailable_plugin";
 };
 
 TEST_F(StorageFactoryTest, load_test_plugin) {
   // Load plugin for read and write
   auto read_write_storage = factory.open_read_write(
-    {bag_file_path, test_constants::READ_WRITE_PLUGIN_IDENTIFIER});
+    bag_file_path, test_plugin_id);
   ASSERT_NE(nullptr, read_write_storage);
 
   EXPECT_EQ(
@@ -60,14 +62,14 @@ TEST_F(StorageFactoryTest, load_test_plugin) {
 
   // Load plugin for read only even though it provides read and write interfaces
   auto read_only_storage = factory.open_read_only(
-    {bag_file_path, test_constants::READ_WRITE_PLUGIN_IDENTIFIER});
+    bag_file_path, test_plugin_id);
   ASSERT_NE(nullptr, read_only_storage);
   msg = read_only_storage->read_next();
 }
 
 TEST_F(StorageFactoryTest, loads_readonly_plugin_only_for_read_only_storage) {
   auto storage_for_reading = factory.open_read_only(
-    {bag_file_path, test_constants::READ_ONLY_PLUGIN_IDENTIFIER});
+    bag_file_path, test_read_only_plugin_id);
   ASSERT_NE(nullptr, storage_for_reading);
 
   EXPECT_EQ(
@@ -85,16 +87,16 @@ TEST_F(StorageFactoryTest, loads_readonly_plugin_only_for_read_only_storage) {
   storage_for_reading->read_next();
 
   auto storage_for_reading_and_writing = factory.open_read_write(
-    {bag_file_path, test_constants::READ_ONLY_PLUGIN_IDENTIFIER});
+    bag_file_path, test_read_only_plugin_id);
   ASSERT_EQ(nullptr, storage_for_reading_and_writing);
 }
 
 TEST_F(StorageFactoryTest, load_unavailable_plugin) {
   auto instance_rw = factory.open_read_write(
-    {bag_file_path, test_unavailable_plugin_id});
+    bag_file_path, test_unavailable_plugin_id);
   EXPECT_EQ(nullptr, instance_rw);
 
   auto instance_ro = factory.open_read_only(
-    {bag_file_path, test_unavailable_plugin_id});
+    bag_file_path, test_unavailable_plugin_id);
   EXPECT_EQ(nullptr, instance_ro);
 }

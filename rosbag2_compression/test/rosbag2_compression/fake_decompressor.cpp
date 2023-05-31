@@ -14,8 +14,6 @@
 
 #include <string>
 
-#include "pluginlib/class_list_macros.hpp"
-
 #include "rcpputils/filesystem_helper.hpp"
 
 #include "fake_decompressor.hpp"
@@ -34,5 +32,3 @@ std::string FakeDecompressor::get_decompression_identifier() const
 {
   return "fake_comp";
 }
-
-PLUGINLIB_EXPORT_CLASS(FakeDecompressor, rosbag2_compression::BaseDecompressorInterface)

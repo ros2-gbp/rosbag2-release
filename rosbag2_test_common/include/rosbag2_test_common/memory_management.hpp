@@ -18,51 +18,93 @@
 #include <memory>
 #include <string>
 
-#include "rclcpp/serialization.hpp"
-#include "rclcpp/serialized_message.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include "rcutils/error_handling.h"
 
 namespace rosbag2_test_common
 {
 class MemoryManagement
 {
 public:
-  MemoryManagement() = default;
+  MemoryManagement()
+  {
+    rcutils_allocator_ = rcutils_get_default_allocator();
+  }
 
   ~MemoryManagement() = default;
 
   template<typename T>
   inline
-  std::shared_ptr<rmw_serialized_message_t>
-  serialize_message(std::shared_ptr<T> message)
+  std::shared_ptr<rmw_serialized_message_t> serialize_message(std::shared_ptr<T> message)
   {
-    rclcpp::Serialization<T> ser;
-    rclcpp::SerializedMessage serialized_message;
-    ser.serialize_message(message.get(), &serialized_message);
-
-    auto ret = std::make_shared<rmw_serialized_message_t>();
-    *ret = serialized_message.release_rcl_serialized_message();
-    return ret;
+    auto serialized_message = get_initialized_serialized_message(0);
+    auto error = rmw_serialize(
+      message.get(),
+      get_message_typesupport(message),
+      serialized_message.get());
+    if (error != RCL_RET_OK) {
+      throw std::runtime_error("Failed to serialize");
+    }
+    return serialized_message;
   }
 
   template<typename T>
   inline
-  std::shared_ptr<T>
-  deserialize_message(std::shared_ptr<rmw_serialized_message_t> serialized_message)
+  std::shared_ptr<T> deserialize_message(std::shared_ptr<rmw_serialized_message_t> serialized_msg)
   {
-    rclcpp::Serialization<T> ser;
     auto message = std::make_shared<T>();
-    rclcpp::SerializedMessage rclcpp_serialized_message(*serialized_message);
-    ser.deserialize_message(&rclcpp_serialized_message, message.get());
+    auto error = rmw_deserialize(
+      serialized_msg.get(),
+      get_message_typesupport(message),
+      message.get());
+    if (error != RCL_RET_OK) {
+      RCUTILS_LOG_ERROR_NAMED(
+        "rosbag2_test_common", "Leaking memory. Error: %s",
+        rcutils_get_error_string().str);
+    }
     return message;
   }
 
   std::shared_ptr<rmw_serialized_message_t> make_initialized_message()
   {
-    rclcpp::SerializedMessage serialized_message(0u);
-    auto ret = std::make_shared<rmw_serialized_message_t>();
-    *ret = serialized_message.release_rcl_serialized_message();
-    return ret;
+    return get_initialized_serialized_message(0);
   }
+
+private:
+  template<typename T>
+  inline
+  const rosidl_message_type_support_t * get_message_typesupport(std::shared_ptr<T>)
+  {
+    return rosidl_typesupport_cpp::get_message_type_support_handle<T>();
+  }
+
+  std::shared_ptr<rmw_serialized_message_t>
+  get_initialized_serialized_message(size_t capacity)
+  {
+    auto msg = new rmw_serialized_message_t;
+    *msg = rmw_get_zero_initialized_serialized_message();
+    auto ret = rmw_serialized_message_init(msg, capacity, &rcutils_allocator_);
+    if (ret != RCUTILS_RET_OK) {
+      throw std::runtime_error(
+              "Error allocating resources for serialized message: " +
+              std::string(rcutils_get_error_string().str));
+    }
+
+    auto serialized_message = std::shared_ptr<rmw_serialized_message_t>(
+      msg,
+      [](rmw_serialized_message_t * msg) {
+        int error = rmw_serialized_message_fini(msg);
+        delete msg;
+        if (error != RCUTILS_RET_OK) {
+          RCUTILS_LOG_ERROR_NAMED(
+            "rosbag2_test_common", "Leaking memory. Error: %s",
+            rcutils_get_error_string().str);
+        }
+      });
+    return serialized_message;
+  }
+
+  rcutils_allocator_t rcutils_allocator_;
 };
 
 }  // namespace rosbag2_test_common

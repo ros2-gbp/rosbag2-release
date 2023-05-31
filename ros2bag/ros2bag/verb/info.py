@@ -12,25 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from ros2bag.api import add_standard_reader_args
+import os
+
 from ros2bag.verb import VerbExtension
-from rosbag2_py._info import Info
 
 
 class InfoVerb(VerbExtension):
     """Print information about a bag to the screen."""
 
     def add_arguments(self, parser, cli_name):  # noqa: D102
-        add_standard_reader_args(parser)
         parser.add_argument(
-            '-t', '--topic-name', action='store_true',
-            help='Only display topic names.'
-        )
+            'bag_file', help='bag file to introspect')
+        parser.add_argument(
+            '-s', '--storage', default='sqlite3',
+            help='storage identifier to be used to open storage, if no yaml file exists.'
+                 ' Defaults to "sqlite3"')
 
     def main(self, *, args):  # noqa: D102
-        m = Info().read_metadata(args.bag_path, args.storage)
-        if args.topic_name:
-            for topic_info in m.topics_with_message_count:
-                print(topic_info.topic_metadata.name)
-        else:
-            print(m)
+        bag_file = args.bag_file
+        if not os.path.exists(bag_file):
+            return "[ERROR] [ros2bag]: bag file '{}' does not exist!".format(bag_file)
+        # NOTE(hidmic): in merged install workspaces on Windows, Python entrypoint lookups
+        #               combined with constrained environments (as imposed by colcon test)
+        #               may result in DLL loading failures when attempting to import a C
+        #               extension. Therefore, do not import rosbag2_transport at the module
+        #               level but on demand, right before first use.
+        from rosbag2_transport import rosbag2_transport_py
+        rosbag2_transport_py.info(uri=bag_file, storage_id=args.storage)
