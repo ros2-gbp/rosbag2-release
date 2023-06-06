@@ -19,8 +19,7 @@
 
 #include "rmw/types.h"
 
-#include "qos.hpp"
-#include "rmw_time.h"  // NOLINT
+#include "rosbag2_transport/qos.hpp"
 
 TEST(TestQoS, serialization)
 {
@@ -105,7 +104,7 @@ TEST(TestQoS, translates_bad_infinity_values)
     {0x7FFFFFFFll, 0xFFFFFFFFll},  // fastrtps
     {0x7FFFFFFFll, 0x7FFFFFFFll}  // connext
   };
-  rmw_time_t infinity = RMW_DURATION_UNSPECIFIED;
+  rmw_time_t infinity = RMW_DURATION_INFINITE;
   const auto expected_qos = rosbag2_transport::Rosbag2QoS{}
   .default_history()
   .reliable()
@@ -153,16 +152,15 @@ public:
 
   rclcpp::TopicEndpointInfo make_endpoint(const rclcpp::QoS & qos)
   {
-    rcl_topic_endpoint_info_t endpoint_info {
-      "some_node_name",
-      "some_node_namespace",
-      "some_topic_type",
-      RMW_ENDPOINT_PUBLISHER,
-      {0},
-      qos.get_rmw_qos_profile(),
-    };
-
-    return rclcpp::TopicEndpointInfo(endpoint_info);
+    auto allocator = rcutils_get_default_allocator();
+    rcl_topic_endpoint_info_t info = rmw_get_zero_initialized_topic_endpoint_info();
+    rcl_ret_t ret = rmw_topic_endpoint_info_set_node_name(&info, "some_node_name", &allocator);
+    ret |= rmw_topic_endpoint_info_set_node_namespace(&info, "some_node_namespace", &allocator);
+    ret |= rmw_topic_endpoint_info_set_topic_type(&info, "some_topic_type", &allocator);
+    ret |= rmw_topic_endpoint_info_set_endpoint_type(&info, RMW_ENDPOINT_PUBLISHER);
+    ret |= rmw_topic_endpoint_info_set_qos_profile(&info, &qos.get_rmw_qos_profile());
+    EXPECT_EQ(ret, RCL_RET_OK);
+    return rclcpp::TopicEndpointInfo(info);
   }
 
   void add_endpoint(const rclcpp::QoS & qos)

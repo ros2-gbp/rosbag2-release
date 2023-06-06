@@ -2,42 +2,169 @@
 Changelog for package rosbag2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.15.6 (2023-06-05)
+-------------------
+* Added close to writer (`#1363 <https://github.com/ros2/rosbag2/issues/1363>`_)
+  Co-authored-by: Bernat <bernat.gaston@movvo.eu>
+* Contributors: Bernat
 
-0.3.11 (2023-05-27)
+0.15.5 (2023-04-25)
+-------------------
+* Replace `std::filesystem::path(..)` with `rcpputils::fs::path(..)` (`#1104 <https://github.com/ros2/rosbag2/issues/1104>`_) (`#1280 <https://github.com/ros2/rosbag2/issues/1280>`_)
+* Fix issue where sequentialwriter only sets metadata duration to the duration of the final file (`#1098 <https://github.com/ros2/rosbag2/issues/1098>`_) (`#1101 <https://github.com/ros2/rosbag2/issues/1101>`_)
+* Delete obsolete compression_options.cpp from rosbag2_cpp (`#1078 <https://github.com/ros2/rosbag2/issues/1078>`_) (`#1259 <https://github.com/ros2/rosbag2/issues/1259>`_)
+* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_) (`#1224 <https://github.com/ros2/rosbag2/issues/1224>`_)
+* Contributors: mergify[bot]
+
+0.15.4 (2023-01-10)
+-------------------
+* [Humble] Reader and writer can use default storage by not specifying (backport `#1167 <https://github.com/ros2/rosbag2/issues/1167>`_) (`#1174 <https://github.com/ros2/rosbag2/issues/1174>`_)
+* Contributors: mergify[bot]
+
+0.15.3 (2022-11-07)
+-------------------
+* Readers/info can accept a single bag storage file, and detect its storage id automatically (`#1072 <https://github.com/ros2/rosbag2/issues/1072>`_) (`#1077 <https://github.com/ros2/rosbag2/issues/1077>`_)
+* Notification of significant events during bag recording and playback (`#908 <https://github.com/ros2/rosbag2/issues/908>`_) (`#1037 <https://github.com/ros2/rosbag2/issues/1037>`_)
+* Backport. Add use_sim_time option to record verb (`#1017 <https://github.com/ros2/rosbag2/issues/1017>`_)
+* Contributors: Geoffrey Biggs, Keisuke Shima, mergify[bot]
+
+0.15.2 (2022-05-11)
 -------------------
 
-0.3.10 (2023-03-16)
+0.15.1 (2022-04-06)
 -------------------
-* Check & create database dirs before writing bags (`#1133 <https://github.com/ros2/rosbag2/issues/1133>`_)
-* Contributors: Homalozoa X
+* Revert "Add the ability to record any key/value pair in the 'custom' field in metadata.yaml (`#976 <https://github.com/ros2/rosbag2/issues/976>`_)" (`#984 <https://github.com/ros2/rosbag2/issues/984>`_)
+* Add the ability to record any key/value pair in the 'custom' field in metadata.yaml (`#976 <https://github.com/ros2/rosbag2/issues/976>`_)
+* Contributors: Audrow Nash, Jorge Perez, Tony Peng
 
-0.3.9 (2022-02-03)
-------------------
-* Enable sanitizers only if code actually can run (`#572 <https://github.com/ros2/rosbag2/issues/572>`_) (`#953 <https://github.com/ros2/rosbag2/issues/953>`_)
-* Contributors: Jacob Perron, Shane Loretz
+0.15.0 (2022-04-05)
+-------------------
+* Revert "Add the ability to record any key/value pair in the 'custom' field in metadata.yaml (`#976 <https://github.com/ros2/rosbag2/issues/976>`_)" (`#984 <https://github.com/ros2/rosbag2/issues/984>`_)
+* Add the ability to record any key/value pair in the 'custom' field in metadata.yaml (`#976 <https://github.com/ros2/rosbag2/issues/976>`_)
+* Contributors: Jorge Perez, Tony Peng
 
-0.3.8 (2021-07-19)
-------------------
+0.14.1 (2022-03-29)
+-------------------
+* Bump version number to avoid conflict
+* Contributors: Chris Lalancette
 
-0.3.7 (2021-02-15)
-------------------
-* [foxy backport] Fix --topics flag for ros2 bag play being ignored for all bags after the first one (`#619 <https://github.com/ros2/rosbag2/issues/619>`_) (`#654 <https://github.com/ros2/rosbag2/issues/654>`_)
-* Contributors: Aleksandr Rozhdestvenskii
+0.14.0 (2022-03-29)
+-------------------
+* Install headers to include/${PROJECT_NAME} (`#958 <https://github.com/ros2/rosbag2/issues/958>`_)
+* Remove unnecessary public definition. (`#950 <https://github.com/ros2/rosbag2/issues/950>`_)
+* Contributors: Chris Lalancette, Shane Loretz
 
-0.3.6 (2021-01-05)
-------------------
-* Mutex around writer access in recorder (`#491 <https://github.com/ros2/rosbag2/issues/491>`_) (`#575 <https://github.com/ros2/rosbag2/issues/575>`_)
-* Update maintainer list for Foxy (`#551 <https://github.com/ros2/rosbag2/issues/551>`_)
-* Contributors: Michael Jeronimo, Patrick Spieler
+0.13.0 (2022-01-13)
+-------------------
+* Fix relative path syntax for cpplint (`#947 <https://github.com/ros2/rosbag2/issues/947>`_)
+* Mark up the message_cache with TSA annotations (`#946 <https://github.com/ros2/rosbag2/issues/946>`_)
+* Contributors: Chris Lalancette, Jacob Perron
 
-0.3.5 (2020-08-31)
-------------------
+0.12.0 (2021-12-17)
+-------------------
+* Changes for uncrustify 0.72 (`#937 <https://github.com/ros2/rosbag2/issues/937>`_)
+* Redesign in cache consumer and circular message cache to get rid from busy loop (`#941 <https://github.com/ros2/rosbag2/issues/941>`_)
+* Bugfix for broken bag split when using cache (`#936 <https://github.com/ros2/rosbag2/issues/936>`_)
+* Remove JumpHandler copy-implementation from PlayerClock/TimeControllerClock (`#935 <https://github.com/ros2/rosbag2/issues/935>`_)
+* Auto-detect storage_id for Reader (if possible) (`#918 <https://github.com/ros2/rosbag2/issues/918>`_)
+* Contributors: Chris Lalancette, Emerson Knapp, Michael Orlov
 
-0.3.4 (2020-08-05)
-------------------
+0.11.0 (2021-11-08)
+-------------------
+* Add --start-paused option to `ros2 bag play` (`#904 <https://github.com/ros2/rosbag2/issues/904>`_)
+* Use the message_introspection header to get MessageMember. (`#903 <https://github.com/ros2/rosbag2/issues/903>`_)
+* Update package maintainers (`#899 <https://github.com/ros2/rosbag2/issues/899>`_)
+* Fix converter plugin choices for record (`#897 <https://github.com/ros2/rosbag2/issues/897>`_)
+* Enable sanitizers only if code actually can run (`#572 <https://github.com/ros2/rosbag2/issues/572>`_)
+* Need to pass introspection TS to converter plugin for it to be useful (`#896 <https://github.com/ros2/rosbag2/issues/896>`_)
+* Don't preprocess a storage file more than once (`#895 <https://github.com/ros2/rosbag2/issues/895>`_)
+* Contributors: Chris Lalancette, Emerson Knapp, Ivan Santiago Paunovic, Michel Hidalgo, Shane Loretz, sonia
 
-0.3.3 (2020-06-23)
+0.10.1 (2021-10-22)
+-------------------
+
+0.10.0 (2021-10-19)
+-------------------
+* Fix a bug on invalid pointer address when using "MESSAGE" compressio… (`#866 <https://github.com/ros2/rosbag2/issues/866>`_)
+* Metadata per file info (`#870 <https://github.com/ros2/rosbag2/issues/870>`_)
+* Fix TSA warnings when building with clang thread analysis. (`#877 <https://github.com/ros2/rosbag2/issues/877>`_)
+* Implement snapshot mechanism and corresponding ROS Service (`#850 <https://github.com/ros2/rosbag2/issues/850>`_)
+* Circular Message Cache implementation for snapshot feature (`#844 <https://github.com/ros2/rosbag2/issues/844>`_)
+* Fix discovery silently stops after unknown msg type is found. (`#848 <https://github.com/ros2/rosbag2/issues/848>`_)
+* added seek interface (`#836 <https://github.com/ros2/rosbag2/issues/836>`_)
+* Refactor plugin query mechanism and standardize trait management (`#833 <https://github.com/ros2/rosbag2/issues/833>`_)
+* fix sequential reader rollover-to-next-file strategy: (`#839 <https://github.com/ros2/rosbag2/issues/839>`_)
+* Load compression and serialization choices via plugin query (`#827 <https://github.com/ros2/rosbag2/issues/827>`_)
+* Workaround for false positive findings by clang thread safety analysis in time controller jump callbacks API. (`#799 <https://github.com/ros2/rosbag2/issues/799>`_)
+* Add callbacks for PlayerClock::jump(time_point) API with CI fix (`#779 <https://github.com/ros2/rosbag2/issues/779>`_)
+* Revert "Add callbacks for PlayerClock::jump(time_point) API (`#775 <https://github.com/ros2/rosbag2/issues/775>`_)" (`#778 <https://github.com/ros2/rosbag2/issues/778>`_)
+* Add callbacks for PlayerClock::jump(time_point) API (`#775 <https://github.com/ros2/rosbag2/issues/775>`_)
+* Contributors: Barry Xu, Cameron Miller, Chris Lalancette, Emerson Knapp, Lei Liu, Michael Orlov, Wojciech Jaworski, sonia
+
+0.9.0 (2021-05-17)
 ------------------
+* Naive clock jump implementation - allows for clock reuse and simplified Player setup (`#754 <https://github.com/ros2/rosbag2/issues/754>`_)
+* Rename Reader/Writer 'reset' to 'close' (`#760 <https://github.com/ros2/rosbag2/issues/760>`_)
+* Expose pause/resume related services on the Player (`#729 <https://github.com/ros2/rosbag2/issues/729>`_)
+* player owns the reader (`#725 <https://github.com/ros2/rosbag2/issues/725>`_)
+* Contributors: Emerson Knapp, Karsten Knese
+
+0.8.0 (2021-04-19)
+------------------
+* Add set_rate to PlayerClock (`#727 <https://github.com/ros2/rosbag2/issues/727>`_)
+* Enforce non-null now_fn in TimeControllerClock (`#731 <https://github.com/ros2/rosbag2/issues/731>`_)
+* Fix pause snapshot behavior and add regression test (`#730 <https://github.com/ros2/rosbag2/issues/730>`_)
+* Pause/resume PlayerClock (`#704 <https://github.com/ros2/rosbag2/issues/704>`_)
+* Remove -Werror from builds, enable it in Action CI (`#722 <https://github.com/ros2/rosbag2/issues/722>`_)
+* Enable thread safety analysis for rosbag2_cpp and add annotations in TimeControllerClock (`#710 <https://github.com/ros2/rosbag2/issues/710>`_)
+* PlayerClock initial implementation - Player functionally unchanged (`#689 <https://github.com/ros2/rosbag2/issues/689>`_)
+* Explicitly add emersonknapp as maintainer (`#692 <https://github.com/ros2/rosbag2/issues/692>`_)
+* Reindexer core (`#641 <https://github.com/ros2/rosbag2/issues/641>`_)
+  Add a new C++ Reindexer class for reconstructing metadata from bags that are missing it.
+* use rclcpp serialized messages to write data (`#457 <https://github.com/ros2/rosbag2/issues/457>`_)
+* Contributors: Emerson Knapp, Karsten Knese, jhdcs
+
+0.7.0 (2021-03-18)
+------------------
+* alternative write api (`#676 <https://github.com/ros2/rosbag2/issues/676>`_)
+* RMW-implementation-searcher converter in rosbag2_cpp (`#670 <https://github.com/ros2/rosbag2/issues/670>`_)
+* CLI query rosbag2_py for available storage implementations (`#659 <https://github.com/ros2/rosbag2/issues/659>`_)
+* Fix --topics flag for ros2 bag play being ignored for all bags after the first one. (`#619 <https://github.com/ros2/rosbag2/issues/619>`_)
+* Fix a crash in test_message_cache. (`#635 <https://github.com/ros2/rosbag2/issues/635>`_)
+* Contributors: Alexander, Chris Lalancette, Emerson Knapp, Karsten Knese
+
+0.6.0 (2021-02-01)
+------------------
+* Fix build issues when rosbag2_storage is binary installed (`#585 <https://github.com/ros2/rosbag2/issues/585>`_)
+* Deduplicate SequentialCompressionReader business logic, add fallback to find bagfiles in incorrectly-written metadata (`#612 <https://github.com/ros2/rosbag2/issues/612>`_)
+* include what you use (`#600 <https://github.com/ros2/rosbag2/issues/600>`_)
+* Only dereference the data pointer if it is valid. (`#581 <https://github.com/ros2/rosbag2/issues/581>`_)
+* Contributors: Chris Lalancette, Emerson Knapp, Ivan Santiago Paunovic, P. J. Reed
+
+0.5.0 (2020-12-02)
+------------------
+* Add back rosbag2_cpp::StorageOptions as deprecated (`#563 <https://github.com/ros2/rosbag2/issues/563>`_)
+* Sqlite storage double buffering (`#546 <https://github.com/ros2/rosbag2/issues/546>`_)
+* Contributors: Adam Dąbrowski, Jacob Perron
+
+0.4.0 (2020-11-19)
+------------------
+* correct master build (`#552 <https://github.com/ros2/rosbag2/issues/552>`_)
+* add storage_config_uri (`#493 <https://github.com/ros2/rosbag2/issues/493>`_)
+* Mutex around writer access in recorder (`#491 <https://github.com/ros2/rosbag2/issues/491>`_)
+* if cache data exists, it needs to flush the data into the storage before shutdown (`#541 <https://github.com/ros2/rosbag2/issues/541>`_)
+* Change default cache size for sequential_writer to a non zero value (`#533 <https://github.com/ros2/rosbag2/issues/533>`_)
+* SequentialWriter to cache by message size instead of message count (`#530 <https://github.com/ros2/rosbag2/issues/530>`_)
+* Update the package.xml files with the latest Open Robotics maintainers (`#535 <https://github.com/ros2/rosbag2/issues/535>`_)
+* Remove some code duplication between SequentialWriter and SequentialCompressionWriter (`#527 <https://github.com/ros2/rosbag2/issues/527>`_)
+* disable sanitizer by default (`#517 <https://github.com/ros2/rosbag2/issues/517>`_)
+* Fix typo in error message (`#475 <https://github.com/ros2/rosbag2/issues/475>`_)
+* introduce defaults for the C++ API (`#452 <https://github.com/ros2/rosbag2/issues/452>`_)
+* Adding db directory creation to rosbag2_cpp (`#450 <https://github.com/ros2/rosbag2/issues/450>`_)
+* comment out unused variable (`#460 <https://github.com/ros2/rosbag2/issues/460>`_)
+* minimal c++ API test (`#451 <https://github.com/ros2/rosbag2/issues/451>`_)
+* Add split by time to recording (`#409 <https://github.com/ros2/rosbag2/issues/409>`_)
+* Contributors: Dirk Thomas, Jacob Perron, Jaison Titus, Karsten Knese, Marwan Taher, Michael Jeronimo, Patrick Spieler, jhdcs, Tomoya Fujita
 
 0.3.2 (2020-06-03)
 ------------------

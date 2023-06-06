@@ -38,7 +38,7 @@ SqliteStatementWrapper::SqliteStatementWrapper(sqlite3 * database, const std::st
     errmsg << "Error when preparing SQL statement '" << query << "'. SQLite error: (" <<
       return_code << "): " << sqlite3_errstr(return_code);
 
-    throw SqliteException{errmsg.str()};
+    throw SqliteException{errmsg.str(), return_code};
   }
 
   statement_ = statement;
@@ -52,7 +52,8 @@ SqliteStatementWrapper::~SqliteStatementWrapper()
   }
 }
 
-std::shared_ptr<SqliteStatementWrapper> SqliteStatementWrapper::execute_and_reset()
+std::shared_ptr<SqliteStatementWrapper> SqliteStatementWrapper::execute_and_reset(
+  bool assert_return_value)
 {
   int return_code = sqlite3_step(statement_);
   if (!is_query_ok(return_code)) {
@@ -60,8 +61,22 @@ std::shared_ptr<SqliteStatementWrapper> SqliteStatementWrapper::execute_and_rese
     errmsg << "Error when processing SQL statement. SQLite error (" <<
       return_code << "): " << sqlite3_errstr(return_code);
 
-    throw SqliteException{errmsg.str()};
+    throw SqliteException{errmsg.str(), return_code};
   }
+
+  if (assert_return_value) {
+    bool no_result = return_code == SQLITE_DONE || sqlite3_column_count(statement_) == 0;
+
+    if (no_result || sqlite3_column_type(statement_, 0) == SQLITE_NULL) {
+      // No result or result is null means that no such pragma exists
+      std::stringstream errmsg;
+      errmsg << "Statement returned empty value while result was expected: \'" <<
+        sqlite3_sql(statement_) << "\'";
+
+      throw SqliteException{errmsg.str(), return_code};
+    }
+  }
+
   return reset();
 }
 
@@ -132,7 +147,7 @@ bool SqliteStatementWrapper::step()
     errmsg << "Error reading SQL query. SQLite error (" <<
       return_code << "): " << sqlite3_errstr(return_code);
 
-    throw SqliteException{errmsg.str()};
+    throw SqliteException{errmsg.str(), return_code};
   }
 }
 
@@ -173,7 +188,7 @@ void SqliteStatementWrapper::check_and_report_bind_error(int return_code)
       last_bound_parameter_index_ << ". SQLite error (" <<
       return_code << "): " << sqlite3_errstr(return_code);
 
-    throw SqliteException{errmsg.str()};
+    throw SqliteException{errmsg.str(), return_code};
   }
 }
 

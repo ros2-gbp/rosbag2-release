@@ -15,24 +15,31 @@
 from argparse import FileType
 
 from rclpy.qos import InvalidQoSProfileException
-from ros2bag.api import check_path_exists
+from ros2bag.api import add_standard_reader_args
+from ros2bag.api import check_not_negative_int
 from ros2bag.api import check_positive_float
 from ros2bag.api import convert_yaml_to_qos_profile
 from ros2bag.api import print_error
 from ros2bag.verb import VerbExtension
 from ros2cli.node import NODE_NAME_PREFIX
+from rosbag2_py import Player
+from rosbag2_py import PlayOptions
+from rosbag2_py import StorageOptions
 import yaml
+
+
+def positive_float(arg: str) -> float:
+    value = float(arg)
+    if value <= 0:
+        raise ValueError(f'Value {value} is less than or equal to zero.')
+    return value
 
 
 class PlayVerb(VerbExtension):
     """Play back ROS data from a bag."""
 
     def add_arguments(self, parser, cli_name):  # noqa: D102
-        parser.add_argument(
-            'bag_file', type=check_path_exists, help='bag file to replay')
-        parser.add_argument(
-            '-s', '--storage', default='sqlite3',
-            help="storage identifier to be used, defaults to 'sqlite3'")
+        add_standard_reader_args(parser)
         parser.add_argument(
             '--read-ahead-queue-size', type=int, default=1000,
             help='size of message queue rosbag tries to hold in memory to help deterministic '
@@ -42,7 +49,7 @@ class PlayVerb(VerbExtension):
             '-r', '--rate', type=check_positive_float, default=1.0,
             help='rate at which to play back messages. Valid range > 0.0.')
         parser.add_argument(
-            '--topics', type=str, default='', nargs='+',
+            '--topics', type=str, default=[], nargs='+',
             help='topics to replay, separated by space. If none specified, all topics will be '
                  'replayed.')
         parser.add_argument(
@@ -56,6 +63,47 @@ class PlayVerb(VerbExtension):
             '--remap', '-m', default='', nargs='+',
             help='list of topics to be remapped: in the form '
                  '"old_topic1:=new_topic1 old_topic2:=new_topic2 etc." ')
+        parser.add_argument(
+            '--storage-config-file', type=FileType('r'),
+            help='Path to a yaml file defining storage specific configurations. '
+                 'For the default storage plugin settings are specified through syntax:'
+                 'read:'
+                 '  pragmas: [\"<setting_name>\" = <setting_value>]'
+                 'Note that applicable settings are limited to read-only for ros2 bag play.'
+                 'For a list of sqlite3 settings, refer to sqlite3 documentation')
+        parser.add_argument(
+            '--clock', type=positive_float, nargs='?', const=40, default=0,
+            help='Publish to /clock at a specific frequency in Hz, to act as a ROS Time Source. '
+                 'Value must be positive. Defaults to not publishing.')
+        parser.add_argument(
+            '-d', '--delay', type=positive_float, default=0.0,
+            help='Sleep duration before play (each loop), in seconds. Negative durations invalid.')
+        parser.add_argument(
+            '--disable-keyboard-controls', action='store_true',
+            help='disables keyboard controls for playback')
+        parser.add_argument(
+            '-p', '--start-paused', action='store_true', default=False,
+            help='Start the playback player in a paused state.')
+        parser.add_argument(
+            '--start-offset', type=check_positive_float, default=0.0,
+            help='Start the playback player this many seconds into the bag file.')
+        parser.add_argument(
+            '--wait-for-all-acked', type=check_not_negative_int, default=-1,
+            help='Wait until all published messages are acknowledged by all subscribers or until '
+                 'the timeout elapses in millisecond before play is terminated. '
+                 'Especially for the case of sending message with big size in a short time. '
+                 'Negative timeout is invalid. '
+                 '0 means wait forever until all published messages are acknowledged by all '
+                 'subscribers. '
+                 "Note that this option is valid only if the publisher\'s QOS profile is "
+                 'RELIABLE.',
+            metavar='TIMEOUT')
+        parser.add_argument(
+            '--disable-loan-message', action='store_true', default=False,
+            help='Disable to publish as loaned message. '
+                 'By default, if loaned message can be used, messages are published as loaned '
+                 'message. It can help to reduce the number of data copies, so there is a greater '
+                 'benefit for sending big data.')
 
     def main(self, *, args):  # noqa: D102
         qos_profile_overrides = {}  # Specify a valid default
@@ -67,19 +115,38 @@ class PlayVerb(VerbExtension):
             except (InvalidQoSProfileException, ValueError) as e:
                 return print_error(str(e))
 
-        # NOTE(hidmic): in merged install workspaces on Windows, Python entrypoint lookups
-        #               combined with constrained environments (as imposed by colcon test)
-        #               may result in DLL loading failures when attempting to import a C
-        #               extension. Therefore, do not import rosbag2_transport at the module
-        #               level but on demand, right before first use.
-        from rosbag2_transport import rosbag2_transport_py
-        rosbag2_transport_py.play(
-            uri=args.bag_file,
+        storage_config_file = ''
+        if args.storage_config_file:
+            storage_config_file = args.storage_config_file.name
+
+        topic_remapping = ['--ros-args']
+        for remap_rule in args.remap:
+            topic_remapping.append('--remap')
+            topic_remapping.append(remap_rule)
+
+        storage_options = StorageOptions(
+            uri=args.bag_path,
             storage_id=args.storage,
-            node_prefix=NODE_NAME_PREFIX,
-            read_ahead_queue_size=args.read_ahead_queue_size,
-            rate=args.rate,
-            topics=args.topics,
-            qos_profile_overrides=qos_profile_overrides,
-            loop=args.loop,
-            topic_remapping=args.remap)
+            storage_config_uri=storage_config_file,
+        )
+        play_options = PlayOptions()
+        play_options.read_ahead_queue_size = args.read_ahead_queue_size
+        play_options.node_prefix = NODE_NAME_PREFIX
+        play_options.rate = args.rate
+        play_options.topics_to_filter = args.topics
+        play_options.topic_qos_profile_overrides = qos_profile_overrides
+        play_options.loop = args.loop
+        play_options.topic_remapping_options = topic_remapping
+        play_options.clock_publish_frequency = args.clock
+        play_options.delay = args.delay
+        play_options.disable_keyboard_controls = args.disable_keyboard_controls
+        play_options.start_paused = args.start_paused
+        play_options.start_offset = args.start_offset
+        play_options.wait_acked_timeout = args.wait_for_all_acked
+        play_options.disable_loan_message = args.disable_loan_message
+
+        player = Player()
+        try:
+            player.play(storage_options, play_options)
+        except KeyboardInterrupt:
+            pass

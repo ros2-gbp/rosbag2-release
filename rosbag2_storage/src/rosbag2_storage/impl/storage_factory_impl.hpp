@@ -19,7 +19,6 @@
 #include <algorithm>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "pluginlib/class_loader.hpp"
 
@@ -44,6 +43,61 @@ get_class_loader()
   return std::make_shared<pluginlib::ClassLoader<InterfaceT>>("rosbag2_storage", lookup_name);
 }
 
+template<typename InterfaceT>
+std::shared_ptr<InterfaceT>
+try_load_plugin(
+  std::shared_ptr<pluginlib::ClassLoader<InterfaceT>> class_loader,
+  const std::string & plugin_name)
+{
+  std::shared_ptr<InterfaceT> instance;
+  try {
+    auto unmanaged_instance = class_loader->createUnmanagedInstance(plugin_name);
+    instance = std::shared_ptr<InterfaceT>(unmanaged_instance);
+  } catch (const std::runtime_error & ex) {
+    ROSBAG2_STORAGE_LOG_ERROR_STREAM(
+      "Unable to load plugin '" << plugin_name << "': " << ex.what());
+  }
+  return instance;
+}
+
+
+template<
+  typename InterfaceT,
+  storage_interfaces::IOFlag flag = StorageTraits<InterfaceT>::io_flag
+>
+std::shared_ptr<InterfaceT>
+try_detect_and_open_storage(
+  std::shared_ptr<pluginlib::ClassLoader<InterfaceT>> class_loader,
+  const StorageOptions & storage_options)
+{
+  bool creating_file = flag != storage_interfaces::IOFlag::READ_ONLY;
+  if (creating_file) {
+    ROSBAG2_STORAGE_LOG_ERROR("Can not auto-choose storage for writing.");
+    return nullptr;
+  }
+
+  const auto & registered_classes = class_loader->getDeclaredClasses();
+  for (const auto & registered_class : registered_classes) {
+    std::shared_ptr<InterfaceT> instance = try_load_plugin(class_loader, registered_class);
+    if (instance == nullptr) {
+      continue;
+    }
+    ROSBAG2_STORAGE_LOG_DEBUG_STREAM(
+      "Trying storage implementation '" << registered_class << "'.");
+    try {
+      instance->open(storage_options, flag);
+      ROSBAG2_STORAGE_LOG_DEBUG_STREAM(
+        "Success, using implementation '" << registered_class << "'.");
+      return instance;
+    } catch (const std::runtime_error & /* ex */) {
+      ROSBAG2_STORAGE_LOG_DEBUG_STREAM(
+        "Failed to open with implementation '" << registered_class << "'. Continuing loop.");
+      continue;
+    }
+  }
+  return nullptr;
+}
+
 template<
   typename InterfaceT,
   storage_interfaces::IOFlag flag = StorageTraits<InterfaceT>::io_flag
@@ -51,32 +105,35 @@ template<
 std::shared_ptr<InterfaceT>
 get_interface_instance(
   std::shared_ptr<pluginlib::ClassLoader<InterfaceT>> class_loader,
-  const std::string & storage_id,
-  const std::string & uri)
+  const StorageOptions & storage_options)
 {
+  if (storage_options.storage_id.empty()) {
+    return try_detect_and_open_storage<InterfaceT, flag>(class_loader, storage_options);
+  }
+
   const auto & registered_classes = class_loader->getDeclaredClasses();
-  auto class_exists = std::find(registered_classes.begin(), registered_classes.end(), storage_id);
+  auto class_exists = std::find(
+    registered_classes.begin(),
+    registered_classes.end(), storage_options.storage_id);
   if (class_exists == registered_classes.end()) {
-    ROSBAG2_STORAGE_LOG_DEBUG_STREAM("Requested storage id '" << storage_id << "' does not exist");
+    // This should not print a warning, because it can be used by open_read_only twice,
+    // legitimately expecting to fail for READ_ONLY but succeed for READ_WRITE
+    // The extra output is misleading to end users.
     return nullptr;
   }
 
-  std::shared_ptr<InterfaceT> instance = nullptr;
-  try {
-    auto unmanaged_instance = class_loader->createUnmanagedInstance(storage_id);
-    instance = std::shared_ptr<InterfaceT>(unmanaged_instance);
-  } catch (const std::runtime_error & ex) {
-    ROSBAG2_STORAGE_LOG_ERROR_STREAM(
-      "Unable to load instance of read write interface: " << ex.what());
+  std::shared_ptr<InterfaceT> instance = try_load_plugin(class_loader, storage_options.storage_id);
+  if (instance == nullptr) {
     return nullptr;
   }
 
   try {
-    instance->open(uri, flag);
+    instance->open(storage_options, flag);
     return instance;
   } catch (const std::runtime_error & ex) {
     ROSBAG2_STORAGE_LOG_ERROR_STREAM(
-      "Could not open '" << uri << "' with '" << storage_id << "'. Error: " << ex.what());
+      "Could not open '" << storage_options.uri << "' with '" <<
+        storage_options.storage_id << "'. Error: " << ex.what());
     return nullptr;
   }
 }
@@ -103,33 +160,44 @@ public:
 
   virtual ~StorageFactoryImpl() = default;
 
-  std::shared_ptr<ReadWriteInterface> open_read_write(
-    const std::string & uri, const std::string & storage_id)
+  std::shared_ptr<ReadWriteInterface> open_read_write(const StorageOptions & storage_options)
   {
-    auto instance = get_interface_instance(read_write_class_loader_, storage_id, uri);
+    auto instance =
+      get_interface_instance(read_write_class_loader_, storage_options);
 
     if (instance == nullptr) {
-      ROSBAG2_STORAGE_LOG_ERROR_STREAM(
-        "Could not load/open plugin with storage id '" << storage_id << "'.");
+      if (storage_options.storage_id.empty()) {
+        ROSBAG2_STORAGE_LOG_ERROR_STREAM(
+          "No storage id specified, and no plugin found that could open URI");
+      } else {
+        ROSBAG2_STORAGE_LOG_ERROR_STREAM(
+          "Could not load/open plugin with storage id '" << storage_options.storage_id << "'");
+      }
     }
 
     return instance;
   }
 
-  std::shared_ptr<ReadOnlyInterface> open_read_only(
-    const std::string & uri, const std::string & storage_id)
+  std::shared_ptr<ReadOnlyInterface> open_read_only(const StorageOptions & storage_options)
   {
-    // try to load the instance as read_only interface
-    auto instance = get_interface_instance(read_only_class_loader_, storage_id, uri);
-    // try to load as read_write if not successful
+    // try all registered ReadOnly plugins first
+    auto instance = get_interface_instance(
+      read_only_class_loader_, storage_options);
+
+    // try ReadWrite plugins if no ReadOnly plugin was found
     if (instance == nullptr) {
       instance = get_interface_instance<ReadWriteInterface, storage_interfaces::IOFlag::READ_ONLY>(
-        read_write_class_loader_, storage_id, uri);
+        read_write_class_loader_, storage_options);
     }
 
     if (instance == nullptr) {
-      ROSBAG2_STORAGE_LOG_ERROR_STREAM(
-        "Could not load/open plugin with storage id '" << storage_id << "'.");
+      if (storage_options.storage_id.empty()) {
+        ROSBAG2_STORAGE_LOG_ERROR_STREAM(
+          "No storage id specified, and no plugin found that could open URI");
+      } else {
+        ROSBAG2_STORAGE_LOG_ERROR_STREAM(
+          "Could not load/open plugin with storage id '" << storage_options.storage_id << "'");
+      }
     }
 
     return instance;

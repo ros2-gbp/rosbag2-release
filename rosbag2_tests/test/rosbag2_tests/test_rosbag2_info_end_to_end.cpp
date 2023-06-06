@@ -67,7 +67,7 @@ TEST_F(InfoEndToEndTestFixture, info_fails_gracefully_if_bag_does_not_exist) {
     execute_and_wait_until_completion("ros2 bag info does_not_exist", database_path_);
   auto error_output = internal::GetCapturedStderr();
 
-  EXPECT_THAT(exit_code, Eq(EXIT_FAILURE));
+  EXPECT_THAT(exit_code, Ne(EXIT_SUCCESS));
   EXPECT_THAT(error_output, HasSubstr("'does_not_exist' does not exist"));
 }
 
@@ -77,6 +77,6 @@ TEST_F(InfoEndToEndTestFixture, info_fails_gracefully_if_metadata_yaml_file_does
     execute_and_wait_until_completion("ros2 bag info " + database_path_, database_path_);
   auto error_output = internal::GetCapturedStderr();
 
-  EXPECT_THAT(exit_code, Eq(EXIT_SUCCESS));
-  EXPECT_THAT(error_output, HasSubstr("Could not read metadata for " + database_path_));
+  EXPECT_THAT(exit_code, Eq(EXIT_FAILURE));
+  EXPECT_THAT(error_output, HasSubstr("Could not find metadata"));
 }

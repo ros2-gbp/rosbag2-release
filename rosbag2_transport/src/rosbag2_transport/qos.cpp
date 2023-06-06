@@ -15,10 +15,9 @@
 #include <string>
 #include <vector>
 
-#include "rosbag2_transport/logging.hpp"
 
-#include "qos.hpp"
-#include "./rmw_time.h"
+#include "rosbag2_transport/qos.hpp"
+#include "logging.hpp"
 
 namespace
 {
@@ -59,10 +58,7 @@ bool convert<rmw_time_t>::decode(const Node & node, rmw_time_t & time)
     rmw_time_equal(time, RMW_FASTRTPS_FOXY_INFINITE) ||
     rmw_time_equal(time, RMW_CONNEXT_FOXY_INFINITE))
   {
-    // [foxy compatibility] Though we've backported rmw/time.c into this library
-    // the Foxy RMW layers don't know what to do with the RMW_DURATION_INFINITE value,
-    // just leave it unspecified for the same behavior.
-    time = RMW_DURATION_UNSPECIFIED;
+    time = RMW_DURATION_INFINITE;
   }
   return true;
 }
