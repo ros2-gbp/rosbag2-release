@@ -57,6 +57,10 @@ public:
 
   void record();
 
+  /// @brief Stopping recording and closing writer.
+  /// The record() can be called again after stop().
+  void stop();
+
   const rosbag2_cpp::Writer & get_writer_handle();
 
   /// Pause the recording.
@@ -78,8 +82,8 @@ public:
   std::shared_ptr<rosbag2_cpp::Writer> writer_;
   rosbag2_storage::StorageOptions storage_options_;
   rosbag2_transport::RecordOptions record_options_;
-  std::atomic<bool> stop_discovery_;
-  std::unordered_map<std::string, std::shared_ptr<rclcpp::GenericSubscription>> subscriptions_;
+  std::atomic<bool> stop_discovery_ = false;
+  std::unordered_map<std::string, std::shared_ptr<rclcpp::SubscriptionBase>> subscriptions_;
 
 private:
   void topics_discovery();
@@ -128,14 +132,15 @@ private:
   rclcpp::Service<rosbag2_interfaces::srv::SplitBagfile>::SharedPtr srv_split_bagfile_;
 
   std::atomic<bool> paused_ = false;
+  std::atomic<bool> in_recording_ = false;
   std::shared_ptr<KeyboardHandler> keyboard_handler_;
   KeyboardHandler::callback_handle_t toggle_paused_key_callback_handle_ =
     KeyboardHandler::invalid_handle;
 
   // Variables for event publishing
   rclcpp::Publisher<rosbag2_interfaces::msg::WriteSplitEvent>::SharedPtr split_event_pub_;
-  bool event_publisher_thread_should_exit_ = false;
-  bool write_split_has_occurred_ = false;
+  std::atomic<bool> event_publisher_thread_should_exit_ = false;
+  std::atomic<bool> write_split_has_occurred_ = false;
   rosbag2_cpp::bag_events::BagSplitInfo bag_split_info_;
   std::mutex event_publisher_thread_mutex_;
   std::condition_variable event_publisher_thread_wake_cv_;
@@ -156,6 +161,12 @@ RecorderImpl::RecorderImpl(
   paused_(record_options.start_paused),
   keyboard_handler_(std::move(keyboard_handler))
 {
+  if (record_options_.use_sim_time && record_options_.is_discovery_disabled) {
+    throw std::runtime_error(
+            "use_sim_time and is_discovery_disabled both set, but are incompatible settings. "
+            "The /clock topic needs to be discovered to record with sim time.");
+  }
+
   std::string key_str = enum_key_code_to_str(Recorder::kPauseResumeToggleKey);
   toggle_paused_key_callback_handle_ =
     keyboard_handler_->add_key_press_callback(
@@ -178,12 +189,24 @@ RecorderImpl::RecorderImpl(
 RecorderImpl::~RecorderImpl()
 {
   keyboard_handler_->delete_key_press_callback(toggle_paused_key_callback_handle_);
+  stop();
+}
+
+void RecorderImpl::stop()
+{
   stop_discovery_ = true;
   if (discovery_future_.valid()) {
-    discovery_future_.wait();
+    auto status = discovery_future_.wait_for(2 * record_options_.topic_polling_interval);
+    if (status != std::future_status::ready) {
+      RCLCPP_ERROR_STREAM(
+        node->get_logger(),
+        "discovery_future_.wait_for(" << record_options_.topic_polling_interval.count() <<
+          ") return status: " << (status == std::future_status::timeout ? "timeout" : "deferred"));
+    }
   }
-
+  paused_ = true;
   subscriptions_.clear();
+  writer_->close();  // Call writer->close() to finalize current bag file and write metadata
 
   {
     std::lock_guard<std::mutex> lock(event_publisher_thread_mutex_);
@@ -193,10 +216,20 @@ RecorderImpl::~RecorderImpl()
   if (event_publisher_thread_.joinable()) {
     event_publisher_thread_.join();
   }
+  in_recording_ = false;
+  RCLCPP_INFO(node->get_logger(), "Recording stopped");
 }
 
 void RecorderImpl::record()
 {
+  if (in_recording_.exchange(true)) {
+    RCLCPP_WARN_STREAM(
+      node->get_logger(),
+      "Called Recorder::record() while already in recording, dismissing request.");
+    return;
+  }
+  paused_ = record_options_.start_paused;
+  stop_discovery_ = record_options_.is_discovery_disabled;
   topic_qos_profile_overrides_ = record_options_.topic_qos_profile_overrides;
   if (record_options_.rmw_serialization_format.empty()) {
     throw std::runtime_error("No serialization format specified!");
@@ -259,12 +292,12 @@ void RecorderImpl::record()
       response->paused = is_paused();
     });
 
+  split_event_pub_ =
+    node->create_publisher<rosbag2_interfaces::msg::WriteSplitEvent>("events/write_split", 1);
+
   // Start the thread that will publish events
   event_publisher_thread_ = std::thread(&RecorderImpl::event_publisher_thread_main, this);
 
-  split_event_pub_ = node->create_publisher<rosbag2_interfaces::msg::WriteSplitEvent>(
-    "events/write_split",
-    1);
   rosbag2_cpp::bag_events::WriterEventCallbacks callbacks;
   callbacks.write_split_callback =
     [this](rosbag2_cpp::bag_events::BagSplitInfo & info) {
@@ -279,21 +312,20 @@ void RecorderImpl::record()
 
   serialization_format_ = record_options_.rmw_serialization_format;
   RCLCPP_INFO(node->get_logger(), "Listening for topics...");
-  subscribe_topics(get_requested_or_available_topics());
-
+  if (!record_options_.use_sim_time) {
+    subscribe_topics(get_requested_or_available_topics());
+  }
   if (!record_options_.is_discovery_disabled) {
     discovery_future_ =
       std::async(std::launch::async, std::bind(&RecorderImpl::topics_discovery, this));
   }
+  RCLCPP_INFO(node->get_logger(), "Recording...");
 }
 
 void RecorderImpl::event_publisher_thread_main()
 {
   RCLCPP_INFO(node->get_logger(), "Event publisher thread: Starting");
-
-  bool should_exit = false;
-
-  while (!should_exit) {
+  while (!event_publisher_thread_should_exit_.load()) {
     std::unique_lock<std::mutex> lock(event_publisher_thread_mutex_);
     event_publisher_thread_wake_cv_.wait(
       lock,
@@ -305,12 +337,19 @@ void RecorderImpl::event_publisher_thread_main()
       auto message = rosbag2_interfaces::msg::WriteSplitEvent();
       message.closed_file = bag_split_info_.closed_file;
       message.opened_file = bag_split_info_.opened_file;
-      split_event_pub_->publish(message);
+      try {
+        split_event_pub_->publish(message);
+      } catch (const std::exception & e) {
+        RCLCPP_ERROR_STREAM(
+          node->get_logger(),
+          "Failed to publish message on '/events/write_split' topic. \nError: " << e.what());
+      } catch (...) {
+        RCLCPP_ERROR_STREAM(
+          node->get_logger(),
+          "Failed to publish message on '/events/write_split' topic.");
+      }
     }
-
-    should_exit = event_publisher_thread_should_exit_;
   }
-
   RCLCPP_INFO(node->get_logger(), "Event publisher thread: Exiting");
 }
 
@@ -352,20 +391,41 @@ bool RecorderImpl::is_paused()
 
 void RecorderImpl::topics_discovery()
 {
-  while (rclcpp::ok() && stop_discovery_ == false) {
-    auto topics_to_subscribe =
-      get_requested_or_available_topics();
-    for (const auto & topic_and_type : topics_to_subscribe) {
-      warn_if_new_qos_for_subscribed_topic(topic_and_type.first);
+  // If using sim time - wait until /clock topic received before even creating subscriptions
+  if (record_options_.use_sim_time) {
+    RCLCPP_INFO(
+      node->get_logger(),
+      "use_sim_time set, waiting for /clock before starting recording...");
+    while (rclcpp::ok() && stop_discovery_ == false) {
+      if (node->get_clock()->wait_until_started(record_options_.topic_polling_interval)) {
+        break;
+      }
     }
-    auto missing_topics = get_missing_topics(topics_to_subscribe);
-    subscribe_topics(missing_topics);
+    if (node->get_clock()->started()) {
+      RCLCPP_INFO(node->get_logger(), "Sim time /clock found, starting recording.");
+    }
+  }
+  while (rclcpp::ok() && stop_discovery_ == false) {
+    try {
+      auto topics_to_subscribe = get_requested_or_available_topics();
+      for (const auto & topic_and_type : topics_to_subscribe) {
+        warn_if_new_qos_for_subscribed_topic(topic_and_type.first);
+      }
+      auto missing_topics = get_missing_topics(topics_to_subscribe);
+      subscribe_topics(missing_topics);
 
-    if (!record_options_.topics.empty() && subscriptions_.size() == record_options_.topics.size()) {
-      RCLCPP_INFO(
-        node->get_logger(),
-        "All requested topics are subscribed. Stopping discovery...");
-      return;
+      if (!record_options_.topics.empty() &&
+        subscriptions_.size() == record_options_.topics.size())
+      {
+        RCLCPP_INFO(
+          node->get_logger(),
+          "All requested topics are subscribed. Stopping discovery...");
+        return;
+      }
+    } catch (const std::exception & e) {
+      RCLCPP_ERROR_STREAM(node->get_logger(), "Failure in topics discovery.\nError: " << e.what());
+    } catch (...) {
+      RCLCPP_ERROR_STREAM(node->get_logger(), "Failure in topics discovery.");
     }
     std::this_thread::sleep_for(record_options_.topic_polling_interval);
   }
@@ -606,7 +666,7 @@ Recorder::Recorder(
   const rclcpp::NodeOptions & node_options)
 : rclcpp::Node(node_name, rclcpp::NodeOptions(node_options)
     .start_parameter_event_publisher(false)
-    .parameter_overrides({rclcpp::Parameter("use_sim_time", record_options.use_sim_time)})),
+    .append_parameter_override("use_sim_time", record_options.use_sim_time)),
   pimpl_(std::make_unique<RecorderImpl>(
       this, std::move(writer), keyboard_handler,
       storage_options, record_options))
@@ -615,10 +675,14 @@ Recorder::Recorder(
 Recorder::~Recorder()
 {}
 
-void
-Recorder::record()
+void Recorder::record()
 {
   pimpl_->record();
+}
+
+void Recorder::stop()
+{
+  pimpl_->stop();
 }
 
 const std::unordered_set<std::string> &
@@ -627,7 +691,7 @@ Recorder::topics_using_fallback_qos() const
   return pimpl_->topics_warned_about_incompatibility_;
 }
 
-const std::unordered_map<std::string, std::shared_ptr<rclcpp::GenericSubscription>> &
+const std::unordered_map<std::string, std::shared_ptr<rclcpp::SubscriptionBase>> &
 Recorder::subscriptions() const
 {
   return pimpl_->subscriptions_;
