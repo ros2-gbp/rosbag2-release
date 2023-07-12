@@ -233,7 +233,15 @@ void SqliteStorage::open(
 void SqliteStorage::update_metadata(const rosbag2_storage::BagMetadata & metadata)
 {
   metadata_ = metadata;
-  // TODO(morlov:) update BagMetadata in DB
+  if (db_schema_version_ >= 3) {  // We don't have metadata table before schema version 3
+    YAML::Node metadata_node = YAML::convert<rosbag2_storage::BagMetadata>::encode(metadata);
+    std::string serialized_metadata = YAML::Dump(metadata_node);
+
+    auto insert_metadata = database_->prepare_statement(
+      "INSERT INTO metadata (metadata_version, metadata) VALUES (?, ?)");
+    insert_metadata->bind(metadata.version, serialized_metadata);
+    insert_metadata->execute_and_reset();
+  }
 }
 
 void SqliteStorage::activate_transaction()
@@ -631,9 +639,28 @@ uint64_t SqliteStorage::get_minimum_split_file_size() const
 
 void SqliteStorage::read_metadata()
 {
-  metadata_.storage_identifier = get_storage_identifier();
-  metadata_.relative_file_paths = {get_relative_file_path()};
+  std::vector<rosbag2_storage::BagMetadata> metadata_from_table;
+  if (db_schema_version_ >= 3) {
+    auto statement = database_->prepare_statement(
+      "SELECT metadata_version, metadata FROM metadata ORDER BY id;");
+    auto query_results = statement->execute_query<std::string, std::string>();
 
+    for (auto result : query_results) {
+      std::string serialized_metadata = std::get<1>(result);
+      YAML::Node metadata_node = YAML::Load(serialized_metadata);
+
+      rosbag2_storage::BagMetadata current_metadata{};
+      YAML::convert<rosbag2_storage::BagMetadata>::decode(metadata_node, current_metadata);
+      metadata_from_table.push_back(current_metadata);
+    }
+  }
+  if (!metadata_from_table.empty()) {
+    metadata_ = metadata_from_table.back();  // Take latest saved metadata
+  } else {
+    metadata_.storage_identifier = get_storage_identifier();
+    metadata_.relative_file_paths = {get_relative_file_path()};
+  }
+  // Update metadata according to the real data stored in file
   metadata_.message_count = 0;
   metadata_.topics_with_message_count = {};
 
@@ -724,6 +751,13 @@ void SqliteStorage::read_metadata()
     std::chrono::time_point<std::chrono::high_resolution_clock>(std::chrono::nanoseconds(min_time));
   metadata_.duration = std::chrono::nanoseconds(max_time) - std::chrono::nanoseconds(min_time);
   metadata_.bag_size = get_bagfile_size();
+
+  if (db_schema_version_ >= 3 && database_->table_exists("schema")) {
+    // Read schema version
+    auto statement = database_->prepare_statement("SELECT ros_distro from schema;");
+    auto query_results = statement->execute_query<std::string>();
+    metadata_.ros_distro = std::get<0>(*query_results.begin());
+  }
 }
 
 rosbag2_storage::BagMetadata SqliteStorage::get_metadata()
@@ -773,18 +807,6 @@ SqliteWrapper & SqliteStorage::get_sqlite_database_wrapper()
 int SqliteStorage::get_db_schema_version() const
 {
   return db_schema_version_;
-}
-
-std::string SqliteStorage::get_recorded_ros_distro() const
-{
-  std::string ros_distro;
-  if (db_schema_version_ >= 3 && database_->table_exists("schema")) {
-    // Read schema version
-    auto statement = database_->prepare_statement("SELECT ros_distro from schema;");
-    auto query_results = statement->execute_query<std::string>();
-    ros_distro = std::get<0>(*query_results.begin());
-  }
-  return ros_distro;
 }
 
 int SqliteStorage::get_last_rowid()
