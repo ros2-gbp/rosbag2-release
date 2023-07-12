@@ -6,9 +6,10 @@ if(NOT CMAKE_C_STANDARD)
   set(CMAKE_C_STANDARD 99)
 endif()
 
-# Default to C++14
+# Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
 endif()
 
 # Windows supplies macros for min and max by default. We should only use min and max from stl
@@ -35,10 +36,11 @@ target_include_directories(${PROJECT_NAME}
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include/${PROJECT_NAME}>)
-ament_target_dependencies(${PROJECT_NAME}
-  rcpputils
-  rosbag2_compression
-  zstd)
+target_link_libraries(${PROJECT_NAME}
+  rcpputils::rcpputils
+  rosbag2_compression::rosbag2_compression
+  zstd::zstd
+)
 target_compile_definitions(${PROJECT_NAME} PRIVATE ROSBAG2_COMPRESSION_ZSTD_BUILDING_DLL)
 pluginlib_export_plugin_description_file(rosbag2_compression plugin_description.xml)
 
@@ -73,8 +75,11 @@ if(BUILD_TESTING)
 
   ament_add_gmock(test_zstd_compressor
     test/rosbag2_compression_zstd/test_zstd_compressor.cpp)
-  target_link_libraries(test_zstd_compressor ${PROJECT_NAME})
-  ament_target_dependencies(test_zstd_compressor rclcpp rosbag2_test_common)
+  target_link_libraries(test_zstd_compressor
+    ${PROJECT_NAME}
+    rclcpp::rclcpp
+    rosbag2_test_common::rosbag2_test_common
+  )
 endif()
 
 ament_package()

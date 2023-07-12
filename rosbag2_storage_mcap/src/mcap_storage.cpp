@@ -16,7 +16,7 @@
 #include "rosbag2_storage/metadata_io.hpp"
 #include "rosbag2_storage/ros_helper.hpp"
 #include "rosbag2_storage/storage_interfaces/read_write_interface.hpp"
-#include "rosbag2_storage_mcap/message_definition_cache.hpp"
+#include "rosbag2_storage_mcap/visibility_control.hpp"
 
 #ifdef ROSBAG2_STORAGE_MCAP_HAS_YAML_HPP
   #include "rosbag2_storage/yaml.hpp"
@@ -48,6 +48,14 @@
 #include <vector>
 #ifdef ROSBAG2_STORAGE_MCAP_HAS_STORAGE_FILTER_TOPIC_REGEX
   #include <regex>
+#endif
+
+// This is necessary because of using stl types here. It is completely safe, because
+// a) the member is not accessible from the outside
+// b) there are no inline functions.
+#ifdef _WIN32
+  #pragma warning(push)
+  #pragma warning(disable : 4251)
 #endif
 
 #define DECLARE_YAML_VALUE_MAP(KEY_TYPE, VALUE_TYPE, ...)                   \
@@ -160,7 +168,8 @@ static void OnProblem(const mcap::Status & status)
 /**
  * A storage implementation for the MCAP file format.
  */
-class MCAPStorage : public rosbag2_storage::storage_interfaces::ReadWriteInterface
+class ROSBAG2_STORAGE_MCAP_PUBLIC MCAPStorage
+    : public rosbag2_storage::storage_interfaces::ReadWriteInterface
 {
 public:
   MCAPStorage();
@@ -187,11 +196,13 @@ public:
 
   /** BaseReadInterface **/
 #ifdef ROSBAG2_STORAGE_MCAP_HAS_SET_READ_ORDER
-  void set_read_order(const rosbag2_storage::ReadOrder &) override;
+  bool set_read_order(const rosbag2_storage::ReadOrder &) override;
 #endif
   bool has_next() override;
   std::shared_ptr<rosbag2_storage::SerializedBagMessage> read_next() override;
   std::vector<rosbag2_storage::TopicMetadata> get_all_topics_and_types() override;
+  void get_all_message_definitions(
+    std::vector<rosbag2_storage::MessageDefinition> & definitions) override;
 
   /** ReadOnlyInterface **/
   void set_filter(const rosbag2_storage::StorageFilter & storage_filter) override;
@@ -209,7 +220,8 @@ public:
   void write(std::shared_ptr<const rosbag2_storage::SerializedBagMessage> msg) override;
   void write(
     const std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>> & msg) override;
-  void create_topic(const rosbag2_storage::TopicMetadata & topic) override;
+  void create_topic(const rosbag2_storage::TopicMetadata & topic,
+                    const rosbag2_storage::MessageDefinition & message_definition) override;
   void remove_topic(const rosbag2_storage::TopicMetadata & topic) override;
 #ifdef ROSBAG2_STORAGE_MCAP_HAS_UPDATE_METADATA
   void update_metadata(const rosbag2_storage::BagMetadata &) override;
@@ -236,8 +248,7 @@ private:
   std::unordered_map<std::string, mcap::SchemaId> schema_ids_;    // datatype -> schema_id
   std::unordered_map<std::string, mcap::ChannelId> channel_ids_;  // topic -> channel_id
   rosbag2_storage::StorageFilter storage_filter_{};
-  mcap::ReadMessageOptions::ReadOrder read_order_ =
-    mcap::ReadMessageOptions::ReadOrder::LogTimeOrder;
+  mcap::ReadMessageOptions::ReadOrder read_order_ = mcap::ReadMessageOptions::ReadOrder::FileOrder;
 
   std::unique_ptr<std::ifstream> input_;
   std::unique_ptr<mcap::FileStreamReader> data_source_;
@@ -246,7 +257,6 @@ private:
   std::unique_ptr<mcap::LinearMessageView::Iterator> linear_iterator_;
 
   std::unique_ptr<mcap::McapWriter> mcap_writer_;
-  rosbag2_storage_mcap::internal::MessageDefinitionCache msgdef_cache_{};
 
   bool has_read_summary_ = false;
   rcutils_time_point_value_t last_read_time_point_ = 0;
@@ -398,6 +408,10 @@ rosbag2_storage::BagMetadata MCAPStorage::get_metadata()
     if (metadata_it != channel.metadata.end()) {
       topic_info.topic_metadata.offered_qos_profiles = metadata_it->second;
     }
+    const auto type_hash_it = channel.metadata.find("topic_type_hash");
+    if (type_hash_it != channel.metadata.end()) {
+      topic_info.topic_metadata.type_description_hash = type_hash_it->second;
+    }
 
     // Look up the message count for this Channel
     const auto message_count_it = stats.channelMessageCounts.find(channel_id);
@@ -408,6 +422,31 @@ rosbag2_storage::BagMetadata MCAPStorage::get_metadata()
     }
 
     metadata_.topics_with_message_count.push_back(topic_info);
+  }
+
+  const auto & mcap_metadatas = mcap_reader_->metadataIndexes();
+  auto range = mcap_metadatas.equal_range("rosbag2");
+  mcap::Status status{};
+  mcap::Record mcap_record{};
+  mcap::Metadata mcap_metadata{};
+  for (auto i = range.first; i != range.second; ++i) {
+    status = mcap::McapReader::ReadRecord(*data_source_, i->second.offset, &mcap_record);
+    if (!status.ok()) {
+      OnProblem(status);
+      continue;
+    }
+    status = mcap::McapReader::ParseMetadata(mcap_record, &mcap_metadata);
+    if (!status.ok()) {
+      OnProblem(status);
+      continue;
+    }
+    try {
+      metadata_.ros_distro = mcap_metadata.metadata.at("ROS_DISTRO");
+    } catch (const std::out_of_range & /* err */) {
+      RCUTILS_LOG_ERROR_NAMED(
+        LOG_NAME, "Metadata record with name 'rosbag2' did not contain key 'ROS_DISTRO'.");
+    }
+    break;
   }
 
   return metadata_;
@@ -543,50 +582,55 @@ void MCAPStorage::ensure_summary_read()
     if (!status.ok()) {
       throw std::runtime_error(status.message);
     }
-    // check if message indexes are present, if not, read in file order.
-    bool message_indexes_found = false;
-    for (const auto & ci : mcap_reader_->chunkIndexes()) {
-      if (ci.messageIndexLength > 0) {
-        message_indexes_found = true;
-        break;
-      }
-    }
-    if (!message_indexes_found) {
-      RCUTILS_LOG_WARN_NAMED(LOG_NAME,
-                             "no message indices found, falling back to reading in file order");
-      read_order_ = mcap::ReadMessageOptions::ReadOrder::FileOrder;
-    }
     has_read_summary_ = true;
   }
 }
 
-#ifdef ROSBAG2_STORAGE_MCAP_HAS_SET_READ_ORDER
-void MCAPStorage::set_read_order(const rosbag2_storage::ReadOrder & read_order)
+bool MCAPStorage::message_indexes_present()
 {
-  auto next_read_order = read_order_;
+  ensure_summary_read();
+  for (const auto & ci : mcap_reader_->chunkIndexes()) {
+    if (ci.messageIndexLength > 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+#ifdef ROSBAG2_STORAGE_MCAP_HAS_SET_READ_ORDER
+bool MCAPStorage::set_read_order(const rosbag2_storage::ReadOrder & read_order)
+{
+  if (!has_read_summary_) {
+    throw std::runtime_error("set_read_order called before open()");
+  }
   switch (read_order.sort_by) {
     case rosbag2_storage::ReadOrder::ReceivedTimestamp:
+      if (!message_indexes_present()) {
+        RCUTILS_LOG_WARN_NAMED(
+          LOG_NAME, "attempted to read in receive timestamp order with no message index");
+        return false;
+      }
       if (read_order.reverse) {
-        next_read_order = mcap::ReadMessageOptions::ReadOrder::ReverseLogTimeOrder;
+        read_order_ = mcap::ReadMessageOptions::ReadOrder::ReverseLogTimeOrder;
       } else {
-        next_read_order = mcap::ReadMessageOptions::ReadOrder::LogTimeOrder;
+        read_order_ = mcap::ReadMessageOptions::ReadOrder::LogTimeOrder;
       }
       break;
     case rosbag2_storage::ReadOrder::File:
       if (!read_order.reverse) {
-        next_read_order = mcap::ReadMessageOptions::ReadOrder::FileOrder;
+        read_order_ = mcap::ReadMessageOptions::ReadOrder::FileOrder;
       } else {
-        throw std::runtime_error("Reverse file order reading not implemented.");
+        RCUTILS_LOG_WARN_NAMED(LOG_NAME, "reverse file-order reading not implemented");
+        return false;
       }
       break;
     case rosbag2_storage::ReadOrder::PublishedTimestamp:
-      throw std::runtime_error("PublishedTimestamp read order not yet implemented in ROS 2");
+      RCUTILS_LOG_WARN_NAMED(LOG_NAME, "publish timestamp order reading not implemented");
+      return false;
       break;
   }
-  if (next_read_order != read_order_) {
-    read_order_ = next_read_order;
-    reset_iterator();
-  }
+  reset_iterator();
+  return true;
 }
 #endif
 
@@ -622,6 +666,25 @@ std::vector<rosbag2_storage::TopicMetadata> MCAPStorage::get_all_topics_and_type
     out.push_back(topic.topic_metadata);
   }
   return out;
+}
+
+void MCAPStorage::get_all_message_definitions(
+  std::vector<rosbag2_storage::MessageDefinition> & definitions)
+{
+  ensure_summary_read();
+  auto schema_map = mcap_reader_->schemas();
+  definitions.clear();
+  definitions.reserve(schema_map.size());
+  for (const auto & [id, schema_ptr] : schema_map) {
+    std::string encoded_message_definition;
+    if (!schema_ptr->data.empty()) {
+      encoded_message_definition = std::string(
+        reinterpret_cast<const char *>(&(schema_ptr->data[0])), schema_ptr->data.size());
+    }
+    std::string type_hash;  // TODO(jrms): save and get type_hash in mcap schema
+    definitions.push_back(
+      {schema_ptr->name, schema_ptr->encoding, encoded_message_definition, type_hash});
+  }
 }
 
 /** ReadOnlyInterface **/
@@ -701,7 +764,8 @@ void MCAPStorage::write(
   }
 }
 
-void MCAPStorage::create_topic(const rosbag2_storage::TopicMetadata & topic)
+void MCAPStorage::create_topic(const rosbag2_storage::TopicMetadata & topic,
+                               const rosbag2_storage::MessageDefinition & message_definition)
 {
   auto topic_info = rosbag2_storage::TopicInformation{topic, 0};
   const auto topic_it = topics_.find(topic.name);
@@ -719,20 +783,11 @@ void MCAPStorage::create_topic(const rosbag2_storage::TopicMetadata & topic)
   if (schema_it == schema_ids_.end()) {
     mcap::Schema schema;
     schema.name = datatype;
-    try {
-      auto [format, full_text] = msgdef_cache_.get_full_text(datatype);
-      if (format == rosbag2_storage_mcap::internal::Format::MSG) {
-        schema.encoding = "ros2msg";
-      } else {
-        schema.encoding = "ros2idl";
-      }
-      schema.data.assign(reinterpret_cast<const std::byte *>(full_text.data()),
-                         reinterpret_cast<const std::byte *>(full_text.data() + full_text.size()));
-    } catch (rosbag2_storage_mcap::internal::DefinitionNotFoundError & err) {
-      RCUTILS_LOG_ERROR_NAMED(LOG_NAME, "definition file(s) missing for %s: missing %s",
-                              datatype.c_str(), err.what());
-      schema.encoding = "";
-    }
+    schema.encoding = message_definition.encoding;
+    const auto & full_text = message_definition.encoded_message_definition;
+    schema.data.assign(reinterpret_cast<const std::byte *>(full_text.data()),
+                       reinterpret_cast<const std::byte *>(full_text.data() + full_text.size()));
+    // TODO(jrms): save message_definition.type_hash in mcap schema
     mcap_writer_->addSchema(schema);
     schema_ids_.emplace(datatype, schema.id);
     schema_id = schema.id;
@@ -749,6 +804,7 @@ void MCAPStorage::create_topic(const rosbag2_storage::TopicMetadata & topic)
     channel.schemaId = schema_id;
     channel.metadata.emplace("offered_qos_profiles",
                              topic_info.topic_metadata.offered_qos_profiles);
+    channel.metadata.emplace("topic_type_hash", topic_info.topic_metadata.type_description_hash);
     mcap_writer_->addChannel(channel);
     channel_ids_.emplace(topic.name, channel.id);
   }
@@ -756,7 +812,12 @@ void MCAPStorage::create_topic(const rosbag2_storage::TopicMetadata & topic)
 
 void MCAPStorage::remove_topic(const rosbag2_storage::TopicMetadata & topic)
 {
-  topics_.erase(topic.name);
+  const auto topic_it = topics_.find(topic.name);
+  if (topic_it != topics_.end()) {
+    const auto & datatype = topic_it->second.topic_metadata.type;
+    schema_ids_.erase(datatype);
+    topics_.erase(topic.name);
+  }
 }
 
 #ifdef ROSBAG2_STORAGE_MCAP_HAS_UPDATE_METADATA
@@ -767,6 +828,14 @@ void MCAPStorage::update_metadata(const rosbag2_storage::BagMetadata & bag_metad
       "MCAP storage plugin does not support message compression, "
       "consider using chunk compression by setting `compression: 'Zstd'` in storage config");
   }
+
+  mcap::Metadata metadata;
+  metadata.name = "rosbag2";
+  metadata.metadata = {{"ROS_DISTRO", bag_metadata.ros_distro}};
+  mcap::Status status = mcap_writer_->write(metadata);
+  if (!status.ok()) {
+    OnProblem(status);
+  }
 }
 #endif
 
@@ -775,3 +844,7 @@ void MCAPStorage::update_metadata(const rosbag2_storage::BagMetadata & bag_metad
 #include "pluginlib/class_list_macros.hpp"  // NOLINT
 PLUGINLIB_EXPORT_CLASS(rosbag2_storage_plugins::MCAPStorage,
                        rosbag2_storage::storage_interfaces::ReadWriteInterface)
+
+#ifdef _WIN32
+  #pragma warning(pop)
+#endif
