@@ -2,21 +2,18 @@
 Changelog for package rosbag2_transport
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.24.0 (2023-07-11)
+0.22.2 (2023-07-14)
 -------------------
-* Fix for rosbag2_transport::Recorder failures due to the unhandled exceptions (`#1382 <https://github.com/ros2/rosbag2/issues/1382>`_)
-* When using sim time, wait for /clock before beginning recording (`#1378 <https://github.com/ros2/rosbag2/issues/1378>`_)
-* Fix for possible freeze in Recorder::stop() (`#1381 <https://github.com/ros2/rosbag2/issues/1381>`_)
-* Revert "Don't record sim-time messages before first /clock (`#1354 <https://github.com/ros2/rosbag2/issues/1354>`_)" (`#1377 <https://github.com/ros2/rosbag2/issues/1377>`_)
-* Don't record sim-time messages before first /clock (`#1354 <https://github.com/ros2/rosbag2/issues/1354>`_)
-* Fix a clang warning about uninitialized variable. (`#1370 <https://github.com/ros2/rosbag2/issues/1370>`_)
-* [bugfix] for parameters not passing to recorder's node from child component (`#1360 <https://github.com/ros2/rosbag2/issues/1360>`_)
-* Change subscriptions from GenericSubscripton to SubscriptionBase (`#1337 <https://github.com/ros2/rosbag2/issues/1337>`_)
-* Add recorder stop() API (`#1300 <https://github.com/ros2/rosbag2/issues/1300>`_)
-* Contributors: Chris Lalancette, Emerson Knapp, Michael Orlov, Patrick Roncagliolo
+* Fix for rosbag2_transport::Recorder failures due to the unhandled exceptions (`#1402 <https://github.com/ros2/rosbag2/issues/1402>`_)
+* Fix for possible freeze in Recorder::stop() (`#1387 <https://github.com/ros2/rosbag2/issues/1387>`_)
+* Wait for /clock before beginning recording when using sim time (`#1391 <https://github.com/ros2/rosbag2/issues/1391>`_)
+* Contributors: Michael Orlov, Patrick Roncagliolo
 
-0.23.0 (2023-04-28)
+0.22.1 (2023-05-18)
 -------------------
+* Change subscriptions from GenericSubscripton to SubscriptionBase (`#1338 <https://github.com/ros2/rosbag2/issues/1338>`_)
+* Add recorder stop() API (`#1300 <https://github.com/ros2/rosbag2/issues/1300>`_) (`#1334 <https://github.com/ros2/rosbag2/issues/1334>`_)
+* Contributors: Emerson Knapp, mergify[bot]
 
 0.22.0 (2023-04-18)
 -------------------

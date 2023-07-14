@@ -2,13 +2,13 @@
 Changelog for package rosbag2_examples_py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.24.0 (2023-07-11)
+0.22.2 (2023-07-14)
 -------------------
-* Fix a warning from python setuptools. (`#1312 <https://github.com/ros2/rosbag2/issues/1312>`_)
-* Contributors: Chris Lalancette
 
-0.23.0 (2023-04-28)
+0.22.1 (2023-05-18)
 -------------------
+* Fix a warning from python setuptools. (`#1312 <https://github.com/ros2/rosbag2/issues/1312>`_) (`#1314 <https://github.com/ros2/rosbag2/issues/1314>`_)
+* Contributors: mergify[bot]
 
 0.22.0 (2023-04-18)
 -------------------

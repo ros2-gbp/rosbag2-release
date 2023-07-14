@@ -2,15 +2,15 @@
 Changelog for package rosbag2_py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.24.0 (2023-07-11)
+0.22.2 (2023-07-14)
 -------------------
-* Gracefully handle SIGINT and SIGTERM in rosbag2 recorder (`#1301 <https://github.com/ros2/rosbag2/issues/1301>`_)
-* Implement storing and loading ROS_DISTRO from metadata.yaml and mcap files (`#1241 <https://github.com/ros2/rosbag2/issues/1241>`_)
-* Add binding to close the writer (`#1339 <https://github.com/ros2/rosbag2/issues/1339>`_)
-* Contributors: Emerson Knapp, Michael Orlov, Yadu
+* Gracefully handle SIGINT and SIGTERM in rosbag2 recorder (`#1394 <https://github.com/ros2/rosbag2/issues/1394>`_)
+* Contributors: Michael Orlov
 
-0.23.0 (2023-04-28)
+0.22.1 (2023-05-18)
 -------------------
+* Add binding to close the writer (`#1339 <https://github.com/ros2/rosbag2/issues/1339>`_) (`#1340 <https://github.com/ros2/rosbag2/issues/1340>`_)
+* Contributors: mergify[bot]
 
 0.22.0 (2023-04-18)
 -------------------

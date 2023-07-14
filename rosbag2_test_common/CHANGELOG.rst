@@ -2,14 +2,15 @@
 Changelog for package rosbag2_test_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.24.0 (2023-07-11)
+0.22.2 (2023-07-14)
 -------------------
-* Add extra checks in execute_and_wait_until_completion(..) (`#1346 <https://github.com/ros2/rosbag2/issues/1346>`_)
-* Address flakiness in rosbag2_play_end_to_end tests (`#1297 <https://github.com/ros2/rosbag2/issues/1297>`_)
+* Add extra checks in execute_and_wait_until_completion(..) (`#1356 <https://github.com/ros2/rosbag2/issues/1356>`_)
 * Contributors: Michael Orlov
 
-0.23.0 (2023-04-28)
+0.22.1 (2023-05-18)
 -------------------
+* Address flakiness in rosbag2_play_end_to_end tests (`#1297 <https://github.com/ros2/rosbag2/issues/1297>`_) (`#1330 <https://github.com/ros2/rosbag2/issues/1330>`_)
+* Contributors: mergify[bot]
 
 0.22.0 (2023-04-18)
 -------------------

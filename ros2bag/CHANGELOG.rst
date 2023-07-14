@@ -2,17 +2,16 @@
 Changelog for package ros2bag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.24.0 (2023-07-11)
+0.22.2 (2023-07-14)
 -------------------
-* When using sim time, wait for /clock before beginning recording (`#1378 <https://github.com/ros2/rosbag2/issues/1378>`_)
-* Revert "Don't record sim-time messages before first /clock (`#1354 <https://github.com/ros2/rosbag2/issues/1354>`_)" (`#1377 <https://github.com/ros2/rosbag2/issues/1377>`_)
-* Don't record sim-time messages before first /clock (`#1354 <https://github.com/ros2/rosbag2/issues/1354>`_)
-* Fix wrong descritpion for '--ignore-leaf-topics' (`#1344 <https://github.com/ros2/rosbag2/issues/1344>`_)
-* Cleanup the help text for ros2 bag record. (`#1329 <https://github.com/ros2/rosbag2/issues/1329>`_)
-* Contributors: Barry Xu, Chris Lalancette, Emerson Knapp
+* Wait for /clock before beginning recording when using sim time (`#1391 <https://github.com/ros2/rosbag2/issues/1391>`_)
+* Fix wrong descritpion for '--ignore-leaf-topics' (`#1345 <https://github.com/ros2/rosbag2/issues/1345>`_)
+* Contributors: Barry Xu
 
-0.23.0 (2023-04-28)
+0.22.1 (2023-05-18)
 -------------------
+* Cleanup the help text for ros2 bag record. (`#1329 <https://github.com/ros2/rosbag2/issues/1329>`_) (`#1333 <https://github.com/ros2/rosbag2/issues/1333>`_)
+* Contributors: mergify[bot]
 
 0.22.0 (2023-04-18)
 -------------------

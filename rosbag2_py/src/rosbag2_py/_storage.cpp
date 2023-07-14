@@ -229,8 +229,7 @@ PYBIND11_MODULE(_storage, m) {
         std::vector<rosbag2_storage::TopicInformation> topics_with_message_count,
         std::string compression_format,
         std::string compression_mode,
-        std::unordered_map<std::string, std::string> custom_data,
-        std::string ros_distro)
+        std::unordered_map<std::string, std::string> custom_data)
       {
         return rosbag2_storage::BagMetadata{
           version,
@@ -244,11 +243,10 @@ PYBIND11_MODULE(_storage, m) {
           topics_with_message_count,
           compression_format,
           compression_mode,
-          custom_data,
-          ros_distro,
+          custom_data
         };
       }),
-    pybind11::arg("version") = rosbag2_storage::BagMetadata{}.version,
+    pybind11::arg("version") = 7,
     pybind11::arg("bag_size") = 0,
     pybind11::arg("storage_identifier") = "",
     pybind11::arg("relative_file_paths") = std::vector<std::string>(),
@@ -260,8 +258,7 @@ PYBIND11_MODULE(_storage, m) {
     pybind11::arg("topics_with_message_count") = std::vector<rosbag2_storage::TopicInformation>(),
     pybind11::arg("compression_format") = "",
     pybind11::arg("compression_mode") = "",
-    pybind11::arg("custom_data") = std::unordered_map<std::string, std::string>(),
-    pybind11::arg("ros_distro") = "")
+    pybind11::arg("custom_data") = std::unordered_map<std::string, std::string>())
   .def_readwrite("version", &rosbag2_storage::BagMetadata::version)
   .def_readwrite("bag_size", &rosbag2_storage::BagMetadata::bag_size)
   .def_readwrite("storage_identifier", &rosbag2_storage::BagMetadata::storage_identifier)
@@ -290,7 +287,6 @@ PYBIND11_MODULE(_storage, m) {
   .def_readwrite("compression_format", &rosbag2_storage::BagMetadata::compression_format)
   .def_readwrite("compression_mode", &rosbag2_storage::BagMetadata::compression_mode)
   .def_readwrite("custom_data", &rosbag2_storage::BagMetadata::custom_data)
-  .def_readwrite("ros_distro", &rosbag2_storage::BagMetadata::ros_distro)
   .def(
     "__repr__", [](const rosbag2_storage::BagMetadata & metadata) {
       return format_bag_meta_data(metadata);

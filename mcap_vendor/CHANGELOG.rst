@@ -2,12 +2,10 @@
 Changelog for package mcap_vendor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.24.0 (2023-07-11)
+0.22.2 (2023-07-14)
 -------------------
-* Update mcap to v1.1.0 (`#1361 <https://github.com/ros2/rosbag2/issues/1361>`_)
-* Contributors: Emerson Knapp
 
-0.23.0 (2023-04-28)
+0.22.1 (2023-05-18)
 -------------------
 
 0.22.0 (2023-04-18)

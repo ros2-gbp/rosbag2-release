@@ -2,12 +2,12 @@
 Changelog for package rosbag2_storage_mcap
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.24.0 (2023-07-11)
+0.22.2 (2023-07-14)
 -------------------
-* Implement storing and loading ROS_DISTRO from metadata.yaml and mcap files (`#1241 <https://github.com/ros2/rosbag2/issues/1241>`_)
+* Add ROS_DISTRO metadata record to mcap file when opening for writing (`#1371 <https://github.com/ros2/rosbag2/issues/1371>`_)
 * Contributors: Emerson Knapp
 
-0.23.0 (2023-04-28)
+0.22.1 (2023-05-18)
 -------------------
 
 0.22.0 (2023-04-18)

@@ -1,14 +1,13 @@
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package rosbag2_storage_default_plugins
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package rosbag2_storage_sqlite3
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.24.0 (2023-07-11)
+0.22.2 (2023-07-14)
 -------------------
-* Implement storing and loading ROS_DISTRO from metadata.yaml and mcap files (`#1241 <https://github.com/ros2/rosbag2/issues/1241>`_)
-* Store metadata in db3 file (`#1294 <https://github.com/ros2/rosbag2/issues/1294>`_)
-* Contributors: Emerson Knapp, Michael Orlov
+* Store metadata in db3 file (`#1319 <https://github.com/ros2/rosbag2/issues/1319>`_)
+* Contributors: Michael Orlov
 
-0.23.0 (2023-04-28)
+0.22.1 (2023-05-18)
 -------------------
 
 0.22.0 (2023-04-18)

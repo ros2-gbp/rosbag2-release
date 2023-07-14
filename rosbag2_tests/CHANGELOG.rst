@@ -2,14 +2,13 @@
 Changelog for package rosbag2_tests
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.24.0 (2023-07-11)
+0.22.2 (2023-07-14)
 -------------------
-* Implement storing and loading ROS_DISTRO from metadata.yaml and mcap files (`#1241 <https://github.com/ros2/rosbag2/issues/1241>`_)
-* Address flakiness in rosbag2_play_end_to_end tests (`#1297 <https://github.com/ros2/rosbag2/issues/1297>`_)
-* Contributors: Emerson Knapp, Michael Orlov
 
-0.23.0 (2023-04-28)
+0.22.1 (2023-05-18)
 -------------------
+* Address flakiness in rosbag2_play_end_to_end tests (`#1297 <https://github.com/ros2/rosbag2/issues/1297>`_) (`#1330 <https://github.com/ros2/rosbag2/issues/1330>`_)
+* Contributors: mergify[bot]
 
 0.22.0 (2023-04-18)
 -------------------
