@@ -95,7 +95,7 @@ class RecordVerb(VerbExtension):
                  'It has no effect if --no-discovery is enabled.')
         parser.add_argument(
             '--ignore-leaf-topics', action='store_true',
-            help='Ignore topics without a publisher.')
+            help='Ignore topics without a subscription.')
         parser.add_argument(
             '--qos-profile-overrides-path', type=FileType('r'),
             help='Path to a yaml file defining overrides of the QoS profile for specific topics.')
@@ -129,7 +129,8 @@ class RecordVerb(VerbExtension):
             help='Start the recorder in a paused state.')
         parser.add_argument(
             '--use-sim-time', action='store_true', default=False,
-            help='Use simulation time.')
+            help='Use simulation time for message timestamps by subscribing to the /clock topic. '
+                 'Until first /clock message is received, no messages will be written to bag.')
         parser.add_argument(
             '--node-name', type=str, default='rosbag2_recorder',
             help='Specify the recorder node name. Default is %(default)s.')
@@ -203,6 +204,11 @@ class RecordVerb(VerbExtension):
                     qos_profile_dict)
             except (InvalidQoSProfileException, ValueError) as e:
                 return print_error(str(e))
+
+        if args.use_sim_time and args.no_discovery:
+            return print_error(
+                '--use-sim-time and --no-discovery both set, but are incompatible settings. '
+                'The /clock topic needs to be discovered to record with sim time.')
 
         # Prepare custom_data dictionary
         custom_data = {}
