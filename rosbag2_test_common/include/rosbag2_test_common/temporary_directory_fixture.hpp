@@ -42,14 +42,6 @@ public:
   std::string temporary_dir_path_;
 };
 
-/**
- * @brief parametrizes the temporary directory fixture above with a string parameter,
- * which can be used for testing across several storage plugins.
- */
-class ParametrizedTemporaryDirectoryFixture
-  : public TemporaryDirectoryFixture,
-  public WithParamInterface<std::string> {};
-
 }  // namespace rosbag2_test_common
 
 #endif  // ROSBAG2_TEST_COMMON__TEMPORARY_DIRECTORY_FIXTURE_HPP_

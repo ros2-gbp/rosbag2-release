@@ -8,10 +8,9 @@ if(NOT CMAKE_C_STANDARD)
   set(CMAKE_C_STANDARD 99)
 endif()
 
-# Default to C++17
+# Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  set(CMAKE_CXX_STANDARD 14)
 endif()
 
 # Windows supplies macros for min and max by default. We should only use min and max from stl
@@ -35,7 +34,6 @@ if(BUILD_TESTING)
   find_package(rcpputils REQUIRED)
   find_package(rosbag2_compression REQUIRED)
   find_package(rosbag2_cpp REQUIRED)
-  find_package(rosbag2_interfaces REQUIRED)
   find_package(rosbag2_storage REQUIRED)
   find_package(rosbag2_storage_default_plugins REQUIRED)
   find_package(rosbag2_test_common REQUIRED)
@@ -44,17 +42,16 @@ if(BUILD_TESTING)
 
   ament_add_gmock(test_rosbag2_record_end_to_end
     test/rosbag2_tests/test_rosbag2_record_end_to_end.cpp
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    TIMEOUT 120)
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
   if(TARGET test_rosbag2_record_end_to_end)
-    target_link_libraries(test_rosbag2_record_end_to_end
-      rclcpp::rclcpp
-      rosbag2_compression::rosbag2_compression
-      rosbag2_compression_zstd::rosbag2_compression_zstd
-      rosbag2_storage::rosbag2_storage
-      rosbag2_test_common::rosbag2_test_common
-      ${test_msgs_TARGETS}
-    )
+    ament_target_dependencies(test_rosbag2_record_end_to_end
+      rclcpp
+      rosbag2_compression
+      rosbag2_compression_zstd
+      rosbag2_storage
+      rosbag2_storage_default_plugins
+      rosbag2_test_common
+      test_msgs)
     ament_add_test_label(test_rosbag2_record_end_to_end xfail)
   endif()
 
@@ -62,46 +59,44 @@ if(BUILD_TESTING)
     test/rosbag2_tests/test_rosbag2_play_end_to_end.cpp
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
   if(TARGET test_rosbag2_play_end_to_end)
-    target_link_libraries(test_rosbag2_play_end_to_end
-      rclcpp::rclcpp
-      ${rosbag2_interfaces_TARGETS}
-      rosbag2_storage::rosbag2_storage
-      rosbag2_test_common::rosbag2_test_common
-      ${test_msgs_TARGETS}
-    )
+    ament_target_dependencies(test_rosbag2_play_end_to_end
+      rclcpp
+      rosbag2_storage
+      rosbag2_storage_default_plugins
+      rosbag2_test_common
+      test_msgs)
+    ament_add_test_label(test_rosbag2_play_end_to_end xfail)
   endif()
 
   ament_add_gmock(test_rosbag2_info_end_to_end
     test/rosbag2_tests/test_rosbag2_info_end_to_end.cpp
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
   if(TARGET test_rosbag2_info_end_to_end)
-    target_link_libraries(test_rosbag2_info_end_to_end
-      rosbag2_storage::rosbag2_storage
-      rosbag2_test_common::rosbag2_test_common
-    )
+    ament_target_dependencies(test_rosbag2_info_end_to_end
+      rosbag2_storage
+      rosbag2_test_common)
+    ament_add_test_label(test_rosbag2_info_end_to_end xfail)
   endif()
 
   ament_add_gmock(test_converter
     test/rosbag2_tests/test_converter.cpp
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
   if(TARGET test_converter)
-    target_link_libraries(test_converter
-      rosbag2_cpp::rosbag2_cpp
-      rosbag2_test_common::rosbag2_test_common
-      ${test_msgs_TARGETS}
-    )
+    ament_target_dependencies(test_converter
+      rosbag2_cpp
+      rosbag2_test_common
+      test_msgs)
   endif()
 
   ament_add_gmock(test_reindex
     test/rosbag2_tests/test_reindexer.cpp)
   if(TARGET test_reindex)
-    target_link_libraries(test_reindex
-      rclcpp::rclcpp
-      rosbag2_cpp::rosbag2_cpp
-      rosbag2_storage::rosbag2_storage
-      rosbag2_test_common::rosbag2_test_common
-      ${std_msgs_TARGETS}
-    )
+    ament_target_dependencies(test_reindex
+      rclcpp
+      rosbag2_cpp
+      rosbag2_storage
+      rosbag2_storage_default_plugins
+      rosbag2_test_common)
   endif()
 
 
@@ -109,13 +104,13 @@ if(BUILD_TESTING)
     test/rosbag2_tests/test_rosbag2_cpp_api.cpp
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
   if(TARGET test_rosbag2_cpp_api)
-    target_link_libraries(test_rosbag2_cpp_api
-      rclcpp::rclcpp
-      rosbag2_cpp::rosbag2_cpp
-      rosbag2_storage::rosbag2_storage
-      rosbag2_test_common::rosbag2_test_common
-      ${test_msgs_TARGETS}
-    )
+    ament_target_dependencies(test_rosbag2_cpp_api
+      rclcpp
+      rosbag2_cpp
+      rosbag2_storage
+      rosbag2_storage_default_plugins
+      rosbag2_test_common
+      test_msgs)
   endif()
 endif()
 

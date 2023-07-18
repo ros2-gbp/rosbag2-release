@@ -2,38 +2,26 @@
 Changelog for package sqlite3_vendor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.22.2 (2023-07-14)
+0.15.7 (2023-07-18)
 -------------------
 
-0.22.1 (2023-05-18)
+0.15.6 (2023-06-05)
 -------------------
 
-0.22.0 (2023-04-18)
+0.15.5 (2023-04-25)
+-------------------
+* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_) (`#1224 <https://github.com/ros2/rosbag2/issues/1224>`_)
+* Contributors: mergify[bot]
+
+0.15.4 (2023-01-10)
 -------------------
 
-0.21.0 (2023-04-12)
+0.15.3 (2022-11-07)
 -------------------
-* Update to sqlite3 3.37.2 (`#1274 <https://github.com/ros2/rosbag2/issues/1274>`_)
-  This matches version distributed in Ubuntu Jammy.
-* Contributors: Scott K Logan
+* :man_farmer: Fixes policy CMP0135 warning for CMake >= 3.24 (`#1084 <https://github.com/ros2/rosbag2/issues/1084>`_) (`#1096 <https://github.com/ros2/rosbag2/issues/1096>`_)
+* Contributors: mergify[bot]
 
-0.20.0 (2023-02-14)
--------------------
-
-0.19.0 (2023-01-13)
--------------------
-* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_)
-* Contributors: Michael Orlov
-
-0.18.0 (2022-11-15)
--------------------
-* Fixes policy CMP0135 warning for CMake >= 3.24 (`#1084 <https://github.com/ros2/rosbag2/issues/1084>`_)
-* Contributors: Cristóbal Arroyo
-
-0.17.0 (2022-07-30)
--------------------
-
-0.16.0 (2022-05-11)
+0.15.2 (2022-05-11)
 -------------------
 
 0.15.1 (2022-04-06)

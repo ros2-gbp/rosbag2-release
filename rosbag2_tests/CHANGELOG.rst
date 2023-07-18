@@ -2,51 +2,28 @@
 Changelog for package rosbag2_tests
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.22.2 (2023-07-14)
+0.15.7 (2023-07-18)
 -------------------
 
-0.22.1 (2023-05-18)
+0.15.6 (2023-06-05)
 -------------------
-* Address flakiness in rosbag2_play_end_to_end tests (`#1297 <https://github.com/ros2/rosbag2/issues/1297>`_) (`#1330 <https://github.com/ros2/rosbag2/issues/1330>`_)
+
+0.15.5 (2023-04-25)
+-------------------
+* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_) (`#1224 <https://github.com/ros2/rosbag2/issues/1224>`_)
 * Contributors: mergify[bot]
 
-0.22.0 (2023-04-18)
--------------------
-* Add type_hash in MessageDefinition struct (`#1296 <https://github.com/ros2/rosbag2/issues/1296>`_)
-* Contributors: Michael Orlov
-
-0.21.0 (2023-04-12)
--------------------
-* rosbag2_cpp: move local message definition source out of MCAP plugin (`#1265 <https://github.com/ros2/rosbag2/issues/1265>`_)
-* Update rosbag2 to C++17. (`#1238 <https://github.com/ros2/rosbag2/issues/1238>`_)
-* Use target_link_libraries instead of ament_target_dependencies (`#1202 <https://github.com/ros2/rosbag2/issues/1202>`_)
-* Contributors: Chris Lalancette, Daisuke Nishimatsu, Michael Orlov, james-rms
-
-0.20.0 (2023-02-14)
+0.15.4 (2023-01-10)
 -------------------
 
-0.19.0 (2023-01-13)
+0.15.3 (2022-11-07)
 -------------------
-* rosbag2_storage: set MCAP as default plugin (`#1160 <https://github.com/ros2/rosbag2/issues/1160>`_)
-* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_)
-* Parametrize all rosbag2_tests for both supported storage plugins (`#1221 <https://github.com/ros2/rosbag2/issues/1221>`_)
-* Make rosbag2_tests agnostic to storage implementation (`#1192 <https://github.com/ros2/rosbag2/issues/1192>`_)
-* Contributors: Emerson Knapp, Michael Orlov, james-rms
+* Fix for ros2 bag play exit with non-zero code on SIGINT (`#1126 <https://github.com/ros2/rosbag2/issues/1126>`_) (`#1147 <https://github.com/ros2/rosbag2/issues/1147>`_)
+* Get rid from attempt to open DB file in `wait_for_db()` test fixture (`#1141 <https://github.com/ros2/rosbag2/issues/1141>`_) (`#1148 <https://github.com/ros2/rosbag2/issues/1148>`_)
+* Readers/info can accept a single bag storage file, and detect its storage id automatically (`#1072 <https://github.com/ros2/rosbag2/issues/1072>`_) (`#1077 <https://github.com/ros2/rosbag2/issues/1077>`_)
+* Contributors: mergify[bot]
 
-0.18.0 (2022-11-15)
--------------------
-* Get rid from attempt to open DB file in `wait_for_db()` test fixture (`#1141 <https://github.com/ros2/rosbag2/issues/1141>`_)
-* Fix for ros2 bag play exit with non-zero code on SIGINT (`#1126 <https://github.com/ros2/rosbag2/issues/1126>`_)
-* Move sqlite3 storage implementation to rosbag2_storage_sqlite3 package (`#1113 <https://github.com/ros2/rosbag2/issues/1113>`_)
-* Readers/info can accept a single bag storage file, and detect its storage id automatically (`#1072 <https://github.com/ros2/rosbag2/issues/1072>`_)
-* Contributors: Emerson Knapp, Michael Orlov
-
-0.17.0 (2022-07-30)
--------------------
-* Add the ability to record any key/value pair in 'custom' field in metadata.yaml (`#1038 <https://github.com/ros2/rosbag2/issues/1038>`_)
-* Contributors: Hunter L. Allen, Tony Peng
-
-0.16.0 (2022-05-11)
+0.15.2 (2022-05-11)
 -------------------
 
 0.15.1 (2022-04-06)
