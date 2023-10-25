@@ -20,7 +20,7 @@
 #include "rosbag2_compression/sequential_compression_writer.hpp"
 #include "rosbag2_storage/serialized_bag_message.hpp"
 #include "rmw/rmw.h"
-#include "std_msgs/msg/byte_multi_array.hpp"
+#include "rosbag2_performance_benchmarking_msgs/msg/byte_array.hpp"
 
 #include "rosbag2_performance_benchmarking/config_utils.hpp"
 #include "rosbag2_performance_benchmarking/result_utils.hpp"
@@ -41,9 +41,10 @@ WriterBenchmark::WriterBenchmark(const std::string & name)
   }
 
   bag_config_ = config_utils::bag_config_from_node_parameters(*this);
-  if (bag_config_.storage_options.storage_id != "sqlite3") {
-    RCLCPP_ERROR(get_logger(), "Benchmarking only supported for sqlite3 for now");
-    return;
+
+  const auto number_of_threads = config_utils::get_number_of_threads_from_node_parameters(*this);
+  if (number_of_threads != 0) {
+    RCLCPP_WARN(get_logger(), "number_of_threads parameter is not used in writer_benchmark");
   }
 
   this->declare_parameter("results_file", bag_config_.storage_options.uri + "/results.csv");
@@ -154,14 +155,14 @@ void WriterBenchmark::create_producers()
         " messages before terminating");
     const unsigned int queue_max_size = 10;
     for (unsigned int i = 0; i < c.count; ++i) {
-      std::string topic = c.topic_root + std::to_string(i);
+      std::string topic = c.topic_root + "_" + std::to_string(i + 1);
       auto queue = std::make_shared<ByteMessageQueue>(queue_max_size, topic);
       queues_.push_back(queue);
       producers_.push_back(
         std::make_unique<ByteProducer>(
           c.producer_config,
           [] { /* empty lambda */},
-          [queue](std::shared_ptr<std_msgs::msg::ByteMultiArray> msg) {
+          [queue](std::shared_ptr<rosbag2_performance_benchmarking_msgs::msg::ByteArray> msg) {
             queue->push(msg);
           },
           [queue] {
@@ -192,7 +193,7 @@ void WriterBenchmark::create_writer()
     rosbag2_storage::TopicMetadata topic;
     topic.name = queue->topic_name();
     // TODO(adamdbrw) - replace with something more general if needed
-    topic.type = "std_msgs::msgs::ByteMultiArray";
+    topic.type = "rosbag2_performance_benchmarking_msgs/msg/ByteArray";
     topic.serialization_format = serialization_format;
     writer_->create_topic(topic);
   }

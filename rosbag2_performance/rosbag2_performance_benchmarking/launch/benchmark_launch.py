@@ -54,10 +54,9 @@ import sys
 import time
 
 from ament_index_python import get_package_share_directory
-
 import launch
-
 import launch_ros
+from rosbag2_py import get_default_storage_id
 
 import yaml
 
@@ -107,7 +106,7 @@ def _copy_config_files():
     """Copy benchmark and producers config files to benchmark folder."""
     global _bench_cfg_path, _producers_cfg_path
     # Copy yaml configs for current benchmark after benchmark is finished
-    benchmark_path = pathlib.Path(_producer_nodes[0]['parameters']['db_folder'])
+    benchmark_path = pathlib.Path(_producer_nodes[0]['parameters']['bag_folder'])
     shutil.copy(str(_bench_cfg_path), str(benchmark_path.with_name('benchmark.yaml')))
     shutil.copy(str(_producers_cfg_path), str(benchmark_path.with_name('producers.yaml')))
 
@@ -158,11 +157,12 @@ def _rosbag_proc_exited(event, context):
     """
     global _producer_idx, _result_writers, _rosbag_pid
 
-    # ROS2 bag returns 2 if terminated with SIGINT, which we expect here
-    if event.returncode != 2:
+    # ROS2 bag returns 0 if terminated with SIGINT, which we expect here
+    if event.returncode != 0:
         _rosbag_pid = None
         return [
-            launch.actions.LogInfo(msg='Rosbag2 record error. Shutting down benchmark.'),
+            launch.actions.LogInfo(msg='Rosbag2 record error. Shutting down benchmark. '
+                                       'Return code = ' + str(event.returncode)),
             launch.actions.EmitEvent(
                 event=launch.events.Shutdown(
                     reason='Rosbag2 record error'
@@ -196,24 +196,31 @@ def _producer_node_exited(event, context):
 
     # Handle clearing bag files
     if not node_params['preserve_bags']:
-        db_files = pathlib.Path.cwd().joinpath(node_params['db_folder']).glob('*.db3')
-        stats_path = pathlib.Path.cwd().joinpath(node_params['db_folder'], 'bagfiles_info.yaml')
-        stats = {
-            'total_size': 0,
-            'bagfiles': []
-        }
+        storage_id = get_default_storage_id()
+        if node_params['storage_id'] != '':
+            storage_id = node_params['storage_id']
+        if storage_id == 'sqlite3' or storage_id == 'mcap':
+            file_ext_mask = '*.mcap' if storage_id == 'mcap' else '*.db3'
+            bag_files = pathlib.Path.cwd().joinpath(node_params['bag_folder']).glob(file_ext_mask)
+            stats_path = pathlib.Path.cwd().joinpath(node_params['bag_folder'],
+                                                     'bagfiles_info.yaml')
+            stats = {
+                'total_size': 0,
+                'bagfiles': []
+            }
 
-        # Delete rosbag files
-        for f in db_files:
-            filesize = f.stat().st_size
-            f.unlink()
-            stats['bagfiles'].append({f.name: {'size': filesize}})
-            stats['total_size'] += filesize
+            # Delete rosbag files
+            for f in bag_files:
+                filesize = f.stat().st_size
+                f.unlink()
+                stats['bagfiles'].append({f.name: {'size': filesize}})
+                stats['total_size'] += filesize
 
-        # Dump files size information
-        with open(stats_path, 'w') as stats_file:
-            yaml.dump(stats, stats_file)
-
+            # Dump files size information
+            with open(stats_path, 'w') as stats_file:
+                yaml.dump(stats, stats_file)
+        else:
+            print(f"Can't delete bag files. Unsupported storage_id = {storage_id}")
     # If we have non empty rosbag PID, then we need to kill it (end-to-end transport case)
     if _rosbag_pid is not None and transport:
         os.kill(_rosbag_pid, signal.SIGINT)
@@ -261,7 +268,7 @@ def generate_launch_description():
     benchmark_params = bench_cfg['benchmark']
 
     repeat_each = benchmark_params.get('repeat_each')
-    db_root_folder = benchmark_params.get('db_root_folder')
+    bag_root_folder = benchmark_params.get('bag_root_folder')
     summary_result_file = benchmark_params.get('summary_result_file')
     transport = not benchmark_params.get('no_transport')
     preserve_bags = benchmark_params.get('preserve_bags')
@@ -269,6 +276,7 @@ def generate_launch_description():
     # Producers options
     producers_params = bench_cfg['benchmark']['parameters']
 
+    storage_id = producers_params.get('storage_id', [''])
     max_cache_size_params = producers_params.get('max_cache_size')
     max_bag_size_params = producers_params.get('max_bag_size')
     compression_params = producers_params.get('compression')
@@ -297,7 +305,8 @@ def generate_launch_description():
                                            compression_queue_size,
                                            compression_threads,
                                            storage_config,
-                                           max_bag_size):
+                                           max_bag_size,
+                                           storage):
         # Storage conf parameter for each producer
         st_conf_filename = storage_config.replace('.yaml', '')
         storage_conf_path = ''
@@ -314,8 +323,9 @@ def generate_launch_description():
 
         # Generates unique title for producer
         node_title = 'run_' + \
-            '{i}_{cache}_{comp}_{comp_q}_{comp_t}_{st_conf}_{bag_size}'.format(
+            '{i}_{storage}_{cache}_{comp}_{comp_q}_{comp_t}_{st_conf}_{bag_size}'.format(
                 i=i,
+                storage=storage,
                 cache=cache,
                 comp=compression if compression else 'default_compression',
                 comp_q=compression_queue_size,
@@ -325,13 +335,13 @@ def generate_launch_description():
             )
 
         # Result file path for producer
-        result_file = pathlib.Path(db_root_folder).joinpath(
+        result_file = pathlib.Path(bag_root_folder).joinpath(
             benchmark_dir_name,
             summary_result_file
         )
 
-        # Database folder path for producer
-        db_folder = pathlib.Path(db_root_folder).joinpath(
+        # Bag folder path for producer
+        bag_folder = pathlib.Path(bag_root_folder).joinpath(
             benchmark_dir_name,
             node_title
         )
@@ -340,7 +350,7 @@ def generate_launch_description():
         params_cross_section.append(
             {
                 'node_title': node_title,
-                'db_folder': str(db_folder),
+                'bag_folder': str(bag_folder),
                 'cache': cache,
                 'preserve_bags': preserve_bags,
                 'transport': transport,
@@ -350,7 +360,8 @@ def generate_launch_description():
                 'compression_threads': compression_threads,
                 'storage_config_file': str(storage_conf_path),
                 'config_file': str(_producers_cfg_path),
-                'max_bag_size': max_bag_size
+                'max_bag_size': max_bag_size,
+                'storage_id': str(storage)
             }
         )
 
@@ -363,7 +374,8 @@ def generate_launch_description():
             compression_queue_size,
             compression_threads,
             storage_config,
-            max_bag_size)
+            max_bag_size,
+            storage)
         for i in range(0, repeat_each)
         for cache in max_cache_size_params
         for compression in compression_params
@@ -371,6 +383,7 @@ def generate_launch_description():
         for compression_threads in compression_threads_params
         for storage_config in storage_config_file_params
         for max_bag_size in max_bag_size_params
+        for storage in storage_id
     ]
 
     ld = launch.LaunchDescription()
@@ -384,12 +397,14 @@ def generate_launch_description():
             producer_param['config_file'],
             {'max_cache_size': producer_param['cache']},
             {'max_bag_size': producer_param['max_bag_size']},
-            {'db_folder': producer_param['db_folder']},
+            {'bag_folder': producer_param['bag_folder']},
             {'results_file': producer_param['result_file']},
             {'compression_queue_size': producer_param['compression_queue_size']},
             {'compression_threads': producer_param['compression_threads']}
         ]
 
+        if producer_param['storage_id'] != '':
+            parameters.append({'storage_id': producer_param['storage_id']})
         if producer_param['storage_config_file'] != '':
             parameters.append({'storage_config_file': producer_param['storage_config_file']})
         if producer_param['compression_format'] != '':
@@ -414,6 +429,11 @@ def generate_launch_description():
 
             # ROS2 bag process for recording messages
             rosbag_args = []
+            if producer_param['storage_id']:
+                rosbag_args += [
+                    '-s',
+                    str(producer_param['storage_id'])
+                ]
             if producer_param['storage_config_file']:
                 rosbag_args += [
                     '--storage-config-file',
@@ -448,7 +468,7 @@ def generate_launch_description():
                     '-b',
                     str(producer_param['max_bag_size'])
                 ]
-            rosbag_args += ['-o', str(producer_param['db_folder'])]
+            rosbag_args += ['-o', str(producer_param['bag_folder'])]
             rosbag_process = launch.actions.ExecuteProcess(
                 sigkill_timeout=launch.substitutions.LaunchConfiguration(
                     'sigkill_timeout', default=60),

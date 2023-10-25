@@ -2,31 +2,51 @@
 Changelog for package rosbag2_test_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.15.8 (2023-09-19)
+0.22.4 (2023-10-24)
 -------------------
 
-0.15.7 (2023-07-18)
+0.22.3 (2023-09-08)
 -------------------
 
-0.15.6 (2023-06-05)
+0.22.2 (2023-07-14)
 -------------------
-* Add extra checks in execute_and_wait_until_completion(..) (`#1346 <https://github.com/ros2/rosbag2/issues/1346>`_) (`#1357 <https://github.com/ros2/rosbag2/issues/1357>`_)
+* Add extra checks in execute_and_wait_until_completion(..) (`#1356 <https://github.com/ros2/rosbag2/issues/1356>`_)
 * Contributors: Michael Orlov
 
-0.15.5 (2023-04-25)
+0.22.1 (2023-05-18)
 -------------------
-* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_) (`#1224 <https://github.com/ros2/rosbag2/issues/1224>`_)
+* Address flakiness in rosbag2_play_end_to_end tests (`#1297 <https://github.com/ros2/rosbag2/issues/1297>`_) (`#1330 <https://github.com/ros2/rosbag2/issues/1330>`_)
 * Contributors: mergify[bot]
 
-0.15.4 (2023-01-10)
+0.22.0 (2023-04-18)
 -------------------
 
-0.15.3 (2022-11-07)
+0.21.0 (2023-04-12)
 -------------------
-* Fix for ros2 bag play exit with non-zero code on SIGINT (`#1126 <https://github.com/ros2/rosbag2/issues/1126>`_) (`#1147 <https://github.com/ros2/rosbag2/issues/1147>`_)
-* Contributors: mergify[bot]
+* Update rosbag2 to C++17. (`#1238 <https://github.com/ros2/rosbag2/issues/1238>`_)
+* Use target_link_libraries instead of ament_target_dependencies (`#1202 <https://github.com/ros2/rosbag2/issues/1202>`_)
+* Contributors: Chris Lalancette, Daisuke Nishimatsu, Michael Orlov
 
-0.15.2 (2022-05-11)
+0.20.0 (2023-02-14)
+-------------------
+
+0.19.0 (2023-01-13)
+-------------------
+* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_)
+* rosbag2_py: parametrize tests across storage plugins (`#1203 <https://github.com/ros2/rosbag2/issues/1203>`_)
+* Contributors: Michael Orlov, james-rms
+
+0.18.0 (2022-11-15)
+-------------------
+* Fix for ros2 bag play exit with non-zero code on SIGINT (`#1126 <https://github.com/ros2/rosbag2/issues/1126>`_)
+* Contributors: Michael Orlov
+
+0.17.0 (2022-07-30)
+-------------------
+* Split up the include of rclcpp.hpp (`#1027 <https://github.com/ros2/rosbag2/issues/1027>`_)
+* Contributors: Chris Lalancette
+
+0.16.0 (2022-05-11)
 -------------------
 
 0.15.1 (2022-04-06)
