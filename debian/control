@@ -1,0 +1,12 @@
+Source: ros-iron-ros2bag
+Section: misc
+Priority: optional
+Maintainer: Michael Orlov <michael.orlov@apex.ai>
+Build-Depends: debhelper (>= 9.0.0), python3-pytest <!nocheck>, ros-iron-ament-copyright <!nocheck>, ros-iron-ament-flake8 <!nocheck>, ros-iron-ament-pep257 <!nocheck>, ros-iron-launch-testing <!nocheck>, ros-iron-launch-testing-ros <!nocheck>, ros-iron-rosbag2-storage-default-plugins <!nocheck>, ros-iron-rosbag2-test-common <!nocheck>, ros-iron-ros-workspace, python3-all, python3-setuptools, dh-python
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-iron-ros2bag
+Architecture: any
+Depends: ${python3:Depends}, ${misc:Depends}, ros-iron-ament-index-python, ros-iron-rclpy, ros-iron-ros2cli, ros-iron-rosbag2-py, ros-iron-ros-workspace
+Description: Entry point for rosbag in ROS 2
