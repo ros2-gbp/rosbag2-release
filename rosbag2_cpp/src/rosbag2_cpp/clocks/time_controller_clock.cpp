@@ -166,16 +166,6 @@ rcutils_time_point_value_t TimeControllerClock::now() const
   return impl_->ros_now();
 }
 
-/// @brief Convert an arbitrary ROSTime to a SteadyTime, based on the current reference snapshot.
-/// @param ros_time - time point in ROSTime
-/// @return time point in steady clock i.e. std::chrono::steady_clock
-std::chrono::steady_clock::time_point
-TimeControllerClock::ros_to_steady(rcutils_time_point_value_t ros_time) const
-{
-  std::lock_guard<std::mutex> lock(impl_->state_mutex);
-  return impl_->ros_to_steady(ros_time);
-}
-
 bool TimeControllerClock::sleep_until(rcutils_time_point_value_t until)
 {
   {
@@ -184,7 +174,10 @@ bool TimeControllerClock::sleep_until(rcutils_time_point_value_t until)
       impl_->cv.wait_for(lock, impl_->sleep_time_while_paused);
     } else {
       const auto steady_until = impl_->ros_to_steady(until);
-      impl_->cv.wait_until(lock, steady_until);
+      // wait only if necessary for performance
+      if (steady_until > impl_->now_fn()) {
+        impl_->cv.wait_until(lock, steady_until);
+      }
     }
     if (impl_->paused) {
       // Don't allow publishing any messages while paused
@@ -267,6 +260,13 @@ rclcpp::JumpHandler::SharedPtr TimeControllerClock::create_jump_callback(
   const rcl_jump_threshold_t & /* threshold */)
 {
   return nullptr;
+}
+
+std::chrono::steady_clock::time_point
+TimeControllerClock::ros_to_steady(rcutils_time_point_value_t ros_time) const
+{
+  std::lock_guard<std::mutex> lock(impl_->state_mutex);
+  return impl_->ros_to_steady(ros_time);
 }
 
 }  // namespace rosbag2_cpp
