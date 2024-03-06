@@ -1,0 +1,29 @@
+ros-rolling-rosbag2-test-msgdefs (0.24.0-2noble) noble; urgency=high
+
+  * Don't crash when type definition cannot be found (#1350 <https://github.com/ros2/rosbag2/issues/1350>)
+    * Don't fail when type definition cannot be found
+  * Contributors: Emerson Knapp
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Tue, 11 Jul 2023 00:00:00 -0000
+
+ros-rolling-rosbag2-test-msgdefs (0.23.0-2noble) noble; urgency=high
+
+
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Fri, 28 Apr 2023 00:00:00 -0000
+
+ros-rolling-rosbag2-test-msgdefs (0.22.0-2noble) noble; urgency=high
+
+
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Tue, 18 Apr 2023 00:00:00 -0000
+
+ros-rolling-rosbag2-test-msgdefs (0.21.0-2noble) noble; urgency=high
+
+  * rosbag2_cpp: move local message definition source out of MCAP plugin (#1265 <https://github.com/ros2/rosbag2/issues/1265>)
+    The intention of this PR is to move the message-definition-finding capability outside of rosbag2_storage_mcap, and allow any rosbag2 storage plugin to store message definitions.
+  * Contributors: james-rms
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Wed, 12 Apr 2023 00:00:00 -0000
+
+
