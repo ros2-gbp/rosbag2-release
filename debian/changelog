@@ -1,0 +1,33 @@
+ros-rolling-rosbag2-examples-py (0.24.0-2noble) noble; urgency=high
+
+  * Fix a warning from python setuptools. (#1312 <https://github.com/ros2/rosbag2/issues/1312>)
+  * Contributors: Chris Lalancette
+
+ -- geoff <gbiggs@killbots.net>  Tue, 11 Jul 2023 00:00:00 -0000
+
+ros-rolling-rosbag2-examples-py (0.23.0-2noble) noble; urgency=high
+
+
+
+ -- geoff <gbiggs@killbots.net>  Fri, 28 Apr 2023 00:00:00 -0000
+
+ros-rolling-rosbag2-examples-py (0.22.0-2noble) noble; urgency=high
+
+
+
+ -- geoff <gbiggs@killbots.net>  Tue, 18 Apr 2023 00:00:00 -0000
+
+ros-rolling-rosbag2-examples-py (0.21.0-2noble) noble; urgency=high
+
+  * Add API samples for Python [rebased] (#1253 <https://github.com/ros2/rosbag2/issues/1253>)
+    * Add API samples for Python
+    * Package Renaming and Move
+    * linting + copyright
+    * more linting
+    ---------
+    Co-authored-by: Geoffrey Biggs <mailto:gbiggs@killbots.net>
+  * Contributors: David V. Lu!!
+
+ -- geoff <gbiggs@killbots.net>  Wed, 12 Apr 2023 00:00:00 -0000
+
+
