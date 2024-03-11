@@ -1,0 +1,12 @@
+Source: ros-rolling-rosbag2-py
+Section: misc
+Priority: optional
+Maintainer: Michael Orlov <michael.orlov@apex.ai>
+Build-Depends: debhelper (>= 9.0.0), python3-pytest <!nocheck>, ros-rolling-ament-cmake-python, ros-rolling-ament-cmake-ros, ros-rolling-ament-lint-auto <!nocheck>, ros-rolling-ament-lint-common <!nocheck>, ros-rolling-pybind11-vendor, ros-rolling-python-cmake-module, ros-rolling-rcl-interfaces <!nocheck>, ros-rolling-rclpy <!nocheck>, ros-rolling-rosbag2-compression, ros-rolling-rosbag2-cpp, ros-rolling-rosbag2-storage, ros-rolling-rosbag2-storage-default-plugins <!nocheck>, ros-rolling-rosbag2-test-common <!nocheck>, ros-rolling-rosbag2-transport, ros-rolling-rosidl-runtime-py <!nocheck>, ros-rolling-std-msgs <!nocheck>, ros-rolling-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-rolling-rosbag2-py
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-rolling-pybind11-vendor, ros-rolling-rosbag2-compression, ros-rolling-rosbag2-cpp, ros-rolling-rosbag2-storage, ros-rolling-rosbag2-transport, ros-rolling-rpyutils, ros-rolling-ros-workspace
+Description: Python API for rosbag2
