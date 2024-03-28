@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="2">
   <name>ros2bag</name>
-  <version>0.24.0</version>
+  <version>0.25.0</version>
   <description>
     Entry point for rosbag in ROS 2
   </description>
@@ -14,6 +14,7 @@
   <license>Apache License 2.0</license>
 
   <exec_depend>ament_index_python</exec_depend>
+  <exec_depend>python3-yaml</exec_depend>
   <exec_depend>rclpy</exec_depend>
   <exec_depend>ros2cli</exec_depend>
   <exec_depend>rosbag2_py</exec_depend>
