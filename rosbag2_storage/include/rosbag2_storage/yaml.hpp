@@ -14,6 +14,7 @@
 #ifndef ROSBAG2_STORAGE__YAML_HPP_
 #define ROSBAG2_STORAGE__YAML_HPP_
 
+#include <algorithm>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -29,7 +30,9 @@
 # pragma warning(pop)
 #endif
 
+#include "rclcpp/duration.hpp"
 #include "rosbag2_storage/bag_metadata.hpp"
+#include "rosbag2_storage/qos.hpp"
 
 namespace YAML
 {
@@ -39,7 +42,7 @@ template<typename T>
 void optional_assign(const Node & node, std::string field, T & assign_to)
 {
   if (node[field]) {
-    assign_to = node[field].as<T>();
+    YAML::convert<T>::decode(node[field], assign_to);
   }
 }
 
@@ -64,38 +67,57 @@ struct convert<std::unordered_map<std::string, std::string>>
   }
 };
 
-/// Pass metadata version to the sub-structs of BagMetadata for deserializing.
-/**
-  * Encoding should always use the current metadata version, so it does not need this value.
-  * We cannot extend the YAML::Node class to include this, so we must call it
-  * as a function with the node as an argument.
-  */
-template<typename T>
-T decode_for_version(const Node & node, int version)
+template<>
+struct convert<rclcpp::Duration>
 {
-  static_assert(
-    std::is_default_constructible<T>::value,
-    "Type passed to decode_for_version that has is not default constructible.");
-  if (!node.IsDefined()) {
-    throw TypedBadConversion<T>(node.Mark());
+  static Node encode(const rclcpp::Duration & duration)
+  {
+    Node node;
+    node["sec"] = duration.nanoseconds() / 1000000000;
+    node["nsec"] = duration.nanoseconds() % 1000000000;
+    return node;
   }
-  T value{};
-  if (convert<T>::decode(node, value, version)) {
-    return value;
+
+  static bool decode(const Node & node, rclcpp::Duration & duration)
+  {
+    duration = rclcpp::Duration(node["sec"].as<int32_t>(), node["nsec"].as<uint32_t>());
+    return true;
   }
-  throw TypedBadConversion<T>(node.Mark());
-}
+};
+
+template<>
+struct convert<std::chrono::milliseconds>
+{
+  static Node encode(const std::chrono::milliseconds & duration)
+  {
+    Node node;
+    node["milliseconds"] = duration.count();
+    return node;
+  }
+
+  static bool decode(const Node & node, std::chrono::milliseconds & duration)
+  {
+    duration = std::chrono::milliseconds(node["milliseconds"].as<std::chrono::milliseconds::rep>());
+    return true;
+  }
+};
 
 template<>
 struct convert<rosbag2_storage::TopicMetadata>
 {
-  static Node encode(const rosbag2_storage::TopicMetadata & topic)
+  static Node encode(const rosbag2_storage::TopicMetadata & topic, int version)
   {
     Node node;
     node["name"] = topic.name;
     node["type"] = topic.type;
     node["serialization_format"] = topic.serialization_format;
-    node["offered_qos_profiles"] = topic.offered_qos_profiles;
+    if (version < 9) {
+      node["offered_qos_profiles"] = rosbag2_storage::serialize_rclcpp_qos_vector(
+        topic.offered_qos_profiles, version);
+    } else {
+      node["offered_qos_profiles"] = YAML::convert<std::vector<rclcpp::QoS>>::encode(
+        topic.offered_qos_profiles, version);
+    }
     node["type_description_hash"] = topic.type_description_hash;
     return node;
   }
@@ -105,10 +127,12 @@ struct convert<rosbag2_storage::TopicMetadata>
     topic.name = node["name"].as<std::string>();
     topic.type = node["type"].as<std::string>();
     topic.serialization_format = node["serialization_format"].as<std::string>();
-    if (version >= 4) {
-      topic.offered_qos_profiles = node["offered_qos_profiles"].as<std::string>();
-    } else {
-      topic.offered_qos_profiles = "";
+    if (version >= 9) {
+      topic.offered_qos_profiles =
+        YAML::decode_for_version<std::vector<rclcpp::QoS>>(node["offered_qos_profiles"], version);
+    } else if (version >= 4) {
+      std::string qos_str = node["offered_qos_profiles"].as<std::string>();
+      topic.offered_qos_profiles = rosbag2_storage::to_rclcpp_qos_vector(qos_str, version);
     }
     if (version >= 7) {
       topic.type_description_hash = node["type_description_hash"].as<std::string>();
@@ -122,11 +146,12 @@ struct convert<rosbag2_storage::TopicMetadata>
 template<>
 struct convert<rosbag2_storage::TopicInformation>
 {
-  static Node encode(const rosbag2_storage::TopicInformation & metadata)
+  static Node encode(const rosbag2_storage::TopicInformation & topic_info, int version)
   {
     Node node;
-    node["topic_metadata"] = metadata.topic_metadata;
-    node["message_count"] = metadata.message_count;
+    node["topic_metadata"] =
+      convert<rosbag2_storage::TopicMetadata>::encode(topic_info.topic_metadata, version);
+    node["message_count"] = topic_info.message_count;
     return node;
   }
 
@@ -142,11 +167,11 @@ struct convert<rosbag2_storage::TopicInformation>
 template<>
 struct convert<std::vector<rosbag2_storage::TopicInformation>>
 {
-  static Node encode(const std::vector<rosbag2_storage::TopicInformation> & rhs)
+  static Node encode(const std::vector<rosbag2_storage::TopicInformation> & rhs, int version)
   {
     Node node{NodeType::Sequence};
     for (const auto & value : rhs) {
-      node.push_back(value);
+      node.push_back(convert<rosbag2_storage::TopicInformation>::encode(value, version));
     }
     return node;
   }
@@ -237,7 +262,9 @@ struct convert<rosbag2_storage::BagMetadata>
     node["duration"] = metadata.duration;
     node["starting_time"] = metadata.starting_time;
     node["message_count"] = metadata.message_count;
-    node["topics_with_message_count"] = metadata.topics_with_message_count;
+    node["topics_with_message_count"] =
+      convert<std::vector<rosbag2_storage::TopicInformation>>::encode(
+      metadata.topics_with_message_count, metadata.version);
     node["compression_format"] = metadata.compression_format;
     node["compression_mode"] = metadata.compression_mode;
     node["relative_file_paths"] = metadata.relative_file_paths;

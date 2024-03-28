@@ -69,6 +69,9 @@ if(BUILD_TESTING)
       rosbag2_test_common::rosbag2_test_common
       ${test_msgs_TARGETS}
     )
+    if(WIN32)
+        ament_add_test_label(test_rosbag2_play_end_to_end xfail)
+    endif()
   endif()
 
   ament_add_gmock(test_rosbag2_info_end_to_end
@@ -104,7 +107,6 @@ if(BUILD_TESTING)
     )
   endif()
 
-
   ament_add_gmock(test_rosbag2_cpp_api
     test/rosbag2_tests/test_rosbag2_cpp_api.cpp
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
@@ -117,6 +119,30 @@ if(BUILD_TESTING)
       ${test_msgs_TARGETS}
     )
   endif()
+
+  ament_add_gmock(test_rosbag2_cpp_get_service_info
+    test/rosbag2_tests/test_rosbag2_cpp_get_service_info.cpp
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+  if(TARGET test_rosbag2_cpp_get_service_info)
+    target_link_libraries(test_rosbag2_cpp_get_service_info
+      rosbag2_cpp::rosbag2_cpp
+      rosbag2_storage::rosbag2_storage
+      rosbag2_test_common::rosbag2_test_common
+      rosbag2_transport::rosbag2_transport
+      ${test_msgs_TARGETS}
+    )
+  endif()
+
+  ament_add_gmock(test_rosbag2_storage_api
+    test/rosbag2_tests/test_rosbag2_storage_api.cpp)
+  if(TARGET test_rosbag2_storage_api)
+    target_link_libraries(test_rosbag2_storage_api
+      rosbag2_storage::rosbag2_storage
+      rosbag2_test_common::rosbag2_test_common
+      ${std_msgs_TARGETS}
+    )
+  endif()
+
 endif()
 
 ament_package()
