@@ -155,6 +155,7 @@ public:
         exec.spin();
       });
     player->play();
+    player->wait_for_playback_to_finish();
 
     exec.cancel();
     spin_thread.join();
@@ -175,15 +176,11 @@ public:
       [&exec]() {
         exec.spin();
       });
-    auto play_thread = std::thread(
-      [&player]() {
-        player->play();
-      });
+    player->play();
     player->burst(num_messages);
 
     exec.cancel();
     spin_thread.join();
-    play_thread.join();
   }
 };
 
@@ -192,18 +189,7 @@ class Recorder
 public:
   Recorder()
   {
-    auto init_options = rclcpp::InitOptions();
-    init_options.shutdown_on_signal = false;
-    rclcpp::init(0, nullptr, init_options, rclcpp::SignalHandlerOptions::None);
-
-    std::signal(
-      SIGTERM, [](int /* signal */) {
-        rosbag2_py::Recorder::cancel();
-      });
-    std::signal(
-      SIGINT, [](int /* signal */) {
-        rosbag2_py::Recorder::cancel();
-      });
+    rclcpp::init(0, nullptr);
   }
 
   virtual ~Recorder()
@@ -216,36 +202,64 @@ public:
     RecordOptions & record_options,
     std::string & node_name)
   {
-    exit_ = false;
-    auto exec = std::make_unique<rclcpp::executors::SingleThreadedExecutor>();
-    if (record_options.rmw_serialization_format.empty()) {
-      record_options.rmw_serialization_format = std::string(rmw_get_serialization_format());
-    }
-
-    auto writer = rosbag2_transport::ReaderWriterFactory::make_writer(record_options);
-    auto recorder = std::make_shared<rosbag2_transport::Recorder>(
-      std::move(writer), storage_options, record_options, node_name);
-    recorder->record();
-
-    exec->add_node(recorder);
-    // Run exec->spin() in a separate thread, because we need to call exec->cancel() after
-    // recorder->stop() to be able to send notifications about bag split and close.
-    auto spin_thread = std::thread(
-      [&exec]() {
-        exec->spin();
+    auto old_sigterm_handler = std::signal(
+      SIGTERM, [](int /* signal */) {
+        rosbag2_py::Recorder::cancel();
       });
-    {
-      // Release the GIL for long-running record, so that calling Python code can use other threads
-      py::gil_scoped_release release;
-      std::unique_lock<std::mutex> lock(wait_for_exit_mutex_);
-      wait_for_exit_cv_.wait(lock, [] {return rosbag2_py::Recorder::exit_.load();});
-      recorder->stop();
+    auto old_sigint_handler = std::signal(
+      SIGINT, [](int /* signal */) {
+        rosbag2_py::Recorder::cancel();
+      });
+
+    try {
+      exit_ = false;
+      auto exec = std::make_unique<rclcpp::executors::SingleThreadedExecutor>();
+      if (record_options.rmw_serialization_format.empty()) {
+        record_options.rmw_serialization_format = std::string(rmw_get_serialization_format());
+      }
+
+      auto writer = rosbag2_transport::ReaderWriterFactory::make_writer(record_options);
+      auto recorder = std::make_shared<rosbag2_transport::Recorder>(
+        std::move(writer), storage_options, record_options, node_name);
+      recorder->record();
+
+      exec->add_node(recorder);
+      // Run exec->spin() in a separate thread, because we need to call exec->cancel() after
+      // recorder->stop() to be able to send notifications about bag split and close.
+      auto spin_thread = std::thread(
+        [&exec]() {
+          exec->spin();
+        });
+      {
+        // Release the GIL for long-running record, so that calling Python code
+        // can use other threads
+        py::gil_scoped_release release;
+        std::unique_lock<std::mutex> lock(wait_for_exit_mutex_);
+        wait_for_exit_cv_.wait(lock, [] {return rosbag2_py::Recorder::exit_.load();});
+        recorder->stop();
+      }
+      exec->cancel();
+      if (spin_thread.joinable()) {
+        spin_thread.join();
+      }
+      exec->remove_node(recorder);
+    } catch (...) {
+      // Return old signal handlers anyway
+      if (old_sigterm_handler != SIG_ERR) {
+        std::signal(SIGTERM, old_sigterm_handler);
+      }
+      if (old_sigint_handler != SIG_ERR) {
+        std::signal(SIGTERM, old_sigint_handler);
+      }
+      throw;
     }
-    exec->cancel();
-    if (spin_thread.joinable()) {
-      spin_thread.join();
+    // Return old signal handlers
+    if (old_sigterm_handler != SIG_ERR) {
+      std::signal(SIGTERM, old_sigterm_handler);
     }
-    exec->remove_node(recorder);
+    if (old_sigint_handler != SIG_ERR) {
+      std::signal(SIGTERM, old_sigint_handler);
+    }
   }
 
   static void cancel()
@@ -295,7 +309,7 @@ void bag_rewrite(
     rosbag2_storage::StorageOptions storage_options{};
     YAML::convert<rosbag2_storage::StorageOptions>::decode(bag_node, storage_options);
     rosbag2_transport::RecordOptions record_options = bag_rewrite_default_record_options();
-    YAML::convert<rosbag2_transport::RecordOptions>::decode(bag_node, record_options);
+    record_options = bag_node.as<rosbag2_transport::RecordOptions>();
     output_options.push_back(std::make_pair(storage_options, record_options));
   }
   rosbag2_transport::bag_rewrite(input_options, output_options);
@@ -353,13 +367,16 @@ PYBIND11_MODULE(_transport, m) {
 
   py::class_<RecordOptions>(m, "RecordOptions")
   .def(py::init<>())
-  .def_readwrite("all", &RecordOptions::all)
+  .def_readwrite("all_topics", &RecordOptions::all_topics)
   .def_readwrite("is_discovery_disabled", &RecordOptions::is_discovery_disabled)
   .def_readwrite("topics", &RecordOptions::topics)
+  .def_readwrite("topic_types", &RecordOptions::topic_types)
   .def_readwrite("rmw_serialization_format", &RecordOptions::rmw_serialization_format)
   .def_readwrite("topic_polling_interval", &RecordOptions::topic_polling_interval)
   .def_readwrite("regex", &RecordOptions::regex)
-  .def_readwrite("exclude", &RecordOptions::exclude)
+  .def_readwrite("exclude_regex", &RecordOptions::exclude_regex)
+  .def_readwrite("exclude_topics", &RecordOptions::exclude_topics)
+  .def_readwrite("exclude_service_events", &RecordOptions::exclude_service_events)
   .def_readwrite("node_prefix", &RecordOptions::node_prefix)
   .def_readwrite("compression_mode", &RecordOptions::compression_mode)
   .def_readwrite("compression_format", &RecordOptions::compression_format)
@@ -374,6 +391,8 @@ PYBIND11_MODULE(_transport, m) {
   .def_readwrite("start_paused", &RecordOptions::start_paused)
   .def_readwrite("ignore_leaf_topics", &RecordOptions::ignore_leaf_topics)
   .def_readwrite("use_sim_time", &RecordOptions::use_sim_time)
+  .def_readwrite("services", &RecordOptions::services)
+  .def_readwrite("all_services", &RecordOptions::all_services)
   ;
 
   py::class_<rosbag2_py::Player>(m, "Player")
