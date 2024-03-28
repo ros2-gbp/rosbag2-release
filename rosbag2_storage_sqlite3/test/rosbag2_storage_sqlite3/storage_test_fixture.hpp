@@ -20,6 +20,7 @@
 #include <cstdio>
 #include <cstring>
 #include <iostream>
+#include <filesystem>
 #include <fstream>
 #include <memory>
 #include <string>
@@ -27,8 +28,6 @@
 #include <utility>
 #include <vector>
 #include <unordered_map>
-
-#include "rcpputils/filesystem_helper.hpp"
 
 #include "rcutils/logging_macros.h"
 #include "rcutils/snprintf.h"
@@ -99,7 +98,7 @@ public:
     if (nullptr == writable_storage) {
       writable_storage = std::make_shared<rosbag2_storage_plugins::SqliteStorage>();
 
-      auto db_file = (rcpputils::fs::path(temporary_dir_path_) / "rosbag").string();
+      auto db_file = (std::filesystem::path(temporary_dir_path_) / "rosbag").generic_string();
 
       writable_storage->open({db_file, plugin_id_});
     }
@@ -110,7 +109,7 @@ public:
       std::string topic_name = std::get<2>(msg);
       std::string type_name = std::get<3>(msg);
       std::string rmw_format = std::get<4>(msg);
-      rw_storage.create_topic({topic_name, type_name, rmw_format, "", ""}, {});
+      rw_storage.create_topic({0u, topic_name, type_name, rmw_format, {}, ""}, {});
       auto bag_message = std::make_shared<rosbag2_storage::SerializedBagMessage>();
       bag_message->serialized_data = make_serialized_message(std::get<0>(msg));
       bag_message->time_stamp = std::get<1>(msg);
@@ -128,11 +127,11 @@ public:
       std::tuple<std::string, int64_t, std::string, std::string, std::string>
     > & messages)
   {
-    auto db_file = (rcpputils::fs::path(temporary_dir_path_) / "rosbag").string();
+    auto db_file = (std::filesystem::path(temporary_dir_path_) / "rosbag").generic_string();
     std::string relative_path = db_file + ".db3";
 
     // READ_WRITE requires the DB to not exist.
-    if (rcpputils::fs::path(relative_path).exists()) {
+    if (std::filesystem::exists(std::filesystem::path(relative_path))) {
       throw std::runtime_error(
               "Failed to create bag: File '" + relative_path + "' already exists!");
     }
@@ -203,11 +202,11 @@ public:
 
   void create_new_db3_file_with_schema_version_2()
   {
-    auto db_file = (rcpputils::fs::path(temporary_dir_path_) / "rosbag").string();
+    auto db_file = (std::filesystem::path(temporary_dir_path_) / "rosbag").generic_string();
     std::string relative_path = db_file + ".db3";
 
     // READ_WRITE requires the DB to not exist.
-    if (rcpputils::fs::path(relative_path).exists()) {
+    if (std::filesystem::exists(std::filesystem::path(relative_path))) {
       throw std::runtime_error(
               "Failed to create bag: File '" + relative_path + "' already exists!");
     }
@@ -251,7 +250,7 @@ public:
     std::unique_ptr<rosbag2_storage::storage_interfaces::ReadOnlyInterface> readable_storage =
       std::make_unique<rosbag2_storage_plugins::SqliteStorage>();
 
-    auto db_file = (rcpputils::fs::path(temporary_dir_path_) / "rosbag.db3").string();
+    auto db_file = (std::filesystem::path(temporary_dir_path_) / "rosbag.db3").generic_string();
 
     readable_storage->open(
       {db_file, plugin_id_},
@@ -269,9 +268,9 @@ public:
     const std::string & config_yaml,
     const std::string & plugin_id)
   {
-    auto temp_dir = rcpputils::fs::path(temporary_dir_path_);
-    const auto storage_uri = (temp_dir / "rosbag").string();
-    const auto yaml_config = (temp_dir / "sqlite_config.yaml").string();
+    auto temp_dir = std::filesystem::path(temporary_dir_path_);
+    const auto storage_uri = (temp_dir / "rosbag").generic_string();
+    const auto yaml_config = (temp_dir / "sqlite_config.yaml").generic_string();
 
     { // populate temporary config file
       std::ofstream out(yaml_config);
