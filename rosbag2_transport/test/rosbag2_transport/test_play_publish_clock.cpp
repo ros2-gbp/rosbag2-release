@@ -43,7 +43,7 @@ public:
   {
     // Fake bag setup
     auto topic_types = std::vector<rosbag2_storage::TopicMetadata>{
-      {"topic1", "test_msgs/BasicTypes", "", "", ""},
+      {1u, "topic1", "test_msgs/BasicTypes", "", {}, ""},
     };
 
     std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages;
@@ -77,9 +77,9 @@ public:
 
     auto await_received_messages = sub_->spin_subscriptions();
 
-    auto player_future = std::async(std::launch::async, [&player]() -> void {player->play();});
+    player->play();
+    player->wait_for_playback_to_finish();
 
-    player_future.get();
     await_received_messages.get();
     exec.cancel();
     spin_thread.join();
