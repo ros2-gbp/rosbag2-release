@@ -32,7 +32,7 @@
 #include "test_msgs/msg/basic_types.hpp"
 #include "test_msgs/message_fixtures.hpp"
 
-#include "rosbag2_transport/qos.hpp"
+#include "rosbag2_storage/qos.hpp"
 
 #include "rosbag2_play_test_fixture.hpp"
 #include "rosbag2_transport_test_fixture.hpp"
@@ -53,8 +53,8 @@ TEST_F(RosBag2PlayTestFixture, recorded_messages_are_played_for_all_topics)
   complex_message1->bool_values = {{true, false, true}};
 
   auto topic_types = std::vector<rosbag2_storage::TopicMetadata>{
-    {"topic1", "test_msgs/BasicTypes", "", "", ""},
-    {"topic2", "test_msgs/Arrays", "", "", ""},
+    {1u, "topic1", "test_msgs/BasicTypes", "", {}, ""},
+    {2u, "topic2", "test_msgs/Arrays", "", {}, ""},
   };
 
   std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages =
@@ -77,10 +77,9 @@ TEST_F(RosBag2PlayTestFixture, recorded_messages_are_played_for_all_topics)
   auto await_received_messages = sub_->spin_subscriptions();
 
   auto player = std::make_shared<rosbag2_transport::Player>(
-    std::move(
-      reader), storage_options_, play_options_);
+    std::move(reader), storage_options_, play_options_);
   player->play();
-
+  player->wait_for_playback_to_finish();
   await_received_messages.get();
 
   auto replayed_test_primitives = sub_->get_received_messages<test_msgs::msg::BasicTypes>(
@@ -122,9 +121,9 @@ TEST_F(RosBag2PlayTestFixture, recorded_messages_are_played_for_all_topics_with_
   unknown_message1->int32_value = 42;
 
   auto topic_types = std::vector<rosbag2_storage::TopicMetadata>{
-    {"topic1", "test_msgs/BasicTypes", "", "", ""},
-    {"topic2", "test_msgs/Arrays", "", "", ""},
-    {"topic3", "unknown_msgs/UnknownType", "", "", ""},
+    {1u, "topic1", "test_msgs/BasicTypes", "", {}, ""},
+    {2u, "topic2", "test_msgs/Arrays", "", {}, ""},
+    {3u, "topic3", "unknown_msgs/UnknownType", "", {}, ""},
   };
 
   std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages =
@@ -148,10 +147,9 @@ TEST_F(RosBag2PlayTestFixture, recorded_messages_are_played_for_all_topics_with_
   auto await_received_messages = sub_->spin_subscriptions();
 
   auto player = std::make_shared<rosbag2_transport::Player>(
-    std::move(
-      reader), storage_options_, play_options_);
+    std::move(reader), storage_options_, play_options_);
   player->play();
-
+  player->wait_for_playback_to_finish();
   await_received_messages.get();
 
   auto replayed_test_primitives = sub_->get_received_messages<test_msgs::msg::BasicTypes>(
@@ -190,8 +188,8 @@ TEST_F(RosBag2PlayTestFixture, recorded_messages_are_played_for_filtered_topics)
   complex_message1->bool_values = {{true, false, true}};
 
   auto topic_types = std::vector<rosbag2_storage::TopicMetadata>{
-    {"topic1", "test_msgs/BasicTypes", "", "", ""},
-    {"topic2", "test_msgs/Arrays", "", "", ""},
+    {1u, "topic1", "test_msgs/BasicTypes", "", {}, ""},
+    {2u, "topic2", "test_msgs/Arrays", "", {}, ""},
   };
 
   std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages =
@@ -220,10 +218,9 @@ TEST_F(RosBag2PlayTestFixture, recorded_messages_are_played_for_filtered_topics)
     auto await_received_messages = sub_->spin_subscriptions();
 
     auto player = std::make_shared<rosbag2_transport::Player>(
-      std::move(
-        reader), storage_options_, play_options_);
+      std::move(reader), storage_options_, play_options_);
     player->play();
-
+    player->wait_for_playback_to_finish();
     await_received_messages.get();
 
     auto replayed_topic1 = sub_->get_received_messages<test_msgs::msg::BasicTypes>("/topic1");
@@ -253,10 +250,9 @@ TEST_F(RosBag2PlayTestFixture, recorded_messages_are_played_for_filtered_topics)
     auto await_received_messages = sub_->spin_subscriptions();
 
     auto player = std::make_shared<rosbag2_transport::Player>(
-      std::move(
-        reader), storage_options_, play_options_);
+      std::move(reader), storage_options_, play_options_);
     player->play();
-
+    player->wait_for_playback_to_finish();
     await_received_messages.get();
 
     auto replayed_topic1 = sub_->get_received_messages<test_msgs::msg::BasicTypes>("/topic1");
@@ -286,10 +282,9 @@ TEST_F(RosBag2PlayTestFixture, recorded_messages_are_played_for_filtered_topics)
     auto await_received_messages = sub_->spin_subscriptions();
 
     auto player = std::make_shared<rosbag2_transport::Player>(
-      std::move(
-        reader), storage_options_, play_options_);
+      std::move(reader), storage_options_, play_options_);
     player->play();
-
+    player->wait_for_playback_to_finish();
     await_received_messages.get();
 
     auto replayed_topic1 = sub_->get_received_messages<test_msgs::msg::BasicTypes>("/topic1");
@@ -315,9 +310,9 @@ TEST_F(RosBag2PlayTestFixture, recorded_messages_are_played_for_filtered_topics_
   unknown_message1->int32_value = 42;
 
   auto topic_types = std::vector<rosbag2_storage::TopicMetadata>{
-    {"topic1", "test_msgs/BasicTypes", "", "", ""},
-    {"topic2", "test_msgs/Arrays", "", "", ""},
-    {"topic3", "unknown_msgs/UnknownType", "", "", ""},
+    {1u, "topic1", "test_msgs/BasicTypes", "", {}, ""},
+    {2u, "topic2", "test_msgs/Arrays", "", {}, ""},
+    {3u, "topic3", "unknown_msgs/UnknownType", "", {}, ""},
   };
 
   std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages =
@@ -343,10 +338,9 @@ TEST_F(RosBag2PlayTestFixture, recorded_messages_are_played_for_filtered_topics_
     auto await_received_messages = sub_->spin_subscriptions();
 
     auto player = std::make_shared<rosbag2_transport::Player>(
-      std::move(
-        reader), storage_options_, play_options_);
+      std::move(reader), storage_options_, play_options_);
     player->play();
-
+    player->wait_for_playback_to_finish();
     await_received_messages.get();
 
     auto replayed_test_primitives = sub_->get_received_messages<test_msgs::msg::BasicTypes>(
@@ -373,10 +367,9 @@ TEST_F(RosBag2PlayTestFixture, recorded_messages_are_played_for_filtered_topics_
     auto await_received_messages = sub_->spin_subscriptions();
 
     auto player = std::make_shared<rosbag2_transport::Player>(
-      std::move(
-        reader), storage_options_, play_options_);
+      std::move(reader), storage_options_, play_options_);
     player->play();
-
+    player->wait_for_playback_to_finish();
     await_received_messages.get();
 
     auto replayed_test_primitives = sub_->get_received_messages<test_msgs::msg::BasicTypes>(
@@ -404,10 +397,9 @@ TEST_F(RosBag2PlayTestFixture, recorded_messages_are_played_for_filtered_topics_
     auto await_received_messages = sub_->spin_subscriptions();
 
     auto player = std::make_shared<rosbag2_transport::Player>(
-      std::move(
-        reader), storage_options_, play_options_);
+      std::move(reader), storage_options_, play_options_);
     player->play();
-
+    player->wait_for_playback_to_finish();
     await_received_messages.get();
 
     auto replayed_test_primitives = sub_->get_received_messages<test_msgs::msg::BasicTypes>(
@@ -424,7 +416,7 @@ TEST_F(RosBag2PlayTestFixture, player_gracefully_exit_by_rclcpp_shutdown_in_paus
   auto primitive_message1 = get_messages_basic_types()[0];
   primitive_message1->int32_value = 42;
   auto topic_types = std::vector<rosbag2_storage::TopicMetadata>{
-    {"topic1", "test_msgs/BasicTypes", "", "", ""},
+    {1u, "topic1", "test_msgs/BasicTypes", "", {}, ""},
   };
 
   std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages =
@@ -439,23 +431,25 @@ TEST_F(RosBag2PlayTestFixture, player_gracefully_exit_by_rclcpp_shutdown_in_paus
   auto player = std::make_shared<MockPlayer>(std::move(reader), storage_options_, play_options_);
 
   player->pause();
-  auto player_future = std::async(std::launch::async, [&player]() -> void {player->play();});
+  player->play();
   player->wait_for_playback_to_start();
   ASSERT_TRUE(player->is_paused());
 
   rclcpp::shutdown();
-  player_future.get();
+  player->wait_for_playback_to_finish();
 }
 
 class RosBag2PlayQosOverrideTestFixture : public RosBag2PlayTestFixture
 {
 public:
+  using Rosbag2QoS = rosbag2_storage::Rosbag2QoS;
+
   RosBag2PlayQosOverrideTestFixture()
   : RosBag2PlayTestFixture()
   {
   }
 
-  void initialize(const std::vector<rosbag2_transport::Rosbag2QoS> & offered_qos)
+  void initialize(const std::vector<rclcpp::QoS> & offered_qos)
   {
     // Because these tests only cares about compatibility (receiving any messages at all)
     // We publish one more message than we expect to receive, to avoid caring about
@@ -467,16 +461,7 @@ public:
       messages_.push_back(serialize_test_message(topic_name_, timestamp, basic_msg_));
     }
 
-    std::string serialized_offered_qos = "";
-    if (!offered_qos.empty()) {
-      YAML::Node offered_qos_yaml;
-      for (const auto & profile : offered_qos) {
-        offered_qos_yaml.push_back(profile);
-      }
-      serialized_offered_qos = YAML::Dump(offered_qos_yaml);
-    }
-    topic_types_.push_back(
-      {topic_name_, msg_type_, "" /*serialization_format*/, serialized_offered_qos, ""});
+    topic_types_.push_back({0u, topic_name_, msg_type_, "", offered_qos, ""});
   }
 
   template<typename Duration>
@@ -488,9 +473,9 @@ public:
 
     auto await_received_messages = sub_->spin_subscriptions();
     auto player = std::make_shared<rosbag2_transport::Player>(
-      std::move(
-        reader), storage_options_, play_options_);
+      std::move(reader), storage_options_, play_options_);
     player->play();
+    player->wait_for_playback_to_finish();
     const auto result = await_received_messages.wait_for(timeout);
     // Must EXPECT, can't ASSERT because transport needs to be shutdown if timed out
     if (expect_timeout) {
@@ -636,7 +621,7 @@ TEST_F(RosBag2PlayQosOverrideTestFixture, override_has_precedence_over_recorded)
 TEST_F(RosBag2PlayTestFixture, read_split_callback_is_called)
 {
   auto topic_types = std::vector<rosbag2_storage::TopicMetadata>{
-    {"topic1", "test_msgs/BasicTypes", "", "", ""},
+    {1u, "topic1", "test_msgs/BasicTypes", "", {}, ""},
   };
 
   auto prepared_mock_reader = std::make_unique<MockSequentialReader>();
@@ -682,7 +667,7 @@ TEST_F(RosBag2PlayTestFixture, read_split_callback_is_called)
   auto await_received_messages = sub_->spin_subscriptions();
 
   player->play();
-
+  player->wait_for_playback_to_finish();
   await_received_messages.get();
 
   auto replayed_test_primitives = sub_->get_received_messages<test_msgs::msg::BasicTypes>(

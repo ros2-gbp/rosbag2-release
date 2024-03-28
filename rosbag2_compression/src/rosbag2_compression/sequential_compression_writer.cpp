@@ -16,16 +16,16 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cstring>
+#include <filesystem>
 #include <functional>
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <system_error>
 #include <utility>
 
 #include "rcpputils/asserts.hpp"
-#include "rcpputils/filesystem_helper.hpp"
-
-#include "rcutils/filesystem.h"
 
 #include "rosbag2_cpp/info.hpp"
 
@@ -33,6 +33,14 @@
 #include "rosbag2_storage/storage_interfaces/read_write_interface.hpp"
 
 #include "logging.hpp"
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#include <sys/resource.h>
+#endif
+
+namespace fs = std::filesystem;
 
 namespace rosbag2_compression
 {
@@ -62,6 +70,45 @@ SequentialCompressionWriter::~SequentialCompressionWriter()
 
 void SequentialCompressionWriter::compression_thread_fn()
 {
+  if (compression_options_.thread_priority) {
+#ifdef _WIN32
+    // This must match THREAD_PRIORITY_IDLE, THREAD_PRIORITY_LOWEST...
+    int wanted_thread_priority = *compression_options_.thread_priority;
+    if (!SetThreadPriority(GetCurrentThread(), wanted_thread_priority)) {
+      ROSBAG2_COMPRESSION_LOG_WARN_STREAM(
+        "Could not set thread priority of compression thread to: " << wanted_thread_priority <<
+          ". Error code: " << GetLastError());
+    } else {
+      auto detected_thread_priority = GetThreadPriority(GetCurrentThread());
+      if (detected_thread_priority == THREAD_PRIORITY_ERROR_RETURN) {
+        ROSBAG2_COMPRESSION_LOG_WARN_STREAM(
+          "Failed to get current thread priority. Error code: " << GetLastError());
+      } else if (wanted_thread_priority != detected_thread_priority) {
+        ROSBAG2_COMPRESSION_LOG_WARN_STREAM(
+          "Could not set thread priority of compression thread to: " <<
+            wanted_thread_priority << ". Detected thread priority: " << detected_thread_priority);
+      }
+    }
+#else
+    int wanted_nice_value = *compression_options_.thread_priority;
+
+    errno = 0;
+    int cur_nice_value = getpriority(PRIO_PROCESS, 0);
+    if (cur_nice_value == -1 && errno != 0) {
+      ROSBAG2_COMPRESSION_LOG_WARN_STREAM(
+        "Could not set nice value of compression thread to: " << wanted_nice_value <<
+          " : Could not determine cur nice value");
+    } else {
+      int new_nice_value = nice(wanted_nice_value - cur_nice_value);
+      if ((new_nice_value == -1 && errno != 0)) {
+        ROSBAG2_COMPRESSION_LOG_WARN_STREAM(
+          "Could not set nice value of compression thread to: " << wanted_nice_value <<
+            ". Error : " << std::strerror(errno));
+      }
+    }
+#endif
+  }
+
   // Every thread needs to have its own compression context for thread safety.
   auto compressor = compression_factory_->create_compressor(
     compression_options_.compression_format);
@@ -72,13 +119,15 @@ void SequentialCompressionWriter::compression_thread_fn()
     std::string file;
     {
       std::unique_lock<std::mutex> lock(compressor_queue_mutex_);
+      // *INDENT-OFF*
       compressor_condition_.wait(
         lock,
         [&] {
           return !compression_is_running_ ||
-          !compressor_message_queue_.empty() ||
-          !compressor_file_queue_.empty();
+                 !compressor_message_queue_.empty() ||
+                 !compressor_file_queue_.empty();
         });
+      // *INDENT-ON*
 
       if (!compressor_message_queue_.empty()) {
         message = compressor_message_queue_.front();
@@ -246,14 +295,14 @@ void SequentialCompressionWriter::compress_file(
   BaseCompressorInterface & compressor,
   const std::string & file_relative_to_bag)
 {
-  using rcpputils::fs::path;
-
-  const auto file_relative_to_pwd = path(base_folder_) / file_relative_to_bag;
+  const auto file_relative_to_pwd = fs::path(base_folder_) / file_relative_to_bag;
   ROSBAG2_COMPRESSION_LOG_INFO_STREAM("Compressing file: " << file_relative_to_pwd.string());
 
-  if (file_relative_to_pwd.exists() && file_relative_to_pwd.file_size() > 0u) {
+  if (fs::exists(file_relative_to_pwd) &&
+    fs::file_size(file_relative_to_pwd) > 0u)
+  {
     const auto compressed_uri = compressor.compress_uri(file_relative_to_pwd.string());
-    const auto relative_compressed_uri = path(compressed_uri).filename();
+    const auto relative_compressed_uri = fs::path(compressed_uri).filename();
     {
       // After we've compressed the file, replace the name in the file list with the new name.
       // Must search for the entry because other threads may have changed the order of the vector
@@ -272,10 +321,11 @@ void SequentialCompressionWriter::compress_file(
       }
     }
 
-    if (!rcpputils::fs::remove(file_relative_to_pwd)) {
+    if (std::error_code ec;!fs::remove(file_relative_to_pwd, ec)) {
       ROSBAG2_COMPRESSION_LOG_ERROR_STREAM(
         "Failed to remove original pre-compressed bag file: \"" <<
-          file_relative_to_pwd.string() << "\". This should never happen - but execution " <<
+          file_relative_to_pwd.string() << "\"." << ec.message() <<
+          "This should never happen - but execution " <<
           "will not be halted because the compressed output was successfully created.");
     }
   } else {
@@ -342,12 +392,14 @@ void SequentialCompressionWriter::write(
     if (compression_options_.compression_queue_size == 0u &&
       compressor_message_queue_.size() > compression_options_.compression_threads)
     {
+      // *INDENT-OFF*
       compressor_condition_.wait(
         lock,
         [&] {
           return !compression_is_running_ ||
-          compressor_message_queue_.size() <= compression_options_.compression_threads;
+                 compressor_message_queue_.size() <= compression_options_.compression_threads;
         });
+      // *INDENT-ON*
     }
 
     compressor_message_queue_.push(message);
