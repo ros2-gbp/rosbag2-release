@@ -68,7 +68,6 @@ public:
     exec_.cancel();
     rclcpp::shutdown();
     if (spin_thread_.joinable()) {spin_thread_.join();}
-    if (play_thread_.joinable()) {play_thread_.join();}
   }
 
   /// Use SetUp instead of ctor because we want to ASSERT some preconditions for the tests
@@ -105,6 +104,12 @@ public:
     ASSERT_TRUE(cli_set_rate_->wait_for_service(service_wait_timeout_));
     ASSERT_TRUE(cli_play_next_->wait_for_service(service_wait_timeout_));
     ASSERT_TRUE(cli_stop_->wait_for_service(service_wait_timeout_));
+  }
+
+  void TearDown() override
+  {
+    // Gracefully stop player before calling rclcpp::shutdown() in destructor
+    player_->stop();
   }
 
   /// Call a service client, and expect it to successfully return within a reasonable timeout
@@ -197,7 +202,7 @@ private:
     message->int32_value = 42;
 
     auto topic_types = std::vector<rosbag2_storage::TopicMetadata>{
-      {test_topic_, "test_msgs/BasicTypes", "", "", ""},
+      {1u, test_topic_, "test_msgs/BasicTypes", "", {}, ""},
     };
     std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages;
     for (size_t i = 0; i < num_msgs_to_publish_; i++) {
@@ -211,10 +216,7 @@ private:
       std::move(reader), storage_options, play_options, player_name_);
     player_->pause();  // Start playing in pause mode. Require for play_next test. For all other
     // tests we will resume playback via explicit call to start_playback().
-    play_thread_ = std::thread(
-      [this]() {
-        player_->play();
-      });
+    player_->play();
   }
 
   void topic_callback(std::shared_ptr<const test_msgs::msg::BasicTypes>/* msg */)
@@ -254,7 +256,6 @@ public:
 
   // Orchestration
   std::thread spin_thread_;
-  std::thread play_thread_;
   rclcpp::executors::SingleThreadedExecutor exec_;
   std::shared_ptr<MockPlayer> player_;
 
@@ -418,8 +419,8 @@ TEST_F(PlaySrvsTest, stop_in_pause) {
   // Make sure that player reached out main play loop
   player_->wait_for_playback_to_start();
   service_call_stop();
-  // play_thread_ shall successfully finish after "Stop" without rclcpp::shutdown()
-  if (play_thread_.joinable()) {play_thread_.join();}
+  // playback shall successfully finish after "Stop" without rclcpp::shutdown()
+  player_->wait_for_playback_to_finish();
   expect_messages(false);
 }
 
@@ -448,7 +449,7 @@ TEST_F(PlaySrvsTest, stop_in_active_play) {
   // Wait until first message is going to be published in active playback mode
   ASSERT_TRUE(cv.wait_for(lk, 2s, [&] {return calls == 1;}));
   service_call_stop();
-  // play_thread_ shall successfully finish after "Stop" without rclcpp::shutdown()
-  if (play_thread_.joinable()) {play_thread_.join();}
+  // playback shall successfully finish after "Stop" without rclcpp::shutdown()
+  player_->wait_for_playback_to_finish();
   ASSERT_EQ(calls, 1);
 }
