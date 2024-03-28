@@ -41,6 +41,13 @@ find_package(pybind11 REQUIRED)
 
 ament_python_install_package(${PROJECT_NAME})
 
+pybind11_add_module(_compression_options SHARED
+  src/rosbag2_py/_compression_options.cpp
+)
+target_link_libraries(_compression_options PUBLIC
+  rosbag2_compression::rosbag2_compression
+)
+
 pybind11_add_module(_reader SHARED
   src/rosbag2_py/_reader.cpp
 )
@@ -70,6 +77,8 @@ target_link_libraries(_writer PUBLIC
 
 pybind11_add_module(_info SHARED
   src/rosbag2_py/_info.cpp
+  src/rosbag2_py/format_bag_metadata.cpp
+  src/rosbag2_py/format_service_info.cpp
 )
 target_link_libraries(_info PUBLIC
   rosbag2_cpp::rosbag2_cpp
@@ -97,6 +106,7 @@ target_link_libraries(_reindexer PUBLIC
 # Install cython modules as sub-modules of the project
 install(
   TARGETS
+    _compression_options
     _reader
     _storage
     _writer
@@ -149,7 +159,11 @@ if(BUILD_TESTING)
     APPEND_ENV "${append_env_vars}"
     ENV "${set_env_vars}"
   )
-
+  ament_add_pytest_test(test_compression_py
+    "test/test_compression.py"
+    APPEND_ENV "${append_env_vars}"
+    ENV "${set_env_vars}"
+  )
   ament_add_pytest_test(test_storage_py
     "test/test_storage.py"
     APPEND_ENV "${append_env_vars}"
