@@ -16,20 +16,21 @@
 #include <map>
 #include <regex>
 #include <string>
+#include <utility>
 #include <vector>
 #include <unordered_map>
-#include <utility>
 
 #include "rclcpp/node_interfaces/node_graph_interface.hpp"
 #include "rcpputils/split.hpp"
 #include "rosbag2_cpp/typesupport_helpers.hpp"
+#include "rosbag2_cpp/service_utils.hpp"
 
 #include "logging.hpp"
 #include "rosbag2_transport/topic_filter.hpp"
 
 namespace
 {
-bool has_single_type(
+inline bool has_single_type(
   const std::string & topic_name, const std::vector<std::string> & topic_types)
 {
   if (topic_types.empty()) {
@@ -52,7 +53,7 @@ bool has_single_type(
 }
 
 
-bool topic_is_hidden(const std::string & topic_name)
+inline bool topic_is_hidden(const std::string & topic_name)
 {
   // According to rclpy's implementation, the indicator for a hidden topic is a leading '_'
   // https://github.com/ros2/rclpy/blob/master/rclpy/rclpy/topic_or_service_is_hidden.py#L15
@@ -64,26 +65,31 @@ bool topic_is_hidden(const std::string & topic_name)
   return hidden_it != tokens.end();
 }
 
-bool topic_in_list(const std::string & topic_name, const std::vector<std::string> & topics)
+inline bool topic_in_list(const std::string & topic_name, const std::vector<std::string> & topics)
 {
   auto it = std::find(topics.begin(), topics.end(), topic_name);
   return it != topics.end();
 }
 
-bool
-topic_is_unpublished(
+inline
+bool topic_type_in_list(const std::string & type_name, const std::vector<std::string> & topic_types)
+{
+  auto it = std::find(topic_types.begin(), topic_types.end(), type_name);
+  return it != topic_types.end();
+}
+
+inline bool topic_is_unpublished(
   const std::string & topic_name, rclcpp::node_interfaces::NodeGraphInterface & node_graph)
 {
   auto publishers_info = node_graph.get_publishers_info_by_topic(topic_name);
-  return publishers_info.size() == 0;
+  return publishers_info.empty();
 }
 
-bool
-is_leaf_topic(
+inline bool is_leaf_topic(
   const std::string & topic_name, rclcpp::node_interfaces::NodeGraphInterface & node_graph)
 {
   auto subscriptions_info = node_graph.get_subscriptions_info_by_topic(topic_name);
-  return subscriptions_info.size() == 0;
+  return subscriptions_info.empty();
 }
 }  // namespace
 
@@ -94,13 +100,12 @@ TopicFilter::TopicFilter(
   RecordOptions record_options,
   rclcpp::node_interfaces::NodeGraphInterface::SharedPtr node_graph,
   bool allow_unknown_types)
-: record_options_(record_options),
+: record_options_(std::move(record_options)),
   allow_unknown_types_(allow_unknown_types),
   node_graph_(node_graph)
 {}
 
-TopicFilter::~TopicFilter()
-{}
+TopicFilter::~TopicFilter() = default;
 
 std::unordered_map<std::string, std::string> TopicFilter::filter_topics(
   const std::map<std::string, std::vector<std::string>> & topic_names_and_types)
@@ -122,16 +127,7 @@ bool TopicFilter::take_topic(
   }
 
   const std::string & topic_type = topic_types[0];
-  if (!allow_unknown_types_ && !type_is_known(topic_name, topic_type)) {
-    return false;
-  }
-
-  if (!record_options_.include_hidden_topics && topic_is_hidden(topic_name)) {
-    RCUTILS_LOG_WARN_ONCE_NAMED(
-      ROSBAG2_TRANSPORT_PACKAGE_NAME,
-      "Hidden topics are not recorded. Enable them with --include-hidden-topics");
-    return false;
-  }
+  bool is_service_event_topic = rosbag2_cpp::is_service_event_topic(topic_name, topic_type);
 
   if (!record_options_.include_unpublished_topics && node_graph_ &&
     topic_is_unpublished(topic_name, *node_graph_))
@@ -145,21 +141,93 @@ bool TopicFilter::take_topic(
     return false;
   }
 
-  if (!record_options_.topics.empty() && !topic_in_list(topic_name, record_options_.topics)) {
-    return false;
+  if (!is_service_event_topic) {
+    if (!record_options_.all_topics &&
+      record_options_.topics.empty() &&
+      record_options_.topic_types.empty() &&
+      record_options_.regex.empty() &&
+      !record_options_.include_hidden_topics)
+    {
+      // Note: This check is needed to avoid extra checks in case if only services (not topics)
+      // needs to be selected.
+      return false;
+    }
+
+    if (!record_options_.all_topics) {
+      // Not in include topic list. Note: all_topics shall override include topic lists
+      if (!topic_in_list(topic_name, record_options_.topics) &&
+        !topic_type_in_list(topic_type, record_options_.topic_types))
+      {
+        // Not match include regex
+        if (!record_options_.regex.empty()) {
+          std::regex include_regex(record_options_.regex);
+          if (!std::regex_search(topic_name, include_regex)) {
+            return false;
+          }
+        } else {
+          return false;
+        }
+      }
+    }
+
+    if (topic_in_list(topic_name, record_options_.exclude_topics)) {
+      return false;
+    }
+
+    if (!record_options_.exclude_regex.empty()) {
+      std::regex exclude_regex(record_options_.exclude_regex);
+      if (std::regex_search(topic_name, exclude_regex)) {
+        return false;
+      }
+    }
+
+    if (!record_options_.include_hidden_topics && topic_is_hidden(topic_name)) {
+      RCUTILS_LOG_WARN_ONCE_NAMED(
+        ROSBAG2_TRANSPORT_PACKAGE_NAME,
+        "Hidden topics are not recorded. Enable them with --include-hidden-topics");
+      return false;
+    }
+  } else {
+    if (!record_options_.all_services &&
+      record_options_.services.empty() &&
+      record_options_.regex.empty())
+    {
+      // Note: This check is needed to avoid extra checks and service name conversion in case
+      // if only topics (not services) needs to be selected.
+      return false;
+    }
+
+    // Convert service event topic name to service name
+    auto service_name = rosbag2_cpp::service_event_topic_name_to_service_name(topic_name);
+
+    if (!record_options_.all_services) {
+      // Not in include service list
+      if (!topic_in_list(topic_name, record_options_.services)) {
+        // Not match include regex
+        if (!record_options_.regex.empty()) {
+          std::regex include_regex(record_options_.regex);
+          if (!std::regex_search(service_name, include_regex)) {
+            return false;
+          }
+        } else {
+          return false;
+        }
+      }
+    }
+
+    if (topic_in_list(topic_name, record_options_.exclude_service_events)) {
+      return false;
+    }
+
+    if (!record_options_.exclude_regex.empty()) {
+      std::regex exclude_regex(record_options_.exclude_regex);
+      if (std::regex_search(service_name, exclude_regex)) {
+        return false;
+      }
+    }
   }
 
-  std::regex exclude_regex(record_options_.exclude);
-  if (!record_options_.exclude.empty() && std::regex_search(topic_name, exclude_regex)) {
-    return false;
-  }
-
-  std::regex include_regex(record_options_.regex);
-  if (
-    !record_options_.all &&  // All takes precedence over regex
-    !record_options_.regex.empty() &&  // empty regex matches nothing, but should be ignored
-    !std::regex_search(topic_name, include_regex))
-  {
+  if (!allow_unknown_types_ && !type_is_known(topic_name, topic_type)) {
     return false;
   }
 

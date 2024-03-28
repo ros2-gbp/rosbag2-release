@@ -98,7 +98,7 @@ TEST_F(RosBag2PlayTestFixture, invalid_keybindings)
 
   auto message_time_difference = rclcpp::Duration(1, 0);
   auto topics_and_types =
-    std::vector<rosbag2_storage::TopicMetadata>{{"topic1", "test_msgs/Strings", "", "", ""}};
+    std::vector<rosbag2_storage::TopicMetadata>{{1u, "topic1", "test_msgs/Strings", "", {}, ""}};
   std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages =
   {serialize_test_message("topic1", 0, primitive_message1),
     serialize_test_message("topic1", 0, primitive_message2)};
@@ -132,7 +132,7 @@ TEST_F(RosBag2PlayTestFixture, test_keyboard_controls)
 
   auto message_time_difference = rclcpp::Duration(1, 0);
   auto topics_and_types =
-    std::vector<rosbag2_storage::TopicMetadata>{{"topic1", "test_msgs/Strings", "", "", ""}};
+    std::vector<rosbag2_storage::TopicMetadata>{{1u, "topic1", "test_msgs/Strings", "", {}, ""}};
   std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages =
   {serialize_test_message("topic1", 0, primitive_message1),
     serialize_test_message("topic1", 0, primitive_message2),
@@ -157,11 +157,17 @@ TEST_F(RosBag2PlayTestFixture, test_keyboard_controls)
   keyboard_handler->simulate_key_press(play_options_.pause_resume_toggle_key);
   EXPECT_THAT(player->is_paused(), true);
 
-  keyboard_handler->simulate_key_press(play_options_.increase_rate_key);
+  EXPECT_DOUBLE_EQ(player->get_rate(), 1.0);
   keyboard_handler->simulate_key_press(play_options_.decrease_rate_key);
+  // Each increase/decrease shall change playback rate value by 10%
+  EXPECT_DOUBLE_EQ(player->get_rate(), 0.9);
+  keyboard_handler->simulate_key_press(play_options_.increase_rate_key);
+  EXPECT_DOUBLE_EQ(player->get_rate(), 1.0);
+  keyboard_handler->simulate_key_press(play_options_.increase_rate_key);
+  EXPECT_DOUBLE_EQ(player->get_rate(), 1.1);
 
-  // start play thread
-  std::thread player_thread = std::thread([player]() {player->play();});
+  // start playback asynchronously in a separate thread
+  player->play();
 
   // play next
   keyboard_handler->simulate_key_press(play_options_.play_next_key);
@@ -170,14 +176,12 @@ TEST_F(RosBag2PlayTestFixture, test_keyboard_controls)
   keyboard_handler->simulate_key_press(play_options_.pause_resume_toggle_key);
   EXPECT_THAT(player->is_paused(), false);
 
-  if (player_thread.joinable()) {
-    player_thread.join();
-  }
+  player->stop();
 
   EXPECT_THAT(player->num_paused, 1);
   EXPECT_THAT(player->num_resumed, 1);
   EXPECT_THAT(player->num_played_next, 1);
-  EXPECT_THAT(player->num_set_rate, 2);
+  EXPECT_THAT(player->num_set_rate, 3);
 }
 
 TEST_F(RecordIntegrationTestFixture, test_keyboard_controls)
@@ -186,7 +190,8 @@ TEST_F(RecordIntegrationTestFixture, test_keyboard_controls)
   auto writer = std::make_unique<rosbag2_cpp::Writer>(std::move(mock_sequential_writer));
   auto keyboard_handler = std::make_shared<MockKeyboardHandler>();
 
-  rosbag2_transport::RecordOptions record_options = {true, false, {}, "rmw_format", 100ms};
+  rosbag2_transport::RecordOptions record_options =
+  {true, false, false, {}, {}, {}, {}, {}, "rmw_format", 100ms};
   record_options.start_paused = true;
 
   auto recorder = std::make_shared<Recorder>(
