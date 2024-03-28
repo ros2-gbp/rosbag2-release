@@ -34,10 +34,11 @@ int main(int, char **)
 
   writer_->create_topic(
   {
+    0u,
     "synthetic",
     "example_interfaces/msg/Int32",
     rmw_get_serialization_format(),
-    "",
+    {},
     ""
   });
 
