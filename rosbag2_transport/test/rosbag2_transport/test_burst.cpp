@@ -35,7 +35,7 @@ TEST_F(RosBag2PlayTestFixture, burst_with_false_preconditions) {
   primitive_message->int32_value = 42;
 
   auto topic_types = std::vector<rosbag2_storage::TopicMetadata>{
-    {"topic1", "test_msgs/BasicTypes", "", "", ""}};
+    {1u, "topic1", "test_msgs/BasicTypes", "", {}, ""}};
 
   std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages =
   {serialize_test_message("topic1", 2100, primitive_message)};
@@ -56,7 +56,7 @@ TEST_F(RosBag2PlayTestFixture, burst_bursts_requested_messages_without_delays) {
   primitive_message->int32_value = 42;
 
   auto topic_types = std::vector<rosbag2_storage::TopicMetadata>{
-    {"topic1", "test_msgs/BasicTypes", "", "", ""}};
+    {1u, "topic1", "test_msgs/BasicTypes", "", {}, ""}};
 
   std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages =
   {
@@ -83,7 +83,7 @@ TEST_F(RosBag2PlayTestFixture, burst_bursts_requested_messages_without_delays) {
   player->pause();
   ASSERT_TRUE(player->is_paused());
 
-  auto player_future = std::async(std::launch::async, [&player]() -> void {player->play();});
+  player->play();
   player->wait_for_playback_to_start();
 
   const size_t NUM_MESSAGES_TO_BURST = 4;
@@ -97,7 +97,8 @@ TEST_F(RosBag2PlayTestFixture, burst_bursts_requested_messages_without_delays) {
 
   ASSERT_TRUE(player->is_paused());
   player->resume();
-  player_future.get();
+  player->wait_for_playback_to_finish();
+
   await_received_messages.get();
 
   auto replayed_topic1 = sub_->get_received_messages<test_msgs::msg::BasicTypes>("/topic1");
@@ -109,7 +110,7 @@ TEST_F(RosBag2PlayTestFixture, burst_stops_at_end_of_file) {
   primitive_message->int32_value = 42;
 
   auto topic_types = std::vector<rosbag2_storage::TopicMetadata>{
-    {"topic1", "test_msgs/BasicTypes", "", "", ""}};
+    {1u, "topic1", "test_msgs/BasicTypes", "", {}, ""}};
 
   std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages =
   {
@@ -136,7 +137,7 @@ TEST_F(RosBag2PlayTestFixture, burst_stops_at_end_of_file) {
   player->pause();
   ASSERT_TRUE(player->is_paused());
 
-  auto player_future = std::async(std::launch::async, [&player]() -> void {player->play();});
+  player->play();
   player->wait_for_playback_to_start();
 
   ASSERT_TRUE(player->is_paused());
@@ -144,7 +145,7 @@ TEST_F(RosBag2PlayTestFixture, burst_stops_at_end_of_file) {
   ASSERT_EQ(played_messages, messages.size());
   ASSERT_TRUE(player->is_paused());
   player->resume();
-  player_future.get();
+  player->wait_for_playback_to_finish();
   await_received_messages.get();
 
   auto replayed_topic1 = sub_->get_received_messages<test_msgs::msg::BasicTypes>("/topic1");
@@ -156,7 +157,7 @@ TEST_F(RosBag2PlayTestFixture, burst_bursting_one_by_one_messages_with_the_same_
   primitive_message->int32_value = 42;
 
   auto topic_types = std::vector<rosbag2_storage::TopicMetadata>{
-    {"topic1", "test_msgs/BasicTypes", "", "", ""}};
+    {1u, "topic1", "test_msgs/BasicTypes", "", {}, ""}};
 
   std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages =
   {
@@ -183,7 +184,7 @@ TEST_F(RosBag2PlayTestFixture, burst_bursting_one_by_one_messages_with_the_same_
   player->pause();
   ASSERT_TRUE(player->is_paused());
 
-  auto player_future = std::async(std::launch::async, [&player]() -> void {player->play();});
+  player->play();
 
   ASSERT_TRUE(player->is_paused());
   ASSERT_EQ(player->burst(1), 1u);
@@ -197,7 +198,7 @@ TEST_F(RosBag2PlayTestFixture, burst_bursting_one_by_one_messages_with_the_same_
   ASSERT_EQ(played_messages, messages.size());
   ASSERT_TRUE(player->is_paused());
   player->resume();
-  player_future.get();
+  player->wait_for_playback_to_finish();
   await_received_messages.get();
 
   auto replayed_topic1 = sub_->get_received_messages<test_msgs::msg::BasicTypes>("/topic1");
@@ -209,7 +210,7 @@ TEST_F(RosBag2PlayTestFixture, play_respect_messages_timing_after_burst) {
   primitive_message->int32_value = 42;
 
   auto topic_types = std::vector<rosbag2_storage::TopicMetadata>{
-    {"topic1", "test_msgs/BasicTypes", "", "", ""}};
+    {1u, "topic1", "test_msgs/BasicTypes", "", {}, ""}};
 
   std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages =
   {
@@ -236,7 +237,7 @@ TEST_F(RosBag2PlayTestFixture, play_respect_messages_timing_after_burst) {
   player->pause();
   ASSERT_TRUE(player->is_paused());
 
-  auto player_future = std::async(std::launch::async, [&player]() -> void {player->play();});
+  player->play();
 
   const size_t EXPECTED_BURST_COUNT = 2;
   ASSERT_TRUE(player->is_paused());
@@ -244,7 +245,7 @@ TEST_F(RosBag2PlayTestFixture, play_respect_messages_timing_after_burst) {
   ASSERT_TRUE(player->is_paused());
   player->resume();
   auto start = std::chrono::steady_clock::now();
-  player_future.get();
+  player->wait_for_playback_to_finish();
   auto replay_time = std::chrono::steady_clock::now() - start;
 
   auto expected_replay_time =
@@ -264,7 +265,7 @@ TEST_F(RosBag2PlayTestFixture, player_can_resume_after_burst) {
   primitive_message->int32_value = 42;
 
   auto topic_types = std::vector<rosbag2_storage::TopicMetadata>{
-    {"topic1", "test_msgs/BasicTypes", "", "", ""}};
+    {1u, "topic1", "test_msgs/BasicTypes", "", {}, ""}};
 
   std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages =
   {
@@ -290,13 +291,13 @@ TEST_F(RosBag2PlayTestFixture, player_can_resume_after_burst) {
   player->pause();
   ASSERT_TRUE(player->is_paused());
 
-  auto player_future = std::async(std::launch::async, [&player]() -> void {player->play();});
+  player->play();
 
   ASSERT_TRUE(player->is_paused());
   ASSERT_EQ(player->burst(1), 1u);
   ASSERT_TRUE(player->is_paused());
   player->resume();
-  player_future.get();
+  player->wait_for_playback_to_finish();
   await_received_messages.get();
 
   auto replayed_topic1 = sub_->get_received_messages<test_msgs::msg::BasicTypes>("/topic1");
@@ -312,8 +313,8 @@ TEST_F(RosBag2PlayTestFixture, burst_bursting_only_filtered_topics) {
   complex_message1->bool_values = {{true, false, true}};
 
   auto topic_types = std::vector<rosbag2_storage::TopicMetadata>{
-    {"topic1", "test_msgs/BasicTypes", "", "", ""},
-    {"topic2", "test_msgs/Arrays", "", "", ""},
+    {1u, "topic1", "test_msgs/BasicTypes", "", {}, ""},
+    {2u, "topic2", "test_msgs/Arrays", "", {}, ""},
   };
 
   std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages =
@@ -346,7 +347,7 @@ TEST_F(RosBag2PlayTestFixture, burst_bursting_only_filtered_topics) {
   player->pause();
   ASSERT_TRUE(player->is_paused());
 
-  auto player_future = std::async(std::launch::async, [&player]() -> void {player->play();});
+  player->play();
   ASSERT_TRUE(player->is_paused());
 
   const size_t EXPECTED_BURST_COUNT = 3;
@@ -354,7 +355,7 @@ TEST_F(RosBag2PlayTestFixture, burst_bursting_only_filtered_topics) {
 
   ASSERT_TRUE(player->is_paused());
   player->resume();
-  player_future.get();
+  player->wait_for_playback_to_finish();
   await_received_messages.get();
 
   auto replayed_topic1 = sub_->get_received_messages<test_msgs::msg::BasicTypes>("/topic1");
