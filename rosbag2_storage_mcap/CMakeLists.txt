@@ -90,7 +90,6 @@ install(
 if(BUILD_TESTING)
   find_package(ament_cmake_gmock REQUIRED)
   find_package(ament_lint_auto REQUIRED)
-  find_package(rcpputils REQUIRED)
   find_package(rosbag2_test_common REQUIRED)
   find_package(std_msgs REQUIRED)
 
@@ -118,6 +117,6 @@ endif()
 
 ament_export_libraries(${PROJECT_NAME})
 ament_export_targets(export_${PROJECT_NAME})
-ament_export_dependencies(rosbag2_storage rcutils)
+ament_export_dependencies(mcap_vendor pluginlib rosbag2_storage rcutils)
 
 ament_package()
