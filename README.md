@@ -21,7 +21,7 @@ You can follow the instructions at http://docs.ros.org/en/humble/Installation/Al
 
 ### Build from source
 
-To build from source, follow the instructions in [](DEVELOPING.md)
+To build from source, follow the instructions in [DEVELOPING.md](DEVELOPING.md)
 
 ## Using rosbag2
 
@@ -90,6 +90,8 @@ For example, `ros2 bag record -a --compression-mode file --compression-format zs
 Currently, the only `compression-format` available is `zstd`. Both the mode and format options default to `none`. To use a compression format, a compression mode must be specified, where the currently supported modes are compress by `file` or compress by `message`.
 
 It is recommended to use this feature with the splitting options.
+
+**Note**: Some storage plugins may have their own compression methods, which are separate from the rosbag2 compression specified by the CLI options `--compression-mode` and `--compression-format`. Notably, the MCAP file format offered by the `rosbag2_storage_mcap` storage plugin supports compression in a way that produces files that are still indexable (whereas using the rosbag2 compression will not). To utilize storage plugin specific compression or other options, see [Recording with a storage configuration](#Recording-with-a-storage-configuration).
 
 #### Recording with a storage configuration
 
