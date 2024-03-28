@@ -1,3 +1,49 @@
+## rosbag2 (rolling) - 0.25.0-1
+
+The packages in the `rosbag2` repository were released into the `rolling` distro by running `/usr/bin/bloom-release rosbag2 --rosdistro rolling` on `Thu, 28 Mar 2024 08:41:16 -0000`
+
+These packages were released:
+- `mcap_vendor`
+- `ros2bag`
+- `rosbag2`
+- `rosbag2_compression`
+- `rosbag2_compression_zstd`
+- `rosbag2_cpp`
+- `rosbag2_examples_cpp`
+- `rosbag2_examples_py`
+- `rosbag2_interfaces`
+- `rosbag2_performance_benchmarking`
+- `rosbag2_performance_benchmarking_msgs`
+- `rosbag2_py`
+- `rosbag2_storage`
+- `rosbag2_storage_default_plugins`
+- `rosbag2_storage_mcap`
+- `rosbag2_storage_sqlite3`
+- `rosbag2_test_common`
+- `rosbag2_test_msgdefs`
+- `rosbag2_tests`
+- `rosbag2_transport`
+- `shared_queues_vendor`
+- `sqlite3_vendor`
+- `zstd_vendor`
+
+Version of package(s) in repository `rosbag2`:
+
+- upstream repository: https://github.com/ros2/rosbag2.git
+- release repository: https://github.com/ros2-gbp/rosbag2-release.git
+- rosdistro version: `0.24.0-3`
+- old version: `0.24.0-3`
+- new version: `0.25.0-1`
+
+Versions of tools used:
+
+- bloom version: `0.11.2`
+- catkin_pkg version: `0.5.2`
+- rosdep version: `0.22.2`
+- rosdistro version: `0.9.0`
+- vcstools version: `0.1.42`
+
+
 ## rosbag2 (rolling) - 0.24.0-3
 
 The packages in the `rosbag2` repository were released into the `rolling` distro by running `/home/steven/osrf/bloom/.direnv/python-3.11/bin/bloom-release -r rolling rosbag2 --override-release-repository-push-url git@github.com:ros2-gbp/rosbag2-release` on `Mon, 11 Mar 2024 22:31:31 -0000`
