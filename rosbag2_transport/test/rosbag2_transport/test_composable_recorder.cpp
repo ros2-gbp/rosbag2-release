@@ -216,6 +216,8 @@ TEST_P(ComposableRecorderTests, recorder_can_parse_parameters_from_file) {
   EXPECT_EQ(record_options.topics, topics);
   std::vector<std::string> topic_types {"std_msgs/msg/Header", "geometry_msgs/msg/Pose"};
   EXPECT_EQ(record_options.topic_types, topic_types);
+  std::vector<std::string> exclude_topic_types {"sensor_msgs/msg/Image"};
+  EXPECT_EQ(record_options.exclude_topic_types, exclude_topic_types);
   std::vector<std::string> services {"/service/_service_event", "/other_service/_service_event"};
   EXPECT_EQ(record_options.services, services);
   EXPECT_EQ(record_options.rmw_serialization_format, "cdr");
@@ -243,6 +245,7 @@ TEST_P(ComposableRecorderTests, recorder_can_parse_parameters_from_file) {
   EXPECT_EQ(record_options.include_unpublished_topics, true);
   EXPECT_EQ(record_options.ignore_leaf_topics, false);
   EXPECT_EQ(record_options.start_paused, false);
+  EXPECT_EQ(record_options.disable_keyboard_controls, true);
   EXPECT_EQ(record_options.use_sim_time, false);
 
   EXPECT_EQ(storage_options.uri, root_bag_path_.generic_string());
