@@ -1,0 +1,273 @@
+ros-rolling-liblz4-vendor (0.26.1-1bookworm) bookworm; urgency=high
+
+  * Make sure to build_export_depend liblz4-dev. (#1614 <https://github.com/ros2/rosbag2/issues/1614>)
+  * Contributors: Chris Lalancette
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Wed, 17 Apr 2024 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.26.0-1bookworm) bookworm; urgency=high
+
+  * Switch to using ament_vendor_package for lz4. (#1583 <https://github.com/ros2/rosbag2/issues/1583>)
+  * Contributors: Chris Lalancette
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Tue, 16 Apr 2024 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.25.0-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Thu, 28 Mar 2024 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.24.0-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Wed, 12 Jul 2023 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.23.0-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Sat, 29 Apr 2023 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.22.0-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Tue, 18 Apr 2023 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.21.0-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Thu, 13 Apr 2023 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.20.0-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Tue, 14 Feb 2023 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.19.0-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Fri, 13 Jan 2023 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.18.0-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Tue, 15 Nov 2022 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.17.0-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Thu, 04 Aug 2022 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.16.0-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Thu, 12 May 2022 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.15.1-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Wed, 06 Apr 2022 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.14.1-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Tue, 29 Mar 2022 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.13.0-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Thu, 13 Jan 2022 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.12.0-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Mon, 20 Dec 2021 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.11.0-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Mon, 08 Nov 2021 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.10.1-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Fri, 22 Oct 2021 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.10.0-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Tue, 19 Oct 2021 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.9.0-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Mon, 17 May 2021 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.8.0-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Mon, 19 Apr 2021 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.7.0-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Thu, 18 Mar 2021 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.6.0-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Mon, 01 Feb 2021 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.5.0-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Wed, 02 Dec 2020 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.4.0-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Fri, 20 Nov 2020 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.3.2-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Wed, 03 Jun 2020 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.3.1-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Mon, 01 Jun 2020 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.3.0-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Tue, 26 May 2020 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.2.8-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Mon, 18 May 2020 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.2.7-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Tue, 12 May 2020 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.2.6-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Thu, 07 May 2020 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.2.5-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Thu, 30 Apr 2020 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.2.4-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Mon, 18 Nov 2019 17:51:00 -0000
+
+ros-rolling-liblz4-vendor (0.2.3-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Mon, 18 Nov 2019 13:55:00 -0000
+
+ros-rolling-liblz4-vendor (0.2.2-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Wed, 13 Nov 2019 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.2.1-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Wed, 23 Oct 2019 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.2.0-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Thu, 26 Sep 2019 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.1.2-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Mon, 20 May 2019 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.1.1-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Thu, 09 May 2019 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.1.0-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Wed, 08 May 2019 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.0.5-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Thu, 27 Dec 2018 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.0.4-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Wed, 19 Dec 2018 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.0.3-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Fri, 14 Dec 2018 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.0.2-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Wed, 12 Dec 2018 00:00:00 -0000
+
+ros-rolling-liblz4-vendor (0.0.1-1bookworm) bookworm; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Tue, 11 Dec 2018 00:00:00 -0000
+
+
