@@ -1,1 +1,1 @@
-{"base": "46d9c063f", "parent": "debian/rolling/shared_queues_vendor", "previous": "5ad2e6ae6", "trim": "", "trimbase": ""}
+{"base": "efd5ac454", "parent": "debian/jazzy/shared_queues_vendor", "previous": "48e6ae6df", "trim": "", "trimbase": ""}
