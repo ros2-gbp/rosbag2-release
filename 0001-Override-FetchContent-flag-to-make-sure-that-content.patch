@@ -1,4 +1,4 @@
-From e5de2cea413d336423c6f00aab53bc32b5b99fac Mon Sep 17 00:00:00 2001
+From 99e6964d0471b2dddaecdfa1497b9957b4f06799 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Steven!=20Ragnar=C3=B6k?=
  <nuclearsandwich@users.noreply.github.com>
 Date: Mon, 11 Mar 2024 15:23:51 -0700
@@ -12,7 +12,7 @@ packages do not currently pre-populate fetchcontent contents.
  1 file changed, 1 insertion(+)
 
 diff --git a/debian/rules.em b/debian/rules.em
-index 2ab7b14af..0ffa0d291 100755
+index a856369d1..b36b206d9 100755
 --- a/debian/rules.em
 +++ b/debian/rules.em
 @@ -35,6 +35,7 @@ override_dh_auto_configure:
