@@ -2,10 +2,11 @@
 Changelog for package zstd_vendor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.26.2 (2024-04-24)
+0.27.0 (2024-04-30)
 -------------------
-* Updated zstd to 1.5.5 (`#1617 <https://github.com/ros2/rosbag2/issues/1617>`_) (`#1624 <https://github.com/ros2/rosbag2/issues/1624>`_)
-* Contributors: mergify[bot]
+* Fixed warnings on RHEL (`#1627 <https://github.com/ros2/rosbag2/issues/1627>`_)
+* Updated zstd to 1.5.5 (`#1617 <https://github.com/ros2/rosbag2/issues/1617>`_)
+* Contributors: Alejandro Hernández Cordero
 
 0.26.1 (2024-04-17)
 -------------------

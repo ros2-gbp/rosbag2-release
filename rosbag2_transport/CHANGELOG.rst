@@ -2,10 +2,10 @@
 Changelog for package rosbag2_transport
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.26.2 (2024-04-24)
+0.27.0 (2024-04-30)
 -------------------
-* Removed warnings - unqualified-std-cast-call (`#1618 <https://github.com/ros2/rosbag2/issues/1618>`_) (`#1622 <https://github.com/ros2/rosbag2/issues/1622>`_)
-* Contributors: mergify[bot]
+* Removed warnings - unqualified-std-cast-call (`#1618 <https://github.com/ros2/rosbag2/issues/1618>`_)
+* Contributors: Alejandro Hernández Cordero
 
 0.26.1 (2024-04-17)
 -------------------
