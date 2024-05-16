@@ -1,0 +1,12 @@
+Source: ros-jazzy-rosbag2-compression-zstd
+Section: misc
+Priority: optional
+Maintainer: Michael Orlov <michael.orlov@apex.ai>
+Build-Depends: debhelper (>= 9.0.0), ros-jazzy-ament-cmake, ros-jazzy-ament-cmake-gmock <!nocheck>, ros-jazzy-ament-lint-auto <!nocheck>, ros-jazzy-ament-lint-common <!nocheck>, ros-jazzy-pluginlib, ros-jazzy-rclcpp <!nocheck>, ros-jazzy-rcutils, ros-jazzy-rosbag2-compression, ros-jazzy-rosbag2-test-common <!nocheck>, ros-jazzy-zstd-vendor, ros-jazzy-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-jazzy-rosbag2-compression-zstd
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-jazzy-pluginlib, ros-jazzy-rcutils, ros-jazzy-rosbag2-compression, ros-jazzy-zstd-vendor, ros-jazzy-ros-workspace
+Description: Zstandard compression library implementation of rosbag2_compression
