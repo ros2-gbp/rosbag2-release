@@ -2,7 +2,13 @@
 Changelog for package rosbag2_py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.27.0 (2024-04-30)
+0.26.3 (2024-05-15)
+-------------------
+* Included to_rclcpp_qos_vector to Python wrappers (`#1642 <https://github.com/ros2/rosbag2/issues/1642>`_) (`#1650 <https://github.com/ros2/rosbag2/issues/1650>`_)
+  Co-authored-by: Alejandro Hernández Cordero <ahcorde@gmail.com>
+* Contributors: mergify[bot]
+
+0.26.2 (2024-04-24)
 -------------------
 
 0.26.1 (2024-04-17)
