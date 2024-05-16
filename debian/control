@@ -1,0 +1,12 @@
+Source: ros-jazzy-rosbag2-tests
+Section: misc
+Priority: optional
+Maintainer: Michael Orlov <michael.orlov@apex.ai>
+Build-Depends: debhelper (>= 9.0.0), ros-jazzy-ament-cmake, ros-jazzy-ament-cmake-gmock <!nocheck>, ros-jazzy-ament-index-cpp, ros-jazzy-ament-lint-auto <!nocheck>, ros-jazzy-ament-lint-common <!nocheck>, ros-jazzy-rclcpp <!nocheck>, ros-jazzy-rcpputils <!nocheck>, ros-jazzy-ros2bag <!nocheck>, ros-jazzy-rosbag2-compression <!nocheck>, ros-jazzy-rosbag2-compression-zstd <!nocheck>, ros-jazzy-rosbag2-cpp <!nocheck>, ros-jazzy-rosbag2-interfaces <!nocheck>, ros-jazzy-rosbag2-storage <!nocheck>, ros-jazzy-rosbag2-storage-default-plugins <!nocheck>, ros-jazzy-rosbag2-test-common <!nocheck>, ros-jazzy-rosbag2-transport <!nocheck>, ros-jazzy-std-msgs <!nocheck>, ros-jazzy-test-msgs <!nocheck>, ros-jazzy-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-jazzy-rosbag2-tests
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-jazzy-ament-index-cpp, ros-jazzy-ros-workspace
+Description: Tests package for rosbag2
