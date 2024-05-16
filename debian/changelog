@@ -1,0 +1,80 @@
+ros-jazzy-rosbag2-examples-cpp (0.26.3-1noble) noble; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Wed, 15 May 2024 00:00:00 -0000
+
+ros-jazzy-rosbag2-examples-cpp (0.26.2-1noble) noble; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Wed, 24 Apr 2024 00:00:00 -0000
+
+ros-jazzy-rosbag2-examples-cpp (0.26.1-1noble) noble; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Wed, 17 Apr 2024 00:00:00 -0000
+
+ros-jazzy-rosbag2-examples-cpp (0.26.0-1noble) noble; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Tue, 16 Apr 2024 00:00:00 -0000
+
+ros-jazzy-rosbag2-examples-cpp (0.25.0-1noble) noble; urgency=high
+
+  * Add topic_id returned by storage to the TopicMetadata (#1538 <https://github.com/ros2/rosbag2/issues/1538>)
+  * Use enum values for offered_qos_profiles in code and string names in serialized metadata (#1476 <https://github.com/ros2/rosbag2/issues/1476>)
+  * Contributors: Michael Orlov, Patrick Roncagliolo
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Wed, 27 Mar 2024 00:00:00 -0000
+
+ros-jazzy-rosbag2-examples-cpp (0.24.0-1noble) noble; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Tue, 11 Jul 2023 00:00:00 -0000
+
+ros-jazzy-rosbag2-examples-cpp (0.23.0-1noble) noble; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Fri, 28 Apr 2023 00:00:00 -0000
+
+ros-jazzy-rosbag2-examples-cpp (0.22.0-1noble) noble; urgency=high
+
+  * rosbag2_storage: add type description hash to topic metadata (#1272 <https://github.com/ros2/rosbag2/issues/1272>)
+  * Contributors: james-rms
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Tue, 18 Apr 2023 00:00:00 -0000
+
+ros-jazzy-rosbag2-examples-cpp (0.21.0-1noble) noble; urgency=high
+
+  * Update rosbag2 to C++17. (#1238 <https://github.com/ros2/rosbag2/issues/1238>)
+  * Use target_link_libraries instead of ament_target_dependencies (#1202 <https://github.com/ros2/rosbag2/issues/1202>)
+  * Contributors: Chris Lalancette, Daisuke Nishimatsu, Michael Orlov
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Wed, 12 Apr 2023 00:00:00 -0000
+
+ros-jazzy-rosbag2-examples-cpp (0.20.0-1noble) noble; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Tue, 14 Feb 2023 00:00:00 -0000
+
+ros-jazzy-rosbag2-examples-cpp (0.19.0-1noble) noble; urgency=high
+
+  * Add Michael Orlov as maintainer in rosbag2 packages (#1215 <https://github.com/ros2/rosbag2/issues/1215>)
+  * Contributors: Michael Orlov
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Fri, 13 Jan 2023 00:00:00 -0000
+
+ros-jazzy-rosbag2-examples-cpp (0.18.0-1noble) noble; urgency=high
+
+  * Add API samples on main branch - Rolling C++ API examples (#1068 <https://github.com/ros2/rosbag2/issues/1068>)
+  * Contributors: Emerson Knapp
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Tue, 15 Nov 2022 00:00:00 -0000
+
+
