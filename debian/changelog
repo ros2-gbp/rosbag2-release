@@ -1,0 +1,138 @@
+ros-jazzy-rosbag2-performance-writer-benchmarking (0.5.0-1noble) noble; urgency=high
+
+  * Sqlite storage double buffering (#546 <https://github.com/ros2/rosbag2/issues/546>)
+  * Contributors: Adam Dąbrowski
+
+ -- Karsten Knese <karsten@openrobotics.org>  Wed, 02 Dec 2020 00:00:00 -0000
+
+ros-jazzy-rosbag2-performance-writer-benchmarking (0.4.0-1noble) noble; urgency=high
+
+  * read yaml config file (#497 <https://github.com/ros2/rosbag2/issues/497>)
+  * add storage_config_uri (#493 <https://github.com/ros2/rosbag2/issues/493>)
+  * Update the package.xml files with the latest Open Robotics maintainers (#535 <https://github.com/ros2/rosbag2/issues/535>)
+  * performance testing packages (#442 <https://github.com/ros2/rosbag2/issues/442>)
+  * Contributors: Adam Dąbrowski, Karsten Knese, Michael Jeronimo
+
+ -- Karsten Knese <karsten@openrobotics.org>  Thu, 19 Nov 2020 00:00:00 -0000
+
+ros-jazzy-rosbag2-performance-writer-benchmarking (0.3.2-1noble) noble; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Wed, 03 Jun 2020 00:00:00 -0000
+
+ros-jazzy-rosbag2-performance-writer-benchmarking (0.3.1-1noble) noble; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Mon, 01 Jun 2020 00:00:00 -0000
+
+ros-jazzy-rosbag2-performance-writer-benchmarking (0.3.0-1noble) noble; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Tue, 26 May 2020 00:00:00 -0000
+
+ros-jazzy-rosbag2-performance-writer-benchmarking (0.2.8-1noble) noble; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Mon, 18 May 2020 00:00:00 -0000
+
+ros-jazzy-rosbag2-performance-writer-benchmarking (0.2.7-1noble) noble; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Tue, 12 May 2020 00:00:00 -0000
+
+ros-jazzy-rosbag2-performance-writer-benchmarking (0.2.6-1noble) noble; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Thu, 07 May 2020 00:00:00 -0000
+
+ros-jazzy-rosbag2-performance-writer-benchmarking (0.2.5-1noble) noble; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Thu, 30 Apr 2020 00:00:00 -0000
+
+ros-jazzy-rosbag2-performance-writer-benchmarking (0.2.4-1noble) noble; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Mon, 18 Nov 2019 17:51:00 -0000
+
+ros-jazzy-rosbag2-performance-writer-benchmarking (0.2.3-1noble) noble; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Mon, 18 Nov 2019 13:55:00 -0000
+
+ros-jazzy-rosbag2-performance-writer-benchmarking (0.2.2-1noble) noble; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Wed, 13 Nov 2019 00:00:00 -0000
+
+ros-jazzy-rosbag2-performance-writer-benchmarking (0.2.1-1noble) noble; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Wed, 23 Oct 2019 00:00:00 -0000
+
+ros-jazzy-rosbag2-performance-writer-benchmarking (0.2.0-1noble) noble; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Thu, 26 Sep 2019 00:00:00 -0000
+
+ros-jazzy-rosbag2-performance-writer-benchmarking (0.1.2-1noble) noble; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Mon, 20 May 2019 00:00:00 -0000
+
+ros-jazzy-rosbag2-performance-writer-benchmarking (0.1.1-1noble) noble; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Thu, 09 May 2019 00:00:00 -0000
+
+ros-jazzy-rosbag2-performance-writer-benchmarking (0.1.0-1noble) noble; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Wed, 08 May 2019 00:00:00 -0000
+
+ros-jazzy-rosbag2-performance-writer-benchmarking (0.0.5-1noble) noble; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Thu, 27 Dec 2018 00:00:00 -0000
+
+ros-jazzy-rosbag2-performance-writer-benchmarking (0.0.4-1noble) noble; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Wed, 19 Dec 2018 00:00:00 -0000
+
+ros-jazzy-rosbag2-performance-writer-benchmarking (0.0.3-1noble) noble; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Fri, 14 Dec 2018 00:00:00 -0000
+
+ros-jazzy-rosbag2-performance-writer-benchmarking (0.0.2-1noble) noble; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Wed, 12 Dec 2018 00:00:00 -0000
+
+ros-jazzy-rosbag2-performance-writer-benchmarking (0.0.1-1noble) noble; urgency=high
+
+
+
+ -- Karsten Knese <karsten@openrobotics.org>  Tue, 11 Dec 2018 00:00:00 -0000
+
+

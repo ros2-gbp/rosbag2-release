@@ -1,0 +1,12 @@
+Source: ros-jazzy-rosbag2-performance-writer-benchmarking
+Section: misc
+Priority: optional
+Maintainer: Karsten Knese <karsten@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), ros-jazzy-ament-cmake, ros-jazzy-ament-lint-auto <!nocheck>, ros-jazzy-ament-lint-common <!nocheck>, ros-jazzy-rclcpp, ros-jazzy-rmw, ros-jazzy-rosbag2-cpp, ros-jazzy-std-msgs, ros-jazzy-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-jazzy-rosbag2-performance-writer-benchmarking
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-jazzy-rclcpp, ros-jazzy-rmw, ros-jazzy-rosbag2-cpp, ros-jazzy-std-msgs, ros-jazzy-ros-workspace
+Description: Code to benchmark the part of rosbag2 which starts after the callback is received
