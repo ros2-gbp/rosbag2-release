@@ -22,28 +22,30 @@
 
 import os
 from pathlib import Path
+import sys
 
-from common import get_rosbag_options
+if os.environ.get('ROSBAG2_PY_TEST_WITH_RTLD_GLOBAL', None) is not None:
+    # This is needed on Linux when compiling with clang/libc++.
+    # TL;DR This makes class_loader work when using a python extension compiled with libc++.
+    #
+    # For the fun RTTI ABI details, see https://whatofhow.wordpress.com/2015/03/17/odr-rtti-dso/.
+    sys.setdlopenflags(os.RTLD_GLOBAL | os.RTLD_LAZY)
 
-import pytest
-
-import rosbag2_py
-from rosbag2_test_common import TESTED_STORAGE_IDS
-
+from common import get_rosbag_options  # noqa
+import rosbag2_py  # noqa
 
 RESOURCES_PATH = Path(os.environ['ROSBAG2_PY_TEST_RESOURCES_DIR'])
 
 
-@pytest.mark.parametrize('storage_id', TESTED_STORAGE_IDS)
-def test_reindexer_multiple_files(storage_id):
-    bag_path = RESOURCES_PATH / storage_id / 'reindex_test_bags' / 'multiple_files'
+def test_reindexer_multiple_files():
+    bag_path = RESOURCES_PATH / 'reindex_test_bags' / 'multiple_files'
     result_path = bag_path / 'metadata.yaml'
 
-    storage_options, _ = get_rosbag_options(str(bag_path), storage_id=storage_id)
+    storage_options, converter_options = get_rosbag_options(str(bag_path))
     reindexer = rosbag2_py.Reindexer()
     reindexer.reindex(storage_options)
 
-    assert result_path.exists()
+    assert(result_path.exists())
 
     try:
         result_path.unlink()

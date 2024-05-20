@@ -16,7 +16,6 @@
 
 #include <chrono>
 #include <fstream>
-#include <iomanip>   // std::setprecision, std::setw
 #include <memory>
 #include <string>
 #include <vector>
@@ -50,39 +49,11 @@ int get_message_count_from_metadata(const std::string & uri)
   return total_recorded_count;
 }
 
-size_t get_messages_recorded(
-  const rosbag2_storage::BagMetadata & metadata,
-  const PublisherGroupConfig & pub_config)
-{
-  size_t messages_recorded = 0;
-  for (unsigned int i = 0; i < pub_config.count; ++i) {
-    const std::string topic_without_node_name =
-      pub_config.topic_root + "_" + std::to_string(i + 1);
-
-    for (const auto & topic_info : metadata.topics_with_message_count) {
-      const auto & topic_name_with_node_name = topic_info.topic_metadata.name;
-      if (topic_name_with_node_name.size() < topic_without_node_name.size()) {
-        continue;
-      }
-      if (topic_name_with_node_name.compare(
-          topic_name_with_node_name.size() - topic_without_node_name.size(),
-          topic_without_node_name.size(), topic_without_node_name) == 0)
-      {
-        messages_recorded += topic_info.message_count;
-      }
-    }
-  }
-  return messages_recorded;
-}
-
 /// Based on configuration and metadata from completed benchmark, write results
 void write_benchmark_results(
   const std::vector<PublisherGroupConfig> & publisher_groups_config,
   const BagConfig & bag_config,
-  const std::string & results_file,
-  float producer_cpu_usage,
-  float recorder_cpu_usage,
-  const std::vector<double> & cpu_usage_per_core)
+  const std::string & results_file)
 {
   bool new_file = false;
   { // test if file exists - we want to write a csv header after creation if not
@@ -100,23 +71,15 @@ void write_benchmark_results(
   }
 
   if (new_file) {
-    output_file << "storage_id ";
     output_file << "instances frequency message_size total_messages_sent cache_size ";
     output_file << "max_bagfile_size storage_config ";
     output_file << "compression compression_queue compression_threads ";
-    output_file << "total_produced total_recorded_count ";
-    output_file << "producer_cpu_usage recorder_cpu_usage";
-    for (size_t i = 0; i < cpu_usage_per_core.size(); i++) {
-      output_file << " core_" << i;
-    }
-    output_file << std::endl;
+    output_file << "total_produced total_recorded_count\n";
   }
 
-  rosbag2_storage::MetadataIo metadata_io;
-  rosbag2_storage::BagMetadata metadata = metadata_io.read_metadata(bag_config.storage_options.uri);
+  int total_recorded_count = get_message_count_from_metadata(bag_config.storage_options.uri);
 
   for (const auto & c : publisher_groups_config) {
-    output_file << bag_config.storage_options.storage_id << " ";
     output_file << c.count << " ";
     output_file << c.producer_config.frequency << " ";
     output_file << c.producer_config.message_size << " ";
@@ -128,18 +91,12 @@ void write_benchmark_results(
     output_file << bag_config.compression_queue_size << " ";
     output_file << bag_config.compression_threads << " ";
 
+    // TODO(adamdbrw) - this is a result for the entire group,
+    // but we don't yet have per-group stats.
+    // For now, these need to be summed for each group
     auto total_messages_produced = c.producer_config.max_count * c.count;
-    size_t total_messages_recorded = get_messages_recorded(metadata, c);
     output_file << total_messages_produced << " ";
-    output_file << total_messages_recorded << " ";
-    output_file << std::fixed;               // Fix the number of decimal digits
-    output_file << std::setprecision(2);  // to 2
-    output_file << std::setw(4) << producer_cpu_usage << " ";
-    output_file << std::setw(4) << recorder_cpu_usage;
-    for (auto cpu_core_usage : cpu_usage_per_core) {
-      output_file << " " << std::setw(4) << cpu_core_usage;
-    }
-    output_file << std::endl;
+    output_file << total_recorded_count << std::endl;
   }
 }
 
@@ -153,20 +110,7 @@ void write_benchmark_results(rclcpp::Node & node)
   node.declare_parameter("results_file", bag_config.storage_options.uri + "/results.csv");
   node.get_parameter("results_file", results_file);
 
-  float recorder_cpu_usage = 0;
-  node.declare_parameter("recorder_cpu_usage", 0.0);
-  node.get_parameter("recorder_cpu_usage", recorder_cpu_usage);
-
-  float producer_cpu_usage = 0;
-  node.declare_parameter("producer_cpu_usage", 0.0);
-  node.get_parameter("producer_cpu_usage", producer_cpu_usage);
-
-  node.declare_parameter("cpu_usage_per_core", std::vector<double>{});
-  auto cpu_usage_per_core = node.get_parameter("cpu_usage_per_core").as_double_array();
-
-  write_benchmark_results(
-    configurations, bag_config, results_file,
-    producer_cpu_usage, recorder_cpu_usage, cpu_usage_per_core);
+  write_benchmark_results(configurations, bag_config, results_file);
 }
 
 }  // namespace result_utils

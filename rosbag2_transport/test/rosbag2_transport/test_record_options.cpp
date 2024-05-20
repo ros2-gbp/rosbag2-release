@@ -21,17 +21,13 @@ using namespace ::testing;  // NOLINT
 TEST(record_options, test_yaml_serialization)
 {
   rosbag2_transport::RecordOptions original;
-  original.all_topics = true;
-  original.all_services = true;
+  original.all = true;
   original.is_discovery_disabled = true;
   original.topics = {"topic", "other_topic"};
-  original.services = {"service", "other_service"};
-  original.exclude_topics = {"exclude_topic1", "exclude_topic2"};
-  original.exclude_service_events = {"exclude_service1", "exclude_service2"};
   original.rmw_serialization_format = "cdr";
   original.topic_polling_interval = std::chrono::milliseconds{200};
   original.regex = "[xyz]/topic";
-  original.exclude_regex = "[x]/topic";
+  original.exclude = "*";
   original.node_prefix = "prefix";
   original.compression_mode = "stream";
   original.compression_format = "h264";
@@ -49,13 +45,9 @@ TEST(record_options, test_yaml_serialization)
   auto reconstructed = reconstructed_node.as<rosbag2_transport::RecordOptions>();
 
   #define CHECK(field) ASSERT_EQ(original.field, reconstructed.field)
-  CHECK(all_topics);
-  CHECK(all_services);
+  CHECK(all);
   CHECK(is_discovery_disabled);
   CHECK(topics);
-  CHECK(services);
-  CHECK(exclude_topics);
-  CHECK(exclude_service_events);
   CHECK(rmw_serialization_format);
-  #undef CHECK
+  #undef CMP
 }

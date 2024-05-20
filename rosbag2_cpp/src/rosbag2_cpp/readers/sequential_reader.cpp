@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <filesystem>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -20,11 +19,11 @@
 #include <vector>
 
 #include "rcpputils/asserts.hpp"
+#include "rcpputils/filesystem_helper.hpp"
 
 #include "rosbag2_cpp/logging.hpp"
 #include "rosbag2_cpp/readers/sequential_reader.hpp"
 
-namespace fs = std::filesystem;
 
 namespace rosbag2_cpp
 {
@@ -35,31 +34,28 @@ namespace details
 std::vector<std::string> resolve_relative_paths(
   const std::string & base_folder, std::vector<std::string> relative_files, const int version = 4)
 {
-  auto base_path = fs::path(base_folder);
+  auto base_path = rcpputils::fs::path(base_folder);
   if (version < 4) {
     // In older rosbags (version <=3) relative files are prefixed with the rosbag folder name
-    base_path = fs::path(base_folder).parent_path();
+    base_path = rcpputils::fs::path(base_folder).parent_path();
   }
 
   rcpputils::require_true(
-    fs::exists(base_path), "base folder does not exist: " + base_folder);
+    base_path.exists(), "base folder does not exist: " + base_folder);
   rcpputils::require_true(
-    fs::is_directory(base_path), "base folder has to be a directory: " + base_folder);
+    base_path.is_directory(), "base folder has to be a directory: " + base_folder);
 
   for (auto & file : relative_files) {
-    auto path = fs::path(file);
+    auto path = rcpputils::fs::path(file);
     if (path.is_absolute()) {
       continue;
     }
-    file = (base_path / path).generic_string();
+    file = (base_path / path).string();
   }
 
   return relative_files;
 }
 }  // namespace details
-
-static const rosbag2_storage::ReadOrder kFallbackOrder(rosbag2_storage::ReadOrder::SortBy::File,
-  false);
 
 SequentialReader::SequentialReader(
   std::unique_ptr<rosbag2_storage::StorageFactoryInterface> storage_factory,
@@ -110,13 +106,6 @@ void SequentialReader::open(
     if (!storage_) {
       throw std::runtime_error{"No storage could be initialized from the inputs."};
     }
-    if (!set_read_order(read_order_)) {
-      ROSBAG2_CPP_LOG_WARN(
-        "Could not set read order on open(), falling back to file order");
-      if (!set_read_order(kFallbackOrder)) {
-        throw std::runtime_error("Could not set read order on open()");
-      }
-    }
     metadata_ = storage_->get_metadata();
     if (metadata_.relative_file_paths.empty()) {
       ROSBAG2_CPP_LOG_WARN("No file paths were found in metadata.");
@@ -139,30 +128,16 @@ void SequentialReader::open(
     topics[0].topic_metadata.serialization_format);
 }
 
-bool SequentialReader::set_read_order(const rosbag2_storage::ReadOrder & order)
-{
-  if (!storage_) {
-    throw std::runtime_error("read order can only be set after open()");
-  }
-  read_order_ = order;
-  return storage_->set_read_order(read_order_);
-}
-
 bool SequentialReader::has_next()
 {
   if (storage_) {
     // If there's no new message, check if there's at least another file to read and update storage
     // to read from there. Otherwise, check if there's another message.
     bool current_storage_has_next = storage_->has_next();
-    if (!current_storage_has_next) {
-      if (!read_order_.reverse && has_next_file()) {
-        load_next_file();
-        return has_next();
-      }
-      if (read_order_.reverse && has_prev_file()) {
-        load_prev_file();
-        return has_next();
-      }
+    if (!current_storage_has_next && has_next_file()) {
+      load_next_file();
+      // recursively call has_next again after rollover
+      return has_next();
     }
     return current_storage_has_next;
   }
@@ -197,13 +172,6 @@ std::vector<rosbag2_storage::TopicMetadata> SequentialReader::get_all_topics_and
   return topics_metadata_;
 }
 
-void SequentialReader::get_all_message_definitions(
-  std::vector<rosbag2_storage::MessageDefinition> & definitions)
-{
-  rcpputils::check_true(storage_ != nullptr, "Bag is not open. Call open() before reading.");
-  storage_->get_all_message_definitions(definitions);
-}
-
 void SequentialReader::set_filter(
   const rosbag2_storage::StorageFilter & storage_filter)
 {
@@ -224,38 +192,19 @@ void SequentialReader::reset_filter()
 void SequentialReader::seek(const rcutils_time_point_value_t & timestamp)
 {
   seek_time_ = timestamp;
-  if (!storage_) {
-    throw std::runtime_error(
-            "Bag is not open. Call open() before seeking time.");
+  if (storage_) {
+    // reset to the first file
+    current_file_iterator_ = file_paths_.begin();
+    load_current_file();
+    return;
   }
-
-  auto metadata = storage_->get_metadata();
-  auto start_time = metadata.starting_time.time_since_epoch().count();
-  auto end_time = (metadata.starting_time + metadata.duration).time_since_epoch().count();
-
-  if (timestamp < start_time && has_prev_file()) {
-    // Check back a file if the timestamp is before the beginning of the current file
-    load_prev_file();
-    return seek(timestamp);
-  } else if (timestamp > end_time && has_next_file()) {
-    // Check forward a file if the timestamp is after the end of the current file
-    load_next_file();
-    return seek(timestamp);
-  } else {
-    // The timestamp lies in the range of this file, or there are no files left to go to
-    storage_->seek(timestamp);
-  }
-  return;
+  throw std::runtime_error(
+          "Bag is not open. Call open() before seeking time.");
 }
 
 bool SequentialReader::has_next_file() const
 {
-  return (current_file_iterator_ + 1) != file_paths_.end();
-}
-
-bool SequentialReader::has_prev_file() const
-{
-  return current_file_iterator_ != file_paths_.begin();
+  return current_file_iterator_ + 1 != file_paths_.end();
 }
 
 void SequentialReader::load_current_file()
@@ -273,7 +222,6 @@ void SequentialReader::load_current_file()
     throw std::runtime_error{"No storage could be initialized. Abort"};
   }
   // set filters
-  storage_->set_read_order(read_order_);
   storage_->seek(seek_time_);
   set_filter(topics_filter_);
 }
@@ -289,17 +237,6 @@ void SequentialReader::load_next_file()
   callback_manager_.execute_callbacks(bag_events::BagEvent::READ_SPLIT, info);
 }
 
-void SequentialReader::load_prev_file()
-{
-  assert(current_file_iterator_ != file_paths_.begin());
-  auto info = std::make_shared<bag_events::BagSplitInfo>();
-  info->closed_file = get_current_file();
-  current_file_iterator_--;
-  info->opened_file = get_current_file();
-  load_current_file();
-  callback_manager_.execute_callbacks(bag_events::BagEvent::READ_SPLIT, info);
-}
-
 std::string SequentialReader::get_current_file() const
 {
   return *current_file_iterator_;
@@ -308,8 +245,8 @@ std::string SequentialReader::get_current_file() const
 std::string SequentialReader::get_current_uri() const
 {
   auto current_file = get_current_file();
-  auto current_uri = fs::path(current_file).stem();
-  return current_uri.generic_string();
+  auto current_uri = rcpputils::fs::remove_extension(current_file);
+  return current_uri.string();
 }
 
 void SequentialReader::check_topics_serialization_formats(
@@ -319,7 +256,7 @@ void SequentialReader::check_topics_serialization_formats(
   for (const auto & topic : topics) {
     if (topic.topic_metadata.serialization_format != storage_serialization_format) {
       throw std::runtime_error(
-              "Topics with different rmw serialization format have been found. "
+              "Topics with different rwm serialization format have been found. "
               "All topics must have the same serialization format.");
     }
   }

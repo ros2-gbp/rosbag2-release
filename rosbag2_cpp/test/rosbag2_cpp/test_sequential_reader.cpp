@@ -14,11 +14,12 @@
 
 #include <gmock/gmock.h>
 
-#include <filesystem>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "rcpputils/filesystem_helper.hpp"
 
 #include "rosbag2_cpp/readers/sequential_reader.hpp"
 #include "rosbag2_cpp/reader.hpp"
@@ -26,15 +27,12 @@
 
 #include "rosbag2_storage/bag_metadata.hpp"
 #include "rosbag2_storage/metadata_io.hpp"
-#include "rosbag2_storage/ros_helper.hpp"
 #include "rosbag2_storage/topic_metadata.hpp"
 
-#include "rosbag2_test_common/tested_storage_ids.hpp"
 #include "rosbag2_test_common/temporary_directory_fixture.hpp"
 
 #include "test_msgs/msg/basic_types.hpp"
 
-#include "fake_data.hpp"
 #include "mock_converter.hpp"
 #include "mock_converter_factory.hpp"
 #include "mock_metadata_io.hpp"
@@ -42,8 +40,7 @@
 #include "mock_storage_factory.hpp"
 
 using namespace testing;  // NOLINT
-using rosbag2_test_common::ParametrizedTemporaryDirectoryFixture;
-namespace fs = std::filesystem;
+using rosbag2_test_common::TemporaryDirectoryFixture;
 
 class SequentialReaderTest : public Test
 {
@@ -52,29 +49,25 @@ public:
   : storage_(std::make_shared<NiceMock<MockStorage>>()),
     converter_factory_(std::make_shared<StrictMock<MockConverterFactory>>()),
     storage_serialization_format_("rmw1_format"),
-    storage_uri_(fs::temp_directory_path().generic_string()),
+    storage_uri_(rcpputils::fs::temp_directory_path().string()),
     default_storage_options_({storage_uri_, "mock_storage"})
   {
     rosbag2_storage::TopicMetadata topic_with_type;
     topic_with_type.name = "topic";
     topic_with_type.type = "test_msgs/BasicTypes";
     topic_with_type.serialization_format = storage_serialization_format_;
-    topic_with_type.type_description_hash = "";
     auto topics_and_types = std::vector<rosbag2_storage::TopicMetadata>{topic_with_type};
 
     auto message = std::make_shared<rosbag2_storage::SerializedBagMessage>();
     message->topic_name = topic_with_type.name;
 
     relative_file_path_ =
-      (fs::path(storage_uri_) / "some/folder").generic_string();
+      (rcpputils::fs::path(storage_uri_) / "some/folder").string();
     auto storage_factory = std::make_unique<StrictMock<MockStorageFactory>>();
     auto metadata_io = std::make_unique<NiceMock<MockMetadataIo>>();
     bag_file_1_path_ = relative_file_path_ / "bag_file1";
     bag_file_2_path_ = relative_file_path_ / "bag_file2";
-    metadata_.relative_file_paths = {
-      bag_file_1_path_.generic_string(),
-      bag_file_2_path_.generic_string()
-    };
+    metadata_.relative_file_paths = {bag_file_1_path_.string(), bag_file_2_path_.string()};
     metadata_.version = 4;
     metadata_.topics_with_message_count.push_back({{topic_with_type}, 6});
     metadata_.storage_identifier = "mock_storage";
@@ -97,7 +90,6 @@ public:
       });
     EXPECT_CALL(*storage_, has_next_file()).WillRepeatedly(Return(true));
     EXPECT_CALL(*storage_, read_next()).WillRepeatedly(Return(message));
-    ON_CALL(*storage_, set_read_order).WillByDefault(Return(true));
 
     EXPECT_CALL(*storage_factory, open_read_only(_)).Times(AnyNumber());
     ON_CALL(*storage_factory, open_read_only).WillByDefault(
@@ -124,9 +116,9 @@ public:
   std::string storage_serialization_format_;
   std::string storage_uri_;
   rosbag2_storage::BagMetadata metadata_;
-  fs::path relative_file_path_;
-  fs::path bag_file_1_path_;
-  fs::path bag_file_2_path_;
+  rcpputils::fs::path relative_file_path_;
+  rcpputils::fs::path bag_file_1_path_;
+  rcpputils::fs::path bag_file_2_path_;
   rosbag2_storage::StorageOptions default_storage_options_;
   size_t num_next_ = 0;
 };
@@ -221,173 +213,24 @@ TEST_F(SequentialReaderTest, next_file_calls_callback) {
   reader_->read_next();
 
   ASSERT_TRUE(callback_called);
-  EXPECT_EQ(closed_file, bag_file_1_path_.generic_string());
-  EXPECT_EQ(opened_file, bag_file_2_path_.generic_string());
+  EXPECT_EQ(closed_file, bag_file_1_path_.string());
+  EXPECT_EQ(opened_file, bag_file_2_path_.string());
 }
 
-TEST_P(ParametrizedTemporaryDirectoryFixture, reader_accepts_bare_file) {
-  const auto bag_path = fs::path(temporary_dir_path_) / "bag";
-  const auto storage_id = GetParam();
+TEST_F(TemporaryDirectoryFixture, reader_accepts_bare_file) {
+  const auto bag_path = rcpputils::fs::path(temporary_dir_path_) / "bag";
+  const auto expected_bagfile_path = bag_path / "bag_0.db3";
 
   {
     // Create an empty bag with default storage
     rosbag2_cpp::Writer writer;
-    rosbag2_storage::StorageOptions options;
-    options.uri = bag_path.generic_string();
-    options.storage_id = storage_id;
-    writer.open(options);
+    writer.open(bag_path.string());
     test_msgs::msg::BasicTypes msg;
     writer.write(msg, "testtopic", rclcpp::Time{});
   }
-  rosbag2_storage::MetadataIo metadata_io;
-  auto metadata = metadata_io.read_metadata(bag_path.generic_string());
-  auto first_storage = bag_path / metadata.relative_file_paths[0];
 
   rosbag2_cpp::Reader reader;
-  EXPECT_NO_THROW(reader.open(first_storage.generic_string()));
+  EXPECT_NO_THROW(reader.open(expected_bagfile_path.string()));
   EXPECT_TRUE(reader.has_next());
   EXPECT_THAT(reader.get_metadata().topics_with_message_count, SizeIs(1));
 }
-
-INSTANTIATE_TEST_SUITE_P(
-  BareFileTests,
-  ParametrizedTemporaryDirectoryFixture,
-  ValuesIn(rosbag2_test_common::kTestedStorageIDs)
-);
-
-
-class ReadOrderTest : public ParametrizedTemporaryDirectoryFixture
-{
-public:
-  ReadOrderTest()
-  {
-    storage_options.uri =
-      (fs::path(temporary_dir_path_) / "ordertest").generic_string();
-    storage_options.storage_id = GetParam();
-    write_sample_split_bag(storage_options, fake_messages, split_every);
-  }
-
-  void sort_expected(rosbag2_storage::ReadOrder order)
-  {
-    sorted_messages.clear();
-    for (const auto & message : fake_messages) {
-      sorted_messages.push_back(message);
-    }
-
-    switch (order.sort_by) {
-      case rosbag2_storage::ReadOrder::ReceivedTimestamp: {
-          if (order.reverse) {
-            std::sort(
-              sorted_messages.begin(), sorted_messages.end(), [](auto a, auto b) {
-                return a.first > b.first || (a.first == b.first && a.second > b.second);
-              });
-          } else {
-            std::sort(
-              sorted_messages.begin(), sorted_messages.end(), [](auto a, auto b) {
-                return a.first < b.first || (a.first == b.first && a.second < b.second);
-              });
-          }
-        } break;
-      case rosbag2_storage::ReadOrder::File: {
-          if (order.reverse) {
-            std::reverse(sorted_messages.begin(), sorted_messages.end());
-          } else {
-            // Already in forward file order
-          }
-        } break;
-      case rosbag2_storage::ReadOrder::PublishedTimestamp:
-        throw std::runtime_error("PublishedTimestamp not implemented.");
-        break;
-    }
-  }
-
-  void check_against_sorted(bool do_reset)
-  {
-    // If do_reset - try to reset the storage internal iterator every time, to test its ability
-    // to track order when the query changes.
-    // If not, do a single chain of uninterrupted read_next, which likely uses the same iterator
-    for (const auto & expect_message : sorted_messages) {
-      auto expect_timestamp = expect_message.first;
-      uint32_t expect_value = expect_message.second;
-
-      // Check both timestamp and value to uniquely identify messages in expected order
-      ASSERT_TRUE(reader.has_next());
-      auto next = reader.read_next();
-      EXPECT_EQ(next->recv_timestamp, expect_timestamp);
-
-      ASSERT_EQ(next->serialized_data->buffer_length, 4u);
-      uint32_t value = *reinterpret_cast<uint32_t *>(next->serialized_data->buffer);
-      EXPECT_EQ(value, expect_value);
-
-      if (do_reset) {
-        reader.reset_filter();
-      }
-    }
-    ASSERT_FALSE(reader.has_next());
-  }
-
-  const std::vector<std::pair<rcutils_time_point_value_t, uint32_t>> fake_messages {
-    {100, 1},
-    {100, 2},
-    {300, 3},
-    {200, 4},
-    {300, 5},
-    {500, 6},
-    {400, 7},
-    {600, 8}
-  };
-  const size_t split_every = 5;
-  std::vector<std::pair<rcutils_time_point_value_t, uint32_t>> sorted_messages;
-
-  rosbag2_cpp::readers::SequentialReader reader{};
-  rosbag2_storage::StorageOptions storage_options{};
-};
-
-TEST_P(ReadOrderTest, received_timestamp_order) {
-  rosbag2_storage::ReadOrder order(rosbag2_storage::ReadOrder::ReceivedTimestamp, false);
-  sort_expected(order);
-
-  for (bool do_reset : {false, true}) {
-    reader.open(storage_options, rosbag2_cpp::ConverterOptions{});
-    EXPECT_TRUE(reader.set_read_order(order));
-    check_against_sorted(do_reset);
-    reader.close();
-  }
-}
-
-TEST_P(ReadOrderTest, reverse_received_timestamp_order) {
-  rosbag2_storage::ReadOrder order(rosbag2_storage::ReadOrder::ReceivedTimestamp, true);
-  sort_expected(order);
-  reader.open(storage_options, rosbag2_cpp::ConverterOptions{});
-  EXPECT_TRUE(reader.set_read_order(order));
-  auto metadata = reader.get_metadata();
-  // Seek to end before reading reverse messages
-  auto end_timestamp = (metadata.starting_time + metadata.duration).time_since_epoch().count();
-  reader.close();
-
-  for (bool do_reset : {false, true}) {
-    reader.open(storage_options, rosbag2_cpp::ConverterOptions{});
-    reader.seek(end_timestamp);
-    check_against_sorted(do_reset);
-    reader.close();
-  }
-}
-
-TEST_P(ReadOrderTest, reverse_file_order) {
-  reader.open(storage_options, rosbag2_cpp::ConverterOptions{});
-  EXPECT_FALSE(
-    reader.set_read_order(rosbag2_storage::ReadOrder(rosbag2_storage::ReadOrder::File, true)));
-}
-
-TEST_P(ReadOrderTest, published_timestamp_order) {
-  reader.open(storage_options, rosbag2_cpp::ConverterOptions{});
-  EXPECT_FALSE(
-    reader.set_read_order(
-      rosbag2_storage::ReadOrder(rosbag2_storage::ReadOrder::PublishedTimestamp, false)));
-}
-
-INSTANTIATE_TEST_SUITE_P(
-  ThisReadOrderTest,
-  ReadOrderTest,
-  ValuesIn(rosbag2_test_common::kTestedStorageIDs)
-);

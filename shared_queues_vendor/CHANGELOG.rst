@@ -2,53 +2,35 @@
 Changelog for package shared_queues_vendor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.26.3 (2024-05-15)
+0.15.10 (2024-05-17)
+--------------------
+
+0.15.9 (2024-01-24)
 -------------------
 
-0.26.2 (2024-04-24)
+0.15.8 (2023-09-19)
 -------------------
 
-0.26.1 (2024-04-17)
+0.15.7 (2023-07-18)
 -------------------
 
-0.26.0 (2024-04-16)
+0.15.6 (2023-06-05)
 -------------------
 
-0.25.0 (2024-03-27)
+0.15.5 (2023-04-25)
 -------------------
-* Remove unused concurrentqueue implementation. (`#1465 <https://github.com/ros2/rosbag2/issues/1465>`_)
-  rosbag2 only depends on the readerwriter queue.
-* Contributors: Chris Lalancette
+* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_) (`#1224 <https://github.com/ros2/rosbag2/issues/1224>`_)
+* Contributors: mergify[bot]
 
-0.24.0 (2023-07-11)
--------------------
-
-0.23.0 (2023-04-28)
+0.15.4 (2023-01-10)
 -------------------
 
-0.22.0 (2023-04-18)
+0.15.3 (2022-11-07)
 -------------------
+* :man_farmer: Fixes policy CMP0135 warning for CMake >= 3.24 (`#1084 <https://github.com/ros2/rosbag2/issues/1084>`_) (`#1096 <https://github.com/ros2/rosbag2/issues/1096>`_)
+* Contributors: mergify[bot]
 
-0.21.0 (2023-04-12)
--------------------
-
-0.20.0 (2023-02-14)
--------------------
-
-0.19.0 (2023-01-13)
--------------------
-* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_)
-* Contributors: Michael Orlov
-
-0.18.0 (2022-11-15)
--------------------
-* Fixes policy CMP0135 warning for CMake >= 3.24 (`#1084 <https://github.com/ros2/rosbag2/issues/1084>`_)
-* Contributors: Cristóbal Arroyo
-
-0.17.0 (2022-07-30)
--------------------
-
-0.16.0 (2022-05-11)
+0.15.2 (2022-05-11)
 -------------------
 
 0.15.1 (2022-04-06)

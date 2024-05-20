@@ -2,58 +2,37 @@
 Changelog for package zstd_vendor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.26.3 (2024-05-15)
--------------------
-* Fixed warnings on RHEL (`#1627 <https://github.com/ros2/rosbag2/issues/1627>`_) (`#1630 <https://github.com/ros2/rosbag2/issues/1630>`_)
-  Co-authored-by: Alejandro Hernández Cordero <ahcorde@gmail.com>
+0.15.10 (2024-05-17)
+--------------------
+* Fix/zstd vendor does not find system zstd (`#1111 <https://github.com/ros2/rosbag2/issues/1111>`_) (`#1560 <https://github.com/ros2/rosbag2/issues/1560>`_)
 * Contributors: mergify[bot]
 
-0.26.2 (2024-04-24)
+0.15.9 (2024-01-24)
 -------------------
-* Updated zstd to 1.5.5 (`#1617 <https://github.com/ros2/rosbag2/issues/1617>`_) (`#1624 <https://github.com/ros2/rosbag2/issues/1624>`_)
+
+0.15.8 (2023-09-19)
+-------------------
+
+0.15.7 (2023-07-18)
+-------------------
+
+0.15.6 (2023-06-05)
+-------------------
+
+0.15.5 (2023-04-25)
+-------------------
+* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_) (`#1224 <https://github.com/ros2/rosbag2/issues/1224>`_)
 * Contributors: mergify[bot]
 
-0.26.1 (2024-04-17)
+0.15.4 (2023-01-10)
+-------------------
+* [Humble backport] rosbag2_storage_mcap: merge into rosbag2 repo (`#1163 <https://github.com/ros2/rosbag2/issues/1163>`_) (`#1189 <https://github.com/ros2/rosbag2/issues/1189>`_)
+* Contributors: james-rms
+
+0.15.3 (2022-11-07)
 -------------------
 
-0.26.0 (2024-04-16)
--------------------
-
-0.25.0 (2024-03-27)
--------------------
-
-0.24.0 (2023-07-11)
--------------------
-* Switch to ament_cmake_vendor_package (`#1400 <https://github.com/ros2/rosbag2/issues/1400>`_)
-* Contributors: Scott K Logan
-
-0.23.0 (2023-04-28)
--------------------
-
-0.22.0 (2023-04-18)
--------------------
-
-0.21.0 (2023-04-12)
--------------------
-
-0.20.0 (2023-02-14)
--------------------
-
-0.19.0 (2023-01-13)
--------------------
-* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_)
-* Contributors: Michael Orlov
-
-0.18.0 (2022-11-15)
--------------------
-* Bump zstd to 1.4.8 in zstd_vendor package (`#1132 <https://github.com/ros2/rosbag2/issues/1132>`_)
-* Fix/zstd vendor does not find system zstd (`#1111 <https://github.com/ros2/rosbag2/issues/1111>`_)
-* Contributors: DasRoteSkelett, Michael Orlov
-
-0.17.0 (2022-07-30)
--------------------
-
-0.16.0 (2022-05-11)
+0.15.2 (2022-05-11)
 -------------------
 
 0.15.1 (2022-04-06)

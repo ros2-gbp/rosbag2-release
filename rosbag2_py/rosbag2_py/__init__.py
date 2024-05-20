@@ -18,31 +18,18 @@ from rpyutils import add_dll_directories_from_env
 # to the search path.
 # See https://docs.python.org/3/whatsnew/3.8.html#bpo-36085-whatsnew
 with add_dll_directories_from_env('PATH'):
-    from rosbag2_py._compression_options import (
-        CompressionMode,
-        CompressionOptions,
-        compression_mode_from_string,
-        compression_mode_to_string
-    )
     from rosbag2_py._reader import (
         SequentialCompressionReader,
         SequentialReader,
         get_registered_readers,
     )
     from rosbag2_py._storage import (
-        BagMetadata,
         ConverterOptions,
-        FileInformation,
-        MessageDefinition,
-        MetadataIo,
-        ReadOrder,
-        ReadOrderSortBy,
         StorageFilter,
         StorageOptions,
         TopicMetadata,
         TopicInformation,
-        get_default_storage_id,
-        to_rclcpp_qos_vector,
+        BagMetadata,
     )
     from rosbag2_py._writer import (
         SequentialCompressionWriter,
@@ -55,12 +42,11 @@ with add_dll_directories_from_env('PATH'):
         Info,
     )
     from rosbag2_py._transport import (
+        bag_rewrite,
         Player,
         PlayOptions,
-        ServiceRequestsSource,
         Recorder,
         RecordOptions,
-        bag_rewrite,
     )
     from rosbag2_py._reindexer import (
         Reindexer
@@ -68,20 +54,11 @@ with add_dll_directories_from_env('PATH'):
 
 __all__ = [
     'bag_rewrite',
-    'CompressionMode',
-    'CompressionOptions',
-    'compression_mode_from_string',
-    'compression_mode_to_string',
     'ConverterOptions',
-    'FileInformation',
-    'get_default_storage_id',
     'get_registered_readers',
     'get_registered_writers',
     'get_registered_compressors',
     'get_registered_serializers',
-    'to_rclcpp_qos_vector',
-    'ReadOrder',
-    'ReadOrderSortBy',
     'Reindexer',
     'SequentialCompressionReader',
     'SequentialCompressionWriter',
@@ -92,12 +69,9 @@ __all__ = [
     'TopicMetadata',
     'TopicInformation',
     'BagMetadata',
-    'MessageDefinition',
-    'MetadataIo',
     'Info',
     'Player',
     'PlayOptions',
-    'ServiceRequestsSource',
     'Recorder',
     'RecordOptions',
 ]

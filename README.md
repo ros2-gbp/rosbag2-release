@@ -4,42 +4,70 @@
 
 Repository for implementing rosbag2 as described in its corresponding [design article](https://github.com/ros2/design/blob/ros2bags/articles/rosbags.md).
 
-## Installation
+## Installation instructions
 
-### Debian packages
+## Debian packages
 
-rosbag2 packages are available via debian packages, and will already be included with any `-ros-base` installation (which is included within `-desktop`)
+rosbag2 packages are available via debian packages and thus can be installed via
 
 ```
-$ export ROS_DISTRO=humble
-$ sudo apt-get install ros-$ROS_DISTRO-rosbag2
+$ export CHOOSE_ROS_DISTRO=crystal # rosbag2 is available starting from crystal
+$ sudo apt-get install ros-$CHOOSE_ROS_DISTRO-ros2bag ros-$CHOOSE_ROS_DISTRO-rosbag2*
 ```
 
-### Other binaries
+Note that the above command installs all packages related to rosbag2.
+This also includes the plugin for [reading ROS1 bag files](https://github.com/ros2/rosbag2_bag_v2), which brings a hard dependency on the [ros1_bridge](https://github.com/ros2/ros1_bridge) with it and therefore ROS1 packages.
+If you want to install only the ROS2 related packages for rosbag, please use the following command:
 
-You can follow the instructions at http://docs.ros.org/en/humble/Installation/Alternatives/Ubuntu-Install-Binary.html (or for your chosen distro), and Rosbag2 will be included in that installation.
+```
+$ export CHOOSE_ROS_DISTRO=crystal # rosbag2 is available starting from crystal
+$ sudo apt-get install ros-$CHOOSE_ROS_DISTRO-ros2bag ros-$CHOOSE_ROS_DISTRO-rosbag2-transport
+```
 
-### Build from source
+## Build from source
 
-To build from source, follow the instructions in [DEVELOPING.md](DEVELOPING.md)
+It is recommended to create a new overlay workspace on top of your current ROS 2 installation.
+
+```
+$ mkdir -p ~/rosbag_ws/src
+$ cd ~/rosbag_ws/src
+```
+
+Clone this repository into the source folder:
+
+```
+$ git clone https://github.com/ros2/rosbag2.git
+```
+**[Note]**: if you are only building rosbag2 on top of a Debian Installation of ROS2, please git clone the branch following your current ROS2 distribution.
+
+Then build all the packages with this command:
+
+```
+$ colcon build [--merge-install]
+```
+
+The `--merge-install` flag is optional and installs all packages into one folder rather than isolated folders for each package.
+
+#### Executing tests
+
+The tests can be run using the following commands:
+
+```
+$ colcon test [--merge-install]
+$ colcon test-result --verbose
+```
+
+The first command executes the test and the second command displays the errors (if any).
 
 ## Using rosbag2
 
-rosbag2 is part of the ROS 2 command line interface as `ros2 bag`.
-These verbs are available for `ros2 bag`:
+rosbag2 is part of the ROS 2 command line interfaces.
+This repo introduces a new verb called `bag` and thus serves as the entry point of using rosbag2.
+As of the time of writing, there are three commands available for `ros2 bag`:
 
-* `ros2 bag burst`
-* `ros2 bag convert`
-* `ros2 bag info`
-* `ros2 bag list`
-* `ros2 bag play`
-* `ros2 bag record`
-* `ros2 bag reindex`
-
-For up-to-date information on the available options for each, use `ros2 bag <verb> --help`.
-
-Moreover, `rosbag2_transport::Player` and `rosbag2_transport::Recorder` components can be instantiated in `rclcpp` component containers, which makes possible to use intra-process communication for greater efficiency.
-See [composition](#using-with-composition) section for details.
+* record
+* play
+* info
 
 ### Recording data
 
@@ -74,7 +102,7 @@ Messages written to the bag will use the latest received value of `/clock` for t
 Note: Until the first `/clock` message is received, the recorder will not write any messages.
 Before that message is received, the time is 0, which leads to a significant time jump once simulation time begins, making the bag essentially unplayable if messages are written first with time 0 and then time N from `/clock`.
 
-#### Splitting files during recording
+#### Splitting recorded bag files
 
 rosbag2 offers the capability to split bag files when they reach a maximum size or after a specified duration. By default rosbag2 will record all data into a single bag file, but this can be changed using the CLI options.
 
@@ -94,49 +122,44 @@ Currently, the only `compression-format` available is `zstd`. Both the mode and 
 
 It is recommended to use this feature with the splitting options.
 
-**Note**: Some storage plugins may have their own compression methods, which are separate from the rosbag2 compression specified by the CLI options `--compression-mode` and `--compression-format`. Notably, the MCAP file format offered by the `rosbag2_storage_mcap` storage plugin supports compression in a way that produces files that are still indexable (whereas using the rosbag2 compression will not). To utilize storage plugin specific compression or other options, see [Recording with a storage configuration](#Recording-with-a-storage-configuration).
-
 #### Recording with a storage configuration
 
 Storage configuration can be specified in a YAML file passed through the `--storage-config-file` option.
-This can be used to optimize performance for specific use cases.
+This can be used to optimize performance for specific use-cases.
 
-See storage plugin documentation for more detail:
-* [mcap](rosbag2_storage_mcap/README.md#writer-configuration)
-* [sqlite3](rosbag2_storage_sqlite3/README.md#storage-configuration-file)
+For the default storage plugin (sqlite3), the file has a following syntax:
+```
+read:
+  pragmas: <list of pragma settings for read-only>
+write:
+  pragmas: <list of pragma settings for read/write>
+```
 
-#### Controlling recordings via services
+By default, SQLite settings are significantly optimized for performance.
+This might have consequences of bag data being corrupted after an application or system-level crash.
+This consideration only applies to current bagfile in case bag splitting is on (through `--max-bag-*` parameters).
+If increased crash-caused corruption resistance is necessary, use `resilient` option for `--storage-preset-profile` setting.
 
-The rosbag2 recorder provides the following services for remote control, which can be called via `ros2 service` commandline, or from your nodes:
+Settings are fully exposed to the user and should be applied with understanding.
+Please refer to [documentation of pragmas](https://www.sqlite.org/pragma.html).
 
-* `~/is_paused [rosbag2_interfaces/srv/IsPaused]`
-  * Returns whether recording is currently paused.
-* `~/pause [rosbag2_interfaces/srv/Pause]`
-  * Pauses recording. All messages that have already arrived will be written, but all messages that arrive after pausing will be discarded. Has no effect if already paused. Takes no arguments.
-* `~/resume [rosbag2_interfaces/srv/Resume]`
-  * Resume recording if paused. Has no effect if not paused. Takes no arguments.
-* `~/split_bagfile [rosbag2_interfaces/srv/SplitBagfile]`
-  * Triggers a split to a new file, even if none of the configured split criteria (such as `--max-bag-size` or `--max-bag-duration`) have been met yet
-* `~/snapshot [rosbag2_interfaces/srv/Snapshot]`
-  * enabled if `--snapshot-mode` is specified. Takes no arguments, triggers a snapshot.
+An example configuration file could look like this:
 
-#### Snapshot mode
+```
+write:
+  pragmas: ["journal_mode = MEMORY", "synchronous = OFF", "schema.cache_size = 1000", "schema.page_size = 4096"]
 
-The Recorder provides a "snapshot mode", enabled via `--snapshot-mode` or `StorageOptions.snapshot_mode`, which does not write messages to disk as they come in, but instead keeps an in-memory circular buffer of size `--max-cache-size`.
-This entire buffer can be dumped to disk on request, saving data only in specified circumstances such as a detected error condition or point of interest, capturing the "last N bytes" of incoming data, therefore making sure that you can trigger snapshot after the fact of the event.
-
-The snapshot is taken by calling the `~/snapshot` service on the recorder, described previously.
+```
 
 ### Replaying data
 
-When you have a recorded bag, you can use Rosbag2 to play it back:
+After recording data, the next logical step is to replay this data:
 
 ```
-$ ros2 bag play <bag>
+$ ros2 bag play <bag_file>
 ```
 
-The bag argument can be a directory containing `metadata.yaml` and one or more storage files, or to a single storage file such as `.mcap` or `.db3`.
-The Player will automatically detect which storage implementation to use for playing.
+The bag file is by default set to the folder name where the data was previously recorded in.
 
 #### Controlling playback via services
 
@@ -160,11 +183,8 @@ The Rosbag2 player provides the following services for remote control, which can
   * Change the play head to the specified timestamp. Can be forward or backward in time, the next played message is the next immediately after the seeked timestamp.
 * `~/set_rate [rosbag2_interfaces/srv/SetRate]`
   * Sets the rate of playback, for example 2.0 will play messages twice as fast.
-* `~/stop [rosbag2_interfaces/srv/Stop]`
-  * Stop the player, putting the play head in "undefined position" outside the bag. Must call `play` before other operations can be done.
 * `~/toggle_paused [rosbag2_interfaces/srv/TogglePaused]`
   * Pause if playing, resume if paused.
-
 
 ### Analyzing data
 
@@ -219,9 +239,9 @@ The only required value in the output bags is `uri` and `storage_id`. All other 
 This example notes all fields that can have an effect, with a comment on the required ones.
 
 ```
-output_bags:
+output_bags
 - uri: /output/bag1  # required
-  storage_id: ""  # will use the default storage plugin, if unspecified
+  storage_id: sqlite3  # required
   max_bagfile_size: 0
   max_bagfile_duration: 0
   storage_preset_profile: ""
@@ -247,6 +267,7 @@ $ ros2 bag convert -i bag1 -i bag2 -o out.yaml
 # out.yaml
 output_bags:
 - uri: merged_bag
+  storage_id: sqlite3
   all: true
 ```
 
@@ -258,8 +279,10 @@ $ ros2 bag convert -i bag1 -o out.yaml
 # out.yaml
 output_bags:
 - uri: split1
+  storage_id: sqlite3
   topics: [/topic1, /topic2]
 - uri: split2
+  storage_id: sqlite3
   topics: [/topic3]
 ```
 
@@ -271,6 +294,7 @@ $ ros2 bag convert -i bag1 -o out.yaml
 # out.yaml
 output_bags:
 - uri: compressed
+  storage_id: sqlite3
   all: true
   compression_mode: file
   compression_format: zstd
@@ -278,7 +302,7 @@ output_bags:
 
 ### Overriding QoS Profiles
 
-When starting a recording or playback, you can pass a YAML file that contains QoS profile settings for a specific topic.
+When starting a recording or playback workflow, you can pass a YAML file that contains QoS profile settings for a specific topic.
 The YAML schema for the profile overrides is a dictionary of topic names with key/value pairs for each QoS policy.
 Below is an example profile set to the default ROS2 QoS settings.
 
@@ -348,141 +372,22 @@ For example, if we named the above XML launch script, `record_all.launch.xml`:
 $ ros2 launch record_all.launch.xml
 ```
 
-You can also invoke the `play` and `record` functionalities provided by `rosbag2_transport` package as nodes.
-The advantage to use this invocation strategy is that the Python layer handling the `ros2 bag` CLI is completely skipped.
-
-```python
-import launch
-
-def generate_launch_description():
-    return launch.LaunchDescription([
-        launch.actions.Node(
-            package='rosbag2_transport',
-            executable='player',
-            name='player',
-            output="screen",
-            parameters=["/path/to/params.yaml"],
-        )
-    ])
-```
-
-## Using with composition
-
-Play and record are fundamental tasks of `rosbag2`. However, playing or recording data at high rates may have limitations (e.g. spurious packet drops) due to one of the following:
-- low network bandwith
-- high CPU load
-- slow mass memory
-- ROS 2 middleware serialization/deserialization delays & overhead
-
-ROS 2 C++ nodes can benefit from intra-process communication to partially or completely bypass network transport of messages between two nodes.
-
-Multiple _components_ can be _composed_, either [statically](https://docs.ros.org/en/rolling/Tutorials/Intermediate/Composition.html#compile-time-composition-using-ros-services) or [dynamically](https://docs.ros.org/en/rolling/Tutorials/Intermediate/Composition.html#run-time-composition-using-ros-services-with-a-publisher-and-subscriber): all the composed component will share the same address space because they will be loaded in a single process.
-
-A prerequirement is for each C++ node to be [_composable_](https://docs.ros.org/en/rolling/Concepts/Intermediate/About-Composition.html?highlight=composition) and to follow the [guidelines](https://docs.ros.org/en/rolling/Tutorials/Demos/Intra-Process-Communication.html?highlight=intra) for efficient publishing & subscription.
-
-With the above requirements met, the user can:
-- compose multiple nodes together
-- explicitly enable intra-process communication
-
-Whenever a publisher and a subscriber on the same topic belong to the same _composed_ process, and intra-process is enabled for both, `rclcpp` completely bypasses RMW layer and below transport layer (i.e. DDS). Instead, messages are shared via process memory and *potentially* never copied. Some exception hold, so please have a look to the [IPC guidelines](https://docs.ros.org/en/rolling/Tutorials/Demos/Intra-Process-Communication.html?highlight=intra).
-
-Here is an example of Python launchfile composition. Notice that composable container components do not expect YAML files to be directly passed to them: parameters have to be "dumped" out from the YAML file (if you have one). A suggestion of possible implementation is offered as a starting point.
-
-```python
-import launch
-import launch_ros
-import yaml
-
-'''
-Used to load parameters for composable nodes from a standard param file
-'''
-def dump_params(param_file_path, node_name):
-    with open(param_file_path, 'r') as file:
-        return [yaml.safe_load(file)[node_name]['ros__parameters']]
-
-def generate_launch_description():
-    return launch.LaunchDescription([
-        launch.actions.ComposableNodeContainer(
-            name='composable_container',
-            package='rclcpp_components',
-            executable='component_container',
-            composable_node_descriptions=[
-                launch_ros.descriptions.ComposableNode(
-                    package='rosbag2_transport',
-                    plugin='rosbag2_transport::Player',
-                    name='player',
-                    parameters=dump_params("/path/to/params.yaml", "player"),
-                    extra_arguments=[{'use_intra_process_comms': True}]
-                ),
-                # your other components here
-            ]
-        )
-    ])
-}
-```
-
-Here's an example YAML configuration for both composable player and recorder:
-```yaml
-recorder:
-  ros__parameters:
-    use_sim_time: false
-    record:
-      all: true
-      is_discovery_disabled: false
-      topic_polling_interval:
-        sec: 0
-        nsec: 10000000
-      include_hidden_topics: true
-      ignore_leaf_topics: false
-      start_paused: false
-
-    storage:
-      uri: "/path/to/destination/folder"
-      storage_id: "sqlite3"
-      max_cache_size: 20000000
-```
-and
-```yaml
-player:
-  ros__parameters:
-    play:
-      read_ahead_queue_size: 1000
-      node_prefix: ""
-      rate: 1.0
-      loop: false
-      # Negative timestamps will make the playback to not stop.  
-      playback_duration:
-        sec: -1
-        nsec: 00000000
-      start_paused: false
-
-    storage:
-      uri: "path/to/rosbag/file"
-      storage_id: "mcap"
-      storage_config_uri: ""
-```
-
-For a full list of available parameters, you can refer to [`player`](rosbag2_transport/test/resources/player_node_params.yaml) and [`recorder`](rosbag2_transport/test/resources/recorder_node_params.yaml) configurations from the `test` folder of `rosbag2_transport`.
-
 ## Storage format plugin architecture
 
-Looking at the output of the `ros2 bag info` command, we can see a field `Storage id:`.
-Rosbag2 was designed to support multiple storage formats to adapt to individual use cases.
-This repository provides two storage plugins, `mcap` and `sqlite3`.
-The default is `mcap`, which is provided to code by [`rosbag2_storage::get_default_storage_id()`](rosbag2_storage/include/rosbag2_storage/default_storage_id.hpp) and defined in [`default_storage_id.cpp`](rosbag2_storage/src/rosbag2_storage/default_storage_id.cpp#L21)
+Looking at the output of the `ros2 bag info` command, we can see a field called `storage id:`.
+rosbag2 specifically was designed to support multiple storage formats.
+This allows a flexible adaptation of various storage formats depending on individual use cases.
+As of now, this repository comes with two storage plugins.
+The first plugin, sqlite3 is chosen by default.
+If not specified otherwise, rosbag2 will store and replay all recorded data in an SQLite3 database.
 
-If not specified otherwise, rosbag2 will write data using the default plugin.
-
-In order to use a specified (non-default) storage format plugin, rosbag2 has a command line argument `--storage`:
+In order to use a specified (non-default) storage format plugin, rosbag2 has a command line argument for it:
 
 ```
-$ ros2 bag record --storage <storage_id>
+$ ros2 bag <record> | <play> | <info> -s <sqlite3> | <rosbag2_v2> | <custom_plugin>
 ```
 
-Bag reading commands can detect the storage plugin automatically, but if for any reason you want to force a specific plugin to read a bag, you can use the `--storage` option on any `ros2 bag` verb.
-
-To write your own Rosbag2 storage implementation, refer to [Storage Plugin Development](docs/storage_plugin_development.md)
-
+Have a look at each of the individual plugins for further information.
 
 ## Serialization format plugin architecture
 
@@ -501,3 +406,4 @@ By default, rosbag2 can convert from and to CDR as it's the default serializatio
 
 [qos-override-tutorial]: https://docs.ros.org/en/rolling/Guides/Overriding-QoS-Policies-For-Recording-And-Playback.html
 [about-qos-settings]: https://docs.ros.org/en/rolling/Concepts/About-Quality-of-Service-Settings.html
+

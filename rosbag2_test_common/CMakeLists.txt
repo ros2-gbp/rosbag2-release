@@ -6,10 +6,9 @@ if(NOT CMAKE_C_STANDARD)
   set(CMAKE_C_STANDARD 99)
 endif()
 
-# Default to C++17
+# Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  set(CMAKE_CXX_STANDARD 14)
 endif()
 
 # Windows supplies macros for min and max by default. We should only use min and max from stl
@@ -29,10 +28,7 @@ add_library(${PROJECT_NAME} INTERFACE)
 target_include_directories(${PROJECT_NAME} INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include/${PROJECT_NAME}>)
-target_link_libraries(${PROJECT_NAME} INTERFACE
-  rclcpp::rclcpp
-  rcutils::rcutils
-)
+ament_target_dependencies(${PROJECT_NAME} INTERFACE rclcpp rcutils)
 
 install(
   TARGETS ${PROJECT_NAME}
@@ -45,8 +41,6 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 endif()
-
-ament_python_install_package(${PROJECT_NAME})
 
 ament_export_dependencies(rclcpp rcutils)
 

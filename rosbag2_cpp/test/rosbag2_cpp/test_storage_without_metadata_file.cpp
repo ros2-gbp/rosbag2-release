@@ -52,17 +52,23 @@ public:
 
 TEST_F(StorageWithoutMetadataFileTest, open_uses_storage_id_from_storage_options) {
   {
-    auto topic_with_type =
-      rosbag2_storage::TopicMetadata{0u, "topic", "test_msgs/BasicTypes", kRmwFormat, {}, ""};
+    auto topic_with_type = rosbag2_storage::TopicMetadata{
+      "topic",
+      "test_msgs/BasicTypes",
+      kRmwFormat,
+      ""
+    };
 
-    auto topic_information = rosbag2_storage::TopicInformation{topic_with_type, 1};
+    auto topic_information = rosbag2_storage::TopicInformation{
+      topic_with_type,
+      1
+    };
 
     rosbag2_storage::BagMetadata metadata;
     metadata.relative_file_paths = {"TestPath"};
     metadata.topics_with_message_count = {topic_information};
 
     EXPECT_CALL(*storage_, get_metadata).Times(1).WillOnce(Return(metadata));
-    EXPECT_CALL(*storage_, set_read_order).Times(1).WillOnce(Return(true));
   }
 
   auto storage_factory = std::make_unique<StrictMock<MockStorageFactory>>();

@@ -34,8 +34,7 @@ TEST_F(RecordIntegrationTestFixture, record_all_include_unpublished_false_ignore
   auto string_msgs_sub = node->create_subscription<test_msgs::msg::Strings>(
     string_topic, 10, [](test_msgs::msg::Strings::ConstSharedPtr) {});
 
-  rosbag2_transport::RecordOptions record_options =
-  {true, false, false, {}, {}, {}, {}, {}, {}, "rmw_format", 100ms};
+  rosbag2_transport::RecordOptions record_options = {true, false, {}, "rmw_format", 100ms};
   record_options.include_unpublished_topics = false;
   auto recorder = std::make_shared<MockRecorder>(writer_, storage_options_, record_options);
   recorder->record();
@@ -52,8 +51,7 @@ TEST_F(RecordIntegrationTestFixture, record_all_include_unpublished_true_include
   auto string_msgs_sub = node->create_subscription<test_msgs::msg::Strings>(
     string_topic, 10, [](test_msgs::msg::Strings::ConstSharedPtr) {});
 
-  rosbag2_transport::RecordOptions record_options =
-  {true, false, false, {}, {}, {}, {}, {}, {}, "rmw_format", 100ms};
+  rosbag2_transport::RecordOptions record_options = {true, false, {}, "rmw_format", 100ms};
   record_options.include_unpublished_topics = true;
   auto recorder = std::make_shared<MockRecorder>(writer_, storage_options_, record_options);
   recorder->record();
@@ -72,8 +70,7 @@ TEST_F(
   auto string_msgs_sub = node->create_subscription<test_msgs::msg::Strings>(
     string_topic, 10, [](test_msgs::msg::Strings::ConstSharedPtr) {});
 
-  rosbag2_transport::RecordOptions record_options =
-  {true, false, false, {}, {}, {}, {}, {}, {}, "rmw_format", 100ms};
+  rosbag2_transport::RecordOptions record_options = {true, false, {}, "rmw_format", 100ms};
   record_options.include_unpublished_topics = false;
   auto recorder = std::make_shared<MockRecorder>(writer_, storage_options_, record_options);
   recorder->record();

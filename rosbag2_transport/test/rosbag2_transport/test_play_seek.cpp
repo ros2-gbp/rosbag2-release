@@ -15,7 +15,6 @@
 #include <gmock/gmock.h>
 
 #include <chrono>
-#include <filesystem>
 #include <future>
 #include <memory>
 #include <string>
@@ -26,7 +25,6 @@
 #include "rosbag2_cpp/writers/sequential_writer.hpp"
 #include "rosbag2_play_test_fixture.hpp"
 #include "rosbag2_storage/storage_options.hpp"
-#include "rosbag2_test_common/tested_storage_ids.hpp"
 #include "test_msgs/message_fixtures.hpp"
 #include "test_msgs/msg/basic_types.hpp"
 
@@ -34,23 +32,19 @@ using namespace ::testing;  // NOLINT
 using namespace rosbag2_transport;  // NOLINT
 using namespace rosbag2_test_common;  // NOLINT
 
-namespace fs = std::filesystem;
-
-class RosBag2PlaySeekTestFixture
-  : public RosBag2PlayTestFixture,
-  public WithParamInterface<std::string>
+class RosBag2PlaySeekTestFixture : public RosBag2PlayTestFixture
 {
 public:
   RosBag2PlaySeekTestFixture()
   : RosBag2PlayTestFixture()
   {
     topic_types_ = std::vector<rosbag2_storage::TopicMetadata>{
-      {1u, "topic1", "test_msgs/BasicTypes", rmw_get_serialization_format(), {}, ""}};
+      {"topic1", "test_msgs/BasicTypes", rmw_get_serialization_format(), ""}};
 
-    const fs::path base{_SRC_RESOURCES_DIR_PATH};
-    const fs::path bag_path = base / GetParam() / "test_bag_for_seek";
+    const rcpputils::fs::path base{_SRC_RESOURCES_DIR_PATH};
+    const rcpputils::fs::path bag_path = base / "test_bag_for_seek";
 
-    storage_options_ = rosbag2_storage::StorageOptions({bag_path.string(), "", 0, 0, 0});
+    storage_options_ = rosbag2_storage::StorageOptions({bag_path.string(), "sqlite3", 0, 0, 0});
     play_options_.read_ahead_queue_size = 2;
     reader_ = std::make_unique<rosbag2_cpp::Reader>();
 
@@ -102,7 +96,7 @@ public:
   std::unique_ptr<rosbag2_cpp::Reader> reader_;
 };
 
-TEST_P(RosBag2PlaySeekTestFixture, seek_back_in_time) {
+TEST_F(RosBag2PlaySeekTestFixture, seek_back_in_time) {
   const size_t expected_number_of_messages = num_msgs_in_bag_ + 2;
   auto player = std::make_shared<MockPlayer>(std::move(reader_), storage_options_, play_options_);
 
@@ -118,7 +112,7 @@ TEST_P(RosBag2PlaySeekTestFixture, seek_back_in_time) {
   player->pause();
   ASSERT_TRUE(player->is_paused());
 
-  player->play();
+  auto player_future = std::async(std::launch::async, [&player]() -> void {player->play();});
 
   EXPECT_TRUE(player->is_paused());
   EXPECT_TRUE(player->play_next());
@@ -133,7 +127,7 @@ TEST_P(RosBag2PlaySeekTestFixture, seek_back_in_time) {
   EXPECT_TRUE(player->play_next());
   EXPECT_TRUE(player->play_next());
   player->resume();
-  player->wait_for_playback_to_finish();
+  player_future.get();
   await_received_messages.get();
 
   auto replayed_topic1 = sub_->get_received_messages<test_msgs::msg::BasicTypes>("/topic1");
@@ -149,7 +143,7 @@ TEST_P(RosBag2PlaySeekTestFixture, seek_back_in_time) {
   }
 }
 
-TEST_P(RosBag2PlaySeekTestFixture, seek_with_timestamp_later_than_in_last_message) {
+TEST_F(RosBag2PlaySeekTestFixture, seek_with_timestamp_later_than_in_last_message) {
   const size_t expected_number_of_messages = 0;
   auto player = std::make_shared<MockPlayer>(std::move(reader_), storage_options_, play_options_);
 
@@ -165,7 +159,7 @@ TEST_P(RosBag2PlaySeekTestFixture, seek_with_timestamp_later_than_in_last_messag
   player->pause();
   ASSERT_TRUE(player->is_paused());
 
-  player->play();
+  auto player_future = std::async(std::launch::async, [&player]() -> void {player->play();});
 
   EXPECT_TRUE(player->is_paused());
   EXPECT_TRUE(player->play_next());
@@ -176,14 +170,14 @@ TEST_P(RosBag2PlaySeekTestFixture, seek_with_timestamp_later_than_in_last_messag
   // shouldn't be able to keep playing since we're at end of bag
   EXPECT_FALSE(player->play_next());
   player->resume();
-  player->wait_for_playback_to_finish();
+  player_future.get();
   await_received_messages.get();
 
   auto replayed_topic1 = sub_->get_received_messages<test_msgs::msg::BasicTypes>("/topic1");
   ASSERT_THAT(replayed_topic1, SizeIs(expected_number_of_messages));
 }
 
-TEST_P(RosBag2PlaySeekTestFixture, seek_forward) {
+TEST_F(RosBag2PlaySeekTestFixture, seek_forward) {
   const size_t expected_number_of_messages = num_msgs_in_bag_ - 1;
   auto player = std::make_shared<MockPlayer>(std::move(reader_), storage_options_, play_options_);
 
@@ -199,7 +193,7 @@ TEST_P(RosBag2PlaySeekTestFixture, seek_forward) {
   player->pause();
   ASSERT_TRUE(player->is_paused());
 
-  player->play();
+  auto player_future = std::async(std::launch::async, [&player]() -> void {player->play();});
 
   EXPECT_TRUE(player->is_paused());
   EXPECT_TRUE(player->play_next());
@@ -208,7 +202,7 @@ TEST_P(RosBag2PlaySeekTestFixture, seek_forward) {
   player->seek((start_time_ms_ + message_spacing_ms_ * 2) * 1000000);
   EXPECT_TRUE(player->play_next());
   player->resume();
-  player->wait_for_playback_to_finish();
+  player_future.get();
   await_received_messages.get();
 
   auto replayed_topic1 = sub_->get_received_messages<test_msgs::msg::BasicTypes>("/topic1");
@@ -221,7 +215,7 @@ TEST_P(RosBag2PlaySeekTestFixture, seek_forward) {
   }
 }
 
-TEST_P(RosBag2PlaySeekTestFixture, seek_back_in_time_from_the_end_of_the_bag) {
+TEST_F(RosBag2PlaySeekTestFixture, seek_back_in_time_from_the_end_of_the_bag) {
   const size_t expected_number_of_messages = num_msgs_in_bag_ + num_msgs_in_bag_ - 2;
   auto player = std::make_shared<MockPlayer>(std::move(reader_), storage_options_, play_options_);
 
@@ -237,7 +231,7 @@ TEST_P(RosBag2PlaySeekTestFixture, seek_back_in_time_from_the_end_of_the_bag) {
   player->pause();
   ASSERT_TRUE(player->is_paused());
 
-  player->play();
+  auto player_future = std::async(std::launch::async, [&player]() -> void {player->play();});
 
   EXPECT_TRUE(player->is_paused());
   // Play all messages  from bag
@@ -250,7 +244,7 @@ TEST_P(RosBag2PlaySeekTestFixture, seek_back_in_time_from_the_end_of_the_bag) {
   player->seek((start_time_ms_ + message_spacing_ms_ * 2) * 1000000);
   EXPECT_TRUE(player->play_next());
   player->resume();
-  player->wait_for_playback_to_finish();
+  player_future.get();
   await_received_messages.get();
 
   auto replayed_topic1 = sub_->get_received_messages<test_msgs::msg::BasicTypes>("/topic1");
@@ -267,7 +261,7 @@ TEST_P(RosBag2PlaySeekTestFixture, seek_back_in_time_from_the_end_of_the_bag) {
   }
 }
 
-TEST_P(RosBag2PlaySeekTestFixture, seek_forward_from_the_end_of_the_bag) {
+TEST_F(RosBag2PlaySeekTestFixture, seek_forward_from_the_end_of_the_bag) {
   const size_t expected_number_of_messages = num_msgs_in_bag_;
   auto player = std::make_shared<MockPlayer>(std::move(reader_), storage_options_, play_options_);
 
@@ -283,7 +277,7 @@ TEST_P(RosBag2PlaySeekTestFixture, seek_forward_from_the_end_of_the_bag) {
   player->pause();
   ASSERT_TRUE(player->is_paused());
 
-  player->play();
+  auto player_future = std::async(std::launch::async, [&player]() -> void {player->play();});
 
   EXPECT_TRUE(player->is_paused());
   // Play all messages  from bag
@@ -296,7 +290,7 @@ TEST_P(RosBag2PlaySeekTestFixture, seek_forward_from_the_end_of_the_bag) {
   player->seek((start_time_ms_ + message_spacing_ms_ * (num_msgs_in_bag_ - 1)) * 1000000 + 1);
   EXPECT_FALSE(player->play_next());
   player->resume();
-  player->wait_for_playback_to_finish();
+  player_future.get();
   await_received_messages.get();
 
   auto replayed_topic1 = sub_->get_received_messages<test_msgs::msg::BasicTypes>("/topic1");
@@ -306,9 +300,3 @@ TEST_P(RosBag2PlaySeekTestFixture, seek_forward_from_the_end_of_the_bag) {
     EXPECT_EQ(replayed_topic1[i]->int32_value, static_cast<int32_t>(i + 1)) << "i=" << i;
   }
 }
-
-INSTANTIATE_TEST_SUITE_P(
-  ParametrizedPlaySeekTests,
-  RosBag2PlaySeekTestFixture,
-  ValuesIn(rosbag2_test_common::kTestedStorageIDs)
-);
