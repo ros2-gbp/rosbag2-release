@@ -1,0 +1,71 @@
+ros-humble-rosbag2-storage-mcap-testdata (0.15.11-1jammy) jammy; urgency=high
+
+
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Mon, 20 May 2024 05:00:00 -0000
+
+ros-humble-rosbag2-storage-mcap-testdata (0.15.10-1jammy) jammy; urgency=high
+
+
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Fri, 17 May 2024 05:00:00 -0000
+
+ros-humble-rosbag2-storage-mcap-testdata (0.15.9-1jammy) jammy; urgency=high
+
+
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Wed, 24 Jan 2024 06:00:00 -0000
+
+ros-humble-rosbag2-storage-mcap-testdata (0.15.8-1jammy) jammy; urgency=high
+
+
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Tue, 19 Sep 2023 05:00:00 -0000
+
+ros-humble-rosbag2-storage-mcap-testdata (0.15.7-1jammy) jammy; urgency=high
+
+  * [humble] Don't crash when type definition cannot be found, and find srv defs if available (#1398 <https://github.com/ros2/rosbag2/issues/1398>)
+  * Contributors: Emerson Knapp, Michael Orlov
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Tue, 18 Jul 2023 05:00:00 -0000
+
+ros-humble-rosbag2-storage-mcap-testdata (0.15.6-1jammy) jammy; urgency=high
+
+
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Mon, 05 Jun 2023 05:00:00 -0000
+
+ros-humble-rosbag2-storage-mcap-testdata (0.15.5-1jammy) jammy; urgency=high
+
+  * Add Michael Orlov as maintainer in rosbag2 packages (#1215 <https://github.com/ros2/rosbag2/issues/1215>) (#1224 <https://github.com/ros2/rosbag2/issues/1224>)
+  * Contributors: mergify[bot]
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Tue, 25 Apr 2023 05:00:00 -0000
+
+ros-humble-rosbag2-storage-mcap-testdata (0.15.4-1jammy) jammy; urgency=high
+
+  * [Humble backport] rosbag2_storage_mcap: merge into rosbag2 repo (#1163 <https://github.com/ros2/rosbag2/issues/1163>) (#1189 <https://github.com/ros2/rosbag2/issues/1189>)
+  * Contributors: james-rms
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Tue, 10 Jan 2023 06:00:00 -0000
+
+ros-humble-rosbag2-storage-mcap-testdata (0.6.0-1jammy) jammy; urgency=high
+
+
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Mon, 28 Nov 2022 06:00:00 -0000
+
+ros-humble-rosbag2-storage-mcap-testdata (0.5.0-1jammy) jammy; urgency=high
+
+  * rename test_fixture_interfaces package to testdata (#64 <https://github.com/ros-tooling/rosbag2_storage_mcap/issues/64>)
+  * Contributors: James Smith
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Wed, 02 Nov 2022 05:00:00 -0000
+
+ros-humble-rosbag2-storage-mcap-testdata (0.4.0-1jammy) jammy; urgency=high
+
+
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Thu, 06 Oct 2022 05:00:00 -0000
+
+
