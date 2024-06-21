@@ -2,38 +2,60 @@
 Changelog for package rosbag2_interfaces
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.15.11 (2024-05-20)
---------------------
-
-0.15.10 (2024-05-17)
---------------------
-
-0.15.9 (2024-01-24)
+0.28.0 (2024-06-17)
 -------------------
 
-0.15.8 (2023-09-19)
+0.27.0 (2024-04-30)
 -------------------
 
-0.15.7 (2023-07-18)
+0.26.1 (2024-04-17)
 -------------------
 
-0.15.6 (2023-06-05)
+0.26.0 (2024-04-16)
+-------------------
+* Add node name to the Read(Write)SplitEvent message (`#1609 <https://github.com/ros2/rosbag2/issues/1609>`_)
+* Contributors: Michael Orlov
+
+0.25.0 (2024-03-27)
 -------------------
 
-0.15.5 (2023-04-25)
--------------------
-* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_) (`#1224 <https://github.com/ros2/rosbag2/issues/1224>`_)
-* Contributors: mergify[bot]
-
-0.15.4 (2023-01-10)
+0.24.0 (2023-07-11)
 -------------------
 
-0.15.3 (2022-11-07)
+0.23.0 (2023-04-28)
 -------------------
-* Notification of significant events during bag recording and playback (`#908 <https://github.com/ros2/rosbag2/issues/908>`_) (`#1037 <https://github.com/ros2/rosbag2/issues/1037>`_)
-* Contributors: Geoffrey Biggs
 
-0.15.2 (2022-05-11)
+0.22.0 (2023-04-18)
+-------------------
+
+0.21.0 (2023-04-12)
+-------------------
+* Update rosbag2 to C++17. (`#1238 <https://github.com/ros2/rosbag2/issues/1238>`_)
+* Contributors: Chris Lalancette
+
+0.20.0 (2023-02-14)
+-------------------
+
+0.19.0 (2023-01-13)
+-------------------
+* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_)
+* Contributors: Michael Orlov
+
+0.18.0 (2022-11-15)
+-------------------
+* Add SplitBagfile recording service. (`#1115 <https://github.com/ros2/rosbag2/issues/1115>`_)
+* Contributors: rshanor
+
+0.17.0 (2022-07-30)
+-------------------
+* Adds stop operation for rosbag2::Player (`#1007 <https://github.com/ros2/rosbag2/issues/1007>`_)
+* Notification of significant events during bag recording and playback (`#908 <https://github.com/ros2/rosbag2/issues/908>`_)
+* Adds play until timestamp functionality (`#1005 <https://github.com/ros2/rosbag2/issues/1005>`_)
+* Add CLI verb for burst mode of playback (`#980 <https://github.com/ros2/rosbag2/issues/980>`_)
+* Add play-for specified number of seconds functionality (`#960 <https://github.com/ros2/rosbag2/issues/960>`_)
+* Contributors: Agustin Alba Chicar, Geoffrey Biggs, Michael Orlov, Misha Shalem
+
+0.16.0 (2022-05-11)
 -------------------
 
 0.15.1 (2022-04-06)

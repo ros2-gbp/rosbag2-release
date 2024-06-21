@@ -22,8 +22,6 @@
 #include <string>
 #include <vector>
 
-#include "rclcpp/rclcpp.hpp"
-
 #include "rosbag2_cpp/reader.hpp"
 #include "rosbag2_cpp/types.hpp"
 #include "rosbag2_cpp/writer.hpp"
@@ -50,7 +48,7 @@ class Rosbag2TransportTestFixture : public Test
 public:
   Rosbag2TransportTestFixture()
   : storage_options_({"uri", "storage_id", 0, 100}), play_options_({1000}),
-    reader_(std::make_shared<rosbag2_cpp::Reader>(std::make_unique<MockSequentialReader>())),
+    reader_(std::make_unique<rosbag2_cpp::Reader>(std::make_unique<MockSequentialReader>())),
     writer_(std::make_shared<rosbag2_cpp::Writer>(std::make_unique<MockSequentialWriter>())) {}
 
   template<typename MessageT>
@@ -62,7 +60,7 @@ public:
   {
     auto bag_msg = std::make_shared<rosbag2_storage::SerializedBagMessage>();
     bag_msg->serialized_data = memory_management_.serialize_message(message);
-    bag_msg->time_stamp = milliseconds * 1000000;
+    bag_msg->recv_timestamp = milliseconds * 1000000;
     bag_msg->topic_name = topic;
 
     return bag_msg;
@@ -73,7 +71,7 @@ public:
   rosbag2_storage::StorageOptions storage_options_;
   rosbag2_transport::PlayOptions play_options_;
 
-  std::shared_ptr<rosbag2_cpp::Reader> reader_;
+  std::unique_ptr<rosbag2_cpp::Reader> reader_;
   std::shared_ptr<rosbag2_cpp::Writer> writer_;
 };
 

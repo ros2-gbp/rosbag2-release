@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>rosbag2_storage</name>
-  <version>0.15.11</version>
+  <version>0.28.0</version>
   <description>ROS2 independent storage format to store serialized ROS2 messages</description>
   <maintainer email="michael.orlov@apex.ai">Michael Orlov</maintainer>
   <maintainer email="geoff@openrobotics.org">Geoffrey Biggs</maintainer>
@@ -13,8 +13,9 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>pluginlib</depend>
-  <depend>rcpputils</depend>
   <depend>rcutils</depend>
+  <depend>rclcpp</depend>
+  <depend>rmw</depend>
   <depend>yaml_cpp_vendor</depend>
 
   <test_depend>ament_cmake_gtest</test_depend>

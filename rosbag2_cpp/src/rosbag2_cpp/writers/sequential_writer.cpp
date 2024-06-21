@@ -16,6 +16,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <filesystem>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -24,25 +25,27 @@
 #include <utility>
 #include <vector>
 
-#include "rcpputils/filesystem_helper.hpp"
+#include "rcpputils/env.hpp"
 
 #include "rosbag2_cpp/info.hpp"
 #include "rosbag2_cpp/logging.hpp"
+#include "rosbag2_cpp/service_utils.hpp"
 
+#include "rosbag2_storage/default_storage_id.hpp"
 #include "rosbag2_storage/storage_options.hpp"
+
+namespace fs = std::filesystem;
 
 namespace rosbag2_cpp
 {
 namespace writers
 {
 
-static constexpr char const * kDefaultStorageID = "sqlite3";
-
 namespace
 {
 std::string strip_parent_path(const std::string & relative_path)
 {
-  return rcpputils::fs::path(relative_path).filename().string();
+  return fs::path(relative_path).filename().generic_string();
 }
 }  // namespace
 
@@ -56,6 +59,7 @@ SequentialWriter::SequentialWriter(
   metadata_io_(std::move(metadata_io)),
   converter_(nullptr),
   topics_names_to_info_(),
+  topic_names_to_message_definitions_(),
   metadata_()
 {}
 
@@ -65,9 +69,7 @@ SequentialWriter::~SequentialWriter()
   // Callbacks likely was created after SequentialWriter object and may point to the already
   // destructed objects.
   callback_manager_.delete_all_callbacks();
-  if (storage_) {
-    SequentialWriter::close();
-  }
+  SequentialWriter::close();
 }
 
 void SequentialWriter::init_metadata()
@@ -82,22 +84,28 @@ void SequentialWriter::init_metadata()
   file_info.starting_time = std::chrono::time_point<std::chrono::high_resolution_clock>(
     std::chrono::nanoseconds::max());
   file_info.message_count = 0;
+  metadata_.custom_data = storage_options_.custom_data;
   metadata_.files = {file_info};
+  metadata_.ros_distro = rcpputils::get_env_var("ROS_DISTRO");
+  if (metadata_.ros_distro.empty()) {
+    ROSBAG2_CPP_LOG_WARN(
+      "Environment variable ROS_DISTRO not set, can't store value in bag metadata.");
+  }
 }
 
 void SequentialWriter::open(
   const rosbag2_storage::StorageOptions & storage_options,
   const ConverterOptions & converter_options)
 {
-  // Note. Close and open methods protected with mutex on upper rosbag2_cpp::writer level.
-  if (storage_) {
-    return;  // The writer already opened.
+  // Note. close and open methods protected with mutex on upper rosbag2_cpp::writer level.
+  if (is_open_) {
+    return;  // The writer already opened
   }
   base_folder_ = storage_options.uri;
   storage_options_ = storage_options;
 
   if (storage_options_.storage_id.empty()) {
-    storage_options_.storage_id = kDefaultStorageID;
+    storage_options_.storage_id = rosbag2_storage::get_default_storage_id();
   }
 
   if (converter_options.output_serialization_format !=
@@ -106,18 +114,18 @@ void SequentialWriter::open(
     converter_ = std::make_unique<Converter>(converter_options, converter_factory_);
   }
 
-  rcpputils::fs::path db_path(storage_options.uri);
-  if (db_path.is_directory()) {
+  fs::path storage_path(storage_options.uri);
+  if (fs::is_directory(storage_path)) {
     std::stringstream error;
-    error << "Database directory already exists (" << db_path.string() <<
-      "), can't overwrite existing database";
+    error << "Bag directory already exists (" << storage_path.string() <<
+      "), can't overwrite existing bag";
     throw std::runtime_error{error.str()};
   }
 
-  bool dir_created = rcpputils::fs::create_directories(db_path);
+  bool dir_created = fs::create_directories(storage_path);
   if (!dir_created) {
     std::stringstream error;
-    error << "Failed to create database directory (" << db_path.string() << ").";
+    error << "Failed to create bag directory (" << storage_path.string() << ").";
     throw std::runtime_error{error.str()};
   }
 
@@ -157,10 +165,16 @@ void SequentialWriter::open(
   }
 
   init_metadata();
+  storage_->update_metadata(metadata_);
+  is_open_ = true;
 }
 
 void SequentialWriter::close()
 {
+  // Note. close and open methods protected with mutex on upper rosbag2_cpp::writer level.
+  if (!is_open_.exchange(false)) {
+    return;  // The writer is not open
+  }
   if (use_cache_) {
     // destructor will flush message cache
     cache_consumer_.reset();
@@ -169,6 +183,9 @@ void SequentialWriter::close()
 
   if (!base_folder_.empty()) {
     finalize_metadata();
+    if (storage_) {
+      storage_->update_metadata(metadata_);
+    }
     metadata_io_->write_metadata(base_folder_, metadata_);
   }
 
@@ -181,11 +198,13 @@ void SequentialWriter::close()
     // Take the latest file name from metadata in case if it was updated after compression in
     // derived class
     info->closed_file =
-      (rcpputils::fs::path(base_folder_) / metadata_.relative_file_paths.back()).string();
+      (fs::path(base_folder_) / metadata_.relative_file_paths.back()).generic_string();
     callback_manager_.execute_callbacks(bag_events::BagEvent::WRITE_SPLIT, info);
   }
 
   topics_names_to_info_.clear();
+  topic_names_to_message_definitions_.clear();
+
   converter_.reset();
 }
 
@@ -197,30 +216,61 @@ void SequentialWriter::create_topic(const rosbag2_storage::TopicMetadata & topic
     // nothing to do, topic already created
     return;
   }
+  rosbag2_storage::MessageDefinition definition;
 
-  if (!storage_) {
+  std::string topic_type;
+  if (is_service_event_topic(topic_with_type.name, topic_with_type.type)) {
+    // change service event type to service type for next step to get message definition
+    topic_type = service_event_topic_type_to_service_type(topic_with_type.type);
+  } else {
+    topic_type = topic_with_type.type;
+  }
+
+  try {
+    definition = message_definitions_.get_full_text(topic_type);
+  } catch (DefinitionNotFoundError &) {
+    definition = rosbag2_storage::MessageDefinition::empty_message_definition_for(topic_type);
+  }
+  create_topic(topic_with_type, definition);
+}
+
+void SequentialWriter::create_topic(
+  const rosbag2_storage::TopicMetadata & topic_with_type,
+  const rosbag2_storage::MessageDefinition & message_definition)
+{
+  if (topics_names_to_info_.find(topic_with_type.name) !=
+    topics_names_to_info_.end())
+  {
+    // nothing to do, topic already created
+    return;
+  }
+
+  if (!is_open_) {
     throw std::runtime_error("Bag is not open. Call open() before writing.");
   }
 
   rosbag2_storage::TopicInformation info{};
   info.topic_metadata = topic_with_type;
 
-  bool insert_succeded = false;
+  bool insert_succeeded = false;
   {
     std::lock_guard<std::mutex> lock(topics_info_mutex_);
     const auto insert_res = topics_names_to_info_.insert(
       std::make_pair(topic_with_type.name, info));
-    insert_succeded = insert_res.second;
+    insert_succeeded = insert_res.second;
   }
 
-  if (!insert_succeded) {
+  if (!insert_succeeded) {
     std::stringstream errmsg;
     errmsg << "Failed to insert topic \"" << topic_with_type.name << "\"!";
 
     throw std::runtime_error(errmsg.str());
   }
 
-  storage_->create_topic(topic_with_type);
+  topic_names_to_message_definitions_.insert(
+    std::make_pair(topic_with_type.name, message_definition));
+
+  storage_->create_topic(topic_with_type, message_definition);
 
   if (converter_) {
     converter_->add_topic(topic_with_type.name, topic_with_type.type);
@@ -229,7 +279,7 @@ void SequentialWriter::create_topic(const rosbag2_storage::TopicMetadata & topic
 
 void SequentialWriter::remove_topic(const rosbag2_storage::TopicMetadata & topic_with_type)
 {
-  if (!storage_) {
+  if (!is_open_) {
     throw std::runtime_error("Bag is not open. Call open() before removing.");
   }
 
@@ -237,6 +287,7 @@ void SequentialWriter::remove_topic(const rosbag2_storage::TopicMetadata & topic
   {
     std::lock_guard<std::mutex> lock(topics_info_mutex_);
     erased = topics_names_to_info_.erase(topic_with_type.name) > 0;
+    erased = erased && (topic_names_to_message_definitions_.erase(topic_with_type.name) > 0);
   }
 
   if (erased) {
@@ -257,9 +308,10 @@ std::string SequentialWriter::format_storage_uri(
   // The name of the folder needs to be queried in case
   // SequentialWriter is opened with a relative path.
   std::stringstream storage_file_name;
-  storage_file_name << rcpputils::fs::path(base_folder).filename().string() << "_" << storage_count;
+  storage_file_name << fs::path(base_folder).filename().generic_string() << "_" <<
+    storage_count;
 
-  return (rcpputils::fs::path(base_folder) / storage_file_name.str()).string();
+  return (fs::path(base_folder) / storage_file_name.str()).generic_string();
 }
 
 void SequentialWriter::switch_to_next_storage()
@@ -270,21 +322,22 @@ void SequentialWriter::switch_to_next_storage()
     message_cache_->log_dropped();
   }
 
+  storage_->update_metadata(metadata_);
   storage_options_.uri = format_storage_uri(
     base_folder_,
     metadata_.relative_file_paths.size());
   storage_ = storage_factory_->open_read_write(storage_options_);
-
   if (!storage_) {
     std::stringstream errmsg;
     errmsg << "Failed to rollover bagfile to new file: \"" << storage_options_.uri << "\"!";
 
     throw std::runtime_error(errmsg.str());
   }
-
+  storage_->update_metadata(metadata_);
   // Re-register all topics since we rolled-over to a new bagfile.
   for (const auto & topic : topics_names_to_info_) {
-    storage_->create_topic(topic.second.topic_metadata);
+    auto const & md = topic_names_to_message_definitions_[topic.first];
+    storage_->create_topic(topic.second.topic_metadata, md);
   }
 
   if (use_cache_) {
@@ -311,10 +364,14 @@ void SequentialWriter::split_bagfile()
   callback_manager_.execute_callbacks(bag_events::BagEvent::WRITE_SPLIT, info);
 }
 
-void SequentialWriter::write(std::shared_ptr<rosbag2_storage::SerializedBagMessage> message)
+void SequentialWriter::write(std::shared_ptr<const rosbag2_storage::SerializedBagMessage> message)
 {
-  if (!storage_) {
+  if (!is_open_) {
     throw std::runtime_error("Bag is not open. Call open() before writing.");
+  }
+
+  if (!message_within_accepted_time_range(message->recv_timestamp)) {
+    return;
   }
 
   // Get TopicInformation handler for counting messages.
@@ -329,7 +386,7 @@ void SequentialWriter::write(std::shared_ptr<rosbag2_storage::SerializedBagMessa
   }
 
   const auto message_timestamp = std::chrono::time_point<std::chrono::high_resolution_clock>(
-    std::chrono::nanoseconds(message->time_stamp));
+    std::chrono::nanoseconds(message->recv_timestamp));
 
   if (is_first_message_) {
     // Update bagfile starting time
@@ -376,9 +433,9 @@ bool SequentialWriter::take_snapshot()
   return true;
 }
 
-std::shared_ptr<rosbag2_storage::SerializedBagMessage>
+std::shared_ptr<const rosbag2_storage::SerializedBagMessage>
 SequentialWriter::get_writeable_message(
-  std::shared_ptr<rosbag2_storage::SerializedBagMessage> message)
+  std::shared_ptr<const rosbag2_storage::SerializedBagMessage> message)
 {
   return converter_ ? converter_->convert(message) : message;
 }
@@ -409,15 +466,33 @@ bool SequentialWriter::should_split_bagfile(
   return should_split;
 }
 
+bool SequentialWriter::message_within_accepted_time_range(
+  const rcutils_time_point_value_t current_time) const
+{
+  if (storage_options_.start_time_ns >= 0 &&
+    static_cast<int64_t>(current_time) < storage_options_.start_time_ns)
+  {
+    return false;
+  }
+
+  if (storage_options_.end_time_ns >= 0 &&
+    static_cast<int64_t>(current_time) > storage_options_.end_time_ns)
+  {
+    return false;
+  }
+
+  return true;
+}
+
 void SequentialWriter::finalize_metadata()
 {
   metadata_.bag_size = 0;
 
   for (const auto & path : metadata_.relative_file_paths) {
-    const auto bag_path = rcpputils::fs::path{path};
+    const auto bag_path = fs::path{path};
 
-    if (bag_path.exists()) {
-      metadata_.bag_size += bag_path.file_size();
+    if (fs::exists(bag_path)) {
+      metadata_.bag_size += fs::file_size(bag_path);
     }
   }
 

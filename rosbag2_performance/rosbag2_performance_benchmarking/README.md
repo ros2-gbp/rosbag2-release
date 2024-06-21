@@ -19,7 +19,7 @@ To run test benchmark (with `test.yaml` and `mixed_110Mbs.yaml`):
 ros2 launch rosbag2_performance_benchmarking benchmark_launch.py benchmark:=`ros2 pkg prefix rosbag2_performance_benchmarking`/share/rosbag2_performance_benchmarking/config/benchmarks/test.yaml producers:=`ros2 pkg prefix rosbag2_performance_benchmarking`/share/rosbag2_performance_benchmarking/config/producers/mixed_110Mbs.yaml
 ```
 
-The summary of benchmark goes into result file described in benchmark config: `<db_root_folder>/<BENCHMARK_NAME>/summary_result_file` where `BENCHMARK_NAME` is a name generated from config names, transport type and timestamp.
+The summary of benchmark goes into result file described in benchmark config: `<bag_root_folder>/<BENCHMARK_NAME>/summary_result_file` where `BENCHMARK_NAME` is a name generated from config names, transport type and timestamp.
 
 For human friendly output, a postprocess report generation tool can be used. Launch it with benchmark result directory as an `-i` argument (directory with `summary_result_file` file):
 
@@ -38,6 +38,12 @@ storage uri, which is used to read the bag metadata file.
 #### Compression
 
 Note that while you can opt to select compression for benchmarking, the generated data is random so it is likely not representative for this specific case. To publish non-random data, you need to modify the ByteProducer.
+
+#### Number of publisher threads
+
+In the case of the `benchmark_publishers` binary, a pool of threads is created to run the publishers. By default,
+the number of threads is equal to the number of publishers. It is possible to change the number of threads
+using the optional `number_of_threads` parameter.
 
 ## Building
 
@@ -70,7 +76,7 @@ For more sophisticated & accurate benchmarks, see the `fio` command. An example 
 
 Tools that can help in I/O profiling: `sudo apt-get install iotop ioping sysstat`
 * `iotop` works similar as `top` command, but shows disk reads, writes, swaps and I/O %. Can be used at higher frequency in batch mode with specified process to deliver data that can be plotted.
-  *  Example use: `sudo iotop -h -d 0.1 -t -b -o -p <PID>` after running the bag.  
+  *  Example use: `sudo iotop -h -d 0.1 -t -b -o -p <PID>` after running the bag.
 * `ioping` can be used to check latency of requests to device
 * `strace` can help determine syscalls associated with the bottleneck.
   *  Example use: `strace -c ros2 bag record /image --max-cache-size 10 -o ./tmp`. You will see a report after finishing recording with Ctrl-C.

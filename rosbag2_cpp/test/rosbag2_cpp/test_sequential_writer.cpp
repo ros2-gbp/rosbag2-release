@@ -21,8 +21,6 @@
 #include <utility>
 #include <vector>
 
-#include "rcpputils/filesystem_helper.hpp"
-
 #include "rosbag2_cpp/writers/sequential_writer.hpp"
 #include "rosbag2_cpp/writer.hpp"
 
@@ -31,7 +29,9 @@
 #include "rosbag2_storage/topic_metadata.hpp"
 
 #include "rosbag2_test_common/temporary_directory_fixture.hpp"
+#include "rosbag2_test_common/tested_storage_ids.hpp"
 
+#include "fake_data.hpp"
 #include "mock_converter.hpp"
 #include "mock_converter_factory.hpp"
 #include "mock_metadata_io.hpp"
@@ -39,7 +39,8 @@
 #include "mock_storage_factory.hpp"
 
 using namespace testing;  // NOLINT
-using rosbag2_test_common::TemporaryDirectoryFixture;
+using rosbag2_test_common::ParametrizedTemporaryDirectoryFixture;
+namespace fs = std::filesystem;
 
 class SequentialWriterTest : public Test
 {
@@ -53,8 +54,8 @@ public:
     storage_options_ = rosbag2_storage::StorageOptions{};
     storage_options_.uri = "uri";
 
-    rcpputils::fs::path dir(storage_options_.uri);
-    rcpputils::fs::remove_all(dir);
+    fs::path dir(storage_options_.uri);
+    fs::remove_all(dir);
 
     ON_CALL(*storage_factory_, open_read_write(_)).WillByDefault(
       DoAll(
@@ -64,14 +65,20 @@ public:
             fake_storage_uri_ = storage_options.uri;
           }),
         Return(storage_)));
-    EXPECT_CALL(
-      *storage_factory_, open_read_write(_)).Times(AtLeast(0));
+    EXPECT_CALL(*storage_factory_, open_read_write(_)).Times(AtLeast(0));
+
+    // intercept the metadata write so we can analyze it.
+    ON_CALL(*storage_, update_metadata).WillByDefault(
+      [this](const rosbag2_storage::BagMetadata & metadata) {
+        v_intercepted_update_metadata_.emplace_back(metadata);
+      });
+    ON_CALL(*storage_, set_read_order).WillByDefault(Return(true));
   }
 
-  ~SequentialWriterTest()
+  ~SequentialWriterTest() override
   {
-    rcpputils::fs::path dir(storage_options_.uri);
-    rcpputils::fs::remove_all(dir);
+    fs::path dir(storage_options_.uri);
+    fs::remove_all(dir);
   }
 
   std::unique_ptr<StrictMock<MockStorageFactory>> storage_factory_;
@@ -83,7 +90,7 @@ public:
   std::atomic<uint32_t> fake_storage_size_{0};  // Need to be atomic for cache update since it
   // uses in callback from cache_consumer thread
   rosbag2_storage::BagMetadata fake_metadata_;
-  //  Ensure writer_ is destructed before intercepted fake_metadata_
+  std::vector<rosbag2_storage::BagMetadata> v_intercepted_update_metadata_;
   std::unique_ptr<rosbag2_cpp::Writer> writer_;
   std::string fake_storage_uri_;
 };
@@ -123,7 +130,7 @@ TEST_F(
   auto message = std::make_shared<rosbag2_storage::SerializedBagMessage>();
   message->topic_name = "test_topic";
   writer_->open(storage_options_, {input_format, storage_serialization_format});
-  writer_->create_topic({"test_topic", "test_msgs/BasicTypes", "", ""});
+  writer_->create_topic({0u, "test_topic", "test_msgs/BasicTypes", "", {}, ""});
   writer_->write(message);
 }
 
@@ -140,7 +147,7 @@ TEST_F(SequentialWriterTest, write_does_not_use_converters_if_input_and_output_f
   auto message = std::make_shared<rosbag2_storage::SerializedBagMessage>();
   message->topic_name = "test_topic";
   writer_->open(storage_options_, {storage_serialization_format, storage_serialization_format});
-  writer_->create_topic({"test_topic", "test_msgs/BasicTypes", "", ""});
+  writer_->create_topic({0u, "test_topic", "test_msgs/BasicTypes", "", {}, ""});
   writer_->write(message);
 }
 
@@ -154,6 +161,73 @@ TEST_F(SequentialWriterTest, metadata_io_writes_metadata_file_in_destructor) {
 
   writer_->open(storage_options_, {rmw_format, rmw_format});
   writer_.reset();
+}
+
+TEST_F(SequentialWriterTest, sequantial_writer_call_metadata_update_on_open_and_destruction)
+{
+  const std::string test_topic_name = "test_topic";
+  const std::string test_topic_type = "test_msgs/BasicTypes";
+  EXPECT_CALL(*storage_, update_metadata(_)).Times(2);
+
+  auto sequential_writer = std::make_unique<rosbag2_cpp::writers::SequentialWriter>(
+    std::move(storage_factory_), converter_factory_, std::move(metadata_io_));
+  writer_ = std::make_unique<rosbag2_cpp::Writer>(std::move(sequential_writer));
+
+  std::string rmw_format = "rmw_format";
+  writer_->open(storage_options_, {rmw_format, rmw_format});
+  writer_->create_topic({0u, test_topic_name, test_topic_type, "", {}, ""});
+
+  auto message = std::make_shared<rosbag2_storage::SerializedBagMessage>();
+  message->topic_name = test_topic_name;
+
+  const size_t kNumMessagesToWrite = 5;
+  for (size_t i = 0; i < kNumMessagesToWrite; i++) {
+    writer_->write(message);
+  }
+  writer_.reset();  // reset will call writer destructor
+
+  EXPECT_EQ(v_intercepted_update_metadata_.size(), 2u);
+  EXPECT_TRUE(v_intercepted_update_metadata_[0].compression_mode.empty());
+  EXPECT_EQ(v_intercepted_update_metadata_[0].message_count, 0u);
+  EXPECT_EQ(v_intercepted_update_metadata_[1].message_count, kNumMessagesToWrite);
+}
+
+TEST_F(SequentialWriterTest, sequantial_writer_call_metadata_update_on_bag_split)
+{
+  const std::string test_topic_name = "test_topic";
+  const std::string test_topic_type = "test_msgs/BasicTypes";
+  EXPECT_CALL(*storage_, update_metadata(_)).Times(4);
+
+  auto sequential_writer = std::make_unique<rosbag2_cpp::writers::SequentialWriter>(
+    std::move(storage_factory_), converter_factory_, std::move(metadata_io_));
+  writer_ = std::make_unique<rosbag2_cpp::Writer>(std::move(sequential_writer));
+
+  std::string rmw_format = "rmw_format";
+  writer_->open(storage_options_, {rmw_format, rmw_format});
+  writer_->create_topic({0u, test_topic_name, test_topic_type, "", {}, ""});
+
+  auto message = std::make_shared<rosbag2_storage::SerializedBagMessage>();
+  message->topic_name = test_topic_name;
+
+  const size_t kNumMessagesToWrite = 5;
+  for (size_t i = 0; i < kNumMessagesToWrite; i++) {
+    writer_->write(message);
+  }
+
+  writer_->split_bagfile();
+
+  for (size_t i = 0; i < kNumMessagesToWrite; i++) {
+    writer_->write(message);
+  }
+  writer_.reset();  // reset will call writer destructor
+
+  ASSERT_EQ(v_intercepted_update_metadata_.size(), 4u);
+  EXPECT_TRUE(v_intercepted_update_metadata_[0].compression_mode.empty());
+  EXPECT_EQ(v_intercepted_update_metadata_[0].message_count, 0u);  // On opening first bag file
+  EXPECT_EQ(v_intercepted_update_metadata_[1].files.size(), 1u);   // On closing first bag file
+  EXPECT_EQ(v_intercepted_update_metadata_[2].files.size(), 1u);   // On opening second bag file
+  EXPECT_EQ(v_intercepted_update_metadata_[3].files.size(), 2u);   // On writer destruction
+  EXPECT_EQ(v_intercepted_update_metadata_[3].message_count, 2 * kNumMessagesToWrite);
 }
 
 TEST_F(SequentialWriterTest, open_throws_error_if_converter_plugin_does_not_exist) {
@@ -209,7 +283,7 @@ TEST_F(SequentialWriterTest, bagfile_size_is_checked_on_every_write) {
   storage_options_.max_bagfile_size = max_bagfile_size;
 
   writer_->open(storage_options_, {rmw_format, rmw_format});
-  writer_->create_topic({"test_topic", "test_msgs/BasicTypes", "", ""});
+  writer_->create_topic({0u, "test_topic", "test_msgs/BasicTypes", "", {}, ""});
 
   for (auto i = 0; i < counter; ++i) {
     writer_->write(message);
@@ -259,7 +333,7 @@ TEST_F(SequentialWriterTest, writer_splits_when_storage_bagfile_size_gt_max_bagf
   storage_options_.max_bagfile_size = max_bagfile_size;
 
   writer_->open(storage_options_, {rmw_format, rmw_format});
-  writer_->create_topic({"test_topic", "test_msgs/BasicTypes", "", ""});
+  writer_->create_topic({0u, "test_topic", "test_msgs/BasicTypes", "", {}, ""});
 
   for (auto i = 0; i < message_count; ++i) {
     writer_->write(message);
@@ -295,12 +369,11 @@ TEST_F(
   fake_storage_size_ = 0;
   size_t written_messages = 0;
 
-  ON_CALL(
-    *storage_,
-    write(An<const std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>> &>())).
-  WillByDefault(
-    [this, &written_messages]
-      (const std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>> & msgs)
+  using VectorSharedBagMessages =
+    std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>>;
+
+  ON_CALL(*storage_, write(An<const VectorSharedBagMessages &>())).WillByDefault(
+    [this, &written_messages](const VectorSharedBagMessages & msgs)
     {
       written_messages += msgs.size();
       fake_storage_size_.fetch_add(static_cast<uint32_t>(msgs.size()));
@@ -337,7 +410,7 @@ TEST_F(
   storage_options_.snapshot_mode = false;
 
   writer_->open(storage_options_, {rmw_format, rmw_format});
-  writer_->create_topic({"test_topic", "test_msgs/BasicTypes", "", ""});
+  writer_->create_topic({0u, "test_topic", "test_msgs/BasicTypes", "", {}, ""});
 
   auto timeout = std::chrono::seconds(2);
   for (auto i = 1u; i < message_count; ++i) {
@@ -417,7 +490,7 @@ TEST_F(SequentialWriterTest, do_not_use_cache_if_cache_size_is_zero) {
   storage_options_.max_cache_size = max_cache_size;
 
   writer_->open(storage_options_, {rmw_format, rmw_format});
-  writer_->create_topic({"test_topic", "test_msgs/BasicTypes", "", ""});
+  writer_->create_topic({0u, "test_topic", "test_msgs/BasicTypes", "", {}, ""});
 
   for (auto i = 0u; i < counter; ++i) {
     writer_->write(message);
@@ -451,7 +524,7 @@ TEST_F(SequentialWriterTest, snapshot_mode_write_on_trigger)
     msg_content.c_str(), msg_length);
 
   writer_->open(storage_options_, {rmw_format, rmw_format});
-  writer_->create_topic({"test_topic", "test_msgs/BasicTypes", "", ""});
+  writer_->create_topic({0u, "test_topic", "test_msgs/BasicTypes", "", {}, ""});
 
   for (auto i = 0u; i < 100; ++i) {
     writer_->write(message);
@@ -487,7 +560,7 @@ TEST_F(SequentialWriterTest, snapshot_mode_not_triggered_no_storage_write)
     msg_content.c_str(), msg_length);
 
   writer_->open(storage_options_, {rmw_format, rmw_format});
-  writer_->create_topic({"test_topic", "test_msgs/BasicTypes", "", ""});
+  writer_->create_topic({0u, "test_topic", "test_msgs/BasicTypes", "", {}, ""});
 
   for (auto i = 0u; i < 100; ++i) {
     writer_->write(message);
@@ -556,15 +629,16 @@ TEST_F(SequentialWriterTest, split_event_calls_callback)
   writer_->add_event_callbacks(callbacks);
 
   writer_->open(storage_options_, {"rmw_format", "rmw_format"});
-  writer_->create_topic({"test_topic", "test_msgs/BasicTypes", "", ""});
+  writer_->create_topic({0u, "test_topic", "test_msgs/BasicTypes", "", {}, ""});
 
   for (auto i = 0; i < message_count; ++i) {
     writer_->write(message);
   }
 
   ASSERT_TRUE(callback_called);
-  auto expected_closed = rcpputils::fs::path(storage_options_.uri) / (storage_options_.uri + "_0");
-  EXPECT_EQ(closed_file, expected_closed.string());
+  auto expected_closed = fs::path(storage_options_.uri) /
+    (storage_options_.uri + "_0");
+  EXPECT_EQ(closed_file, expected_closed.generic_string());
   EXPECT_EQ(opened_file, fake_storage_uri_);
 }
 
@@ -615,7 +689,7 @@ TEST_F(SequentialWriterTest, split_event_calls_on_writer_close)
   writer_->add_event_callbacks(callbacks);
 
   writer_->open(storage_options_, {"rmw_format", "rmw_format"});
-  writer_->create_topic({"test_topic", "test_msgs/BasicTypes", "", ""});
+  writer_->create_topic({0u, "test_topic", "test_msgs/BasicTypes", "", {}, ""});
 
   for (auto i = 0; i < message_count; ++i) {
     writer_->write(message);
@@ -623,70 +697,37 @@ TEST_F(SequentialWriterTest, split_event_calls_on_writer_close)
   writer_->close();
 
   ASSERT_TRUE(callback_called);
-  auto expected_closed = rcpputils::fs::path(storage_options_.uri) / (storage_options_.uri + "_0");
-  EXPECT_EQ(closed_file, expected_closed.string());
+  auto expected_closed = fs::path(storage_options_.uri) /
+    (storage_options_.uri + "_0");
+  EXPECT_EQ(closed_file, expected_closed.generic_string());
   EXPECT_TRUE(opened_file.empty());
 }
 
-class ManualSplitWriter : public rosbag2_cpp::writers::SequentialWriter
-{
-public:
-  // makes the method public for manual splitting
-  void split()
-  {
-    split_bagfile();
-  }
-};
-
-void write_sample_split_bag(
-  const std::string & uri,
-  const std::vector<std::vector<rcutils_time_point_value_t>> & message_timestamps_by_file)
-{
-  std::string msg_content = "Hello";
-  auto msg_length = msg_content.length();
-  std::shared_ptr<rcutils_uint8_array_t> fake_data = rosbag2_storage::make_serialized_message(
-    msg_content.c_str(), msg_length);
-  std::string topic_name = "testtopic";
-
-  rosbag2_storage::StorageOptions storage_options;
-  storage_options.uri = uri;
-  storage_options.storage_id = "sqlite3";
-
-  ManualSplitWriter writer;
-  writer.open(storage_options, rosbag2_cpp::ConverterOptions{});
-  writer.create_topic(
-  {
-    topic_name,
-    "test_msgs/ByteMultiArray",
-    "cdr",
-    ""
-  });
-  for (const auto & file_messages : message_timestamps_by_file) {
-    for (const auto time_stamp : file_messages) {
-      auto msg = std::make_shared<rosbag2_storage::SerializedBagMessage>();
-      msg->serialized_data = fake_data;
-      msg->time_stamp = time_stamp;
-      msg->topic_name = topic_name;
-      writer.write(msg);
-    }
-    writer.split();
-  }
-  writer.close();
-}
-
-
-TEST_F(TemporaryDirectoryFixture, split_bag_metadata_has_full_duration) {
-  const std::vector<std::vector<rcutils_time_point_value_t>> message_timestamps_by_file {
-    {100, 300, 200},
-    {500, 400, 600}
+TEST_P(ParametrizedTemporaryDirectoryFixture, split_bag_metadata_has_full_duration) {
+  const std::vector<std::pair<rcutils_time_point_value_t, uint32_t>> fake_messages {
+    {100, 1},
+    {300, 2},
+    {200, 3},
+    {500, 4},
+    {400, 5},
+    {600, 6}
   };
-  std::string uri = (rcpputils::fs::path(temporary_dir_path_) / "split_duration_bag").string();
-  write_sample_split_bag(uri, message_timestamps_by_file);
+  rosbag2_storage::StorageOptions storage_options;
+  storage_options.uri =
+    (fs::path(temporary_dir_path_) / "split_duration_bag").generic_string();
+  storage_options.storage_id = GetParam();
+  write_sample_split_bag(storage_options, fake_messages, 3);
 
   rosbag2_storage::MetadataIo metadata_io;
-  auto metadata = metadata_io.read_metadata(uri);
+  auto metadata = metadata_io.read_metadata(storage_options.uri);
   ASSERT_EQ(
     metadata.starting_time,
     std::chrono::high_resolution_clock::time_point(std::chrono::nanoseconds(100)));
   ASSERT_EQ(metadata.duration, std::chrono::nanoseconds(500));
 }
+
+INSTANTIATE_TEST_SUITE_P(
+  SplitMetadataTest,
+  ParametrizedTemporaryDirectoryFixture,
+  ValuesIn(rosbag2_test_common::kTestedStorageIDs)
+);

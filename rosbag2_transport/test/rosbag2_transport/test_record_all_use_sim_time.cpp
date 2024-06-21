@@ -91,7 +91,7 @@ TEST_F(RecordIntegrationTestFixture, record_all_with_sim_time)
 
   rosbag2_transport::RecordOptions record_options =
   {
-    false, false, {string_topic, clock_topic}, "rmw_format", 100ms
+    false, false, false, {string_topic, clock_topic}, {}, {}, {}, {}, {}, "rmw_format", 100ms
   };
   record_options.use_sim_time = true;
   auto recorder = std::make_shared<MockRecorder>(
@@ -128,12 +128,31 @@ TEST_F(RecordIntegrationTestFixture, record_all_with_sim_time)
 
   EXPECT_THAT(recorded_messages, SizeIs(Ge(expected_messages)));
 
-  std::vector<rosbag2_storage::SerializedBagMessageSharedPtr> string_messages;
+  std::vector<rosbag2_storage::SerializedBagMessageConstSharedPtr> string_messages;
   for (const auto & message : recorded_messages) {
     if (message->topic_name == string_topic) {
       string_messages.push_back(message);
     }
   }
   // check that the timestamp is same as the clock message
-  EXPECT_THAT(string_messages[0]->time_stamp, time_value);
+  EXPECT_THAT(string_messages[0]->recv_timestamp, time_value);
+
+  bool rmw_has_timestamp_support = true;
+
+#ifdef _WIN32
+  if (std::string(rmw_get_implementation_identifier()).find("rmw_connextdds") !=
+    std::string::npos)
+  {
+    rmw_has_timestamp_support = false;
+  }
+#endif
+
+  if (rmw_has_timestamp_support) {
+    // Check that the send_timestamp is not the same as the clock message
+    EXPECT_NE(string_messages[0]->send_timestamp, time_value);
+    EXPECT_NE(string_messages[0]->send_timestamp, 0);
+  } else {
+    // if rwm has not timestamp support, send_timestamp must be zero
+    EXPECT_EQ(string_messages[0]->send_timestamp, 0);
+  }
 }

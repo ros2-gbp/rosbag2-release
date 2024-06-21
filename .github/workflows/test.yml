@@ -3,7 +3,7 @@ on:
   pull_request:
   push:
     branches:
-      - humble
+      - rolling
   schedule:
     # Run every hour. This helps detect flakiness,
     # and broken external dependencies.
@@ -17,39 +17,67 @@ jobs:
     steps:
     - name: Build and run tests
       id: action-ros-ci
-      uses: ros-tooling/action-ros-ci@v0.2
+      uses: ros-tooling/action-ros-ci@v0.3
       with:
-        package-name: |
-          mcap_vendor
-          ros2bag
-          rosbag2
-          rosbag2_compression
-          rosbag2_compression_zstd
-          rosbag2_cpp
-          rosbag2_interfaces
-          rosbag2_py
-          rosbag2_storage
-          rosbag2_storage_default_plugins
-          rosbag2_storage_mcap
-          rosbag2_storage_mcap_testdata
-          rosbag2_test_common
-          rosbag2_tests
-          rosbag2_transport
-          shared_queues_vendor
-          sqlite3_vendor
-          zstd_vendor
-        target-ros2-distro: humble
-        vcs-repo-file-url: https://raw.githubusercontent.com/ros2/ros2/humble/ros2.repos
+        target-ros2-distro: rolling
+        vcs-repo-file-url: https://raw.githubusercontent.com/ros2/ros2/rolling/ros2.repos
         colcon-defaults: |
           {
             "build": {
               "cmake-args": [
-                "-DCMAKE_CXX_FLAGS=\"-Werror\""
+                "-DCMAKE_CXX_FLAGS=\"-Werror\"",
+                "-DBUILD_ROSBAG2_BENCHMARKS=1"
+              ],
+              "packages-up-to": [
+                "mcap_vendor",
+                "ros2bag",
+                "rosbag2",
+                "rosbag2_compression",
+                "rosbag2_compression_zstd",
+                "rosbag2_cpp",
+                "rosbag2_examples_cpp",
+                "rosbag2_examples_py",
+                "rosbag2_interfaces",
+                "rosbag2_performance_benchmarking",
+                "rosbag2_performance_benchmarking_msgs",
+                "rosbag2_py",
+                "rosbag2_storage",
+                "rosbag2_storage_mcap",
+                "rosbag2_storage_sqlite3",
+                "rosbag2_test_common",
+                "rosbag2_test_msgdefs",
+                "rosbag2_tests",
+                "rosbag2_transport",
+                "shared_queues_vendor",
+                "sqlite3_vendor",
+                "zstd_vendor"
               ]
             },
             "test": {
               "ctest-args": ["-LE", "xfail"],
-              "pytest-args": ["-m", "not xfail"]
+              "pytest-args": ["-m", "not xfail"],
+              "packages-select": [
+                "mcap_vendor",
+                "ros2bag",
+                "rosbag2",
+                "rosbag2_compression",
+                "rosbag2_compression_zstd",
+                "rosbag2_cpp",
+                "rosbag2_examples_cpp",
+                "rosbag2_examples_py",
+                "rosbag2_interfaces",
+                "rosbag2_py",
+                "rosbag2_storage",
+                "rosbag2_storage_mcap",
+                "rosbag2_storage_sqlite3",
+                "rosbag2_test_common",
+                "rosbag2_test_msgdefs",
+                "rosbag2_tests",
+                "rosbag2_transport",
+                "shared_queues_vendor",
+                "sqlite3_vendor",
+                "zstd_vendor"
+              ]
             }
           }
     - name: Run xfail tests (not required to succeed)
@@ -57,7 +85,18 @@ jobs:
       run: |
         rosbag2_path=$(colcon list -p --packages-select rosbag2)/..
         rosbag2_packages=$(colcon list -n --base-paths ${rosbag2_path})
-        source /opt/ros/humble/setup.sh && colcon test --mixin linters-skip --packages-select ${rosbag2_packages} --packages-skip rosbag2_performance_benchmarking --event-handlers console_cohesion+ --return-code-on-test-failure --ctest-args "-L xfail" --pytest-args "-m xfail"
+        source /opt/ros/rolling/setup.sh && colcon test --mixin linters-skip --packages-select ${rosbag2_packages} --packages-skip rosbag2_performance_benchmarking --event-handlers console_cohesion+ --return-code-on-test-failure --ctest-args "-L xfail" --pytest-args "-m xfail"
+      working-directory: ${{ steps.action-ros-ci.outputs.ros-workspace-directory-name }}
+      shell: bash
+    - name: Is regeneration of Python stubs required?
+      run: |
+        rosbag2_path=$(colcon list -p --packages-select rosbag2)/..
+        sudo pip uninstall -y mypy
+        sudo apt update && sudo apt -y install mypy=0.942-1ubuntu1
+        source install/setup.sh
+        stubgen -p rosbag2_py -o ${rosbag2_path}/rosbag2_py
+        cd ${rosbag2_path}
+        git diff --exit-code
       working-directory: ${{ steps.action-ros-ci.outputs.ros-workspace-directory-name }}
       shell: bash
     - uses: actions/upload-artifact@v1

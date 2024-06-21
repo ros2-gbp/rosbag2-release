@@ -2,36 +2,56 @@
 Changelog for package rosbag2_compression_zstd
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.15.11 (2024-05-20)
---------------------
-
-0.15.10 (2024-05-17)
---------------------
-
-0.15.9 (2024-01-24)
+0.28.0 (2024-06-17)
 -------------------
 
-0.15.8 (2023-09-19)
+0.27.0 (2024-04-30)
 -------------------
 
-0.15.7 (2023-07-18)
+0.26.1 (2024-04-17)
 -------------------
 
-0.15.6 (2023-06-05)
+0.26.0 (2024-04-16)
 -------------------
 
-0.15.5 (2023-04-25)
+0.25.0 (2024-03-27)
 -------------------
-* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_) (`#1224 <https://github.com/ros2/rosbag2/issues/1224>`_)
-* Contributors: mergify[bot]
+* Use std::filesystem instead of rcpputils::fs (`#1576 <https://github.com/ros2/rosbag2/issues/1576>`_)
+* Make some changes for newer versions of uncrustify. (`#1578 <https://github.com/ros2/rosbag2/issues/1578>`_)
+* Contributors: Chris Lalancette, Roman Sokolkov
 
-0.15.4 (2023-01-10)
--------------------
-
-0.15.3 (2022-11-07)
+0.24.0 (2023-07-11)
 -------------------
 
-0.15.2 (2022-05-11)
+0.23.0 (2023-04-28)
+-------------------
+
+0.22.0 (2023-04-18)
+-------------------
+
+0.21.0 (2023-04-12)
+-------------------
+* Update rosbag2 to C++17. (`#1238 <https://github.com/ros2/rosbag2/issues/1238>`_)
+* Use target_link_libraries instead of ament_target_dependencies (`#1202 <https://github.com/ros2/rosbag2/issues/1202>`_)
+* Contributors: Chris Lalancette, Daisuke Nishimatsu, Michael Orlov
+
+0.20.0 (2023-02-14)
+-------------------
+
+0.19.0 (2023-01-13)
+-------------------
+* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_)
+* Contributors: Michael Orlov
+
+0.18.0 (2022-11-15)
+-------------------
+
+0.17.0 (2022-07-30)
+-------------------
+* Speed optimization: Preparing copyless publish/subscribing by using const message for writing (`#1010 <https://github.com/ros2/rosbag2/issues/1010>`_)
+* Contributors: DensoADAS, Joshua Hampp
+
+0.16.0 (2022-05-11)
 -------------------
 
 0.15.1 (2022-04-06)
