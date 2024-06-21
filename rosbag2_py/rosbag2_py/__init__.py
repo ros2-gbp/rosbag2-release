@@ -24,6 +24,9 @@ with add_dll_directories_from_env('PATH'):
         compression_mode_from_string,
         compression_mode_to_string
     )
+    from rosbag2_py._message_definitions import (
+        LocalMessageDefinitionSource,
+    )
     from rosbag2_py._reader import (
         SequentialCompressionReader,
         SequentialReader,
@@ -42,6 +45,7 @@ with add_dll_directories_from_env('PATH'):
         TopicMetadata,
         TopicInformation,
         get_default_storage_id,
+        to_rclcpp_qos_vector,
     )
     from rosbag2_py._writer import (
         SequentialCompressionWriter,
@@ -78,6 +82,7 @@ __all__ = [
     'get_registered_writers',
     'get_registered_compressors',
     'get_registered_serializers',
+    'to_rclcpp_qos_vector',
     'ReadOrder',
     'ReadOrderSortBy',
     'Reindexer',
@@ -98,4 +103,5 @@ __all__ = [
     'ServiceRequestsSource',
     'Recorder',
     'RecordOptions',
+    'LocalMessageDefinitionSource',
 ]
