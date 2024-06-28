@@ -2,14 +2,22 @@
 Changelog for package rosbag2_py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.28.0 (2024-06-17)
+0.26.4 (2024-06-27)
 -------------------
-* Add bindings for LocalMessageDefinitionSource (`#1697 <https://github.com/ros2/rosbag2/issues/1697>`_)
-* Add --log-level to ros2 bag play and record (`#1625 <https://github.com/ros2/rosbag2/issues/1625>`_)
-* Included to_rclcpp_qos_vector to Python wrappers (`#1642 <https://github.com/ros2/rosbag2/issues/1642>`_)
-* Contributors: Alejandro Hernández Cordero, Roman, methylDragon
+* Add bindings for LocalMessageDefinitionSource (`#1697 <https://github.com/ros2/rosbag2/issues/1697>`_) (`#1701 <https://github.com/ros2/rosbag2/issues/1701>`_)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+  Co-authored-by: methylDragon <methylDragon@gmail.com>
+* Add --log-level to ros2 bag play and record (`#1625 <https://github.com/ros2/rosbag2/issues/1625>`_) (`#1674 <https://github.com/ros2/rosbag2/issues/1674>`_)
+  Co-authored-by: Roman Sokolkov <rsokolkov@gmail.com>
+* Contributors: mergify[bot]
 
-0.27.0 (2024-04-30)
+0.26.3 (2024-05-15)
+-------------------
+* Included to_rclcpp_qos_vector to Python wrappers (`#1642 <https://github.com/ros2/rosbag2/issues/1642>`_) (`#1650 <https://github.com/ros2/rosbag2/issues/1650>`_)
+  Co-authored-by: Alejandro Hernández Cordero <ahcorde@gmail.com>
+* Contributors: mergify[bot]
+
+0.26.2 (2024-04-24)
 -------------------
 
 0.26.1 (2024-04-17)

@@ -2,17 +2,23 @@
 Changelog for package rosbag2_transport
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.28.0 (2024-06-17)
+0.26.4 (2024-06-27)
 -------------------
-* Bugfix for issue where unable to create composable nodes with compression (`#1679 <https://github.com/ros2/rosbag2/issues/1679>`_)
-* Add support for "all" and "exclude" in RecordOptions YAML decoder (`#1664 <https://github.com/ros2/rosbag2/issues/1664>`_)
-* Add unit tests to cover message's send and received timestamps during recording (`#1641 <https://github.com/ros2/rosbag2/issues/1641>`_)
-* Contributors: Michael Orlov
+* Bugfix for issue where unable to create composable nodes with compression (`#1679 <https://github.com/ros2/rosbag2/issues/1679>`_) (`#1716 <https://github.com/ros2/rosbag2/issues/1716>`_)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+* Add unit tests to cover message's send and received timestamps during recording (`#1641 <https://github.com/ros2/rosbag2/issues/1641>`_) (`#1673 <https://github.com/ros2/rosbag2/issues/1673>`_)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+* Add support for "all" and "exclude" in RecordOptions YAML decoder (`#1664 <https://github.com/ros2/rosbag2/issues/1664>`_) (`#1676 <https://github.com/ros2/rosbag2/issues/1676>`_)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+* Contributors: mergify[bot]
 
-0.27.0 (2024-04-30)
+0.26.3 (2024-05-15)
 -------------------
-* Removed warnings - unqualified-std-cast-call (`#1618 <https://github.com/ros2/rosbag2/issues/1618>`_)
-* Contributors: Alejandro Hernández Cordero
+
+0.26.2 (2024-04-24)
+-------------------
+* Removed warnings - unqualified-std-cast-call (`#1618 <https://github.com/ros2/rosbag2/issues/1618>`_) (`#1622 <https://github.com/ros2/rosbag2/issues/1622>`_)
+* Contributors: mergify[bot]
 
 0.26.1 (2024-04-17)
 -------------------

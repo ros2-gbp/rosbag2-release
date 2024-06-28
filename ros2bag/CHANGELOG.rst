@@ -2,16 +2,24 @@
 Changelog for package ros2bag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.28.0 (2024-06-17)
+0.26.4 (2024-06-27)
 -------------------
-* fix(start-offset): allow specifying a start offset of 0 (`#1682 <https://github.com/ros2/rosbag2/issues/1682>`_)
-* Exclude recorded /clock topic when --clock option is specified (`#1646 <https://github.com/ros2/rosbag2/issues/1646>`_)
-* Sweep cleanup in rosbag2 recorder CLI args verification code (`#1633 <https://github.com/ros2/rosbag2/issues/1633>`_)
-* Add --log-level to ros2 bag play and record (`#1625 <https://github.com/ros2/rosbag2/issues/1625>`_)
-* Add optional  '--topics' CLI argument for 'ros2 bag record' (`#1632 <https://github.com/ros2/rosbag2/issues/1632>`_)
-* Contributors: Kosuke Takeuchi, Michael Orlov, Rein Appeldoorn, Roman
+* fix(start-offset): allow specifying a start offset of 0 (`#1682 <https://github.com/ros2/rosbag2/issues/1682>`_) (`#1713 <https://github.com/ros2/rosbag2/issues/1713>`_)
+  Co-authored-by: Rein Appeldoorn <reinzor@gmail.com>
+* Exclude recorded /clock topic when --clock option is specified (`#1646 <https://github.com/ros2/rosbag2/issues/1646>`_) (`#1706 <https://github.com/ros2/rosbag2/issues/1706>`_)
+  Co-authored-by: Kosuke Takeuchi <kosuke.tnp@gmail.com>
+* [jazzy] Sweep cleanup in rosbag2 recorder CLI args verification code (backport `#1633 <https://github.com/ros2/rosbag2/issues/1633>`_) (`#1684 <https://github.com/ros2/rosbag2/issues/1684>`_)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+* Add --log-level to ros2 bag play and record (`#1625 <https://github.com/ros2/rosbag2/issues/1625>`_) (`#1674 <https://github.com/ros2/rosbag2/issues/1674>`_)
+  Co-authored-by: Roman Sokolkov <rsokolkov@gmail.com>
+* [jazzy] Add optional  '--topics' CLI argument for 'ros2 bag record' (backport `#1632 <https://github.com/ros2/rosbag2/issues/1632>`_) (`#1640 <https://github.com/ros2/rosbag2/issues/1640>`_)
+  Co-authored-by: Tomoya Fujita <Tomoya.Fujita@sony.com>
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
 
-0.27.0 (2024-04-30)
+0.26.3 (2024-05-15)
+-------------------
+
+0.26.2 (2024-04-24)
 -------------------
 
 0.26.1 (2024-04-17)

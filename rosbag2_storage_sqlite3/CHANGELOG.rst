@@ -2,10 +2,17 @@
 Changelog for package rosbag2_storage_default_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.28.0 (2024-06-17)
+0.26.4 (2024-06-27)
+-------------------
+* Add topics with zero message counts to the SQLiteStorage::get_metadata(). (`#1725 <https://github.com/ros2/rosbag2/issues/1725>`_) (`#1731 <https://github.com/ros2/rosbag2/issues/1731>`_)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+  Co-authored-by: Tomoya Fujita <Tomoya.Fujita@sony.com>
+* Contributors: mergify[bot]
+
+0.26.3 (2024-05-15)
 -------------------
 
-0.27.0 (2024-04-30)
+0.26.2 (2024-04-24)
 -------------------
 
 0.26.1 (2024-04-17)
