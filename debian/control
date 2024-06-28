@@ -1,0 +1,12 @@
+Source: ros-jazzy-rosbag2
+Section: misc
+Priority: optional
+Maintainer: Michael Orlov <michael.orlov@apex.ai>
+Build-Depends: debhelper (>= 9.0.0), ros-jazzy-ament-cmake, ros-jazzy-rosbag2-test-common <!nocheck>, ros-jazzy-rosbag2-tests <!nocheck>, ros-jazzy-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-jazzy-rosbag2
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-jazzy-ros2bag, ros-jazzy-rosbag2-compression, ros-jazzy-rosbag2-compression-zstd, ros-jazzy-rosbag2-cpp, ros-jazzy-rosbag2-py, ros-jazzy-rosbag2-storage, ros-jazzy-rosbag2-storage-default-plugins, ros-jazzy-rosbag2-transport, ros-jazzy-shared-queues-vendor, ros-jazzy-ros-workspace
+Description: Meta package for rosbag2 related packages
