@@ -1,1 +1,1 @@
-{"base": "debe65e7f", "parent": "debian/rolling/rosbag2_storage_mcap_testdata", "previous": "372f4e40a", "trim": "", "trimbase": ""}
+{"base": "d4f76edee", "parent": "debian/jazzy/rosbag2_storage_mcap_testdata", "previous": "7529c1959", "trim": "", "trimbase": ""}
