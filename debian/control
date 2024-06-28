@@ -1,0 +1,12 @@
+Source: ros-jazzy-rosbag2-transport
+Section: misc
+Priority: optional
+Maintainer: Michael Orlov <michael.orlov@apex.ai>
+Build-Depends: debhelper (>= 9.0.0), ros-jazzy-ament-cmake-gmock <!nocheck>, ros-jazzy-ament-cmake-ros, ros-jazzy-ament-index-cpp <!nocheck>, ros-jazzy-ament-lint-auto <!nocheck>, ros-jazzy-ament-lint-common <!nocheck>, ros-jazzy-composition-interfaces <!nocheck>, ros-jazzy-keyboard-handler, ros-jazzy-rclcpp, ros-jazzy-rclcpp-components, ros-jazzy-rmw, ros-jazzy-rmw-implementation-cmake <!nocheck>, ros-jazzy-rosbag2-compression, ros-jazzy-rosbag2-compression-zstd <!nocheck>, ros-jazzy-rosbag2-cpp, ros-jazzy-rosbag2-interfaces, ros-jazzy-rosbag2-storage, ros-jazzy-rosbag2-storage-default-plugins <!nocheck>, ros-jazzy-rosbag2-test-common <!nocheck>, ros-jazzy-shared-queues-vendor, ros-jazzy-test-msgs <!nocheck>, ros-jazzy-yaml-cpp-vendor, ros-jazzy-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-jazzy-rosbag2-transport
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-jazzy-keyboard-handler, ros-jazzy-rclcpp, ros-jazzy-rclcpp-components, ros-jazzy-rmw, ros-jazzy-rosbag2-compression, ros-jazzy-rosbag2-cpp, ros-jazzy-rosbag2-interfaces, ros-jazzy-rosbag2-storage, ros-jazzy-shared-queues-vendor, ros-jazzy-yaml-cpp-vendor, ros-jazzy-ros-workspace
+Description: Layer encapsulating ROS middleware to allow rosbag2 to be used with or without middleware
