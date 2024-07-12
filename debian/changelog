@@ -1,0 +1,78 @@
+ros-iron-rosbag2-examples-cpp (0.22.7-1jammy) jammy; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Wed, 10 Jul 2024 16:00:00 -0000
+
+ros-iron-rosbag2-examples-cpp (0.22.6-1jammy) jammy; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Tue, 06 Feb 2024 16:00:00 -0000
+
+ros-iron-rosbag2-examples-cpp (0.22.5-1jammy) jammy; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Fri, 17 Nov 2023 16:00:00 -0000
+
+ros-iron-rosbag2-examples-cpp (0.22.4-1jammy) jammy; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Mon, 23 Oct 2023 16:00:00 -0000
+
+ros-iron-rosbag2-examples-cpp (0.22.3-1jammy) jammy; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Thu, 07 Sep 2023 16:00:00 -0000
+
+ros-iron-rosbag2-examples-cpp (0.22.2-1jammy) jammy; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Thu, 13 Jul 2023 16:00:00 -0000
+
+ros-iron-rosbag2-examples-cpp (0.22.1-1jammy) jammy; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Wed, 17 May 2023 16:00:00 -0000
+
+ros-iron-rosbag2-examples-cpp (0.22.0-1jammy) jammy; urgency=high
+
+  * rosbag2_storage: add type description hash to topic metadata (#1272 <https://github.com/ros2/rosbag2/issues/1272>)
+  * Contributors: james-rms
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Mon, 17 Apr 2023 16:00:00 -0000
+
+ros-iron-rosbag2-examples-cpp (0.21.0-1jammy) jammy; urgency=high
+
+  * Update rosbag2 to C++17. (#1238 <https://github.com/ros2/rosbag2/issues/1238>)
+  * Use target_link_libraries instead of ament_target_dependencies (#1202 <https://github.com/ros2/rosbag2/issues/1202>)
+  * Contributors: Chris Lalancette, Daisuke Nishimatsu, Michael Orlov
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Tue, 11 Apr 2023 16:00:00 -0000
+
+ros-iron-rosbag2-examples-cpp (0.20.0-1jammy) jammy; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Mon, 13 Feb 2023 16:00:00 -0000
+
+ros-iron-rosbag2-examples-cpp (0.19.0-1jammy) jammy; urgency=high
+
+  * Add Michael Orlov as maintainer in rosbag2 packages (#1215 <https://github.com/ros2/rosbag2/issues/1215>)
+  * Contributors: Michael Orlov
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Thu, 12 Jan 2023 16:00:00 -0000
+
+ros-iron-rosbag2-examples-cpp (0.18.0-1jammy) jammy; urgency=high
+
+  * Add API samples on main branch - Rolling C++ API examples (#1068 <https://github.com/ros2/rosbag2/issues/1068>)
+  * Contributors: Emerson Knapp
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Mon, 14 Nov 2022 16:00:00 -0000
+
+
