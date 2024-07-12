@@ -55,13 +55,19 @@ SequentialWriter::SequentialWriter(
   metadata_io_(std::move(metadata_io)),
   converter_(nullptr),
   topics_names_to_info_(),
-  message_definitions_(),
+  topic_names_to_message_definitions_(),
   metadata_()
 {}
 
 SequentialWriter::~SequentialWriter()
 {
-  close();
+  // Deleting all callbacks before calling close(). Calling callbacks from destructor is not safe.
+  // Callbacks likely was created after SequentialWriter object and may point to the already
+  // destructed objects.
+  callback_manager_.delete_all_callbacks();
+  if (storage_) {
+    SequentialWriter::close();
+  }
 }
 
 void SequentialWriter::init_metadata()
@@ -84,8 +90,13 @@ void SequentialWriter::open(
   const rosbag2_storage::StorageOptions & storage_options,
   const ConverterOptions & converter_options)
 {
+  // Note. Close and open methods protected with mutex on upper rosbag2_cpp::writer level.
+  if (storage_) {
+    return;  // The writer already opened.
+  }
   base_folder_ = storage_options.uri;
   storage_options_ = storage_options;
+
   if (storage_options_.storage_id.empty()) {
     storage_options_.storage_id = rosbag2_storage::get_default_storage_id();
   }
@@ -166,8 +177,23 @@ void SequentialWriter::close()
     metadata_io_->write_metadata(base_folder_, metadata_);
   }
 
-  storage_.reset();  // Necessary to ensure that the storage is destroyed before the factory
-  storage_factory_.reset();
+  if (storage_) {
+    storage_.reset();  // Destroy storage before calling WRITE_SPLIT callback to make sure that
+    // bag file was closed before callback call.
+  }
+  if (!metadata_.relative_file_paths.empty()) {
+    auto info = std::make_shared<bag_events::BagSplitInfo>();
+    // Take the latest file name from metadata in case if it was updated after compression in
+    // derived class
+    info->closed_file =
+      (rcpputils::fs::path(base_folder_) / metadata_.relative_file_paths.back()).string();
+    callback_manager_.execute_callbacks(bag_events::BagEvent::WRITE_SPLIT, info);
+  }
+
+  topics_names_to_info_.clear();
+  topic_names_to_message_definitions_.clear();
+
+  converter_.reset();
 }
 
 void SequentialWriter::create_topic(const rosbag2_storage::TopicMetadata & topic_with_type)
@@ -280,14 +306,13 @@ void SequentialWriter::switch_to_next_storage()
     base_folder_,
     metadata_.relative_file_paths.size());
   storage_ = storage_factory_->open_read_write(storage_options_);
-  storage_->update_metadata(metadata_);
-
   if (!storage_) {
     std::stringstream errmsg;
     errmsg << "Failed to rollover bagfile to new file: \"" << storage_options_.uri << "\"!";
 
     throw std::runtime_error(errmsg.str());
   }
+  storage_->update_metadata(metadata_);
   // Re-register all topics since we rolled-over to a new bagfile.
   for (const auto & topic : topics_names_to_info_) {
     auto const & md = topic_names_to_message_definitions_[topic.first];
