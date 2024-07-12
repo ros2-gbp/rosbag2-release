@@ -53,7 +53,7 @@ std::shared_ptr<rosbag2_storage::SerializedBagMessage> get_next(
     if (msg == nullptr) {
       continue;
     }
-    if (earliest_msg == nullptr || msg->recv_timestamp < earliest_msg->recv_timestamp) {
+    if (earliest_msg == nullptr || msg->time_stamp < earliest_msg->time_stamp) {
       earliest_msg = msg;
       earliest_msg_index = i;
     }
@@ -81,7 +81,7 @@ setup_topic_filtering(
 {
   std::unordered_map<std::string, std::vector<rosbag2_cpp::Writer *>> filtered_outputs;
   std::map<std::string, std::vector<std::string>> input_topics;
-  std::unordered_map<std::string, std::vector<rclcpp::QoS>> input_topics_qos_profiles;
+  std::unordered_map<std::string, YAML::Node> input_topics_qos_profiles;
   std::unordered_map<std::string, std::string> input_topics_serialization_format;
   // message_definitions_map mapping topic_type to message_definition
   std::unordered_map<std::string, rosbag2_storage::MessageDefinition> message_definitions_map;
@@ -96,11 +96,11 @@ setup_topic_filtering(
 
       // Gather all offered qos profiles from all inputs
       input_topics_qos_profiles.try_emplace(topic_name);
-      input_topics_qos_profiles[topic_name].insert(
-        input_topics_qos_profiles[topic_name].end(),
-        topic_metadata.offered_qos_profiles.begin(),
-        topic_metadata.offered_qos_profiles.end()
-      );
+      YAML::Node & all_offered = input_topics_qos_profiles[topic_name];
+      YAML::Node offered_qos_profiles = YAML::Load(topic_metadata.offered_qos_profiles);
+      for (auto qos : offered_qos_profiles) {
+        all_offered.push_back(qos);
+      }
     }
     // Fill message_definitions_map
     std::vector<rosbag2_storage::MessageDefinition> msg_definitions;
@@ -127,7 +127,9 @@ setup_topic_filtering(
         topic_metadata.serialization_format = record_options.rmw_serialization_format;
       }
 
-      topic_metadata.offered_qos_profiles = input_topics_qos_profiles[topic_name];
+      std::stringstream qos_profiles;
+      qos_profiles << input_topics_qos_profiles[topic_name];
+      topic_metadata.offered_qos_profiles = qos_profiles.str();
 
       auto message_definition_ptr = message_definitions_map.find(topic_type);
       if (message_definition_ptr != message_definitions_map.end()) {

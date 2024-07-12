@@ -2,35 +2,25 @@
 Changelog for package zstd_vendor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.26.4 (2024-06-27)
+0.22.7 (2024-07-11)
 -------------------
 
-0.26.3 (2024-05-15)
--------------------
-* Fixed warnings on RHEL (`#1627 <https://github.com/ros2/rosbag2/issues/1627>`_) (`#1630 <https://github.com/ros2/rosbag2/issues/1630>`_)
-  Co-authored-by: Alejandro Hernández Cordero <ahcorde@gmail.com>
-* Contributors: mergify[bot]
-
-0.26.2 (2024-04-24)
--------------------
-* Updated zstd to 1.5.5 (`#1617 <https://github.com/ros2/rosbag2/issues/1617>`_) (`#1624 <https://github.com/ros2/rosbag2/issues/1624>`_)
-* Contributors: mergify[bot]
-
-0.26.1 (2024-04-17)
+0.22.6 (2024-02-07)
 -------------------
 
-0.26.0 (2024-04-16)
+0.22.5 (2023-11-18)
 -------------------
 
-0.25.0 (2024-03-27)
+0.22.4 (2023-10-24)
 -------------------
 
-0.24.0 (2023-07-11)
+0.22.3 (2023-09-08)
 -------------------
-* Switch to ament_cmake_vendor_package (`#1400 <https://github.com/ros2/rosbag2/issues/1400>`_)
-* Contributors: Scott K Logan
 
-0.23.0 (2023-04-28)
+0.22.2 (2023-07-14)
+-------------------
+
+0.22.1 (2023-05-18)
 -------------------
 
 0.22.0 (2023-04-18)

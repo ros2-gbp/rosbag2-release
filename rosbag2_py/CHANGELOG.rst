@@ -2,63 +2,36 @@
 Changelog for package rosbag2_py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.26.4 (2024-06-27)
+0.22.7 (2024-07-11)
 -------------------
-* Add bindings for LocalMessageDefinitionSource (`#1697 <https://github.com/ros2/rosbag2/issues/1697>`_) (`#1701 <https://github.com/ros2/rosbag2/issues/1701>`_)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-  Co-authored-by: methylDragon <methylDragon@gmail.com>
-* Add --log-level to ros2 bag play and record (`#1625 <https://github.com/ros2/rosbag2/issues/1625>`_) (`#1674 <https://github.com/ros2/rosbag2/issues/1674>`_)
-  Co-authored-by: Roman Sokolkov <rsokolkov@gmail.com>
+* Gracefully handle SIGINT and SIGTERM signals for play and burst CLI (`#1690 <https://github.com/ros2/rosbag2/issues/1690>`_)
+* Fix for false negative tests in rosbag2_py (`#1688 <https://github.com/ros2/rosbag2/issues/1688>`_)
+* Add --log-level to ros2 bag play and record (`#1654 <https://github.com/ros2/rosbag2/issues/1654>`_)
+* Contributors: Michael Orlov, Roman
+
+0.22.6 (2024-02-07)
+-------------------
+* Install signal handlers in recorder only inside record method (`#1525 <https://github.com/ros2/rosbag2/issues/1525>`_)
+* Contributors: Michael Orlov
+
+0.22.5 (2023-11-18)
+-------------------
+
+0.22.4 (2023-10-24)
+-------------------
+
+0.22.3 (2023-09-08)
+-------------------
+
+0.22.2 (2023-07-14)
+-------------------
+* Gracefully handle SIGINT and SIGTERM in rosbag2 recorder (`#1394 <https://github.com/ros2/rosbag2/issues/1394>`_)
+* Contributors: Michael Orlov
+
+0.22.1 (2023-05-18)
+-------------------
+* Add binding to close the writer (`#1339 <https://github.com/ros2/rosbag2/issues/1339>`_) (`#1340 <https://github.com/ros2/rosbag2/issues/1340>`_)
 * Contributors: mergify[bot]
-
-0.26.3 (2024-05-15)
--------------------
-* Included to_rclcpp_qos_vector to Python wrappers (`#1642 <https://github.com/ros2/rosbag2/issues/1642>`_) (`#1650 <https://github.com/ros2/rosbag2/issues/1650>`_)
-  Co-authored-by: Alejandro Hernández Cordero <ahcorde@gmail.com>
-* Contributors: mergify[bot]
-
-0.26.2 (2024-04-24)
--------------------
-
-0.26.1 (2024-04-17)
--------------------
-
-0.26.0 (2024-04-16)
--------------------
-* Add option to disable recorder keyboard controls (`#1607 <https://github.com/ros2/rosbag2/issues/1607>`_)
-* Support service 2/2 --- rosbag2 service play (`#1481 <https://github.com/ros2/rosbag2/issues/1481>`_)
-* Use middleware send and receive timestamps from message_info during recording (`#1531 <https://github.com/ros2/rosbag2/issues/1531>`_)
-* Switch rclpy to be an exec_depend here. (`#1606 <https://github.com/ros2/rosbag2/issues/1606>`_)
-* Gracefully handle SIGINT and SIGTERM signals for play and burst CLI (`#1557 <https://github.com/ros2/rosbag2/issues/1557>`_)
-* Added exclude-topic-types to record (`#1582 <https://github.com/ros2/rosbag2/issues/1582>`_)
-* Contributors: Alejandro Hernández Cordero, Barry Xu, Bernd Pfrommer, Chris Lalancette, Michael Orlov, jmachowinski
-
-0.25.0 (2024-03-27)
--------------------
-* Fix for false negative tests in rosbag2_py (`#1592 <https://github.com/ros2/rosbag2/issues/1592>`_)
-* Update rosbag2_py stubs (`#1593 <https://github.com/ros2/rosbag2/issues/1593>`_)
-* Add Python stubs for rosbag2_py (`#1459 <https://github.com/ros2/rosbag2/issues/1459>`_) (`#1569 <https://github.com/ros2/rosbag2/issues/1569>`_)
-* Filter topic by type  (`#1577 <https://github.com/ros2/rosbag2/issues/1577>`_)
-* Add topic_id returned by storage to the TopicMetadata (`#1538 <https://github.com/ros2/rosbag2/issues/1538>`_)
-* Install signal handlers in recorder only inside record method (`#1464 <https://github.com/ros2/rosbag2/issues/1464>`_)
-* add missing import otherwise it doesnt compile (`#1524 <https://github.com/ros2/rosbag2/issues/1524>`_)
-* Implement service recording and display info about recorded services (`#1480 <https://github.com/ros2/rosbag2/issues/1480>`_)
-* Make `rosbag2_transport::Player::play()` run in a separate thread (`#1503 <https://github.com/ros2/rosbag2/issues/1503>`_)
-* Switch to target_link_libraries everywhere. (`#1504 <https://github.com/ros2/rosbag2/issues/1504>`_)
-* Use enum values for offered_qos_profiles in code and string names in serialized metadata (`#1476 <https://github.com/ros2/rosbag2/issues/1476>`_)
-* ros2 bag convert now excludes messages not in [start_time;end_time] (`#1455 <https://github.com/ros2/rosbag2/issues/1455>`_)
-* Add support for compression to python API (`#1425 <https://github.com/ros2/rosbag2/issues/1425>`_)
-* Contributors: Alejandro Hernández Cordero, Andrew Symington, Barry Xu, Chris Lalancette, Michael Orlov, Mikael Arguedas, Patrick Roncagliolo, Peter Favrholdt, Roman Sokolkov
-
-0.24.0 (2023-07-11)
--------------------
-* Gracefully handle SIGINT and SIGTERM in rosbag2 recorder (`#1301 <https://github.com/ros2/rosbag2/issues/1301>`_)
-* Implement storing and loading ROS_DISTRO from metadata.yaml and mcap files (`#1241 <https://github.com/ros2/rosbag2/issues/1241>`_)
-* Add binding to close the writer (`#1339 <https://github.com/ros2/rosbag2/issues/1339>`_)
-* Contributors: Emerson Knapp, Michael Orlov, Yadu
-
-0.23.0 (2023-04-28)
--------------------
 
 0.22.0 (2023-04-18)
 -------------------

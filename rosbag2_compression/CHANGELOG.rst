@@ -2,49 +2,34 @@
 Changelog for package rosbag2_compression
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.26.4 (2024-06-27)
+0.22.7 (2024-07-11)
 -------------------
-* Fix for regression in `open_succeeds_twice` and `minimal_writer_example` tests (`#1667 <https://github.com/ros2/rosbag2/issues/1667>`_) (`#1675 <https://github.com/ros2/rosbag2/issues/1675>`_)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+* Fix for regression in `open_succeeds_twice` and `minimal_writer_example` tests (`#1669 <https://github.com/ros2/rosbag2/issues/1669>`_)
+* Bugfix for writer not being able to open again after closing (`#1635 <https://github.com/ros2/rosbag2/issues/1635>`_)
+* Contributors: Michael Orlov, Yannick Schulz
+
+0.22.6 (2024-02-07)
+-------------------
+* Add default initialization for CompressionOptions (`#1545 <https://github.com/ros2/rosbag2/issues/1545>`_)
+* Contributors: Arne Böckmann, Michael Orlov, Tomoya Fujita
+
+0.22.5 (2023-11-18)
+-------------------
+
+0.22.4 (2023-10-24)
+-------------------
+
+0.22.3 (2023-09-08)
+-------------------
+
+0.22.2 (2023-07-14)
+-------------------
+
+0.22.1 (2023-05-18)
+-------------------
+* Add in a missing cstdint include. (`#1321 <https://github.com/ros2/rosbag2/issues/1321>`_) (`#1322 <https://github.com/ros2/rosbag2/issues/1322>`_)
+* Fix warning from ClassLoader in sequential compression reader and writer (`#1299 <https://github.com/ros2/rosbag2/issues/1299>`_) (`#1316 <https://github.com/ros2/rosbag2/issues/1316>`_)
 * Contributors: mergify[bot]
-
-0.26.3 (2024-05-15)
--------------------
-* Bugfix for writer not being able to open again after closing (`#1599 <https://github.com/ros2/rosbag2/issues/1599>`_) (`#1639 <https://github.com/ros2/rosbag2/issues/1639>`_)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-  Co-authored-by: yschulz <yschulz854@gmail.com>
-* Contributors: mergify[bot]
-
-0.26.2 (2024-04-24)
--------------------
-
-0.26.1 (2024-04-17)
--------------------
-
-0.26.0 (2024-04-16)
--------------------
-* Use middleware send and receive timestamps from message_info during recording (`#1531 <https://github.com/ros2/rosbag2/issues/1531>`_)
-* Contributors: jmachowinski
-
-0.25.0 (2024-03-27)
--------------------
-* Use std::filesystem instead of rcpputils::fs (`#1576 <https://github.com/ros2/rosbag2/issues/1576>`_)
-* Make some changes for newer versions of uncrustify. (`#1578 <https://github.com/ros2/rosbag2/issues/1578>`_)
-* Add topic_id returned by storage to the TopicMetadata (`#1538 <https://github.com/ros2/rosbag2/issues/1538>`_)
-* Add default initialization for CompressionOptions (`#1539 <https://github.com/ros2/rosbag2/issues/1539>`_)
-* Add option to set compression threads priority (`#1457 <https://github.com/ros2/rosbag2/issues/1457>`_)
-* Fixes pointed out by clang. (`#1493 <https://github.com/ros2/rosbag2/issues/1493>`_)
-* Use enum values for offered_qos_profiles in code and string names in serialized metadata (`#1476 <https://github.com/ros2/rosbag2/issues/1476>`_)
-* Contributors: Arne B, Chris Lalancette, Michael Orlov, Patrick Roncagliolo, Roman Sokolkov, jmachowinski
-
-0.24.0 (2023-07-11)
--------------------
-* Add in a missing cstdint include. (`#1321 <https://github.com/ros2/rosbag2/issues/1321>`_)
-* Fix warning from ClassLoader in sequential compression reader and writer (`#1299 <https://github.com/ros2/rosbag2/issues/1299>`_)
-* Contributors: Chris Lalancette, Michael Orlov
-
-0.23.0 (2023-04-28)
--------------------
 
 0.22.0 (2023-04-18)
 -------------------

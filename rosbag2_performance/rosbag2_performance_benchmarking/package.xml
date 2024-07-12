@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>rosbag2_performance_benchmarking</name>
-  <version>0.26.4</version>
+  <version>0.22.7</version>
   <description>Code to benchmark rosbag2</description>
   <maintainer email="michael.orlov@apex.ai">Michael Orlov</maintainer>
   <maintainer email="geoff@openrobotics.org">Geoffrey Biggs</maintainer>
@@ -11,11 +11,6 @@
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-
-  <exec_depend>ament_index_python</exec_depend>
-  <exec_depend>python3-psutil</exec_depend>
-  <exec_depend>launch</exec_depend>
-  <exec_depend>launch_ros</exec_depend>
 
   <depend>rclcpp</depend>
   <depend>rosbag2_compression</depend>

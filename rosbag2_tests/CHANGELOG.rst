@@ -2,57 +2,32 @@
 Changelog for package rosbag2_tests
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.26.4 (2024-06-27)
+0.22.7 (2024-07-11)
 -------------------
-* Propagate "custom_data" and "ros_distro" in to the metadata.yaml file during re-indexing (`#1700 <https://github.com/ros2/rosbag2/issues/1700>`_) (`#1710 <https://github.com/ros2/rosbag2/issues/1710>`_)
-  Co-authored-by: Cole Tucker <coalman321@users.noreply.github.com>
-* [jazzy] Sweep cleanup in rosbag2 recorder CLI args verification code (backport `#1633 <https://github.com/ros2/rosbag2/issues/1633>`_) (`#1684 <https://github.com/ros2/rosbag2/issues/1684>`_)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* Fix for regression in `open_succeeds_twice` and `minimal_writer_example` tests (`#1667 <https://github.com/ros2/rosbag2/issues/1667>`_) (`#1675 <https://github.com/ros2/rosbag2/issues/1675>`_)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* [jazzy] Add optional  '--topics' CLI argument for 'ros2 bag record' (backport `#1632 <https://github.com/ros2/rosbag2/issues/1632>`_) (`#1640 <https://github.com/ros2/rosbag2/issues/1640>`_)
-  Co-authored-by: Tomoya Fujita <Tomoya.Fujita@sony.com>
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+* Propagate "custom_data" and "ros_distro" in to the metadata.yaml file during re-indexing (`#1711 <https://github.com/ros2/rosbag2/issues/1711>`_)
+* Fix for regression in `open_succeeds_twice` and `minimal_writer_example` tests (`#1669 <https://github.com/ros2/rosbag2/issues/1669>`_)
+* Bugfix for writer not being able to open again after closing (`#1635 <https://github.com/ros2/rosbag2/issues/1635>`_)
+* Contributors: Cole Tucker, Michael Orlov, Yannick Schulz
+
+0.22.6 (2024-02-07)
+-------------------
+
+0.22.5 (2023-11-18)
+-------------------
+
+0.22.4 (2023-10-24)
+-------------------
+
+0.22.3 (2023-09-08)
+-------------------
+
+0.22.2 (2023-07-14)
+-------------------
+
+0.22.1 (2023-05-18)
+-------------------
+* Address flakiness in rosbag2_play_end_to_end tests (`#1297 <https://github.com/ros2/rosbag2/issues/1297>`_) (`#1330 <https://github.com/ros2/rosbag2/issues/1330>`_)
 * Contributors: mergify[bot]
-
-0.26.3 (2024-05-15)
--------------------
-* Bugfix for writer not being able to open again after closing (`#1599 <https://github.com/ros2/rosbag2/issues/1599>`_) (`#1639 <https://github.com/ros2/rosbag2/issues/1639>`_)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-  Co-authored-by: yschulz <yschulz854@gmail.com>
-* Contributors: mergify[bot]
-
-0.26.2 (2024-04-24)
--------------------
-
-0.26.1 (2024-04-17)
--------------------
-
-0.26.0 (2024-04-16)
--------------------
-* Use middleware send and receive timestamps from message_info during recording (`#1531 <https://github.com/ros2/rosbag2/issues/1531>`_)
-* Added exclude-topic-types to record (`#1582 <https://github.com/ros2/rosbag2/issues/1582>`_)
-* Contributors: Alejandro Hernández Cordero, jmachowinski
-
-0.25.0 (2024-03-27)
--------------------
-* Use std::filesystem instead of rcpputils::fs (`#1576 <https://github.com/ros2/rosbag2/issues/1576>`_)
-* Filter topic by type  (`#1577 <https://github.com/ros2/rosbag2/issues/1577>`_)
-* Make some changes for newer versions of uncrustify. (`#1578 <https://github.com/ros2/rosbag2/issues/1578>`_)
-* Add topic_id returned by storage to the TopicMetadata (`#1538 <https://github.com/ros2/rosbag2/issues/1538>`_)
-* Improve performance in SqliteStorage::get_bagfile_size() (`#1516 <https://github.com/ros2/rosbag2/issues/1516>`_)
-* Implement service recording and display info about recorded services (`#1480 <https://github.com/ros2/rosbag2/issues/1480>`_)
-* Mark play_end_to_end test as xfail in Windows (`#1452 <https://github.com/ros2/rosbag2/issues/1452>`_)
-* Contributors: Alejandro Hernández Cordero, Barry Xu, Chris Lalancette, Cristóbal Arroyo, Michael Orlov, Roman Sokolkov
-
-0.24.0 (2023-07-11)
--------------------
-* Implement storing and loading ROS_DISTRO from metadata.yaml and mcap files (`#1241 <https://github.com/ros2/rosbag2/issues/1241>`_)
-* Address flakiness in rosbag2_play_end_to_end tests (`#1297 <https://github.com/ros2/rosbag2/issues/1297>`_)
-* Contributors: Emerson Knapp, Michael Orlov
-
-0.23.0 (2023-04-28)
--------------------
 
 0.22.0 (2023-04-18)
 -------------------

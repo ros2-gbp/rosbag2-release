@@ -31,7 +31,6 @@ class SimpleBagRecorder(Node):
         self.writer.open(storage_options, converter_options)
 
         topic_info = rosbag2_py._storage.TopicMetadata(
-            id=0,
             name='chatter',
             type='std_msgs/msg/String',
             serialization_format='cdr')

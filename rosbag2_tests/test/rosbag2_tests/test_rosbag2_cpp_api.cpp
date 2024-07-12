@@ -14,7 +14,6 @@
 
 #include <gmock/gmock.h>
 
-#include <filesystem>
 #include <memory>
 #include <string>
 #include <vector>
@@ -23,6 +22,7 @@
 #include "rclcpp/serialization.hpp"
 #include "rclcpp/serialized_message.hpp"
 
+#include "rcpputils/filesystem_helper.hpp"
 #include "rcutils/time.h"
 
 #include "rosbag2_cpp/reader.hpp"
@@ -35,8 +35,6 @@
 #include "test_msgs/msg/basic_types.hpp"
 
 using namespace ::testing;  // NOLINT
-
-namespace fs = std::filesystem;
 
 class TestRosbag2CPPAPI : public Test, public WithParamInterface<std::string>
 {};
@@ -51,11 +49,11 @@ TEST_P(TestRosbag2CPPAPI, minimal_writer_example)
   rclcpp::Serialization<TestMsgT> serialization;
   serialization.serialize_message(&test_msg, &serialized_msg);
 
-  auto rosbag_directory = fs::path("test_rosbag2_writer_api_bag");
-  auto rosbag_directory_next = fs::path("test_rosbag2_writer_api_bag_next");
+  auto rosbag_directory = rcpputils::fs::path("test_rosbag2_writer_api_bag");
+  auto rosbag_directory_next = rcpputils::fs::path("test_rosbag2_writer_api_bag_next");
   // in case the bag was previously not cleaned up
-  fs::remove_all(rosbag_directory);
-  fs::remove_all(rosbag_directory_next);
+  rcpputils::fs::remove_all(rosbag_directory);
+  rcpputils::fs::remove_all(rosbag_directory_next);
 
   {
     rosbag2_cpp::Writer writer;
@@ -65,7 +63,7 @@ TEST_P(TestRosbag2CPPAPI, minimal_writer_example)
     writer.open(storage_options);
 
     auto bag_message = std::make_shared<rosbag2_storage::SerializedBagMessage>();
-    auto ret = rcutils_system_time_now(&bag_message->recv_timestamp);
+    auto ret = rcutils_system_time_now(&bag_message->time_stamp);
     if (ret != RCL_RET_OK) {
       FAIL() << "couldn't assign time rosbag message";
     }
@@ -168,8 +166,8 @@ TEST_P(TestRosbag2CPPAPI, minimal_writer_example)
   }
 
   // remove the rosbag again after the test
-  EXPECT_TRUE(fs::remove_all(rosbag_directory));
-  EXPECT_TRUE(fs::remove_all(rosbag_directory_next));
+  EXPECT_TRUE(rcpputils::fs::remove_all(rosbag_directory));
+  EXPECT_TRUE(rcpputils::fs::remove_all(rosbag_directory_next));
 }
 
 INSTANTIATE_TEST_SUITE_P(

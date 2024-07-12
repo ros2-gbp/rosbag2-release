@@ -23,7 +23,6 @@
 #include "rclcpp/rclcpp.hpp"
 
 #include "rosbag2_test_common/publication_manager.hpp"
-#include "rosbag2_test_common/client_manager.hpp"
 #include "rosbag2_test_common/wait_for.hpp"
 
 #include "rosbag2_transport/recorder.hpp"
@@ -31,7 +30,7 @@
 #include "test_msgs/msg/arrays.hpp"
 #include "test_msgs/message_fixtures.hpp"
 
-#include "rosbag2_storage/qos.hpp"
+#include "rosbag2_transport/qos.hpp"
 #include "record_integration_fixture.hpp"
 
 TEST_F(RecordIntegrationTestFixture, published_messages_from_multiple_topics_are_recorded)
@@ -47,7 +46,7 @@ TEST_F(RecordIntegrationTestFixture, published_messages_from_multiple_topics_are
   pub_manager.setup_publisher(string_topic, string_message, 2);
 
   rosbag2_transport::RecordOptions record_options =
-  {false, false, false, {string_topic, array_topic}, {}, {}, {}, {}, {}, "rmw_format", 50ms};
+  {false, false, {string_topic, array_topic}, "rmw_format", 50ms};
   auto recorder = std::make_shared<rosbag2_transport::Recorder>(
     std::move(writer_), storage_options_, record_options);
   recorder->record();
@@ -70,10 +69,8 @@ TEST_F(RecordIntegrationTestFixture, published_messages_from_multiple_topics_are
       return mock_writer.get_messages().size() >= expected_messages;
     });
   auto recorded_messages = mock_writer.get_messages();
-  EXPECT_TRUE(ret) << "failed to capture expected messages in time" <<
-    "recorded messages = " << recorded_messages.size();
+  EXPECT_TRUE(ret) << "failed to capture expected messages in time";
   EXPECT_THAT(recorded_messages, SizeIs(expected_messages));
-  stop_spinning();
 
   auto recorded_topics = mock_writer.get_topics();
   ASSERT_THAT(recorded_topics, SizeIs(2));
@@ -89,27 +86,6 @@ TEST_F(RecordIntegrationTestFixture, published_messages_from_multiple_topics_are
   EXPECT_THAT(string_messages[0]->string_value, Eq(string_message->string_value));
   EXPECT_THAT(array_messages[0]->bool_values, Eq(array_message->bool_values));
   EXPECT_THAT(array_messages[0]->float32_values, Eq(array_message->float32_values));
-
-  // Check for send and received timestamps
-  bool rmw_has_send_timestamp_support = true;
-#ifdef _WIN32
-  if (std::string(rmw_get_implementation_identifier()).find("rmw_connextdds") !=
-    std::string::npos)
-  {
-    rmw_has_send_timestamp_support = false;
-  }
-#endif
-  for (const auto & message : recorded_messages) {
-    EXPECT_NE(message->recv_timestamp, 0) << "topic : " << message->topic_name;
-    if (rmw_has_send_timestamp_support) {
-      // Check that the send_timestamp is not the same as the clock message
-      EXPECT_NE(message->send_timestamp, 0);
-      EXPECT_THAT(message->recv_timestamp, Ge(message->send_timestamp));
-    } else {
-      // if rwm has not sent timestamp support, send_timestamp must be zero
-      EXPECT_EQ(message->send_timestamp, 0);
-    }
-  }
 }
 
 TEST_F(RecordIntegrationTestFixture, can_record_again_after_stop)
@@ -121,7 +97,7 @@ TEST_F(RecordIntegrationTestFixture, can_record_again_after_stop)
   pub_manager.setup_publisher(string_topic, string_message, 2);
 
   rosbag2_transport::RecordOptions record_options =
-  {false, false, false, {string_topic}, {}, {}, {}, {}, {}, "rmw_format", 50ms};
+  {false, false, {string_topic}, "rmw_format", 50ms};
   auto recorder = std::make_shared<rosbag2_transport::Recorder>(
     std::move(writer_), storage_options_, record_options);
   recorder->record();
@@ -173,7 +149,7 @@ TEST_F(RecordIntegrationTestFixture, qos_is_stored_in_metadata)
   pub_manager.setup_publisher(topic, string_message, 2);
 
   rosbag2_transport::RecordOptions record_options =
-  {false, false, false, {topic}, {}, {}, {}, {}, {}, "rmw_format", 100ms};
+  {false, false, {topic}, "rmw_format", 100ms};
   auto recorder = std::make_shared<rosbag2_transport::Recorder>(
     std::move(writer_), storage_options_, record_options);
   recorder->record();
@@ -199,12 +175,10 @@ TEST_F(RecordIntegrationTestFixture, qos_is_stored_in_metadata)
   EXPECT_THAT(recorded_messages, SizeIs(expected_messages));
 
   auto recorded_topics = mock_writer.get_topics();
-  auto offered_qos_profiles = recorded_topics.at(topic).first.offered_qos_profiles;
-  std::string serialized_profiles = rosbag2_storage::serialize_rclcpp_qos_vector(
-    offered_qos_profiles);
+  std::string serialized_profiles = recorded_topics.at(topic).first.offered_qos_profiles;
   // Basic smoke test that the profile was serialized into the metadata as a string.
-  EXPECT_THAT(serialized_profiles, ContainsRegex("reliability: reliable\n"));
-  EXPECT_THAT(serialized_profiles, ContainsRegex("durability: volatile\n"));
+  EXPECT_THAT(serialized_profiles, ContainsRegex("reliability: 1\n"));
+  EXPECT_THAT(serialized_profiles, ContainsRegex("durability: 2\n"));
   EXPECT_THAT(
     serialized_profiles, ContainsRegex(
       "deadline:\n"
@@ -217,7 +191,7 @@ TEST_F(RecordIntegrationTestFixture, qos_is_stored_in_metadata)
       "    sec: .+\n"
       "    nsec: .+\n"
   ));
-  EXPECT_THAT(serialized_profiles, ContainsRegex("liveliness: automatic\n"));
+  EXPECT_THAT(serialized_profiles, ContainsRegex("liveliness: 1\n"));
   EXPECT_THAT(
     serialized_profiles, ContainsRegex(
       "liveliness_lease_duration:\n"
@@ -237,7 +211,7 @@ TEST_F(RecordIntegrationTestFixture, records_sensor_data)
   pub_manager.setup_publisher(topic, string_message, 2, rclcpp::SensorDataQoS());
 
   rosbag2_transport::RecordOptions record_options =
-  {false, false, false, {topic}, {}, {}, {}, {}, {}, "rmw_format", 100ms};
+  {false, false, {topic}, "rmw_format", 100ms};
   auto recorder = std::make_shared<rosbag2_transport::Recorder>(
     std::move(writer_), storage_options_, record_options);
   recorder->record();
@@ -280,7 +254,7 @@ TEST_F(RecordIntegrationTestFixture, receives_latched_messages)
   pub_manager.run_publishers();
 
   rosbag2_transport::RecordOptions record_options =
-  {false, false, false, {topic}, {}, {}, {}, {}, {}, "rmw_format", 100ms};
+  {false, false, {topic}, "rmw_format", 100ms};
   auto recorder = std::make_shared<rosbag2_transport::Recorder>(
     std::move(writer_), storage_options_, record_options);
   recorder->record();
@@ -324,8 +298,7 @@ TEST_F(RecordIntegrationTestFixture, mixed_qos_subscribes) {
   auto publisher_transient_local = publisher_node->create_publisher<test_msgs::msg::Strings>(
     topic, profile_transient_local);
 
-  rosbag2_transport::RecordOptions record_options =
-  {false, false, false, {topic}, {}, {}, {}, {}, {}, "rmw_format", 100ms};
+  rosbag2_transport::RecordOptions record_options = {false, false, {topic}, "rmw_format", 100ms};
   auto recorder = std::make_shared<rosbag2_transport::Recorder>(
     std::move(writer_), storage_options_, record_options);
   recorder->record();
@@ -335,11 +308,9 @@ TEST_F(RecordIntegrationTestFixture, mixed_qos_subscribes) {
     std::chrono::seconds(5), recorder,
     [publisher_volatile, publisher_transient_local]() {
       // This test is a success if rosbag2 has connected to both publishers
-      // *INDENT-OFF*
       return
-        publisher_volatile->get_subscription_count() &&
-        publisher_transient_local->get_subscription_count();
-      // *INDENT-ON*
+      publisher_volatile->get_subscription_count() &&
+      publisher_transient_local->get_subscription_count();
     });
   ASSERT_TRUE(succeeded);
 }
@@ -373,8 +344,7 @@ TEST_F(RecordIntegrationTestFixture, duration_and_noncompatibility_policies_mixe
     .liveliness(liveliness).liveliness_lease_duration(liveliness_lease_duration);
   auto publisher_liveliness = create_pub(profile_liveliness);
 
-  rosbag2_transport::RecordOptions record_options =
-  {false, false, false, {topic}, {}, {}, {}, {}, {}, "rmw_format", 100ms};
+  rosbag2_transport::RecordOptions record_options = {false, false, {topic}, "rmw_format", 100ms};
   auto recorder = std::make_shared<rosbag2_transport::Recorder>(
     std::move(writer_), storage_options_, record_options);
   recorder->record();
@@ -383,13 +353,11 @@ TEST_F(RecordIntegrationTestFixture, duration_and_noncompatibility_policies_mixe
   bool succeeded = rosbag2_test_common::spin_and_wait_for(
     std::chrono::seconds(5), recorder,
     [publisher_history, publisher_lifespan, publisher_deadline, publisher_liveliness]() {
-      // *INDENT-OFF*
       return
-        publisher_history->get_subscription_count() &&
-        publisher_lifespan->get_subscription_count() &&
-        publisher_deadline->get_subscription_count() &&
-        publisher_liveliness->get_subscription_count();
-      // *INDENT-ON*
+      publisher_history->get_subscription_count() &&
+      publisher_lifespan->get_subscription_count() &&
+      publisher_deadline->get_subscription_count() &&
+      publisher_liveliness->get_subscription_count();
     });
   ASSERT_TRUE(succeeded);
 }
@@ -414,7 +382,7 @@ TEST_F(RecordIntegrationTestFixture, write_split_callback_is_called)
   mock_writer.set_max_messages_per_file(5);
 
   rosbag2_transport::RecordOptions record_options =
-  {false, false, false, {string_topic}, {}, {}, {}, {}, {}, "rmw_format", 100ms};
+  {false, false, {string_topic}, "rmw_format", 100ms};
   auto recorder = std::make_shared<rosbag2_transport::Recorder>(
     std::move(writer_), storage_options_, record_options);
   recorder->record();
@@ -444,25 +412,4 @@ TEST_F(RecordIntegrationTestFixture, write_split_callback_is_called)
   ASSERT_TRUE(callback_called);
   EXPECT_EQ(closed_file, "BagFile0");
   EXPECT_EQ(opened_file, "BagFile1");
-}
-
-TEST_F(RecordIntegrationTestFixture, toggle_paused_do_pause_resume)
-{
-  rosbag2_transport::RecordOptions record_options{};
-  auto recorder = std::make_shared<rosbag2_transport::Recorder>(
-    std::move(writer_), storage_options_, record_options);
-  recorder->pause();
-  ASSERT_TRUE(recorder->is_paused());
-
-  testing::internal::CaptureStderr();
-  recorder->toggle_paused();
-  std::string test_output = testing::internal::GetCapturedStderr();
-  EXPECT_FALSE(recorder->is_paused());
-  EXPECT_TRUE(test_output.find("Resuming recording.") != std::string::npos);
-
-  testing::internal::CaptureStderr();
-  recorder->toggle_paused();
-  test_output = testing::internal::GetCapturedStderr();
-  EXPECT_TRUE(recorder->is_paused());
-  EXPECT_TRUE(test_output.find("Pausing recording.") != std::string::npos);
 }

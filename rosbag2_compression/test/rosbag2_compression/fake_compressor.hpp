@@ -20,13 +20,10 @@
 #include "rosbag2_compression/base_compressor_interface.hpp"
 #include "rosbag2_storage/serialized_bag_message.hpp"
 
-class ROSBAG2_COMPRESSION_EXPORT FakeCompressor : public rosbag2_compression::
-  BaseCompressorInterface
+class FakeCompressor : public rosbag2_compression::BaseCompressorInterface
 {
 public:
   FakeCompressor() = default;
-
-  explicit FakeCompressor(int & detected_thread_priority);
 
   std::string compress_uri(const std::string & uri) override;
 

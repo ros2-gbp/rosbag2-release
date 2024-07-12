@@ -2,37 +2,30 @@
 Changelog for package rosbag2_test_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.26.4 (2024-06-27)
+0.22.7 (2024-07-11)
 -------------------
 
-0.26.3 (2024-05-15)
+0.22.6 (2024-02-07)
 -------------------
 
-0.26.2 (2024-04-24)
+0.22.5 (2023-11-18)
 -------------------
 
-0.26.1 (2024-04-17)
+0.22.4 (2023-10-24)
 -------------------
 
-0.26.0 (2024-04-16)
+0.22.3 (2023-09-08)
 -------------------
-* Support service 2/2 --- rosbag2 service play (`#1481 <https://github.com/ros2/rosbag2/issues/1481>`_)
-* Contributors: Barry Xu
 
-0.25.0 (2024-03-27)
+0.22.2 (2023-07-14)
 -------------------
-* Make some changes for newer versions of uncrustify. (`#1578 <https://github.com/ros2/rosbag2/issues/1578>`_)
-* Implement service recording and display info about recorded services (`#1480 <https://github.com/ros2/rosbag2/issues/1480>`_)
-* Contributors: Barry Xu, Chris Lalancette
-
-0.24.0 (2023-07-11)
--------------------
-* Add extra checks in execute_and_wait_until_completion(..) (`#1346 <https://github.com/ros2/rosbag2/issues/1346>`_)
-* Address flakiness in rosbag2_play_end_to_end tests (`#1297 <https://github.com/ros2/rosbag2/issues/1297>`_)
+* Add extra checks in execute_and_wait_until_completion(..) (`#1356 <https://github.com/ros2/rosbag2/issues/1356>`_)
 * Contributors: Michael Orlov
 
-0.23.0 (2023-04-28)
+0.22.1 (2023-05-18)
 -------------------
+* Address flakiness in rosbag2_play_end_to_end tests (`#1297 <https://github.com/ros2/rosbag2/issues/1297>`_) (`#1330 <https://github.com/ros2/rosbag2/issues/1330>`_)
+* Contributors: mergify[bot]
 
 0.22.0 (2023-04-18)
 -------------------
