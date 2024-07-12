@@ -1,0 +1,166 @@
+ros-iron-rosbag2-compression-zstd (0.22.7-1jammy) jammy; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Wed, 10 Jul 2024 16:00:00 -0000
+
+ros-iron-rosbag2-compression-zstd (0.22.6-1jammy) jammy; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Tue, 06 Feb 2024 16:00:00 -0000
+
+ros-iron-rosbag2-compression-zstd (0.22.5-1jammy) jammy; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Fri, 17 Nov 2023 16:00:00 -0000
+
+ros-iron-rosbag2-compression-zstd (0.22.4-1jammy) jammy; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Mon, 23 Oct 2023 16:00:00 -0000
+
+ros-iron-rosbag2-compression-zstd (0.22.3-1jammy) jammy; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Thu, 07 Sep 2023 16:00:00 -0000
+
+ros-iron-rosbag2-compression-zstd (0.22.2-1jammy) jammy; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Thu, 13 Jul 2023 16:00:00 -0000
+
+ros-iron-rosbag2-compression-zstd (0.22.1-1jammy) jammy; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Wed, 17 May 2023 16:00:00 -0000
+
+ros-iron-rosbag2-compression-zstd (0.22.0-1jammy) jammy; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Mon, 17 Apr 2023 16:00:00 -0000
+
+ros-iron-rosbag2-compression-zstd (0.21.0-1jammy) jammy; urgency=high
+
+  * Update rosbag2 to C++17. (#1238 <https://github.com/ros2/rosbag2/issues/1238>)
+  * Use target_link_libraries instead of ament_target_dependencies (#1202 <https://github.com/ros2/rosbag2/issues/1202>)
+  * Contributors: Chris Lalancette, Daisuke Nishimatsu, Michael Orlov
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Tue, 11 Apr 2023 16:00:00 -0000
+
+ros-iron-rosbag2-compression-zstd (0.20.0-1jammy) jammy; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Mon, 13 Feb 2023 16:00:00 -0000
+
+ros-iron-rosbag2-compression-zstd (0.19.0-1jammy) jammy; urgency=high
+
+  * Add Michael Orlov as maintainer in rosbag2 packages (#1215 <https://github.com/ros2/rosbag2/issues/1215>)
+  * Contributors: Michael Orlov
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Thu, 12 Jan 2023 16:00:00 -0000
+
+ros-iron-rosbag2-compression-zstd (0.18.0-1jammy) jammy; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Mon, 14 Nov 2022 16:00:00 -0000
+
+ros-iron-rosbag2-compression-zstd (0.17.0-1jammy) jammy; urgency=high
+
+  * Speed optimization: Preparing copyless publish/subscribing by using const message for writing (#1010 <https://github.com/ros2/rosbag2/issues/1010>)
+  * Contributors: DensoADAS, Joshua Hampp
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Fri, 29 Jul 2022 16:00:00 -0000
+
+ros-iron-rosbag2-compression-zstd (0.16.0-1jammy) jammy; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Tue, 10 May 2022 16:00:00 -0000
+
+ros-iron-rosbag2-compression-zstd (0.15.1-1jammy) jammy; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Tue, 05 Apr 2022 16:00:00 -0000
+
+ros-iron-rosbag2-compression-zstd (0.15.0-1jammy) jammy; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Mon, 04 Apr 2022 16:00:00 -0000
+
+ros-iron-rosbag2-compression-zstd (0.14.1-1jammy) jammy; urgency=high
+
+  * Bump version number to avoid conflict
+  * Contributors: Chris Lalancette
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Mon, 28 Mar 2022 16:00:00 -0000
+
+ros-iron-rosbag2-compression-zstd (0.14.0-1jammy) jammy; urgency=high
+
+  * Install headers to include/${PROJECT_NAME} (#958 <https://github.com/ros2/rosbag2/issues/958>)
+  * Contributors: Shane Loretz
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Mon, 28 Mar 2022 16:00:00 -0000
+
+ros-iron-rosbag2-compression-zstd (0.13.0-1jammy) jammy; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Wed, 12 Jan 2022 16:00:00 -0000
+
+ros-iron-rosbag2-compression-zstd (0.12.0-1jammy) jammy; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Thu, 16 Dec 2021 16:00:00 -0000
+
+ros-iron-rosbag2-compression-zstd (0.11.0-1jammy) jammy; urgency=high
+
+  * Update package maintainers (#899 <https://github.com/ros2/rosbag2/issues/899>)
+  * Contributors: Michel Hidalgo
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Sun, 07 Nov 2021 16:00:00 -0000
+
+ros-iron-rosbag2-compression-zstd (0.10.1-1jammy) jammy; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Thu, 21 Oct 2021 16:00:00 -0000
+
+ros-iron-rosbag2-compression-zstd (0.10.0-1jammy) jammy; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Mon, 18 Oct 2021 16:00:00 -0000
+
+ros-iron-rosbag2-compression-zstd (0.9.0-1jammy) jammy; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Sun, 16 May 2021 16:00:00 -0000
+
+ros-iron-rosbag2-compression-zstd (0.8.0-1jammy) jammy; urgency=high
+
+
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Sun, 18 Apr 2021 16:00:00 -0000
+
+ros-iron-rosbag2-compression-zstd (0.7.0-1jammy) jammy; urgency=high
+
+  * Add test_depend ament_cmake_gmock (#639 <https://github.com/ros2/rosbag2/issues/639>)
+  * Move zstd compressor to its own package (#636 <https://github.com/ros2/rosbag2/issues/636>)
+  * Contributors: Emerson Knapp, Shane Loretz
+
+ -- Michael Orlov <michael.orlov@apex.ai>  Wed, 17 Mar 2021 16:00:00 -0000
+
+

@@ -1,0 +1,12 @@
+Source: ros-iron-rosbag2-compression-zstd
+Section: misc
+Priority: optional
+Maintainer: Michael Orlov <michael.orlov@apex.ai>
+Build-Depends: debhelper (>= 9.0.0), ros-iron-ament-cmake, ros-iron-ament-cmake-gmock <!nocheck>, ros-iron-ament-lint-auto <!nocheck>, ros-iron-ament-lint-common <!nocheck>, ros-iron-pluginlib, ros-iron-rclcpp <!nocheck>, ros-iron-rcpputils, ros-iron-rcutils, ros-iron-rosbag2-compression, ros-iron-rosbag2-test-common <!nocheck>, ros-iron-zstd-vendor, ros-iron-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-iron-rosbag2-compression-zstd
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-iron-pluginlib, ros-iron-rcpputils, ros-iron-rcutils, ros-iron-rosbag2-compression, ros-iron-zstd-vendor, ros-iron-ros-workspace
+Description: Zstandard compression library implementation of rosbag2_compression
