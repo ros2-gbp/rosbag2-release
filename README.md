@@ -1,3 +1,49 @@
+## rosbag2 (iron) - 0.22.7-1
+
+The packages in the `rosbag2` repository were released into the `iron` distro by running `/usr/bin/bloom-release --rosdistro iron rosbag2` on `Fri, 12 Jul 2024 15:11:31 -0000`
+
+These packages were released:
+- `mcap_vendor`
+- `ros2bag`
+- `rosbag2`
+- `rosbag2_compression`
+- `rosbag2_compression_zstd`
+- `rosbag2_cpp`
+- `rosbag2_examples_cpp`
+- `rosbag2_examples_py`
+- `rosbag2_interfaces`
+- `rosbag2_performance_benchmarking`
+- `rosbag2_performance_benchmarking_msgs`
+- `rosbag2_py`
+- `rosbag2_storage`
+- `rosbag2_storage_default_plugins`
+- `rosbag2_storage_mcap`
+- `rosbag2_storage_sqlite3`
+- `rosbag2_test_common`
+- `rosbag2_test_msgdefs`
+- `rosbag2_tests`
+- `rosbag2_transport`
+- `shared_queues_vendor`
+- `sqlite3_vendor`
+- `zstd_vendor`
+
+Version of package(s) in repository `rosbag2`:
+
+- upstream repository: https://github.com/ros2/rosbag2.git
+- release repository: https://github.com/ros2-gbp/rosbag2-release.git
+- rosdistro version: `0.22.6-1`
+- old version: `0.22.6-1`
+- new version: `0.22.7-1`
+
+Versions of tools used:
+
+- bloom version: `0.12.0`
+- catkin_pkg version: `0.5.2`
+- rosdep version: `0.24.0`
+- rosdistro version: `0.9.1`
+- vcstools version: `0.1.42`
+
+
 ## rosbag2 (jazzy) - 0.26.4-1
 
 The packages in the `rosbag2` repository were released into the `jazzy` distro by running `/usr/bin/bloom-release --rosdistro jazzy rosbag2` on `Fri, 28 Jun 2024 07:39:35 -0000`
