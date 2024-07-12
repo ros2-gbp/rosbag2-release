@@ -16,6 +16,7 @@ from argparse import FileType
 
 from rclpy.qos import InvalidQoSProfileException
 from ros2bag.api import add_standard_reader_args
+from ros2bag.api import check_not_negative_float
 from ros2bag.api import check_not_negative_int
 from ros2bag.api import check_positive_float
 from ros2bag.api import convert_yaml_to_qos_profile
@@ -126,7 +127,7 @@ class PlayVerb(VerbExtension):
             '-p', '--start-paused', action='store_true', default=False,
             help='Start the playback player in a paused state.')
         parser.add_argument(
-            '--start-offset', type=check_positive_float, default=0.0,
+            '--start-offset', type=check_not_negative_float, default=0.0,
             help='Start the playback player this many seconds into the bag file.')
         parser.add_argument(
             '--wait-for-all-acked', type=check_not_negative_int, default=-1,
@@ -145,6 +146,10 @@ class PlayVerb(VerbExtension):
                  'By default, if loaned message can be used, messages are published as loaned '
                  'message. It can help to reduce the number of data copies, so there is a greater '
                  'benefit for sending big data.')
+        parser.add_argument(
+            '--log-level', type=str, default='info',
+            choices=['debug', 'info', 'warn', 'error', 'fatal'],
+            help='Logging level.')
 
     def get_playback_until_from_arg_group(self, playback_until_sec, playback_until_nsec) -> int:
         nano_scale = 1000 * 1000 * 1000
@@ -202,7 +207,7 @@ class PlayVerb(VerbExtension):
         play_options.wait_acked_timeout = args.wait_for_all_acked
         play_options.disable_loan_message = args.disable_loan_message
 
-        player = Player()
+        player = Player(args.log_level)
         try:
             player.play(storage_options, play_options)
         except KeyboardInterrupt:
