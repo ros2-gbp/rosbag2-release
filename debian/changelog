@@ -1,0 +1,58 @@
+ros-iron-rosbag2-test-msgdefs (0.22.7-1jammy) jammy; urgency=high
+
+
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Wed, 10 Jul 2024 16:00:00 -0000
+
+ros-iron-rosbag2-test-msgdefs (0.22.6-1jammy) jammy; urgency=high
+
+
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Tue, 06 Feb 2024 16:00:00 -0000
+
+ros-iron-rosbag2-test-msgdefs (0.22.5-1jammy) jammy; urgency=high
+
+
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Fri, 17 Nov 2023 16:00:00 -0000
+
+ros-iron-rosbag2-test-msgdefs (0.22.4-1jammy) jammy; urgency=high
+
+
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Mon, 23 Oct 2023 16:00:00 -0000
+
+ros-iron-rosbag2-test-msgdefs (0.22.3-1jammy) jammy; urgency=high
+
+
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Thu, 07 Sep 2023 16:00:00 -0000
+
+ros-iron-rosbag2-test-msgdefs (0.22.2-1jammy) jammy; urgency=high
+
+  * Don't crash when type definition cannot be found (#1352 <https://github.com/ros2/rosbag2/issues/1352>)
+  * Contributors: Emerson Knapp
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Thu, 13 Jul 2023 16:00:00 -0000
+
+ros-iron-rosbag2-test-msgdefs (0.22.1-1jammy) jammy; urgency=high
+
+
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Wed, 17 May 2023 16:00:00 -0000
+
+ros-iron-rosbag2-test-msgdefs (0.22.0-1jammy) jammy; urgency=high
+
+
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Mon, 17 Apr 2023 16:00:00 -0000
+
+ros-iron-rosbag2-test-msgdefs (0.21.0-1jammy) jammy; urgency=high
+
+  * rosbag2_cpp: move local message definition source out of MCAP plugin (#1265 <https://github.com/ros2/rosbag2/issues/1265>)
+    The intention of this PR is to move the message-definition-finding capability outside of rosbag2_storage_mcap, and allow any rosbag2 storage plugin to store message definitions.
+  * Contributors: james-rms
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Tue, 11 Apr 2023 16:00:00 -0000
+
+
