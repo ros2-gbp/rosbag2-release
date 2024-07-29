@@ -17,10 +17,8 @@ import datetime
 import os
 
 from rclpy.qos import InvalidQoSProfileException
-from ros2bag.api import add_writer_storage_plugin_extensions
 from ros2bag.api import convert_yaml_to_qos_profile
 from ros2bag.api import print_error
-from ros2bag.api import SplitLineFormatter
 from ros2bag.verb import VerbExtension
 from ros2cli.node import NODE_NAME_PREFIX
 from rosbag2_py import get_default_storage_id
@@ -37,12 +35,12 @@ class RecordVerb(VerbExtension):
     """Record ROS data to a bag."""
 
     def add_arguments(self, parser, cli_name):  # noqa: D102
-        parser.formatter_class = SplitLineFormatter
         writer_choices = get_registered_writers()
         default_storage_id = get_default_storage_id()
         default_writer = default_storage_id if default_storage_id in writer_choices else \
             next(iter(writer_choices))
 
+        compression_format_choices = get_registered_compressors()
         serialization_choices = get_registered_serializers()
         converter_suffix = '_converter'
         serialization_choices = {
@@ -50,15 +48,6 @@ class RecordVerb(VerbExtension):
             for f in serialization_choices
             if f.endswith(converter_suffix)
         }
-
-        # Base output
-        parser.add_argument(
-            '-o', '--output',
-            help='Destination of the bagfile to create, '
-                 'defaults to a timestamped folder in the current directory.')
-        parser.add_argument(
-            '-s', '--storage', default=default_writer, choices=writer_choices,
-            help="Storage identifier to be used, defaults to '%(default)s'.")
 
         # Topic filter arguments
         parser.add_argument(
@@ -73,57 +62,104 @@ class RecordVerb(VerbExtension):
         parser.add_argument(
             '-x', '--exclude', default='',
             help='Exclude topics containing provided regular expression. '
-                 'Works on top of --all, --regex, or topics list.')
-
-        # Discovery behavior
+            'Works on top of --all, --regex, or topics list.')
         parser.add_argument(
             '--include-unpublished-topics', action='store_true',
             help='Discover and record topics which have no publisher. '
-                 'Subscriptions on such topics will be made with default QoS unless otherwise '
-                 'specified in a QoS overrides file.')
+            'Subscriptions on such topics will be made with default QoS unless otherwise '
+            'specified in a QoS overrides file.')
         parser.add_argument(
             '--include-hidden-topics', action='store_true',
             help='Discover and record hidden topics as well. '
-                 'These are topics used internally by ROS 2 implementation.')
+            'These are topics used internally by ROS 2 implementation.')
+        # The rest. TODO(emersonknapp) organize these better by category
         parser.add_argument(
-            '--no-discovery', action='store_true',
-            help='Disables topic auto discovery during recording: only topics present at '
-                 'startup will be recorded.')
+            '-o', '--output',
+            help='destination of the bagfile to create, \
+            defaults to a timestamped folder in the current directory')
         parser.add_argument(
-            '-p', '--polling-interval', type=int, default=100,
-            help='Time in ms to wait between querying available topics for recording. '
-                 'It has no effect if --no-discovery is enabled.')
-        parser.add_argument(
-            '--ignore-leaf-topics', action='store_true',
-            help='Ignore topics without a subscription.')
-        parser.add_argument(
-            '--qos-profile-overrides-path', type=FileType('r'),
-            help='Path to a yaml file defining overrides of the QoS profile for specific topics.')
-
-        # Core config
+            '-s', '--storage', default=default_writer, choices=writer_choices,
+            help=f"storage identifier to be used, defaults to '{default_writer}'")
         parser.add_argument(
             '-f', '--serialization-format', default='', choices=serialization_choices,
-            help='The rmw serialization format in which the messages are saved, defaults to the '
-                 'rmw currently in use.')
+            help='rmw serialization format in which the messages are saved, defaults to the'
+                 ' rmw currently in use')
+        parser.add_argument(
+            '--no-discovery', action='store_true',
+            help='disables topic auto discovery during recording: only topics present at '
+                 'startup will be recorded')
+        parser.add_argument(
+            '-p', '--polling-interval', type=int, default=100,
+            help='time in ms to wait between querying available topics for recording. '
+                  'It has no effect if --no-discovery is enabled.'
+        )
         parser.add_argument(
             '-b', '--max-bag-size', type=int, default=0,
-            help='Maximum size in bytes before the bagfile will be split. '
-                 'Default: %(default)d, recording written in single bagfile and splitting '
-                 'is disabled.')
+            help='maximum size in bytes before the bagfile will be split. '
+                  'Default it is zero, recording written in single bagfile and splitting '
+                  'is disabled.'
+        )
         parser.add_argument(
             '-d', '--max-bag-duration', type=int, default=0,
-            help='Maximum duration in seconds before the bagfile will be split. '
-                 'Default: %(default)d, recording written in single bagfile and splitting '
-                 'is disabled. If both splitting by size and duration are enabled, '
-                 'the bag will split at whichever threshold is reached first.')
+            help='maximum duration in seconds before the bagfile will be split. '
+                  'Default is zero, recording written in single bagfile and splitting '
+                  'is disabled. If both splitting by size and duration are enabled, '
+                  'the bag will split at whichever threshold is reached first.'
+        )
         parser.add_argument(
             '--max-cache-size', type=int, default=100*1024*1024,
-            help='Maximum size (in bytes) of messages to hold in each buffer of cache. '
-                 'Default: %(default)d. The cache is handled through double buffering, '
-                 'which means that in pessimistic case up to twice the parameter value of memory '
-                 'is needed. A rule of thumb is to cache an order of magnitude corresponding to '
-                 'about one second of total recorded data volume. '
-                 'If the value specified is 0, then every message is directly written to disk.')
+            help='maximum size (in bytes) of messages to hold in each buffer of cache.'
+                 'Default is 100 mebibytes. The cache is handled through double buffering, '
+                 'which means that in pessimistic case up to twice the parameter value of memory'
+                 'is needed. A rule of thumb is to cache an order of magitude corresponding to'
+                 'about one second of total recorded data volume.'
+                 'If the value specified is 0, then every message is directly written to disk.'
+        )
+        parser.add_argument(
+            '--compression-mode', type=str, default='none',
+            choices=['none', 'file', 'message'],
+            help="Determine whether to compress by file or message. Default is 'none'."
+        )
+        parser.add_argument(
+            '--compression-format', type=str, default='', choices=compression_format_choices,
+            help='Specify the compression format/algorithm. Default is none.'
+        )
+        parser.add_argument(
+            '--compression-queue-size', type=int, default=1,
+            help='Number of files or messages that may be queued for compression '
+                 'before being dropped.  Default is 1.'
+        )
+        parser.add_argument(
+            '--compression-threads', type=int, default=0,
+            help='Number of files or messages that may be compressed in parallel. '
+                 'Default is 0, which will be interpreted as the number of CPU cores.'
+        )
+        parser.add_argument(
+            '--snapshot-mode', action='store_true',
+            help='Enable snapshot mode. Messages will not be written to the bagfile until '
+                 'the "/rosbag2_recorder/snapshot" service is called.'
+        )
+        parser.add_argument(
+            '--ignore-leaf-topics', action='store_true',
+            help='Ignore topics without a publisher.'
+        )
+        parser.add_argument(
+            '--qos-profile-overrides-path', type=FileType('r'),
+            help='Path to a yaml file defining overrides of the QoS profile for specific topics.'
+        )
+        parser.add_argument(
+            '--storage-preset-profile', type=str, default='',
+            help='Select a configuration preset for storage. '
+                 'This flag settings can still be overriden by '
+                 'corresponding settings in the config passed with --storage-config-file.'
+        )
+        parser.add_argument(
+            '--storage-config-file', type=FileType('r'),
+            help='Path to a yaml file defining storage specific configurations. '
+                 'For the default storage plugin settings are specified through syntax:'
+                 'write:'
+                 '  pragmas: [\"<setting_name>\" = <setting_value>]'
+                 'For a list of sqlite3 settings, refer to sqlite3 documentation')
         parser.add_argument(
             '--start-paused', action='store_true', default=False,
             help='Start the recorder in a paused state.')
@@ -132,44 +168,10 @@ class RecordVerb(VerbExtension):
             help='Use simulation time for message timestamps by subscribing to the /clock topic. '
                  'Until first /clock message is received, no messages will be written to bag.')
         parser.add_argument(
-            '--node-name', type=str, default='rosbag2_recorder',
-            help='Specify the recorder node name. Default is %(default)s.')
-        parser.add_argument(
-            '--custom-data', type=str, metavar='KEY=VALUE', nargs='*',
-            help='Store the custom data in metadata.yaml '
-                 'under "rosbag2_bagfile_information/custom_data". The key=value pair can '
-                 'appear more than once. The last value will override the former ones.')
-        parser.add_argument(
-            '--snapshot-mode', action='store_true',
-            help='Enable snapshot mode. Messages will not be written to the bagfile until '
-                 'the "/rosbag2_recorder/snapshot" service is called.')
-        parser.add_argument(
             '--log-level', type=str, default='info',
             choices=['debug', 'info', 'warn', 'error', 'fatal'],
             help='Logging level.')
-
-        # Storage configuration
-        add_writer_storage_plugin_extensions(parser)
-
-        # Core compression configuration
-        # TODO(emersonknapp) this configuration will be moved down to implementing plugins
-        parser.add_argument(
-            '--compression-queue-size', type=int, default=1,
-            help='Number of files or messages that may be queued for compression '
-                 'before being dropped.  Default is %(default)d.')
-        parser.add_argument(
-            '--compression-threads', type=int, default=0,
-            help='Number of files or messages that may be compressed in parallel. '
-                 'Default is %(default)d, which will be interpreted as the number of CPU cores.')
-        parser.add_argument(
-            '--compression-mode', type=str, default='none',
-            choices=['none', 'file', 'message'],
-            help='Choose mode of compression for the storage. Default: %(default)s.')
-        parser.add_argument(
-            '--compression-format', type=str, default='',
-            choices=get_registered_compressors(),
-            help='Choose the compression format/algorithm. '
-                 'Has no effect if no compression mode is chosen. Default: %(default)s.')
+        self._subparser = parser
 
     def main(self, *, args):  # noqa: D102
         # both all and topics cannot be true
@@ -217,12 +219,6 @@ class RecordVerb(VerbExtension):
                 '--use-sim-time and --no-discovery both set, but are incompatible settings. '
                 'The /clock topic needs to be discovered to record with sim time.')
 
-        # Prepare custom_data dictionary
-        custom_data = {}
-        if args.custom_data:
-            key_value_pairs = [pair.split('=') for pair in args.custom_data]
-            custom_data = {pair[0]: pair[1] for pair in key_value_pairs}
-
         storage_config_file = ''
         if args.storage_config_file:
             storage_config_file = args.storage_config_file.name
@@ -235,8 +231,7 @@ class RecordVerb(VerbExtension):
             max_cache_size=args.max_cache_size,
             storage_preset_profile=args.storage_preset_profile,
             storage_config_uri=storage_config_file,
-            snapshot_mode=args.snapshot_mode,
-            custom_data=custom_data
+            snapshot_mode=args.snapshot_mode
         )
         record_options = RecordOptions()
         record_options.all = args.all
@@ -262,7 +257,7 @@ class RecordVerb(VerbExtension):
         recorder = Recorder(args.log_level)
 
         try:
-            recorder.record(storage_options, record_options, args.node_name)
+            recorder.record(storage_options, record_options)
         except KeyboardInterrupt:
             pass
 

@@ -43,12 +43,6 @@ void TestReadOnlyPlugin::open(
   std::cout << "config file uri: " << storage_options.storage_config_uri << ".\n";
 }
 
-bool TestReadOnlyPlugin::set_read_order(const rosbag2_storage::ReadOrder & order)
-{
-  std::cout << "Set read order " << order.sort_by << " " << order.reverse << std::endl;
-  return true;
-}
-
 bool TestReadOnlyPlugin::has_next()
 {
   return true;
@@ -65,9 +59,6 @@ std::vector<rosbag2_storage::TopicMetadata> TestReadOnlyPlugin::get_all_topics_a
   std::cout << "\nreading topics and types\n";
   return std::vector<rosbag2_storage::TopicMetadata>();
 }
-
-void TestReadOnlyPlugin::get_all_message_definitions(
-  std::vector<rosbag2_storage::MessageDefinition> &) {}
 
 std::string TestReadOnlyPlugin::get_relative_file_path() const
 {

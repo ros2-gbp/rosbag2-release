@@ -10,29 +10,24 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
       "Debug" "Release" "RelWithDebInfo" "MinSizeRel")
 endif()
 
-# Default to C++17
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
-endif()
-
 # Enable additional warnings and warnings as errors
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+# Get the ROS_DISTRO environment variable
+set(ROS_DISTRO $ENV{ROS_DISTRO})
+
 find_package(ament_cmake REQUIRED)
-find_package(ament_cmake_python REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(mcap_vendor REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rcutils REQUIRED)
 find_package(rosbag2_storage REQUIRED)
 
-ament_python_install_package(ros2bag_mcap_cli)
-
 add_library(${PROJECT_NAME} SHARED
   src/mcap_storage.cpp
+  src/message_definition_cache.cpp
 )
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -40,12 +35,11 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 target_compile_features(${PROJECT_NAME} PUBLIC c_std_99 cxx_std_17)
 target_compile_definitions(${PROJECT_NAME} PRIVATE "ROSBAG2_STORAGE_MCAP_BUILDING_DLL")
-target_link_libraries(${PROJECT_NAME}
-  mcap_vendor::mcap
-  pluginlib::pluginlib
-  rcutils::rcutils
-  rosbag2_storage::rosbag2_storage
-)
+ament_target_dependencies(${PROJECT_NAME}
+  mcap_vendor
+  pluginlib
+  rcutils
+  rosbag2_storage)
 
 set(MCAP_COMPILE_DEFS)
 # COMPATIBILITY(foxy) - 0.3.x is the Foxy release
@@ -90,6 +84,7 @@ install(
 if(BUILD_TESTING)
   find_package(ament_cmake_gmock REQUIRED)
   find_package(ament_lint_auto REQUIRED)
+  find_package(rcpputils REQUIRED)
   find_package(rosbag2_test_common REQUIRED)
   find_package(std_msgs REQUIRED)
 
@@ -104,15 +99,12 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 
   ament_add_gmock(test_mcap_storage test/rosbag2_storage_mcap/test_mcap_storage.cpp)
-  target_link_libraries(test_mcap_storage
-    ${PROJECT_NAME}
-    mcap_vendor::mcap
-    rosbag2_storage::rosbag2_storage
-    rosbag2_test_common::rosbag2_test_common
-    ${std_msgs_TARGETS}
-  )
+  target_link_libraries(test_mcap_storage ${PROJECT_NAME})
+  ament_target_dependencies(test_mcap_storage mcap_vendor rosbag2_storage rosbag2_test_common std_msgs)
   target_compile_definitions(test_mcap_storage PRIVATE ${MCAP_COMPILE_DEFS})
 
+  ament_add_gmock(test_message_definition_cache test/rosbag2_storage_mcap/test_message_definition_cache.cpp)
+  target_link_libraries(test_message_definition_cache ${PROJECT_NAME})
 endif()
 
 

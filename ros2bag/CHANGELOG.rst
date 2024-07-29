@@ -2,88 +2,60 @@
 Changelog for package ros2bag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.22.7 (2024-07-11)
--------------------
-* Allow to specify start offset from CLI arguments equal to 0.0 for the rosbag2 player (`#1714 <https://github.com/ros2/rosbag2/issues/1714>`_)
-* Add --log-level to ros2 bag play and record (`#1654 <https://github.com/ros2/rosbag2/issues/1654>`_)
-* Resolve recording option problem (`#1649 <https://github.com/ros2/rosbag2/issues/1649>`_)
-* Contributors: Barry Xu, Michael Orlov, Rein Appeldoorn, Roman
-
-0.22.6 (2024-02-07)
--------------------
-
-0.22.5 (2023-11-18)
--------------------
-
-0.22.4 (2023-10-24)
--------------------
-
-0.22.3 (2023-09-08)
--------------------
-
-0.22.2 (2023-07-14)
--------------------
-* Wait for /clock before beginning recording when using sim time (`#1391 <https://github.com/ros2/rosbag2/issues/1391>`_)
-* Fix wrong descritpion for '--ignore-leaf-topics' (`#1345 <https://github.com/ros2/rosbag2/issues/1345>`_)
-* Contributors: Barry Xu
-
-0.22.1 (2023-05-18)
--------------------
-* Cleanup the help text for ros2 bag record. (`#1329 <https://github.com/ros2/rosbag2/issues/1329>`_) (`#1333 <https://github.com/ros2/rosbag2/issues/1333>`_)
+0.15.12 (2024-07-28)
+--------------------
+* [humble] Add option to prevent message loss while converting (backport `#1058 <https://github.com/ros2/rosbag2/issues/1058>`_) (`#1749 <https://github.com/ros2/rosbag2/issues/1749>`_)
+* [humble] rosbag2_cpp: test more than one storage plugin (backport `#1196 <https://github.com/ros2/rosbag2/issues/1196>`_) (`#1721 <https://github.com/ros2/rosbag2/issues/1721>`_)
+* [humble] rosbag2_storage: expose default storage ID as method (backport `#1146 <https://github.com/ros2/rosbag2/issues/1146>`_) (`#1724 <https://github.com/ros2/rosbag2/issues/1724>`_)
+* [humble] Allow to specify start offset from CLI arguments equal to 0.0 for the rosbag2 player (backport `#1682 <https://github.com/ros2/rosbag2/issues/1682>`_) (`#1715 <https://github.com/ros2/rosbag2/issues/1715>`_)
 * Contributors: mergify[bot]
 
-0.22.0 (2023-04-18)
+0.15.11 (2024-05-20)
+--------------------
+
+0.15.10 (2024-05-17)
+--------------------
+* [humble] Add --log-level to ros2 bag play and record (`#1655 <https://github.com/ros2/rosbag2/issues/1655>`_)
+* [Humble] Resolve recording option problem (backport `#1649 <https://github.com/ros2/rosbag2/issues/1649>`_) (`#1651 <https://github.com/ros2/rosbag2/issues/1651>`_)
+* Contributors: Roman, mergify[bot]
+
+0.15.9 (2024-01-24)
 -------------------
 
-0.21.0 (2023-04-12)
+0.15.8 (2023-09-19)
 -------------------
-* Enable document generation using rosdoc2 for ament_python pkgs (`#1260 <https://github.com/ros2/rosbag2/issues/1260>`_)
-* Contributors: Yadu
 
-0.20.0 (2023-02-14)
+0.15.7 (2023-07-18)
 -------------------
-* CLI: Get storage-specific values from plugin (`#1209 <https://github.com/ros2/rosbag2/issues/1209>`_)
-* Contributors: Emerson Knapp
+* [humble] When using sim time, wait for /clock before beginning recording (backport `#1378 <https://github.com/ros2/rosbag2/issues/1378>`_) (`#1392 <https://github.com/ros2/rosbag2/issues/1392>`_)
+* Contributors: Michael Orlov, mergify[bot]
 
-0.19.0 (2023-01-13)
+0.15.6 (2023-06-05)
 -------------------
-* Fix up some of the wording in the record help text. (`#1228 <https://github.com/ros2/rosbag2/issues/1228>`_)
-* Add topic_name option to info verb (`#1217 <https://github.com/ros2/rosbag2/issues/1217>`_)
-* rosbag2_storage: set MCAP as default plugin (`#1160 <https://github.com/ros2/rosbag2/issues/1160>`_)
-* rosbag2_py: parametrize tests across storage plugins (`#1203 <https://github.com/ros2/rosbag2/issues/1203>`_)
-* Added option to change node name for the recorder from the Python API (`#1180 <https://github.com/ros2/rosbag2/issues/1180>`_)
-* rosbag2_cpp: test more than one storage plugin (`#1196 <https://github.com/ros2/rosbag2/issues/1196>`_)
-* Contributors: Chris Lalancette, Keisuke Shima, Michael Orlov, james-rms, ricardo-manriquez
 
-0.18.0 (2022-11-15)
+0.15.5 (2023-04-25)
 -------------------
-* rosbag2_storage: expose default storage ID as method (`#1146 <https://github.com/ros2/rosbag2/issues/1146>`_)
-* Fix for ros2 bag play exit with non-zero code on SIGINT (`#1126 <https://github.com/ros2/rosbag2/issues/1126>`_)
-* ros2bag: move storage preset validation to sqlite3 plugin (`#1135 <https://github.com/ros2/rosbag2/issues/1135>`_)
-* Add option to prevent message loss while converting (`#1058 <https://github.com/ros2/rosbag2/issues/1058>`_)
-* Added support for excluding topics via regular expressions (`#1046 <https://github.com/ros2/rosbag2/issues/1046>`_)
-* Readers/info can accept a single bag storage file, and detect its storage id automatically (`#1072 <https://github.com/ros2/rosbag2/issues/1072>`_)
-* Add short -v option to ros2 bag list for verbose (`#1065 <https://github.com/ros2/rosbag2/issues/1065>`_)
-* Contributors: DensoADAS, Emerson Knapp, Esteve Fernandez, Michael Orlov, james-rms
+* Enable document generation using rosdoc2 for ament_python pkgs (`#1260 <https://github.com/ros2/rosbag2/issues/1260>`_) (`#1261 <https://github.com/ros2/rosbag2/issues/1261>`_)
+* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_) (`#1224 <https://github.com/ros2/rosbag2/issues/1224>`_)
+* Contributors: mergify[bot]
 
-0.17.0 (2022-07-30)
+0.15.4 (2023-01-10)
 -------------------
-* Use a single variable for evaluating the filter regex (`#1053 <https://github.com/ros2/rosbag2/issues/1053>`_)
-* Add additional mode of publishing sim time updates triggered by replayed messages (`#1050 <https://github.com/ros2/rosbag2/issues/1050>`_)
-* Renamed --topics-regex to --regex and -e in Player class to be consistent with Recorder (`#1045 <https://github.com/ros2/rosbag2/issues/1045>`_)
-* Use first available writer in recording if default `sqlite3` not available. (`#1044 <https://github.com/ros2/rosbag2/issues/1044>`_)
-* Add the ability to record any key/value pair in 'custom' field in metadata.yaml (`#1038 <https://github.com/ros2/rosbag2/issues/1038>`_)
-* Added support for filtering topics via regular expressions on Playback (`#1034 <https://github.com/ros2/rosbag2/issues/1034>`_)
-* Fix incorrect boundary check for `playback_duration` and `play_until_timestamp` (`#1032 <https://github.com/ros2/rosbag2/issues/1032>`_)
-* Adds play until timestamp functionality (`#1005 <https://github.com/ros2/rosbag2/issues/1005>`_)
-* Add CLI verb for burst mode of playback (`#980 <https://github.com/ros2/rosbag2/issues/980>`_)
-* Add play-for specified number of seconds functionality (`#960 <https://github.com/ros2/rosbag2/issues/960>`_)
-* Contributors: Agustin Alba Chicar, EsipovPA, Esteve Fernandez, Geoffrey Biggs, Hunter L.Allen, Michael Orlov, kylemarcey, Tony Peng
+* ros2bag: move storage preset validation to sqlite3 plugin (`#1135 <https://github.com/ros2/rosbag2/issues/1135>`_) (`#1184 <https://github.com/ros2/rosbag2/issues/1184>`_)
+* Contributors: Daisuke Nishimatsu
 
-0.16.0 (2022-05-11)
+0.15.3 (2022-11-07)
 -------------------
-* Make unpublished topics unrecorded by default (`#968 <https://github.com/ros2/rosbag2/issues/968>`_)
-* Contributors: Michael Orlov, Sean Kelly
+* Fix for ros2 bag play exit with non-zero code on SIGINT (`#1126 <https://github.com/ros2/rosbag2/issues/1126>`_) (`#1147 <https://github.com/ros2/rosbag2/issues/1147>`_)
+* Readers/info can accept a single bag storage file, and detect its storage id automatically (`#1072 <https://github.com/ros2/rosbag2/issues/1072>`_) (`#1077 <https://github.com/ros2/rosbag2/issues/1077>`_)
+* Revert "[humble] Backport. Added support for filtering topics via regular expressions (`#1034 <https://github.com/ros2/rosbag2/issues/1034>`_)- (`#1039 <https://github.com/ros2/rosbag2/issues/1039>`_)" (`#1069 <https://github.com/ros2/rosbag2/issues/1069>`_)
+* [humble] Backport. Added support for filtering topics via regular expressions (`#1034 <https://github.com/ros2/rosbag2/issues/1034>`_)- (`#1039 <https://github.com/ros2/rosbag2/issues/1039>`_)
+* Backport. Add use_sim_time option to record verb (`#1017 <https://github.com/ros2/rosbag2/issues/1017>`_)
+* Make unpublished topics unrecorded by default (`#968 <https://github.com/ros2/rosbag2/issues/968>`_) (`#1008 <https://github.com/ros2/rosbag2/issues/1008>`_)
+* Contributors: Esteve Fernandez, Keisuke Shima, Sean Kelly, mergify[bot]
+
+0.15.2 (2022-05-11)
+-------------------
 
 0.15.1 (2022-04-06)
 -------------------

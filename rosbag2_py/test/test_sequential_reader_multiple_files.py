@@ -16,20 +16,14 @@ import os
 from pathlib import Path
 
 from common import get_rosbag_options
-
-import pytest
-
 import rosbag2_py
-from rosbag2_test_common import TESTED_STORAGE_IDS
-
 
 RESOURCES_PATH = Path(os.environ['ROSBAG2_PY_TEST_RESOURCES_DIR'])
 
 
-@pytest.mark.parametrize('storage_id', TESTED_STORAGE_IDS)
-def test_reset_filter(storage_id):
-    bag_path = str(RESOURCES_PATH / storage_id / 'wbag')
-    storage_options, converter_options = get_rosbag_options(bag_path, storage_id=storage_id)
+def test_reset_filter():
+    bag_path = str(RESOURCES_PATH / 'wbag')
+    storage_options, converter_options = get_rosbag_options(bag_path)
 
     reader = rosbag2_py.SequentialReader()
     reader.open(storage_options, converter_options)
@@ -72,10 +66,9 @@ def test_reset_filter(storage_id):
     assert t == 1005
 
 
-@pytest.mark.parametrize('storage_id', TESTED_STORAGE_IDS)
-def test_seek_forward(storage_id):
-    bag_path = str(RESOURCES_PATH / storage_id / 'wbag')
-    storage_options, converter_options = get_rosbag_options(bag_path, storage_id)
+def test_seek_forward():
+    bag_path = str(RESOURCES_PATH / 'wbag')
+    storage_options, converter_options = get_rosbag_options(bag_path)
 
     reader = rosbag2_py.SequentialReader()
     reader.open(storage_options, converter_options)
@@ -108,10 +101,9 @@ def test_seek_forward(storage_id):
     assert t == 1826
 
 
-@pytest.mark.parametrize('storage_id', TESTED_STORAGE_IDS)
-def test_seek_backward(storage_id):
-    bag_path = str(RESOURCES_PATH / storage_id / 'wbag')
-    storage_options, converter_options = get_rosbag_options(bag_path, storage_id)
+def test_seek_backward():
+    bag_path = str(RESOURCES_PATH / 'wbag')
+    storage_options, converter_options = get_rosbag_options(bag_path)
 
     reader = rosbag2_py.SequentialReader()
     reader.open(storage_options, converter_options)

@@ -2,93 +2,61 @@
 Changelog for package rosbag2_py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.22.7 (2024-07-11)
--------------------
-* Gracefully handle SIGINT and SIGTERM signals for play and burst CLI (`#1690 <https://github.com/ros2/rosbag2/issues/1690>`_)
-* Fix for false negative tests in rosbag2_py (`#1688 <https://github.com/ros2/rosbag2/issues/1688>`_)
-* Add --log-level to ros2 bag play and record (`#1654 <https://github.com/ros2/rosbag2/issues/1654>`_)
-* Contributors: Michael Orlov, Roman
+0.15.12 (2024-07-28)
+--------------------
+* [Humble] Add topics with zero message counts to the SQLiteStorage::get_metadata(). (`#1722 <https://github.com/ros2/rosbag2/issues/1722>`_)
+* [humble] Bugfix for wrong timestamps in ros2 bag info (backport `#1745 <https://github.com/ros2/rosbag2/issues/1745>`_) (`#1754 <https://github.com/ros2/rosbag2/issues/1754>`_)
+* [humble] Expose py Reader metadata, improve `rosbag2_py.BagMetadata` usability (backport `#1082 <https://github.com/ros2/rosbag2/issues/1082>`_) (`#1404 <https://github.com/ros2/rosbag2/issues/1404>`_)
+* [humble] Remove explicit sqlite3 from code (backport `#1166 <https://github.com/ros2/rosbag2/issues/1166>`_) (`#1723 <https://github.com/ros2/rosbag2/issues/1723>`_)
+* [humble] rosbag2_storage: expose default storage ID as method (backport `#1146 <https://github.com/ros2/rosbag2/issues/1146>`_) (`#1724 <https://github.com/ros2/rosbag2/issues/1724>`_)
+* [rosbag2] Fix typo to properly restore SIGINT hanlder (`#1687 <https://github.com/ros2/rosbag2/issues/1687>`_)
+* [humble] Fix for false negative tests in rosbag2_py (backport `#1592 <https://github.com/ros2/rosbag2/issues/1592>`_) (`#1689 <https://github.com/ros2/rosbag2/issues/1689>`_)
+* Contributors: Eric Cousineau, Michael Orlov, mergify[bot]
 
-0.22.6 (2024-02-07)
--------------------
-* Install signal handlers in recorder only inside record method (`#1525 <https://github.com/ros2/rosbag2/issues/1525>`_)
-* Contributors: Michael Orlov
+0.15.11 (2024-05-20)
+--------------------
 
-0.22.5 (2023-11-18)
--------------------
+0.15.10 (2024-05-17)
+--------------------
+* [humble] Add --log-level to ros2 bag play and record (`#1655 <https://github.com/ros2/rosbag2/issues/1655>`_)
+* Contributors: Roman
 
-0.22.4 (2023-10-24)
+0.15.9 (2024-01-24)
 -------------------
-
-0.22.3 (2023-09-08)
--------------------
-
-0.22.2 (2023-07-14)
--------------------
-* Gracefully handle SIGINT and SIGTERM in rosbag2 recorder (`#1394 <https://github.com/ros2/rosbag2/issues/1394>`_)
-* Contributors: Michael Orlov
-
-0.22.1 (2023-05-18)
--------------------
-* Add binding to close the writer (`#1339 <https://github.com/ros2/rosbag2/issues/1339>`_) (`#1340 <https://github.com/ros2/rosbag2/issues/1340>`_)
+* [humble] Install signal handlers in recorder only inside record method (backport `#1464 <https://github.com/ros2/rosbag2/issues/1464>`_) (`#1526 <https://github.com/ros2/rosbag2/issues/1526>`_)
 * Contributors: mergify[bot]
 
-0.22.0 (2023-04-18)
--------------------
-* Add type_hash in MessageDefinition struct (`#1296 <https://github.com/ros2/rosbag2/issues/1296>`_)
-* Store message definitions in SQLite3 storage plugin (`#1293 <https://github.com/ros2/rosbag2/issues/1293>`_)
-* Add message definition read API (`#1292 <https://github.com/ros2/rosbag2/issues/1292>`_)
-* rosbag2_storage: add type description hash to topic metadata (`#1272 <https://github.com/ros2/rosbag2/issues/1272>`_)
-* Contributors: Michael Orlov, james-rms
-
-0.21.0 (2023-04-12)
--------------------
-* rosbag2_cpp: move local message definition source out of MCAP plugin (`#1265 <https://github.com/ros2/rosbag2/issues/1265>`_)
-* Update rosbag2 to C++17. (`#1238 <https://github.com/ros2/rosbag2/issues/1238>`_)
-* Use target_link_libraries instead of ament_target_dependencies (`#1202 <https://github.com/ros2/rosbag2/issues/1202>`_)
-* Contributors: Chris Lalancette, Daisuke Nishimatsu, Michael Orlov, james-rms
-
-0.20.0 (2023-02-14)
+0.15.8 (2023-09-19)
 -------------------
 
-0.19.0 (2023-01-13)
+0.15.7 (2023-07-18)
 -------------------
-* Expose more Writer methods in python interface (`#1220 <https://github.com/ros2/rosbag2/issues/1220>`_)
-* rosbag2_storage: set MCAP as default plugin (`#1160 <https://github.com/ros2/rosbag2/issues/1160>`_)
-* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_)
-* rosbag2_py: parametrize tests across storage plugins (`#1203 <https://github.com/ros2/rosbag2/issues/1203>`_)
-* Added option to change node name for the recorder from the Python API (`#1180 <https://github.com/ros2/rosbag2/issues/1180>`_)
-* Replace language for "db3"/"db"/"database" (`#1194 <https://github.com/ros2/rosbag2/issues/1194>`_)
-* Remove explicit sqlite3 from code (`#1166 <https://github.com/ros2/rosbag2/issues/1166>`_)
-* Move python get_default_storage_id to storage module instead of writer (`#1165 <https://github.com/ros2/rosbag2/issues/1165>`_)
-* Contributors: Emerson Knapp, Michael Orlov, james-rms, ricardo-manriquez
+* [humble] Gracefully handle SIGINT and SIGTERM in rosbag2 recorder (backport `#1301 <https://github.com/ros2/rosbag2/issues/1301>`_) (`#1395 <https://github.com/ros2/rosbag2/issues/1395>`_)
+* Contributors: Michael Orlov, mergify[bot]
 
-0.18.0 (2022-11-15)
+0.15.6 (2023-06-05)
 -------------------
-* rosbag2_storage: expose default storage ID as method (`#1146 <https://github.com/ros2/rosbag2/issues/1146>`_)
-* rosbag2_py: set defaults for config when bag rewriting (`#1121 <https://github.com/ros2/rosbag2/issues/1121>`_)
-* Reverse read order API and sqlite storage implementation (`#1083 <https://github.com/ros2/rosbag2/issues/1083>`_)
-* expose py Reader metadata, improve `rosbag2_py.BagMetadata` usability (`#1082 <https://github.com/ros2/rosbag2/issues/1082>`_)
-* Added support for excluding topics via regular expressions (`#1046 <https://github.com/ros2/rosbag2/issues/1046>`_)
-* Contributors: Emerson Knapp, Esteve Fernandez, james-rms
 
-0.17.0 (2022-07-30)
+0.15.5 (2023-04-25)
 -------------------
-* Use a single variable for evaluating the filter regex (`#1053 <https://github.com/ros2/rosbag2/issues/1053>`_)
-* Add additional mode of publishing sim time updates triggered by replayed messages (`#1050 <https://github.com/ros2/rosbag2/issues/1050>`_)
-* Renamed --topics-regex to --regex and -e in Player class to be consistent with Recorder (`#1045 <https://github.com/ros2/rosbag2/issues/1045>`_)
-* Add the ability to record any key/value pair in 'custom' field in metadata.yaml (`#1038 <https://github.com/ros2/rosbag2/issues/1038>`_)
-* Added support for filtering topics via regular expressions on Playback (`#1034 <https://github.com/ros2/rosbag2/issues/1034>`_)
-* Adds play until timestamp functionality (`#1005 <https://github.com/ros2/rosbag2/issues/1005>`_)
-* Add CLI verb for burst mode of playback (`#980 <https://github.com/ros2/rosbag2/issues/980>`_)
-* Add play-for specified number of seconds functionality (`#960 <https://github.com/ros2/rosbag2/issues/960>`_)
-* Contributors: Agustin Alba Chicar, Esteve Fernandez, Geoffrey Biggs, Hunter L. Allen, kylemarcey, Michael Orlov, Tony Peng
+* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_) (`#1224 <https://github.com/ros2/rosbag2/issues/1224>`_)
+* Contributors: mergify[bot]
 
-0.16.0 (2022-05-11)
+0.15.4 (2023-01-10)
 -------------------
-* Make unpublished topics unrecorded by default (`#968 <https://github.com/ros2/rosbag2/issues/968>`_)
+
+0.15.3 (2022-11-07)
+-------------------
+* Revert "[humble] Backport. Added support for filtering topics via regular expressions (`#1034 <https://github.com/ros2/rosbag2/issues/1034>`_)- (`#1039 <https://github.com/ros2/rosbag2/issues/1039>`_)" (`#1069 <https://github.com/ros2/rosbag2/issues/1069>`_)
+* [humble] Backport. Added support for filtering topics via regular expressions (`#1034 <https://github.com/ros2/rosbag2/issues/1034>`_)- (`#1039 <https://github.com/ros2/rosbag2/issues/1039>`_)
+* Backport. Add use_sim_time option to record verb (`#1017 <https://github.com/ros2/rosbag2/issues/1017>`_)
+* Make unpublished topics unrecorded by default (`#968 <https://github.com/ros2/rosbag2/issues/968>`_) (`#1008 <https://github.com/ros2/rosbag2/issues/1008>`_)
+* Contributors: Esteve Fernandez, Keisuke Shima, Sean Kelly
+
+0.15.2 (2022-05-11)
+-------------------
 * Fix test rosbag2_py test compatibility with Python < 3.8 (`#987 <https://github.com/ros2/rosbag2/issues/987>`_)
-* Contributors: Michael Orlov, Scott K Logan, Sean Kelly
+* Contributors: Scott K Logan
 
 0.15.1 (2022-04-06)
 -------------------

@@ -74,8 +74,8 @@ TEST_F(RecordIntegrationTestFixture, published_messages_from_multiple_topics_are
 
   auto recorded_topics = mock_writer.get_topics();
   ASSERT_THAT(recorded_topics, SizeIs(2));
-  EXPECT_THAT(recorded_topics.at(string_topic).first.serialization_format, Eq("rmw_format"));
-  EXPECT_THAT(recorded_topics.at(array_topic).first.serialization_format, Eq("rmw_format"));
+  EXPECT_THAT(recorded_topics.at(string_topic).serialization_format, Eq("rmw_format"));
+  EXPECT_THAT(recorded_topics.at(array_topic).serialization_format, Eq("rmw_format"));
   ASSERT_THAT(recorded_messages, SizeIs(4));
   auto string_messages = filter_messages<test_msgs::msg::Strings>(
     recorded_messages, string_topic);
@@ -131,13 +131,21 @@ TEST_F(RecordIntegrationTestFixture, can_record_again_after_stop)
   EXPECT_THAT(recorded_messages, SizeIs(expected_messages));
 
   auto recorded_topics = mock_writer.get_topics();
-  ASSERT_THAT(recorded_topics, SizeIs(1)) << "size=" << recorded_topics.size();
-  EXPECT_THAT(recorded_topics.at(string_topic).first.serialization_format, Eq("rmw_format"));
-  ASSERT_THAT(recorded_messages, SizeIs(expected_messages));
-  auto string_messages = filter_messages<test_msgs::msg::Strings>(
-    recorded_messages, string_topic);
-  ASSERT_THAT(string_messages, SizeIs(4));
-  EXPECT_THAT(string_messages[0]->string_value, Eq(string_message->string_value));
+
+  EXPECT_THAT(recorded_topics, SizeIs(1)) << "size=" << recorded_topics.size();
+  if (recorded_topics.size() != 1) {
+    for (const auto & topic : recorded_topics) {
+      std::cerr << "recorded topic name : " << topic.first << std::endl;
+    }
+  }
+  EXPECT_THAT(recorded_topics.at(string_topic).serialization_format, Eq("rmw_format"));
+
+  auto string_messages =
+    filter_messages<test_msgs::msg::Strings>(recorded_messages, string_topic);
+  EXPECT_THAT(string_messages, SizeIs(4));
+  for (const auto & str_msg : string_messages) {
+    EXPECT_THAT(str_msg->string_value, Eq(string_message->string_value));
+  }
 }
 
 TEST_F(RecordIntegrationTestFixture, qos_is_stored_in_metadata)
@@ -175,7 +183,7 @@ TEST_F(RecordIntegrationTestFixture, qos_is_stored_in_metadata)
   EXPECT_THAT(recorded_messages, SizeIs(expected_messages));
 
   auto recorded_topics = mock_writer.get_topics();
-  std::string serialized_profiles = recorded_topics.at(topic).first.offered_qos_profiles;
+  std::string serialized_profiles = recorded_topics.at(topic).offered_qos_profiles;
   // Basic smoke test that the profile was serialized into the metadata as a string.
   EXPECT_THAT(serialized_profiles, ContainsRegex("reliability: 1\n"));
   EXPECT_THAT(serialized_profiles, ContainsRegex("durability: 2\n"));
@@ -198,8 +206,6 @@ TEST_F(RecordIntegrationTestFixture, qos_is_stored_in_metadata)
       "    sec: .+\n"
       "    nsec: .+\n"
   ));
-  EXPECT_EQ(recorded_topics.at(topic).second.topic_type, "test_msgs/msg/Strings");
-  EXPECT_EQ(recorded_topics.at(topic).second.encoding, "");
 }
 
 TEST_F(RecordIntegrationTestFixture, records_sensor_data)

@@ -125,12 +125,31 @@ It is recommended to use this feature with the splitting options.
 #### Recording with a storage configuration
 
 Storage configuration can be specified in a YAML file passed through the `--storage-config-file` option.
-This can be used to optimize performance for specific use cases.
+This can be used to optimize performance for specific use-cases.
 
-See storage plugin documentation for more detail:
-* [mcap](rosbag2_storage_mcap/README.md#writer-configuration)
-* [sqlite3](rosbag2_storage_sqlite3/README.md#storage-configuration-file)
+For the default storage plugin (sqlite3), the file has a following syntax:
+```
+read:
+  pragmas: <list of pragma settings for read-only>
+write:
+  pragmas: <list of pragma settings for read/write>
+```
 
+By default, SQLite settings are significantly optimized for performance.
+This might have consequences of bag data being corrupted after an application or system-level crash.
+This consideration only applies to current bagfile in case bag splitting is on (through `--max-bag-*` parameters).
+If increased crash-caused corruption resistance is necessary, use `resilient` option for `--storage-preset-profile` setting.
+
+Settings are fully exposed to the user and should be applied with understanding.
+Please refer to [documentation of pragmas](https://www.sqlite.org/pragma.html).
+
+An example configuration file could look like this:
+
+```
+write:
+  pragmas: ["journal_mode = MEMORY", "synchronous = OFF", "schema.cache_size = 1000", "schema.page_size = 4096"]
+
+```
 
 ### Replaying data
 
@@ -141,6 +160,31 @@ $ ros2 bag play <bag_file>
 ```
 
 The bag file is by default set to the folder name where the data was previously recorded in.
+
+#### Controlling playback via services
+
+The Rosbag2 player provides the following services for remote control, which can be called via `ros2 service` commandline or from your nodes,
+
+* `~/burst [rosbag2_interfaces/srv/Burst]`
+  * Can only be used while player is paused, publishes `num_messages` in order as fast as possible, moving forward the play head.
+* `~/get_rate [rosbag2_interfaces/srv/GetRate]`
+  * Return the current playback rate.
+* `~/is_paused [rosbag2_interfaces/srv/IsPaused]`
+  * Return whether playback is paused.
+* `~/pause [rosbag2_interfaces/srv/Pause]`
+  * Pause playback. Has no effect if already paused.
+* `~/play [rosbag2_interfaces/srv/Play]`
+  * Play from a starting offset timestamp, either until the end, an ending timestamp or for a set duration. Only works when stopped (not paused).
+* `~/play_next [rosbag2_interfaces/srv/PlayNext]`
+  * Play a single next message from the bag. Only works while paused.
+* `~/resume [rosbag2_interfaces/srv/Resume]`
+  * Resume playback if paused.
+* `~/seek [rosbag2_interfaces/srv/Seek]`
+  * Change the play head to the specified timestamp. Can be forward or backward in time, the next played message is the next immediately after the seeked timestamp.
+* `~/set_rate [rosbag2_interfaces/srv/SetRate]`
+  * Sets the rate of playback, for example 2.0 will play messages twice as fast.
+* `~/toggle_paused [rosbag2_interfaces/srv/TogglePaused]`
+  * Pause if playing, resume if paused.
 
 ### Analyzing data
 
@@ -195,9 +239,9 @@ The only required value in the output bags is `uri` and `storage_id`. All other 
 This example notes all fields that can have an effect, with a comment on the required ones.
 
 ```
-output_bags:
+output_bags
 - uri: /output/bag1  # required
-  storage_id: ""  # will use the default storage plugin, if unspecified
+  storage_id: sqlite3  # required
   max_bagfile_size: 0
   max_bagfile_duration: 0
   storage_preset_profile: ""
@@ -223,6 +267,7 @@ $ ros2 bag convert -i bag1 -i bag2 -o out.yaml
 # out.yaml
 output_bags:
 - uri: merged_bag
+  storage_id: sqlite3
   all: true
 ```
 
@@ -234,8 +279,10 @@ $ ros2 bag convert -i bag1 -o out.yaml
 # out.yaml
 output_bags:
 - uri: split1
+  storage_id: sqlite3
   topics: [/topic1, /topic2]
 - uri: split2
+  storage_id: sqlite3
   topics: [/topic3]
 ```
 
@@ -247,6 +294,7 @@ $ ros2 bag convert -i bag1 -o out.yaml
 # out.yaml
 output_bags:
 - uri: compressed
+  storage_id: sqlite3
   all: true
   compression_mode: file
   compression_format: zstd
@@ -326,23 +374,20 @@ $ ros2 launch record_all.launch.xml
 
 ## Storage format plugin architecture
 
-Looking at the output of the `ros2 bag info` command, we can see a field `Storage id:`.
-Rosbag2 was designed to support multiple storage formats to adapt to individual use cases.
-This repository provides two storage plugins, `mcap` and `sqlite3`.
-The default is `mcap`, which is provided to code by [`rosbag2_storage::get_default_storage_id()`](rosbag2_storage/include/rosbag2_storage/default_storage_id.hpp) and defined in [`default_storage_id.cpp`](rosbag2_storage/src/rosbag2_storage/default_storage_id.cpp#L21)
+Looking at the output of the `ros2 bag info` command, we can see a field called `storage id:`.
+rosbag2 specifically was designed to support multiple storage formats.
+This allows a flexible adaptation of various storage formats depending on individual use cases.
+As of now, this repository comes with two storage plugins.
+The first plugin, sqlite3 is chosen by default.
+If not specified otherwise, rosbag2 will store and replay all recorded data in an SQLite3 database.
 
-If not specified otherwise, rosbag2 will write data using the default plugin.
-
-In order to use a specified (non-default) storage format plugin, rosbag2 has a command line argument `--storage`:
+In order to use a specified (non-default) storage format plugin, rosbag2 has a command line argument for it:
 
 ```
-$ ros2 bag record --storage <storage_id>
+$ ros2 bag <record> | <play> | <info> -s <sqlite3> | <rosbag2_v2> | <custom_plugin>
 ```
 
-Bag reading commands can detect the storage plugin automatically, but if for any reason you want to force a specific plugin to read a bag, you can use the `--storage` option on any `ros2 bag` verb.
-
-To write your own Rosbag2 storage implementation, refer to [this document describing that process](docs/storage_plugin_development.md)
-
+Have a look at each of the individual plugins for further information.
 
 ## Serialization format plugin architecture
 
@@ -361,3 +406,4 @@ By default, rosbag2 can convert from and to CDR as it's the default serializatio
 
 [qos-override-tutorial]: https://docs.ros.org/en/rolling/Guides/Overriding-QoS-Policies-For-Recording-And-Playback.html
 [about-qos-settings]: https://docs.ros.org/en/rolling/Concepts/About-Quality-of-Service-Settings.html
+

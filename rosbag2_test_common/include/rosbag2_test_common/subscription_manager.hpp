@@ -21,18 +21,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "rclcpp/clock.hpp"
-#include "rclcpp/executors/single_threaded_executor.hpp"
-#include "rclcpp/intra_process_setting.hpp"
-#include "rclcpp/node.hpp"
-#include "rclcpp/node_options.hpp"
-#include "rclcpp/publisher_base.hpp"
-#include "rclcpp/qos.hpp"
+#include "rclcpp/rclcpp.hpp"  // rclcpp must be included before the Windows specific includes.
 #include "rclcpp/serialization.hpp"
-#include "rclcpp/serialized_message.hpp"
-#include "rclcpp/subscription_base.hpp"
-#include "rclcpp/subscription_options.hpp"
-#include "rclcpp/utilities.hpp"
 
 namespace rosbag2_test_common
 {
@@ -59,14 +49,14 @@ public:
     auto options = rclcpp::SubscriptionOptions();
     options.use_intra_process_comm = rclcpp::IntraProcessSetting::Disable;
 
-    subscriptions_[topic_name] =
+    subscriptions_.push_back(
       subscriber_node_->create_subscription<MessageT>(
-      topic_name,
-      qos,
-      [this, topic_name](std::shared_ptr<rclcpp::SerializedMessage> msg) {
-        subscribed_messages_[topic_name].push_back(msg);
-      },
-      options);
+        topic_name,
+        qos,
+        [this, topic_name](std::shared_ptr<rclcpp::SerializedMessage> msg) {
+          subscribed_messages_[topic_name].push_back(msg);
+        },
+        options));
   }
 
   template<typename MessageT>
@@ -113,6 +103,7 @@ public:
     bool matched = false;
     while (!matched && ((clock::now() - start) < timeout)) {
       exec.spin_node_some(subscriber_node_);
+
       matched = true;
       for (const auto publisher_ptr : publishers) {
         if (publisher_ptr->get_subscription_count() +
@@ -122,63 +113,17 @@ public:
           break;
         }
       }
-      // Sleep for a few milliseconds to avoid busy loop
-      std::this_thread::sleep_for(sleep_per_loop_);
     }
     return matched;
   }
 
-  /// @brief Wait until publishers will be connected to the subscriptions or timeout occur.
-  /// @param topic_names List of topic names
-  /// @param timeout Maximum time duration during which discovery should happen.
-  /// @param n_publishers_to_match Number of publishers each subscription should have for match.
-  /// @return true if subscriptions have specified number of publishers, otherwise false.
-  bool spin_and_wait_for_matched(
-    const std::vector<std::string> & topic_names,
-    std::chrono::duration<double> timeout = std::chrono::seconds(10),
-    size_t n_publishers_to_match = 1)
-  {
-    // Sanity check that we have valid input
-    if (topic_names.empty()) {
-      throw std::invalid_argument("List of topic names is empty");
-    }
-    for (const auto & topic_name : topic_names) {
-      if (subscriptions_.count(topic_name) == 0) {
-        throw std::invalid_argument(
-                "Publisher's topic name = `" + topic_name + "` not found in expected topics list");
-      }
-    }
-
-    using clock = std::chrono::steady_clock;
-    auto start = clock::now();
-
-    rclcpp::executors::SingleThreadedExecutor exec;
-    bool matched = false;
-    while (!matched && ((clock::now() - start) < timeout)) {
-      exec.spin_node_some(subscriber_node_);
-      matched = true;
-      for (const auto & topic_name : topic_names) {
-        if (subscriptions_.find(topic_name) == subscriptions_.end() ||
-          subscriptions_[topic_name]->get_publisher_count() < n_publishers_to_match)
-        {
-          matched = false;
-          break;
-        }
-      }
-      // Sleep for a few milliseconds to avoid busy loop
-      std::this_thread::sleep_for(sleep_per_loop_);
-    }
-    return matched;
-  }
-
-  std::future<void> spin_subscriptions(
-    std::chrono::duration<double> timeout = std::chrono::seconds(10))
+  std::future<void> spin_subscriptions()
   {
     return async(
-      std::launch::async, [this, timeout]() {
+      std::launch::async, [this]() {
         rclcpp::executors::SingleThreadedExecutor exec;
         auto start = std::chrono::high_resolution_clock::now();
-        while (rclcpp::ok() && continue_spinning(expected_topics_with_size_, start, timeout)) {
+        while (rclcpp::ok() && continue_spinning(expected_topics_with_size_, start)) {
           exec.spin_node_some(subscriber_node_);
         }
       });
@@ -196,33 +141,26 @@ public:
 private:
   bool continue_spinning(
     const std::unordered_map<std::string, size_t> & expected_topics_with_sizes,
-    std::chrono::time_point<std::chrono::high_resolution_clock> start_time,
-    std::chrono::duration<double> timeout = std::chrono::seconds(10))
+    std::chrono::time_point<std::chrono::high_resolution_clock> start_time)
   {
     auto current = std::chrono::high_resolution_clock::now();
-    if (current - start_time > timeout) {
-      RCLCPP_WARN(
-        subscriber_node_->get_logger(),
-        "SubscriptionManager::continue_spinning(..) finished by timeout");
+    if (current - start_time > std::chrono::seconds(10)) {
       return false;
     }
 
     for (const auto & topic_expected : expected_topics_with_sizes) {
       if (subscribed_messages_[topic_expected.first].size() < topic_expected.second) {
-        // Sleep for a few milliseconds to avoid busy loop
-        std::this_thread::sleep_for(sleep_per_loop_);
         return true;
       }
     }
     return false;
   }
 
-  std::unordered_map<std::string, rclcpp::SubscriptionBase::SharedPtr> subscriptions_;
+  std::vector<rclcpp::SubscriptionBase::SharedPtr> subscriptions_;
   std::unordered_map<std::string,
     std::vector<std::shared_ptr<rclcpp::SerializedMessage>>> subscribed_messages_;
   std::unordered_map<std::string, size_t> expected_topics_with_size_;
   rclcpp::Node::SharedPtr subscriber_node_;
-  const std::chrono::milliseconds sleep_per_loop_ = std::chrono::milliseconds(2);
 };
 
 }  // namespace rosbag2_test_common

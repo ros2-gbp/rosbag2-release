@@ -54,7 +54,7 @@ public:
     rcpputils::fs::remove_all(tmp_dir_);
     storage_options_.uri = tmp_dir_.string();
     topic_with_type_ = rosbag2_storage::TopicMetadata{
-      "topic", "test_msgs/BasicTypes", storage_serialization_format_, "", ""};
+      "topic", "test_msgs/BasicTypes", storage_serialization_format_, ""};
     auto topics_and_types = std::vector<rosbag2_storage::TopicMetadata>{topic_with_type_};
     auto message = std::make_shared<rosbag2_storage::SerializedBagMessage>();
     message->topic_name = topic_with_type_.name;
@@ -68,7 +68,6 @@ public:
 
     ON_CALL(*storage_, get_all_topics_and_types()).WillByDefault(Return(topics_and_types));
     ON_CALL(*storage_, read_next()).WillByDefault(Return(message));
-    ON_CALL(*storage_, set_read_order).WillByDefault(Return(true));
     ON_CALL(*storage_factory_, open_read_only(_)).WillByDefault(Return(storage_));
 
     initialize_dummy_storage_files();

@@ -17,10 +17,7 @@
 
 #include "rosbag2_cpp/converter_options.hpp"
 #include "rosbag2_storage/bag_metadata.hpp"
-#include "rosbag2_storage/default_storage_id.hpp"
-#include "rosbag2_storage/metadata_io.hpp"
 #include "rosbag2_storage/storage_filter.hpp"
-#include "rosbag2_storage/storage_interfaces/base_read_interface.hpp"
 #include "rosbag2_storage/storage_options.hpp"
 #include "rosbag2_storage/topic_metadata.hpp"
 
@@ -79,12 +76,10 @@ PYBIND11_MODULE(_storage, m) {
     "output_serialization_format",
     &rosbag2_cpp::ConverterOptions::output_serialization_format);
 
-  using KEY_VALUE_MAP = std::unordered_map<std::string, std::string>;
   pybind11::class_<rosbag2_storage::StorageOptions>(m, "StorageOptions")
   .def(
     pybind11::init<
-      std::string, std::string, uint64_t, uint64_t, uint64_t, std::string, std::string, bool,
-      KEY_VALUE_MAP>(),
+      std::string, std::string, uint64_t, uint64_t, uint64_t, std::string, std::string, bool>(),
     pybind11::arg("uri"),
     pybind11::arg("storage_id") = "",
     pybind11::arg("max_bagfile_size") = 0,
@@ -92,8 +87,7 @@ PYBIND11_MODULE(_storage, m) {
     pybind11::arg("max_cache_size") = 0,
     pybind11::arg("storage_preset_profile") = "",
     pybind11::arg("storage_config_uri") = "",
-    pybind11::arg("snapshot_mode") = false,
-    pybind11::arg("custom_data") = KEY_VALUE_MAP{})
+    pybind11::arg("snapshot_mode") = false)
   .def_readwrite("uri", &rosbag2_storage::StorageOptions::uri)
   .def_readwrite("storage_id", &rosbag2_storage::StorageOptions::storage_id)
   .def_readwrite(
@@ -113,45 +107,21 @@ PYBIND11_MODULE(_storage, m) {
     &rosbag2_storage::StorageOptions::storage_config_uri)
   .def_readwrite(
     "snapshot_mode",
-    &rosbag2_storage::StorageOptions::snapshot_mode)
-  .def_readwrite(
-    "custom_data",
-    &rosbag2_storage::StorageOptions::custom_data);
+    &rosbag2_storage::StorageOptions::snapshot_mode);
 
   pybind11::class_<rosbag2_storage::StorageFilter>(m, "StorageFilter")
   .def(
-    pybind11::init<std::vector<std::string>, std::string, std::string>(),
-    pybind11::arg("topics") = std::vector<std::string>(),
-    pybind11::arg("topics_regex") = "",
-    pybind11::arg("topics_regex_to_exclude") = "")
-  .def_readwrite("topics", &rosbag2_storage::StorageFilter::topics)
-  .def_readwrite("topics_regex", &rosbag2_storage::StorageFilter::topics_regex)
-  .def_readwrite(
-    "topics_regex_to_exclude",
-    &rosbag2_storage::StorageFilter::topics_regex_to_exclude);
-
-  pybind11::class_<rosbag2_storage::MessageDefinition>(m, "MessageDefinition")
-  .def(
-    pybind11::init<std::string, std::string, std::string, std::string>(),
-    pybind11::arg("topic_type"),
-    pybind11::arg("encoding"),
-    pybind11::arg("encoded_message_definition"),
-    pybind11::arg("type_hash"))
-  .def_readwrite("topic_type", &rosbag2_storage::MessageDefinition::topic_type)
-  .def_readwrite("encoding", &rosbag2_storage::MessageDefinition::encoding)
-  .def_readwrite(
-    "encoded_message_definition",
-    &rosbag2_storage::MessageDefinition::encoded_message_definition)
-  .def_readwrite("type_hash", &rosbag2_storage::MessageDefinition::type_hash);
+    pybind11::init<std::vector<std::string>>(),
+    pybind11::arg("topics") = std::vector<std::string>())
+  .def_readwrite("topics", &rosbag2_storage::StorageFilter::topics);
 
   pybind11::class_<rosbag2_storage::TopicMetadata>(m, "TopicMetadata")
   .def(
-    pybind11::init<std::string, std::string, std::string, std::string, std::string>(),
+    pybind11::init<std::string, std::string, std::string, std::string>(),
     pybind11::arg("name"),
     pybind11::arg("type"),
     pybind11::arg("serialization_format"),
-    pybind11::arg("offered_qos_profiles") = "",
-    pybind11::arg("type_description_hash") = "")
+    pybind11::arg("offered_qos_profiles") = "")
   .def_readwrite("name", &rosbag2_storage::TopicMetadata::name)
   .def_readwrite("type", &rosbag2_storage::TopicMetadata::type)
   .def_readwrite(
@@ -160,9 +130,6 @@ PYBIND11_MODULE(_storage, m) {
   .def_readwrite(
     "offered_qos_profiles",
     &rosbag2_storage::TopicMetadata::offered_qos_profiles)
-  .def_readwrite(
-    "type_description_hash",
-    &rosbag2_storage::TopicMetadata::type_description_hash)
   .def("equals", &rosbag2_storage::TopicMetadata::operator==);
 
   pybind11::class_<rosbag2_storage::TopicInformation>(m, "TopicInformation")
@@ -228,8 +195,7 @@ PYBIND11_MODULE(_storage, m) {
         uint64_t message_count,
         std::vector<rosbag2_storage::TopicInformation> topics_with_message_count,
         std::string compression_format,
-        std::string compression_mode,
-        std::unordered_map<std::string, std::string> custom_data)
+        std::string compression_mode)
       {
         return rosbag2_storage::BagMetadata{
           version,
@@ -242,11 +208,10 @@ PYBIND11_MODULE(_storage, m) {
           message_count,
           topics_with_message_count,
           compression_format,
-          compression_mode,
-          custom_data
+          compression_mode
         };
       }),
-    pybind11::arg("version") = 7,
+    pybind11::arg("version") = 6,
     pybind11::arg("bag_size") = 0,
     pybind11::arg("storage_identifier") = "",
     pybind11::arg("relative_file_paths") = std::vector<std::string>(),
@@ -257,8 +222,7 @@ PYBIND11_MODULE(_storage, m) {
     pybind11::arg("message_count") = 0,
     pybind11::arg("topics_with_message_count") = std::vector<rosbag2_storage::TopicInformation>(),
     pybind11::arg("compression_format") = "",
-    pybind11::arg("compression_mode") = "",
-    pybind11::arg("custom_data") = std::unordered_map<std::string, std::string>())
+    pybind11::arg("compression_mode") = "")
   .def_readwrite("version", &rosbag2_storage::BagMetadata::version)
   .def_readwrite("bag_size", &rosbag2_storage::BagMetadata::bag_size)
   .def_readwrite("storage_identifier", &rosbag2_storage::BagMetadata::storage_identifier)
@@ -286,36 +250,8 @@ PYBIND11_MODULE(_storage, m) {
     &rosbag2_storage::BagMetadata::topics_with_message_count)
   .def_readwrite("compression_format", &rosbag2_storage::BagMetadata::compression_format)
   .def_readwrite("compression_mode", &rosbag2_storage::BagMetadata::compression_mode)
-  .def_readwrite("custom_data", &rosbag2_storage::BagMetadata::custom_data)
   .def(
     "__repr__", [](const rosbag2_storage::BagMetadata & metadata) {
       return format_bag_meta_data(metadata);
     });
-
-  pybind11::enum_<rosbag2_storage::ReadOrder::SortBy>(m, "ReadOrderSortBy")
-  .value("ReceivedTimestamp", rosbag2_storage::ReadOrder::ReceivedTimestamp)
-  .value("PublishedTimestamp", rosbag2_storage::ReadOrder::PublishedTimestamp)
-  .value("File", rosbag2_storage::ReadOrder::File);
-
-  pybind11::class_<rosbag2_storage::ReadOrder>(m, "ReadOrder")
-  .def(
-    pybind11::init<rosbag2_storage::ReadOrder::SortBy, bool>(),
-    pybind11::arg("sort_by") = rosbag2_storage::ReadOrder{}.sort_by,
-    pybind11::arg("reverse") = rosbag2_storage::ReadOrder{}.reverse)
-  .def_readwrite("sort_by", &rosbag2_storage::ReadOrder::sort_by)
-  .def_readwrite("reverse", &rosbag2_storage::ReadOrder::reverse);
-
-  m.def(
-    "get_default_storage_id",
-    &rosbag2_storage::get_default_storage_id,
-    "Returns the default storage ID used when unspecified in StorageOptions");
-
-  pybind11::class_<rosbag2_storage::MetadataIo>(m, "MetadataIo")
-  .def(pybind11::init<>())
-  .def("write_metadata", &rosbag2_storage::MetadataIo::write_metadata)
-  .def("read_metadata", &rosbag2_storage::MetadataIo::read_metadata)
-  .def("metadata_file_exists", &rosbag2_storage::MetadataIo::metadata_file_exists)
-  .def("serialize_metadata", &rosbag2_storage::MetadataIo::serialize_metadata)
-  .def("deserialize_metadata", &rosbag2_storage::MetadataIo::deserialize_metadata)
-  ;
 }

@@ -2,53 +2,39 @@
 Changelog for package rosbag2_compression_zstd
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.22.7 (2024-07-11)
+0.15.12 (2024-07-28)
+--------------------
+
+0.15.11 (2024-05-20)
+--------------------
+
+0.15.10 (2024-05-17)
+--------------------
+
+0.15.9 (2024-01-24)
 -------------------
 
-0.22.6 (2024-02-07)
+0.15.8 (2023-09-19)
 -------------------
 
-0.22.5 (2023-11-18)
+0.15.7 (2023-07-18)
 -------------------
 
-0.22.4 (2023-10-24)
+0.15.6 (2023-06-05)
 -------------------
 
-0.22.3 (2023-09-08)
+0.15.5 (2023-04-25)
+-------------------
+* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_) (`#1224 <https://github.com/ros2/rosbag2/issues/1224>`_)
+* Contributors: mergify[bot]
+
+0.15.4 (2023-01-10)
 -------------------
 
-0.22.2 (2023-07-14)
+0.15.3 (2022-11-07)
 -------------------
 
-0.22.1 (2023-05-18)
--------------------
-
-0.22.0 (2023-04-18)
--------------------
-
-0.21.0 (2023-04-12)
--------------------
-* Update rosbag2 to C++17. (`#1238 <https://github.com/ros2/rosbag2/issues/1238>`_)
-* Use target_link_libraries instead of ament_target_dependencies (`#1202 <https://github.com/ros2/rosbag2/issues/1202>`_)
-* Contributors: Chris Lalancette, Daisuke Nishimatsu, Michael Orlov
-
-0.20.0 (2023-02-14)
--------------------
-
-0.19.0 (2023-01-13)
--------------------
-* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_)
-* Contributors: Michael Orlov
-
-0.18.0 (2022-11-15)
--------------------
-
-0.17.0 (2022-07-30)
--------------------
-* Speed optimization: Preparing copyless publish/subscribing by using const message for writing (`#1010 <https://github.com/ros2/rosbag2/issues/1010>`_)
-* Contributors: DensoADAS, Joshua Hampp
-
-0.16.0 (2022-05-11)
+0.15.2 (2022-05-11)
 -------------------
 
 0.15.1 (2022-04-06)
