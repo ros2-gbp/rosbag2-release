@@ -19,25 +19,9 @@
 #include <vector>
 
 #include "rcpputils/thread_safety_annotations.hpp"
+#include "rcpputils/unique_lock.hpp"
 #include "rosbag2_cpp/clocks/time_controller_clock.hpp"
 #include "rosbag2_cpp/types.hpp"
-
-namespace
-{
-/**
- * Trivial std::unique_lock wrapper providing constructor that allows Clang Thread Safety Analysis.
- * The std::unique_lock does not have these annotations.
- */
-class RCPPUTILS_TSA_SCOPED_CAPABILITY TSAUniqueLock : public std::unique_lock<std::mutex>
-{
-public:
-  explicit TSAUniqueLock(std::mutex & mu) RCPPUTILS_TSA_ACQUIRE(mu)
-  : std::unique_lock<std::mutex>(mu)
-  {}
-
-  ~TSAUniqueLock() RCPPUTILS_TSA_RELEASE() {}
-};
-}  // namespace
 
 namespace rosbag2_cpp
 {
@@ -166,10 +150,20 @@ rcutils_time_point_value_t TimeControllerClock::now() const
   return impl_->ros_now();
 }
 
+/// @brief Convert an arbitrary ROSTime to a SteadyTime, based on the current reference snapshot.
+/// @param ros_time - time point in ROSTime
+/// @return time point in steady clock i.e. std::chrono::steady_clock
+std::chrono::steady_clock::time_point
+TimeControllerClock::ros_to_steady(rcutils_time_point_value_t ros_time) const
+{
+  std::lock_guard<std::mutex> lock(impl_->state_mutex);
+  return impl_->ros_to_steady(ros_time);
+}
+
 bool TimeControllerClock::sleep_until(rcutils_time_point_value_t until)
 {
   {
-    TSAUniqueLock lock(impl_->state_mutex);
+    rcpputils::unique_lock<std::mutex> lock(impl_->state_mutex);
     if (impl_->paused) {
       impl_->cv.wait_for(lock, impl_->sleep_time_while_paused);
     } else {
@@ -260,13 +254,6 @@ rclcpp::JumpHandler::SharedPtr TimeControllerClock::create_jump_callback(
   const rcl_jump_threshold_t & /* threshold */)
 {
   return nullptr;
-}
-
-std::chrono::steady_clock::time_point
-TimeControllerClock::ros_to_steady(rcutils_time_point_value_t ros_time) const
-{
-  std::lock_guard<std::mutex> lock(impl_->state_mutex);
-  return impl_->ros_to_steady(ros_time);
 }
 
 }  // namespace rosbag2_cpp

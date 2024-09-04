@@ -27,7 +27,7 @@
 #include "rosbag2_transport/reader_writer_factory.hpp"
 
 #include "logging.hpp"
-#include "topic_filter.hpp"
+#include "rosbag2_transport/topic_filter.hpp"
 
 namespace
 {
@@ -53,7 +53,7 @@ std::shared_ptr<rosbag2_storage::SerializedBagMessage> get_next(
     if (msg == nullptr) {
       continue;
     }
-    if (earliest_msg == nullptr || msg->time_stamp < earliest_msg->time_stamp) {
+    if (earliest_msg == nullptr || msg->recv_timestamp < earliest_msg->recv_timestamp) {
       earliest_msg = msg;
       earliest_msg_index = i;
     }
@@ -81,8 +81,10 @@ setup_topic_filtering(
 {
   std::unordered_map<std::string, std::vector<rosbag2_cpp::Writer *>> filtered_outputs;
   std::map<std::string, std::vector<std::string>> input_topics;
-  std::unordered_map<std::string, YAML::Node> input_topics_qos_profiles;
+  std::unordered_map<std::string, std::vector<rclcpp::QoS>> input_topics_qos_profiles;
   std::unordered_map<std::string, std::string> input_topics_serialization_format;
+  // message_definitions_map mapping topic_type to message_definition
+  std::unordered_map<std::string, rosbag2_storage::MessageDefinition> message_definitions_map;
 
   for (const auto & input_bag : input_bags) {
     auto bag_topics_and_types = input_bag->get_all_topics_and_types();
@@ -94,11 +96,17 @@ setup_topic_filtering(
 
       // Gather all offered qos profiles from all inputs
       input_topics_qos_profiles.try_emplace(topic_name);
-      YAML::Node & all_offered = input_topics_qos_profiles[topic_name];
-      YAML::Node offered_qos_profiles = YAML::Load(topic_metadata.offered_qos_profiles);
-      for (auto qos : offered_qos_profiles) {
-        all_offered.push_back(qos);
-      }
+      input_topics_qos_profiles[topic_name].insert(
+        input_topics_qos_profiles[topic_name].end(),
+        topic_metadata.offered_qos_profiles.begin(),
+        topic_metadata.offered_qos_profiles.end()
+      );
+    }
+    // Fill message_definitions_map
+    std::vector<rosbag2_storage::MessageDefinition> msg_definitions;
+    input_bag->get_all_message_definitions(msg_definitions);
+    for (const auto & msg_definition : msg_definitions) {
+      message_definitions_map[msg_definition.topic_type] = msg_definition;
     }
   }
 
@@ -119,11 +127,15 @@ setup_topic_filtering(
         topic_metadata.serialization_format = record_options.rmw_serialization_format;
       }
 
-      std::stringstream qos_profiles;
-      qos_profiles << input_topics_qos_profiles[topic_name];
-      topic_metadata.offered_qos_profiles = qos_profiles.str();
-      writer->create_topic(topic_metadata);
+      topic_metadata.offered_qos_profiles = input_topics_qos_profiles[topic_name];
 
+      auto message_definition_ptr = message_definitions_map.find(topic_type);
+      if (message_definition_ptr != message_definitions_map.end()) {
+        writer->create_topic(topic_metadata, message_definition_ptr->second);
+      } else {
+        // Give a chance to find message definition in local environment
+        writer->create_topic(topic_metadata);
+      }
       filtered_outputs.try_emplace(topic_name);
       filtered_outputs[topic_name].push_back(writer.get());
     }
