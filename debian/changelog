@@ -1,0 +1,66 @@
+ros-rolling-rosbag2-test-msgdefs (0.29.0-1bookworm) bookworm; urgency=high
+
+
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Mon, 02 Sep 2024 22:00:00 -0000
+
+ros-rolling-rosbag2-test-msgdefs (0.28.0-1bookworm) bookworm; urgency=high
+
+
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Sun, 16 Jun 2024 22:00:00 -0000
+
+ros-rolling-rosbag2-test-msgdefs (0.27.0-1bookworm) bookworm; urgency=high
+
+
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Mon, 29 Apr 2024 22:00:00 -0000
+
+ros-rolling-rosbag2-test-msgdefs (0.26.1-1bookworm) bookworm; urgency=high
+
+
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Tue, 16 Apr 2024 22:00:00 -0000
+
+ros-rolling-rosbag2-test-msgdefs (0.26.0-1bookworm) bookworm; urgency=high
+
+
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Mon, 15 Apr 2024 22:00:00 -0000
+
+ros-rolling-rosbag2-test-msgdefs (0.25.0-1bookworm) bookworm; urgency=high
+
+  * Implement service recording and display info about recorded services (#1480 <https://github.com/ros2/rosbag2/issues/1480>)
+  * Contributors: Barry Xu
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Tue, 26 Mar 2024 23:00:00 -0000
+
+ros-rolling-rosbag2-test-msgdefs (0.24.0-1bookworm) bookworm; urgency=high
+
+  * Don't crash when type definition cannot be found (#1350 <https://github.com/ros2/rosbag2/issues/1350>)
+    * Don't fail when type definition cannot be found
+  * Contributors: Emerson Knapp
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Mon, 10 Jul 2023 22:00:00 -0000
+
+ros-rolling-rosbag2-test-msgdefs (0.23.0-1bookworm) bookworm; urgency=high
+
+
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Thu, 27 Apr 2023 22:00:00 -0000
+
+ros-rolling-rosbag2-test-msgdefs (0.22.0-1bookworm) bookworm; urgency=high
+
+
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Mon, 17 Apr 2023 22:00:00 -0000
+
+ros-rolling-rosbag2-test-msgdefs (0.21.0-1bookworm) bookworm; urgency=high
+
+  * rosbag2_cpp: move local message definition source out of MCAP plugin (#1265 <https://github.com/ros2/rosbag2/issues/1265>)
+    The intention of this PR is to move the message-definition-finding capability outside of rosbag2_storage_mcap, and allow any rosbag2 storage plugin to store message definitions.
+  * Contributors: james-rms
+
+ -- Foxglove <ros-tooling@foxglove.dev>  Tue, 11 Apr 2023 22:00:00 -0000
+
+
