@@ -2,22 +2,29 @@
 Changelog for package rosbag2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.29.0 (2024-09-03)
+0.26.5 (2024-09-06)
 -------------------
-* Add computation of size contribution to info verb (`#1726 <https://github.com/ros2/rosbag2/issues/1726>`_)
-* [WIP] Remove rcpputils::fs dependencies in rosbag2 packages (`#1740 <https://github.com/ros2/rosbag2/issues/1740>`_)
-* Removed deprecated write method (`#1738 <https://github.com/ros2/rosbag2/issues/1738>`_)
-* Bugfix for bag_split event callbacks called to early with file compression (`#1643 <https://github.com/ros2/rosbag2/issues/1643>`_)
-* Add topics with zero message counts to the SQLiteStorage::get_metadata(). (`#1725 <https://github.com/ros2/rosbag2/issues/1725>`_)
-* Contributors: Alejandro Hernández Cordero, Michael Orlov, Nicola Loi, Tomoya Fujita
+* Bugfix for bag_split event callbacks called to early with file compression (`#1643 <https://github.com/ros2/rosbag2/issues/1643>`_) (`#1732 <https://github.com/ros2/rosbag2/issues/1732>`_)
+  (cherry picked from commit 1877b53847bda4d1f2668187b79fa27a796c3438)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+* Contributors: mergify[bot]
 
-0.28.0 (2024-06-17)
+0.26.4 (2024-06-27)
 -------------------
-* Propagate "custom_data" and "ros_distro" in to the metadata.yaml file during re-indexing (`#1700 <https://github.com/ros2/rosbag2/issues/1700>`_)
-* Bugfix for writer not being able to open again after closing (`#1599 <https://github.com/ros2/rosbag2/issues/1599>`_)
-* Contributors: Cole Tucker, yschulz
+* Add topics with zero message counts to the SQLiteStorage::get_metadata(). (`#1725 <https://github.com/ros2/rosbag2/issues/1725>`_) (`#1731 <https://github.com/ros2/rosbag2/issues/1731>`_)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+  Co-authored-by: Tomoya Fujita <Tomoya.Fujita@sony.com>
+* Propagate "custom_data" and "ros_distro" in to the metadata.yaml file during re-indexing (`#1700 <https://github.com/ros2/rosbag2/issues/1700>`_) (`#1710 <https://github.com/ros2/rosbag2/issues/1710>`_)
+  Co-authored-by: Cole Tucker <coalman321@users.noreply.github.com>
 
-0.27.0 (2024-04-30)
+0.26.3 (2024-05-15)
+-------------------
+* Bugfix for writer not being able to open again after closing (`#1599 <https://github.com/ros2/rosbag2/issues/1599>`_) (`#1639 <https://github.com/ros2/rosbag2/issues/1639>`_)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+  Co-authored-by: yschulz <yschulz854@gmail.com>
+* Contributors: mergify[bot]
+
+0.26.2 (2024-04-24)
 -------------------
 
 0.26.1 (2024-04-17)

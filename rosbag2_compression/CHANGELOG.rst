@@ -2,19 +2,31 @@
 Changelog for package rosbag2_compression
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.29.0 (2024-09-03)
+0.26.5 (2024-09-06)
 -------------------
-* Add cli option compression-threads-priority (`#1768 <https://github.com/ros2/rosbag2/issues/1768>`_)
-* Bugfix for bag_split event callbacks called to early with file compression (`#1643 <https://github.com/ros2/rosbag2/issues/1643>`_)
-* Contributors: Michael Orlov, Roman
+* Add cli option compression-threads-priority (`#1768 <https://github.com/ros2/rosbag2/issues/1768>`_) (`#1778 <https://github.com/ros2/rosbag2/issues/1778>`_)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+  (cherry picked from commit 25c3e1c2effdaea3b880c39ff7580b2f38a44b1c)
+  Co-authored-by: Roman <rsokolkov@gmail.com>
+* Bugfix for bag_split event callbacks called to early with file compression (`#1643 <https://github.com/ros2/rosbag2/issues/1643>`_) (`#1732 <https://github.com/ros2/rosbag2/issues/1732>`_)
+  (cherry picked from commit 1877b53847bda4d1f2668187b79fa27a796c3438)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+* Contributors: mergify[bot]
 
-0.28.0 (2024-06-17)
+0.26.4 (2024-06-27)
 -------------------
-* Fix for regression in `open_succeeds_twice` and `minimal_writer_example` tests (`#1667 <https://github.com/ros2/rosbag2/issues/1667>`_)
-* Bugfix for writer not being able to open again after closing (`#1599 <https://github.com/ros2/rosbag2/issues/1599>`_)
-* Contributors: Michael Orlov, yschulz
+* Fix for regression in `open_succeeds_twice` and `minimal_writer_example` tests (`#1667 <https://github.com/ros2/rosbag2/issues/1667>`_) (`#1675 <https://github.com/ros2/rosbag2/issues/1675>`_)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+* Contributors: mergify[bot]
 
-0.27.0 (2024-04-30)
+0.26.3 (2024-05-15)
+-------------------
+* Bugfix for writer not being able to open again after closing (`#1599 <https://github.com/ros2/rosbag2/issues/1599>`_) (`#1639 <https://github.com/ros2/rosbag2/issues/1639>`_)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+  Co-authored-by: yschulz <yschulz854@gmail.com>
+* Contributors: mergify[bot]
+
+0.26.2 (2024-04-24)
 -------------------
 
 0.26.1 (2024-04-17)

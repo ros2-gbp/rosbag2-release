@@ -2,23 +2,40 @@
 Changelog for package rosbag2_py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.29.0 (2024-09-03)
+0.26.5 (2024-09-06)
 -------------------
-* Added method to introspect QoS in Python (`#1648 <https://github.com/ros2/rosbag2/issues/1648>`_)
-* Update CI scripts to use Ubuntu Noble distros and bump action scripts to latest versions (`#1709 <https://github.com/ros2/rosbag2/issues/1709>`_)
-* Add cli option compression-threads-priority (`#1768 <https://github.com/ros2/rosbag2/issues/1768>`_)
-* Add computation of size contribution to info verb (`#1726 <https://github.com/ros2/rosbag2/issues/1726>`_)
-* Bugfix for wrong timestamps in ros2 bag info (`#1745 <https://github.com/ros2/rosbag2/issues/1745>`_)
-* Contributors: Alejandro Hernández Cordero, Michael Orlov, Nicola Loi, Roman
+* Added method to introspect QoS in Python (`#1648 <https://github.com/ros2/rosbag2/issues/1648>`_) (`#1790 <https://github.com/ros2/rosbag2/issues/1790>`_)
+  (cherry picked from commit f0f3cc5f57ba9142b763247a68acc571d2500bb5)
+  Co-authored-by: Alejandro Hernández Cordero <ahcorde@gmail.com>
+* Add cli option compression-threads-priority (`#1768 <https://github.com/ros2/rosbag2/issues/1768>`_) (`#1778 <https://github.com/ros2/rosbag2/issues/1778>`_)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+  (cherry picked from commit 25c3e1c2effdaea3b880c39ff7580b2f38a44b1c)
+  Co-authored-by: Roman <rsokolkov@gmail.com>
+* [jazzy] Update CI scripts to use Ubuntu Noble distros and bump action scripts to latest versions (backport `#1709 <https://github.com/ros2/rosbag2/issues/1709>`_) (`#1779 <https://github.com/ros2/rosbag2/issues/1779>`_)
+  Co-authored-by: Roman <rsokolkov@gmail.com>
+  (cherry picked from commit 27a6b600c2a813ec1f2154145fe77392c88b314b)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+* Bugfix for wrong timestamps in ros2 bag info (`#1745 <https://github.com/ros2/rosbag2/issues/1745>`_) (`#1752 <https://github.com/ros2/rosbag2/issues/1752>`_)
+  (cherry picked from commit da28c9da82824b8ce5f6fc18935d1a954e52b636)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+* Contributors: mergify[bot]
 
-0.28.0 (2024-06-17)
+0.26.4 (2024-06-27)
 -------------------
-* Add bindings for LocalMessageDefinitionSource (`#1697 <https://github.com/ros2/rosbag2/issues/1697>`_)
-* Add --log-level to ros2 bag play and record (`#1625 <https://github.com/ros2/rosbag2/issues/1625>`_)
-* Included to_rclcpp_qos_vector to Python wrappers (`#1642 <https://github.com/ros2/rosbag2/issues/1642>`_)
-* Contributors: Alejandro Hernández Cordero, Roman, methylDragon
+* Add bindings for LocalMessageDefinitionSource (`#1697 <https://github.com/ros2/rosbag2/issues/1697>`_) (`#1701 <https://github.com/ros2/rosbag2/issues/1701>`_)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+  Co-authored-by: methylDragon <methylDragon@gmail.com>
+* Add --log-level to ros2 bag play and record (`#1625 <https://github.com/ros2/rosbag2/issues/1625>`_) (`#1674 <https://github.com/ros2/rosbag2/issues/1674>`_)
+  Co-authored-by: Roman Sokolkov <rsokolkov@gmail.com>
+* Contributors: mergify[bot]
 
-0.27.0 (2024-04-30)
+0.26.3 (2024-05-15)
+-------------------
+* Included to_rclcpp_qos_vector to Python wrappers (`#1642 <https://github.com/ros2/rosbag2/issues/1642>`_) (`#1650 <https://github.com/ros2/rosbag2/issues/1650>`_)
+  Co-authored-by: Alejandro Hernández Cordero <ahcorde@gmail.com>
+* Contributors: mergify[bot]
+
+0.26.2 (2024-04-24)
 -------------------
 
 0.26.1 (2024-04-17)

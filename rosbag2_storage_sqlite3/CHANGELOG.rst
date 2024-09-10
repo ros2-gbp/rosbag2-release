@@ -2,17 +2,28 @@
 Changelog for package rosbag2_storage_default_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.29.0 (2024-09-03)
+0.26.5 (2024-09-06)
 -------------------
-* Fix incorrect zero size for sqlite storage (`#1759 <https://github.com/ros2/rosbag2/issues/1759>`_)
-* Fix for failing throws_on_invalid_pragma_in_config_file on Windows (`#1742 <https://github.com/ros2/rosbag2/issues/1742>`_)
-* Add topics with zero message counts to the SQLiteStorage::get_metadata(). (`#1725 <https://github.com/ros2/rosbag2/issues/1725>`_)
-* Contributors: Michael Orlov, Roman, Tomoya Fujita
+* Fix incorrect zero size for sqlite storage (`#1759 <https://github.com/ros2/rosbag2/issues/1759>`_) (`#1761 <https://github.com/ros2/rosbag2/issues/1761>`_)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+  (cherry picked from commit 86f681d9f525a4b7c3b4133d6b657e342283aad8)
+  Co-authored-by: Roman <rsokolkov@gmail.com>
+* Fix for failing throws_on_invalid_pragma_in_config_file on Windows (`#1742 <https://github.com/ros2/rosbag2/issues/1742>`_) (`#1746 <https://github.com/ros2/rosbag2/issues/1746>`_)
+  (cherry picked from commit 055935d33dd2fed2772657c9dc1f2173eaa7f752)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+* Contributors: mergify[bot]
 
-0.28.0 (2024-06-17)
+0.26.4 (2024-06-27)
+-------------------
+* Add topics with zero message counts to the SQLiteStorage::get_metadata(). (`#1725 <https://github.com/ros2/rosbag2/issues/1725>`_) (`#1731 <https://github.com/ros2/rosbag2/issues/1731>`_)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+  Co-authored-by: Tomoya Fujita <Tomoya.Fujita@sony.com>
+* Contributors: mergify[bot]
+
+0.26.3 (2024-05-15)
 -------------------
 
-0.27.0 (2024-04-30)
+0.26.2 (2024-04-24)
 -------------------
 
 0.26.1 (2024-04-17)
