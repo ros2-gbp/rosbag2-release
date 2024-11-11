@@ -117,7 +117,6 @@ public:
 
   /**
    * Write a message to a bagfile. The topic needs to have been created before writing is possible.
-   * Only writes message if within start_time_ns and end_time_ns (from storage_options).
    *
    * \param message to be written to the bagfile
    * \throws runtime_error if the Writer is not open.
@@ -153,11 +152,6 @@ protected:
   std::shared_ptr<rosbag2_cpp::cache::MessageCacheInterface> message_cache_;
   std::unique_ptr<rosbag2_cpp::cache::CacheConsumer> cache_consumer_;
 
-  std::string split_bagfile_local(bool execute_callbacks = true);
-
-  void execute_bag_split_callbacks(
-    const std::string & closed_file, const std::string & opened_file);
-
   void switch_to_next_storage();
 
   std::string format_storage_uri(
@@ -183,10 +177,6 @@ protected:
   bool should_split_bagfile(
     const std::chrono::time_point<std::chrono::high_resolution_clock> & current_time) const;
 
-  // Checks if the message to be written is within accepted time range
-  bool message_within_accepted_time_range(
-    const rcutils_time_point_value_t current_time) const;
-
   // Prepares the metadata by setting initial values.
   virtual void init_metadata();
 
@@ -205,7 +195,6 @@ private:
   void write_messages(
     const std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>> & messages);
   bool is_first_message_ {true};
-  std::atomic_bool is_open_{false};
 
   bag_events::EventCallbackManager callback_manager_;
 };

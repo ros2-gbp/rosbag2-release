@@ -3,7 +3,7 @@ on:
   pull_request:
   push:
     branches:
-      - jazzy
+      - iron
   schedule:
     # Run every hour. This helps detect flakiness,
     # and broken external dependencies.
@@ -13,14 +13,14 @@ jobs:
   build_and_test:
     runs-on: ubuntu-latest
     container:
-      image: rostooling/setup-ros-docker:ubuntu-noble-latest
+      image: rostooling/setup-ros-docker:ubuntu-jammy-latest
     steps:
     - name: Build and run tests
       id: action-ros-ci
       uses: ros-tooling/action-ros-ci@v0.3
       with:
-        target-ros2-distro: jazzy
-        vcs-repo-file-url: https://raw.githubusercontent.com/ros2/ros2/jazzy/ros2.repos
+        target-ros2-distro: iron
+        vcs-repo-file-url: https://raw.githubusercontent.com/ros2/ros2/iron/ros2.repos
         colcon-defaults: |
           {
             "build": {
@@ -85,17 +85,7 @@ jobs:
       run: |
         rosbag2_path=$(colcon list -p --packages-select rosbag2)/..
         rosbag2_packages=$(colcon list -n --base-paths ${rosbag2_path})
-        source /opt/ros/jazzy/setup.sh && colcon test --mixin linters-skip --packages-select ${rosbag2_packages} --packages-skip rosbag2_performance_benchmarking --event-handlers console_cohesion+ --return-code-on-test-failure --ctest-args "-L xfail" --pytest-args "-m xfail"
-      working-directory: ${{ steps.action-ros-ci.outputs.ros-workspace-directory-name }}
-      shell: bash
-    - name: Is regeneration of Python stubs required?
-      run: |
-        rosbag2_path=$(colcon list -p --packages-select rosbag2)/..
-        sudo apt update && sudo apt -y install mypy
-        source install/setup.sh
-        stubgen -p rosbag2_py -o ${rosbag2_path}/rosbag2_py
-        cd ${rosbag2_path}
-        git diff --exit-code
+        source /opt/ros/iron/setup.sh && colcon test --mixin linters-skip --packages-select ${rosbag2_packages} --packages-skip rosbag2_performance_benchmarking --event-handlers console_cohesion+ --return-code-on-test-failure --ctest-args "-L xfail" --pytest-args "-m xfail"
       working-directory: ${{ steps.action-ros-ci.outputs.ros-workspace-directory-name }}
       shell: bash
     - uses: actions/upload-artifact@v4

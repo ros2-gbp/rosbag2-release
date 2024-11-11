@@ -20,8 +20,6 @@
 #include <vector>
 #include <string>
 
-#include "rosbag2_cpp/reader.hpp"
-#include "rosbag2_storage/storage_options.hpp"
 #include "rosbag2_transport/player.hpp"
 
 class MockPlayer : public rosbag2_transport::Player
@@ -35,52 +33,47 @@ public:
   : Player(std::move(reader), storage_options, play_options, node_name)
   {}
 
-  explicit MockPlayer(
-    const std::string & node_name = "rosbag2_mock_composable_player",
-    const rclcpp::NodeOptions & node_options = rclcpp::NodeOptions())
-  : Player(node_name, node_options)
-  {}
-
   std::vector<rclcpp::PublisherBase *> get_list_of_publishers()
   {
     std::vector<rclcpp::PublisherBase *> pub_list;
-    for (const auto & publisher : get_publishers()) {
+    for (const auto & publisher : publishers_) {
       pub_list.push_back(
         static_cast<rclcpp::PublisherBase *>(
-          publisher.second.get()));
+          publisher.second->generic_publisher().get()));
     }
-    auto clock_pub = get_clock_publisher();
-    if (clock_pub) {
-      pub_list.push_back(clock_pub.get());
+    if (clock_publisher_) {
+      pub_list.push_back(clock_publisher_.get());
     }
     return pub_list;
   }
 
-  std::vector<rclcpp::ClientBase *> get_list_of_clients()
+  void wait_for_playback_to_start()
   {
-    std::vector<rclcpp::ClientBase *> cli_list;
-    for (const auto & client : this->get_service_clients()) {
-      cli_list.push_back(
-        static_cast<rclcpp::ClientBase *>(
-          client.second.get()));
-    }
-
-    return cli_list;
+    std::unique_lock<std::mutex> lk(ready_to_play_from_queue_mutex_);
+    ready_to_play_from_queue_cv_.wait(lk, [this] {return is_ready_to_play_from_queue_;});
   }
 
   size_t get_number_of_registered_pre_callbacks()
   {
-    return get_number_of_registered_on_play_msg_pre_callbacks();
+    size_t callback_counter = 0;
+    std::lock_guard<std::mutex> lk(on_play_msg_callbacks_mutex_);
+    for (auto & pre_callback_data : on_play_msg_pre_callbacks_) {
+      (void)pre_callback_data;
+      callback_counter++;
+    }
+    return callback_counter;
   }
 
   size_t get_number_of_registered_post_callbacks()
   {
-    return get_number_of_registered_on_play_msg_post_callbacks();
+    size_t callback_counter = 0;
+    std::lock_guard<std::mutex> lk(on_play_msg_callbacks_mutex_);
+    for (auto & post_callback_data : on_play_msg_post_callbacks_) {
+      (void)post_callback_data;
+      callback_counter++;
+    }
+    return callback_counter;
   }
-
-  using rosbag2_transport::Player::wait_for_playback_to_start;
-  using rosbag2_transport::Player::get_storage_options;
-  using rosbag2_transport::Player::get_play_options;
 };
 
 #endif  // ROSBAG2_TRANSPORT__MOCK_PLAYER_HPP_

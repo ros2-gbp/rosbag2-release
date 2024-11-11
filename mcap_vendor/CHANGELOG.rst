@@ -2,40 +2,28 @@
 Changelog for package mcap_vendor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.26.5 (2024-09-06)
+0.22.8 (2024-11-09)
 -------------------
 
-0.26.4 (2024-06-27)
+0.22.7 (2024-07-11)
 -------------------
 
-0.26.3 (2024-05-15)
--------------------
-* Update mcap-releases-cpp- into CMakeLists.txt (`#1612 <https://github.com/ros2/rosbag2/issues/1612>`_) (`#1631 <https://github.com/ros2/rosbag2/issues/1631>`_)
-  Co-authored-by: mosfet80 <realeandrea@yahoo.it>
-* Contributors: mergify[bot]
-
-0.26.2 (2024-04-24)
+0.22.6 (2024-02-07)
 -------------------
 
-0.26.1 (2024-04-17)
+0.22.5 (2023-11-18)
 -------------------
 
-0.26.0 (2024-04-16)
+0.22.4 (2023-10-24)
 -------------------
-* Switch to using ament_vendor_package for lz4. (`#1583 <https://github.com/ros2/rosbag2/issues/1583>`_)
-* Contributors: Chris Lalancette
 
-0.25.0 (2024-03-27)
+0.22.3 (2023-09-08)
 -------------------
-* Switch to target_link_libraries everywhere. (`#1504 <https://github.com/ros2/rosbag2/issues/1504>`_)
-* Contributors: Chris Lalancette
 
-0.24.0 (2023-07-11)
+0.22.2 (2023-07-14)
 -------------------
-* Update mcap to v1.1.0 (`#1361 <https://github.com/ros2/rosbag2/issues/1361>`_)
-* Contributors: Emerson Knapp
 
-0.23.0 (2023-04-28)
+0.22.1 (2023-05-18)
 -------------------
 
 0.22.0 (2023-04-18)

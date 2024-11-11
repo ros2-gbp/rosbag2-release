@@ -24,8 +24,9 @@
 #include "rosbag2_storage/storage_options.hpp"
 #include "rosbag2_storage/topic_metadata.hpp"
 
-#include "format_bag_metadata.hpp"
-#include "pybind11.hpp"
+#include "./format_bag_metadata.hpp"
+
+#include "./pybind11.hpp"
 
 namespace
 {
@@ -83,7 +84,7 @@ PYBIND11_MODULE(_storage, m) {
   .def(
     pybind11::init<
       std::string, std::string, uint64_t, uint64_t, uint64_t, std::string, std::string, bool,
-      int64_t, int64_t, KEY_VALUE_MAP>(),
+      KEY_VALUE_MAP>(),
     pybind11::arg("uri"),
     pybind11::arg("storage_id") = "",
     pybind11::arg("max_bagfile_size") = 0,
@@ -92,8 +93,6 @@ PYBIND11_MODULE(_storage, m) {
     pybind11::arg("storage_preset_profile") = "",
     pybind11::arg("storage_config_uri") = "",
     pybind11::arg("snapshot_mode") = false,
-    pybind11::arg("start_time_ns") = -1,
-    pybind11::arg("end_time_ns") = -1,
     pybind11::arg("custom_data") = KEY_VALUE_MAP{})
   .def_readwrite("uri", &rosbag2_storage::StorageOptions::uri)
   .def_readwrite("storage_id", &rosbag2_storage::StorageOptions::storage_id)
@@ -116,32 +115,20 @@ PYBIND11_MODULE(_storage, m) {
     "snapshot_mode",
     &rosbag2_storage::StorageOptions::snapshot_mode)
   .def_readwrite(
-    "start_time_ns",
-    &rosbag2_storage::StorageOptions::start_time_ns)
-  .def_readwrite(
-    "end_time_ns",
-    &rosbag2_storage::StorageOptions::end_time_ns)
-  .def_readwrite(
     "custom_data",
     &rosbag2_storage::StorageOptions::custom_data);
 
   pybind11::class_<rosbag2_storage::StorageFilter>(m, "StorageFilter")
   .def(
-    pybind11::init<
-      std::vector<std::string>, std::vector<std::string>, std::string,
-      std::vector<std::string>, std::vector<std::string>, std::string>(),
+    pybind11::init<std::vector<std::string>, std::string, std::string>(),
     pybind11::arg("topics") = std::vector<std::string>(),
-    pybind11::arg("services_events") = std::vector<std::string>(),
-    pybind11::arg("regex") = "",
-    pybind11::arg("exclude_topics") = std::vector<std::string>(),
-    pybind11::arg("exclude_service_events") = std::vector<std::string>(),
-    pybind11::arg("regex_to_exclude") = "")
+    pybind11::arg("topics_regex") = "",
+    pybind11::arg("topics_regex_to_exclude") = "")
   .def_readwrite("topics", &rosbag2_storage::StorageFilter::topics)
-  .def_readwrite("services_events", &rosbag2_storage::StorageFilter::services_events)
-  .def_readwrite("regex", &rosbag2_storage::StorageFilter::regex)
-  .def_readwrite("exclude_topics", &rosbag2_storage::StorageFilter::exclude_topics)
-  .def_readwrite("exclude_service_events", &rosbag2_storage::StorageFilter::exclude_service_events)
-  .def_readwrite("regex_to_exclude", &rosbag2_storage::StorageFilter::regex_to_exclude);
+  .def_readwrite("topics_regex", &rosbag2_storage::StorageFilter::topics_regex)
+  .def_readwrite(
+    "topics_regex_to_exclude",
+    &rosbag2_storage::StorageFilter::topics_regex_to_exclude);
 
   pybind11::class_<rosbag2_storage::MessageDefinition>(m, "MessageDefinition")
   .def(
@@ -157,73 +144,14 @@ PYBIND11_MODULE(_storage, m) {
     &rosbag2_storage::MessageDefinition::encoded_message_definition)
   .def_readwrite("type_hash", &rosbag2_storage::MessageDefinition::type_hash);
 
-  pybind11::enum_<rmw_qos_history_policy_t>(m, "rmw_qos_history_policy_t")
-  .value("RMW_QOS_POLICY_HISTORY_SYSTEM_DEFAULT", RMW_QOS_POLICY_HISTORY_SYSTEM_DEFAULT)
-  .value("RMW_QOS_POLICY_HISTORY_KEEP_LAST", RMW_QOS_POLICY_HISTORY_KEEP_LAST)
-  .value("RMW_QOS_POLICY_HISTORY_KEEP_ALL", RMW_QOS_POLICY_HISTORY_KEEP_ALL)
-  .value("RMW_QOS_POLICY_HISTORY_UNKNOWN", RMW_QOS_POLICY_HISTORY_UNKNOWN);
-
-  pybind11::enum_<rmw_qos_reliability_policy_t>(m, "rmw_qos_reliability_policy_t")
-  .value("RMW_QOS_POLICY_RELIABILITY_SYSTEM_DEFAULT", RMW_QOS_POLICY_RELIABILITY_SYSTEM_DEFAULT)
-  .value("RMW_QOS_POLICY_RELIABILITY_RELIABLE", RMW_QOS_POLICY_RELIABILITY_RELIABLE)
-  .value("RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT", RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT)
-  .value("RMW_QOS_POLICY_RELIABILITY_UNKNOWN", RMW_QOS_POLICY_RELIABILITY_UNKNOWN);
-
-  pybind11::enum_<rmw_qos_durability_policy_t>(m, "rmw_qos_durability_policy_t")
-  .value("RMW_QOS_POLICY_DURABILITY_SYSTEM_DEFAULT", RMW_QOS_POLICY_DURABILITY_SYSTEM_DEFAULT)
-  .value("RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL", RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL)
-  .value("RMW_QOS_POLICY_DURABILITY_VOLATILE", RMW_QOS_POLICY_DURABILITY_VOLATILE)
-  .value("RMW_QOS_POLICY_DURABILITY_UNKNOWN", RMW_QOS_POLICY_DURABILITY_UNKNOWN);
-
-
-  pybind11::enum_<rmw_qos_liveliness_policy_t>(m, "rmw_qos_liveliness_policy_t")
-  .value("RMW_QOS_POLICY_LIVELINESS_SYSTEM_DEFAULT", RMW_QOS_POLICY_LIVELINESS_SYSTEM_DEFAULT)
-  .value("RMW_QOS_POLICY_LIVELINESS_AUTOMATIC", RMW_QOS_POLICY_LIVELINESS_AUTOMATIC)
-  .value("RMW_QOS_POLICY_LIVELINESS_MANUAL_BY_TOPIC", RMW_QOS_POLICY_LIVELINESS_MANUAL_BY_TOPIC)
-  .value("RMW_QOS_POLICY_LIVELINESS_UNKNOWN", RMW_QOS_POLICY_LIVELINESS_UNKNOWN);
-
-  pybind11::class_<rclcpp::Duration>(m, "Duration")
-  .def(
-    pybind11::init<int32_t, uint32_t>(),
-    pybind11::arg("seconds"),
-    pybind11::arg("nanoseconds"));
-
-  pybind11::class_<rclcpp::QoS>(m, "QoS")
-  .def(
-    pybind11::init<size_t>(),
-    pybind11::arg("history_depth"))
-  .def("keep_last", &rclcpp::QoS::keep_last)
-  .def("keep_all", &rclcpp::QoS::keep_all)
-  .def("reliable", &rclcpp::QoS::reliable)
-  .def("best_effort", &rclcpp::QoS::best_effort)
-  .def("durability_volatile", &rclcpp::QoS::durability_volatile)
-  .def("transient_local", &rclcpp::QoS::transient_local)
-  .def("history", pybind11::overload_cast<rmw_qos_history_policy_t>(&rclcpp::QoS::history))
-  .def(
-    "reliability",
-    pybind11::overload_cast<rmw_qos_reliability_policy_t>(&rclcpp::QoS::reliability))
-  .def("durability", pybind11::overload_cast<rmw_qos_durability_policy_t>(&rclcpp::QoS::durability))
-  .def("liveliness", pybind11::overload_cast<rmw_qos_liveliness_policy_t>(&rclcpp::QoS::liveliness))
-  .def("deadline", pybind11::overload_cast<const rclcpp::Duration &>(&rclcpp::QoS::deadline))
-  .def("lifespan", pybind11::overload_cast<const rclcpp::Duration &>(&rclcpp::QoS::lifespan))
-  .def(
-    "liveliness_lease_duration",
-    pybind11::overload_cast<const rclcpp::Duration &>(&rclcpp::QoS::liveliness_lease_duration))
-  .def(
-    "avoid_ros_namespace_conventions",
-    pybind11::overload_cast<bool>(&rclcpp::QoS::avoid_ros_namespace_conventions));
-
   pybind11::class_<rosbag2_storage::TopicMetadata>(m, "TopicMetadata")
   .def(
-    pybind11::init<uint16_t, std::string, std::string, std::string, std::vector<rclcpp::QoS>,
-    std::string>(),
-    pybind11::arg("id"),
+    pybind11::init<std::string, std::string, std::string, std::string, std::string>(),
     pybind11::arg("name"),
     pybind11::arg("type"),
     pybind11::arg("serialization_format"),
-    pybind11::arg("offered_qos_profiles") = std::vector<rclcpp::QoS>(),
+    pybind11::arg("offered_qos_profiles") = "",
     pybind11::arg("type_description_hash") = "")
-  .def_readwrite("id", &rosbag2_storage::TopicMetadata::id)
   .def_readwrite("name", &rosbag2_storage::TopicMetadata::name)
   .def_readwrite("type", &rosbag2_storage::TopicMetadata::type)
   .def_readwrite(
@@ -301,8 +229,7 @@ PYBIND11_MODULE(_storage, m) {
         std::vector<rosbag2_storage::TopicInformation> topics_with_message_count,
         std::string compression_format,
         std::string compression_mode,
-        std::unordered_map<std::string, std::string> custom_data,
-        std::string ros_distro)
+        std::unordered_map<std::string, std::string> custom_data)
       {
         return rosbag2_storage::BagMetadata{
           version,
@@ -316,11 +243,10 @@ PYBIND11_MODULE(_storage, m) {
           topics_with_message_count,
           compression_format,
           compression_mode,
-          custom_data,
-          ros_distro,
+          custom_data
         };
       }),
-    pybind11::arg("version") = rosbag2_storage::BagMetadata{}.version,
+    pybind11::arg("version") = 7,
     pybind11::arg("bag_size") = 0,
     pybind11::arg("storage_identifier") = "",
     pybind11::arg("relative_file_paths") = std::vector<std::string>(),
@@ -332,8 +258,7 @@ PYBIND11_MODULE(_storage, m) {
     pybind11::arg("topics_with_message_count") = std::vector<rosbag2_storage::TopicInformation>(),
     pybind11::arg("compression_format") = "",
     pybind11::arg("compression_mode") = "",
-    pybind11::arg("custom_data") = std::unordered_map<std::string, std::string>(),
-    pybind11::arg("ros_distro") = "")
+    pybind11::arg("custom_data") = std::unordered_map<std::string, std::string>())
   .def_readwrite("version", &rosbag2_storage::BagMetadata::version)
   .def_readwrite("bag_size", &rosbag2_storage::BagMetadata::bag_size)
   .def_readwrite("storage_identifier", &rosbag2_storage::BagMetadata::storage_identifier)
@@ -362,10 +287,9 @@ PYBIND11_MODULE(_storage, m) {
   .def_readwrite("compression_format", &rosbag2_storage::BagMetadata::compression_format)
   .def_readwrite("compression_mode", &rosbag2_storage::BagMetadata::compression_mode)
   .def_readwrite("custom_data", &rosbag2_storage::BagMetadata::custom_data)
-  .def_readwrite("ros_distro", &rosbag2_storage::BagMetadata::ros_distro)
   .def(
     "__repr__", [](const rosbag2_storage::BagMetadata & metadata) {
-      return rosbag2_py::format_bag_meta_data(metadata);
+      return format_bag_meta_data(metadata);
     });
 
   pybind11::enum_<rosbag2_storage::ReadOrder::SortBy>(m, "ReadOrderSortBy")
@@ -385,41 +309,6 @@ PYBIND11_MODULE(_storage, m) {
     "get_default_storage_id",
     &rosbag2_storage::get_default_storage_id,
     "Returns the default storage ID used when unspecified in StorageOptions");
-
-  m.def(
-    "to_rclcpp_qos_vector",
-    &rosbag2_storage::to_rclcpp_qos_vector,
-    "Convert QoS in YAML to std::vector<QoS>");
-
-  m.def(
-    "convert_rclcpp_qos_to_rclpy_qos",
-    [](rclcpp::QoS qos_input) {
-      pybind11::object rclcpy_qos = pybind11::module_::import("rclpy.qos");
-      pybind11::object rclcpy_duration = pybind11::module_::import("rclpy.duration");
-      pybind11::object duration_lifespan = rclcpy_qos.attr("Duration")(
-        "seconds"_a = qos_input.lifespan().to_rmw_time().sec,
-        "nanoseconds"_a = qos_input.lifespan().to_rmw_time().nsec);
-      pybind11::object duration_deadline = rclcpy_qos.attr("Duration")(
-        "seconds"_a = qos_input.deadline().to_rmw_time().sec,
-        "nanoseconds"_a = qos_input.deadline().to_rmw_time().nsec);
-      pybind11::object duration_liveliness_lease_duration = rclcpy_qos.attr("Duration")(
-        "seconds"_a = qos_input.liveliness_lease_duration().to_rmw_time().sec,
-        "nanoseconds"_a = qos_input.liveliness_lease_duration().to_rmw_time().nsec);
-
-      pybind11::object qos_profile = rclcpy_qos.attr("QoSProfile")(
-        "depth"_a = qos_input.depth(),
-        "history"_a = static_cast<int>(qos_input.history()),
-        "reliability"_a = static_cast<int>(qos_input.reliability()),
-        "durability"_a = static_cast<int>(qos_input.durability()),
-        "lifespan"_a = duration_lifespan,
-        "deadline"_a = duration_deadline,
-        "liveliness"_a = static_cast<int>(qos_input.liveliness()),
-        "liveliness_lease_duration"_a = duration_liveliness_lease_duration,
-        "avoid_ros_namespace_conventions"_a = qos_input.avoid_ros_namespace_conventions());
-
-      return qos_profile;
-    },
-    "Converts rclcpp::QoS to rclpy.qos");
 
   pybind11::class_<rosbag2_storage::MetadataIo>(m, "MetadataIo")
   .def(pybind11::init<>())

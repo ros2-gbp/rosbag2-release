@@ -245,22 +245,12 @@ protected:
     bool burst = false,
     size_t burst_num_messages = 0)
   {
+    exit_ = false;
     install_signal_handlers();
     try {
       auto reader = rosbag2_transport::ReaderWriterFactory::make_reader(storage_options);
-      std::shared_ptr<KeyboardHandler> keyboard_handler;
-      if (!play_options.disable_keyboard_controls) {
-#ifndef _WIN32
-        // Instantiate KeyboardHandler explicitly with disabled signal handler inside,
-        // since we have already installed our own signal handler
-        keyboard_handler = std::make_shared<KeyboardHandler>(false);
-#else
-        // We don't have signal handler option in constructor for windows version
-        keyboard_handler = std::shared_ptr<KeyboardHandler>(new KeyboardHandler());
-#endif
-      }
       auto player = std::make_shared<rosbag2_transport::Player>(
-        std::move(reader), std::move(keyboard_handler), storage_options, play_options);
+        std::move(reader), storage_options, play_options);
 
       rclcpp::executors::SingleThreadedExecutor exec;
       exec.add_node(player);
@@ -268,7 +258,6 @@ protected:
         [&exec]() {
           exec.spin();
         });
-      player->play();
 
       auto wait_for_exit_thread = std::thread(
         [&]() {
@@ -281,12 +270,19 @@ protected:
         // can use other threads
         py::gil_scoped_release release;
         if (burst) {
+          auto play_thread = std::thread(
+            [&player]() {
+              player->play();
+            });
           player->burst(burst_num_messages);
+          rosbag2_py::Player::cancel();  // Need to trigger exit from wait_for_exit_thread
+          play_thread.join();
+        } else {
+          player->play();
+          rosbag2_py::Player::cancel();  // Need to trigger exit from wait_for_exit_thread
         }
-        player->wait_for_playback_to_finish();
       }
 
-      rosbag2_py::Player::cancel();  // Need to trigger exit from wait_for_exit_thread
       if (wait_for_exit_thread.joinable()) {
         wait_for_exit_thread.join();
       }
@@ -323,6 +319,7 @@ class Recorder
 {
 public:
   using SignalHandlerType = void (*)(int);
+
   explicit Recorder(const std::string & log_level = "info")
   {
     Arguments arguments({"--ros-args", "--log-level", log_level});
@@ -348,20 +345,8 @@ public:
       }
 
       auto writer = rosbag2_transport::ReaderWriterFactory::make_writer(record_options);
-      std::shared_ptr<KeyboardHandler> keyboard_handler;
-      if (!record_options.disable_keyboard_controls) {
-#ifndef _WIN32
-        // Instantiate KeyboardHandler explicitly with disabled signal handler inside,
-        // since we have already installed our own signal handler
-        keyboard_handler = std::make_shared<KeyboardHandler>(false);
-#else
-        // We don't have signal handler option in constructor for windows version
-        keyboard_handler = std::shared_ptr<KeyboardHandler>(new KeyboardHandler());
-#endif
-      }
-
       auto recorder = std::make_shared<rosbag2_transport::Recorder>(
-        std::move(writer), std::move(keyboard_handler), storage_options, record_options, node_name);
+        std::move(writer), storage_options, record_options, node_name);
       recorder->record();
 
       exec->add_node(recorder);
@@ -489,7 +474,7 @@ void bag_rewrite(
     rosbag2_storage::StorageOptions storage_options{};
     YAML::convert<rosbag2_storage::StorageOptions>::decode(bag_node, storage_options);
     rosbag2_transport::RecordOptions record_options = bag_rewrite_default_record_options();
-    record_options = bag_node.as<rosbag2_transport::RecordOptions>();
+    YAML::convert<rosbag2_transport::RecordOptions>::decode(bag_node, record_options);
     output_options.push_back(std::make_pair(storage_options, record_options));
   }
   rosbag2_transport::bag_rewrite(input_options, output_options);
@@ -512,11 +497,8 @@ PYBIND11_MODULE(_transport, m) {
   .def_readwrite("node_prefix", &PlayOptions::node_prefix)
   .def_readwrite("rate", &PlayOptions::rate)
   .def_readwrite("topics_to_filter", &PlayOptions::topics_to_filter)
-  .def_readwrite("services_to_filter", &PlayOptions::services_to_filter)
-  .def_readwrite("regex_to_filter", &PlayOptions::regex_to_filter)
-  .def_readwrite("exclude_regex_to_filter", &PlayOptions::exclude_regex_to_filter)
-  .def_readwrite("exclude_topics_to_filter", &PlayOptions::exclude_topics_to_filter)
-  .def_readwrite("exclude_service_events_to_filter", &PlayOptions::exclude_services_to_filter)
+  .def_readwrite("topics_regex_to_filter", &PlayOptions::topics_regex_to_filter)
+  .def_readwrite("topics_regex_to_exclude", &PlayOptions::topics_regex_to_exclude)
   .def_property(
     "topic_qos_profile_overrides",
     &PlayOptions::getTopicQoSProfileOverrides,
@@ -546,34 +528,22 @@ PYBIND11_MODULE(_transport, m) {
     &PlayOptions::setPlaybackUntilTimestamp)
   .def_readwrite("wait_acked_timeout", &PlayOptions::wait_acked_timeout)
   .def_readwrite("disable_loan_message", &PlayOptions::disable_loan_message)
-  .def_readwrite("publish_service_requests", &PlayOptions::publish_service_requests)
-  .def_readwrite("service_requests_source", &PlayOptions::service_requests_source)
-  ;
-
-  py::enum_<rosbag2_transport::ServiceRequestsSource>(m, "ServiceRequestsSource")
-  .value("SERVICE_INTROSPECTION", rosbag2_transport::ServiceRequestsSource::SERVICE_INTROSPECTION)
-  .value("CLIENT_INTROSPECTION", rosbag2_transport::ServiceRequestsSource::CLIENT_INTROSPECTION)
   ;
 
   py::class_<RecordOptions>(m, "RecordOptions")
   .def(py::init<>())
-  .def_readwrite("all_topics", &RecordOptions::all_topics)
+  .def_readwrite("all", &RecordOptions::all)
   .def_readwrite("is_discovery_disabled", &RecordOptions::is_discovery_disabled)
   .def_readwrite("topics", &RecordOptions::topics)
-  .def_readwrite("topic_types", &RecordOptions::topic_types)
-  .def_readwrite("exclude_topic_types", &RecordOptions::exclude_topic_types)
   .def_readwrite("rmw_serialization_format", &RecordOptions::rmw_serialization_format)
   .def_readwrite("topic_polling_interval", &RecordOptions::topic_polling_interval)
   .def_readwrite("regex", &RecordOptions::regex)
-  .def_readwrite("exclude_regex", &RecordOptions::exclude_regex)
-  .def_readwrite("exclude_topics", &RecordOptions::exclude_topics)
-  .def_readwrite("exclude_service_events", &RecordOptions::exclude_service_events)
+  .def_readwrite("exclude", &RecordOptions::exclude)
   .def_readwrite("node_prefix", &RecordOptions::node_prefix)
   .def_readwrite("compression_mode", &RecordOptions::compression_mode)
   .def_readwrite("compression_format", &RecordOptions::compression_format)
   .def_readwrite("compression_queue_size", &RecordOptions::compression_queue_size)
   .def_readwrite("compression_threads", &RecordOptions::compression_threads)
-  .def_readwrite("compression_threads_priority", &RecordOptions::compression_threads_priority)
   .def_property(
     "topic_qos_profile_overrides",
     &RecordOptions::getTopicQoSProfileOverrides,
@@ -583,9 +553,6 @@ PYBIND11_MODULE(_transport, m) {
   .def_readwrite("start_paused", &RecordOptions::start_paused)
   .def_readwrite("ignore_leaf_topics", &RecordOptions::ignore_leaf_topics)
   .def_readwrite("use_sim_time", &RecordOptions::use_sim_time)
-  .def_readwrite("services", &RecordOptions::services)
-  .def_readwrite("all_services", &RecordOptions::all_services)
-  .def_readwrite("disable_keyboard_controls", &RecordOptions::disable_keyboard_controls)
   ;
 
   py::class_<rosbag2_py::Player>(m, "Player")

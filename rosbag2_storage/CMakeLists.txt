@@ -24,15 +24,11 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rcutils REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(rmw REQUIRED)
 find_package(yaml_cpp_vendor REQUIRED)
-find_package(yaml-cpp REQUIRED)
 
 add_library(
   ${PROJECT_NAME}
   SHARED
-  src/rosbag2_storage/qos.cpp
   src/rosbag2_storage/default_storage_id.cpp
   src/rosbag2_storage/metadata_io.cpp
   src/rosbag2_storage/ros_helper.cpp
@@ -44,14 +40,10 @@ target_include_directories(${PROJECT_NAME}
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
 )
-target_link_libraries(${PROJECT_NAME} PUBLIC
-  rcutils::rcutils
-  rclcpp::rclcpp
-  rmw::rmw
-  yaml-cpp::yaml-cpp
-)
-target_link_libraries(${PROJECT_NAME} PRIVATE
+target_link_libraries(${PROJECT_NAME}
   pluginlib::pluginlib
+  rcutils::rcutils
+  yaml-cpp
 )
 
 # Causes the visibility macros to use dllexport rather than dllimport,
@@ -76,7 +68,7 @@ ament_export_libraries(${PROJECT_NAME})
 # Export modern CMake targets
 ament_export_targets(export_${PROJECT_NAME})
 
-ament_export_dependencies(rclcpp rcutils rmw yaml-cpp yaml_cpp_vendor)
+ament_export_dependencies(pluginlib yaml_cpp_vendor)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -90,7 +82,7 @@ if(BUILD_TESTING)
     SHARED
     test/rosbag2_storage/test_plugin.cpp
     test/rosbag2_storage/test_read_only_plugin.cpp)
-  target_link_libraries(test_plugin ${PROJECT_NAME} pluginlib::pluginlib)
+  target_link_libraries(test_plugin ${PROJECT_NAME})
   install(
     TARGETS test_plugin
     ARCHIVE DESTINATION lib
@@ -124,14 +116,6 @@ if(BUILD_TESTING)
   target_link_libraries(test_storage_options
     ${PROJECT_NAME}
     rosbag2_test_common::rosbag2_test_common
-  )
-
-  ament_add_gmock(test_qos
-    test/rosbag2_storage/test_qos.cpp)
-  target_link_libraries(test_qos
-    ${PROJECT_NAME}
-    rosbag2_test_common::rosbag2_test_common
-    yaml-cpp::yaml-cpp
   )
 endif()
 

@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "rcpputils/env.hpp"
 #include "rcpputils/thread_safety_annotations.hpp"
 #include "rcutils/logging_macros.h"
-#include "rcutils/strerror.h"
 #include "rosbag2_storage/metadata_io.hpp"
 #include "rosbag2_storage/ros_helper.hpp"
 #include "rosbag2_storage/storage_interfaces/read_write_interface.hpp"
@@ -41,15 +41,17 @@
 #include <mcap/mcap.hpp>
 
 #include <algorithm>
-#include <cstring>
+#include <filesystem>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <regex>
 #include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#ifdef ROSBAG2_STORAGE_MCAP_HAS_STORAGE_FILTER_TOPIC_REGEX
+  #include <regex>
+#endif
 
 // This is necessary because of using stl types here. It is completely safe, because
 // a) the member is not accessible from the outside
@@ -229,46 +231,17 @@ public:
 #endif
 
 private:
-  void read_metadata();
   void write_lock_free(std::shared_ptr<const rosbag2_storage::SerializedBagMessage> msg);
   void open_impl(const std::string & uri, const std::string & preset_profile,
                  rosbag2_storage::storage_interfaces::IOFlag io_flag,
                  const std::string & storage_config_uri);
 
-  static bool is_topic_name_a_service_event(const std::string_view topic_name);
-
-  /// \brief Check if topic match with the selection criteria by the white list or regex during
-  /// data read.
-  /// \details There is assumption that by default all topics shall be selected if none of the
-  /// filters settled up. If any of the filters are empty those filters shall be ignored.
-  /// i.e. If white_list or regex not empty they impose restrictions to what topics will be
-  /// available during read operations.
-  /// \tparam T - Type of the iterable white_list. e.g. std::vector<std::string>.
-  /// \param topic_name - Topic name to be checked.
-  /// \param white_list - Iterable list of topics that allowed to be available during read.
-  /// \param regex - String with regular expression for allowed topics to be available during read.
-  /// \return - true, if the topic passing selection criteria imposed by the white_list or regex,
-  /// otherwise false.
-  template <typename T>
-  bool is_topic_selected_by_white_list_or_regex(const std::string_view topic_name,
-                                                const T & white_list, const std::string & regex);
-
-  /// \brief Check if topic shall be excluded (skipped) during read operations.
-  /// \tparam T - Type of the iterable black_list. e.g. std::vector<std::string>.
-  /// \param topic_name  - Topic name to be checked.
-  /// \param black_list - Iterable list of topics that shall be excluded during read operations.
-  /// \param regex - String with regular expression for topics that shall be excluded during read
-  /// operations.
-  /// \return - true, if the topic name matches with exclusion criteria imposed by the black_list
-  /// or topic exclude_regex, otherwise false.
-  template <typename T>
-  bool is_topic_in_black_list_or_exclude_regex(const std::string_view topic_name,
-                                               const T & black_list, const std::string & regex);
   void reset_iterator();
   bool read_and_enqueue_message();
   bool enqueued_message_is_already_read();
   bool message_indexes_present();
   void ensure_summary_read();
+  void ensure_rosdistro_metadata_added();
 
   std::optional<rosbag2_storage::storage_interfaces::IOFlag> opened_as_;
   std::string relative_path_;
@@ -295,6 +268,7 @@ private:
   std::unique_ptr<mcap::McapWriter> mcap_writer_;
 
   bool has_read_summary_ = false;
+  bool has_added_ros_distro_metadata_ = false;
   rcutils_time_point_value_t last_read_time_point_ = 0;
   std::optional<mcap::RecordOffset> last_read_message_offset_;
   std::optional<mcap::RecordOffset> last_enqueued_message_offset_;
@@ -363,11 +337,6 @@ void MCAPStorage::open_impl(const std::string & uri, const std::string & preset_
     case rosbag2_storage::storage_interfaces::IOFlag::READ_ONLY: {
       relative_path_ = uri;
       input_ = std::make_unique<std::ifstream>(relative_path_, std::ios::binary);
-      if (!input_->is_open()) {
-        char error_string[1024] = {};
-        rcutils_strerror(error_string, sizeof(error_string));
-        throw std::runtime_error(error_string);
-      }
       data_source_ = std::make_unique<mcap::FileStreamReader>(*input_);
       mcap_reader_ = std::make_unique<mcap::McapReader>();
       auto status = mcap_reader_->open(*data_source_);
@@ -404,6 +373,7 @@ void MCAPStorage::open_impl(const std::string & uri, const std::string & preset_
       if (!status.ok()) {
         throw std::runtime_error(status.message);
       }
+      ensure_rosdistro_metadata_added();
       break;
     }
   }
@@ -411,47 +381,12 @@ void MCAPStorage::open_impl(const std::string & uri, const std::string & preset_
   metadata_.relative_file_paths = {get_relative_file_path()};
 }
 
-void MCAPStorage::read_metadata()
+/** BaseInfoInterface **/
+rosbag2_storage::BagMetadata MCAPStorage::get_metadata()
 {
   ensure_summary_read();
-  const auto & mcap_metadatas = mcap_reader_->metadataIndexes();
-  auto range = mcap_metadatas.equal_range("rosbag2");
-  mcap::Status status{};
-  mcap::Record mcap_record{};
-  mcap::Metadata mcap_metadata{};
-  for (auto i = range.first; i != range.second; ++i) {
-    status = mcap::McapReader::ReadRecord(*data_source_, i->second.offset, &mcap_record);
-    if (!status.ok()) {
-      OnProblem(status);
-      continue;
-    }
-    status = mcap::McapReader::ParseMetadata(mcap_record, &mcap_metadata);
-    if (!status.ok()) {
-      OnProblem(status);
-      continue;
-    }
-    std::string serialized_metadata;
-    try {
-      serialized_metadata = mcap_metadata.metadata.at("serialized_metadata");
-    } catch (const std::out_of_range & /* err */) {
-      RCUTILS_LOG_WARN_NAMED(
-        LOG_NAME, "Metadata record with name 'rosbag2' did not contain key 'serialized_metadata'.");
-    }
-    if (!serialized_metadata.empty()) {
-      YAML::Node metadata_node = YAML::Load(serialized_metadata);
-      YAML::convert<rosbag2_storage::BagMetadata>::decode(metadata_node, metadata_);
-    } else {
-      metadata_.version = 8;  // Workaround to properly convert topic_metadata.offered_qos_profiles
-      // for old metadata versions. Assuming that if serialized metadata is not present then
-      // metadata_.version < 9
-    }
-    try {
-      metadata_.ros_distro = mcap_metadata.metadata.at("ROS_DISTRO");
-    } catch (const std::out_of_range & /* err */) {
-      // Ignor this error. In new versions ROS_DISTRO stored inside `serialized_metadata`.
-    }
-  }
 
+  metadata_.version = 2;
   metadata_.storage_identifier = get_storage_identifier();
   metadata_.bag_size = get_bagfile_size();
   metadata_.relative_file_paths = {get_relative_file_path()};
@@ -475,7 +410,6 @@ void MCAPStorage::read_metadata()
 
     // Create a TopicInformation for this topic
     rosbag2_storage::TopicInformation topic_info{};
-    topic_info.topic_metadata.id = channel.id;
     topic_info.topic_metadata.name = channel.topic;
     topic_info.topic_metadata.serialization_format = channel.messageEncoding;
     topic_info.topic_metadata.type = schema_ptr->name;
@@ -483,8 +417,7 @@ void MCAPStorage::read_metadata()
     // Look up the offered_qos_profiles metadata entry
     const auto metadata_it = channel.metadata.find("offered_qos_profiles");
     if (metadata_it != channel.metadata.end()) {
-      topic_info.topic_metadata.offered_qos_profiles =
-        rosbag2_storage::to_rclcpp_qos_vector(metadata_it->second, metadata_.version);
+      topic_info.topic_metadata.offered_qos_profiles = metadata_it->second;
     }
     const auto type_hash_it = channel.metadata.find("topic_type_hash");
     if (type_hash_it != channel.metadata.end()) {
@@ -498,16 +431,10 @@ void MCAPStorage::read_metadata()
     } else {
       topic_info.message_count = 0;
     }
+
     metadata_.topics_with_message_count.push_back(topic_info);
   }
-}
 
-/** BaseInfoInterface **/
-rosbag2_storage::BagMetadata MCAPStorage::get_metadata()
-{
-  if (opened_as_ == rosbag2_storage::storage_interfaces::IOFlag::READ_ONLY) {
-    read_metadata();
-  }
   return metadata_;
 }
 
@@ -553,8 +480,7 @@ bool MCAPStorage::read_and_enqueue_message()
   const auto & messageView = *it;
   auto msg = std::make_shared<rosbag2_storage::SerializedBagMessage>();
   last_enqueued_message_offset_ = messageView.messageOffset;
-  msg->recv_timestamp = rcutils_time_point_value_t(messageView.message.logTime);
-  msg->send_timestamp = rcutils_time_point_value_t(messageView.message.publishTime);
+  msg->time_stamp = rcutils_time_point_value_t(messageView.message.logTime);
   msg->topic_name = messageView.channel->topic;
   msg->serialized_data = rosbag2_storage::make_serialized_message(messageView.message.data,
                                                                   messageView.message.dataSize);
@@ -564,67 +490,6 @@ bool MCAPStorage::read_and_enqueue_message()
 
   ++it;
   return true;
-}
-
-bool MCAPStorage::is_topic_name_a_service_event(const std::string_view topic_name)
-{
-  // The origin definition is RCL_SERVICE_INTROSPECTION_TOPIC_POSTFIX
-  static const char * service_event_topic_postfix = "/_service_event";
-  static const size_t service_event_topic_postfix_len = strlen(service_event_topic_postfix);
-  size_t topic_name_len = topic_name.length();
-  if (topic_name_len <= service_event_topic_postfix_len) {
-    return false;
-  }
-  auto end_topic_name = topic_name.substr(topic_name_len - service_event_topic_postfix_len);
-  if (end_topic_name != service_event_topic_postfix) {
-    return false;
-  }
-  return true;
-}
-
-template <typename T>
-bool MCAPStorage::is_topic_selected_by_white_list_or_regex(const std::string_view topic_name,
-                                                           const T & white_list,
-                                                           const std::string & regex)
-{
-  // Both white list and regex are empty. i.e. equivalent to include all
-  if (white_list.empty() && regex.empty()) {
-    return true;
-  }
-
-  if (std::find(white_list.begin(), white_list.end(), topic_name) != white_list.end()) {
-    return true;
-  }
-
-  if (!regex.empty()) {
-    std::smatch m;
-    std::string topic_string(topic_name);
-    std::regex re(regex);
-    if (std::regex_match(topic_string, m, re)) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-template <typename T>
-bool MCAPStorage::is_topic_in_black_list_or_exclude_regex(const std::string_view topic_name,
-                                                          const T & black_list,
-                                                          const std::string & regex)
-{
-  if (std::find(black_list.begin(), black_list.end(), topic_name) != black_list.end()) {
-    return true;
-  }
-  if (!regex.empty()) {
-    std::smatch m;
-    std::string topic_string(topic_name);
-    std::regex re(regex);
-    if (std::regex_match(topic_string, m, re)) {
-      return true;
-    }
-  }
-  return false;
 }
 
 void MCAPStorage::reset_iterator()
@@ -642,27 +507,26 @@ void MCAPStorage::reset_iterator()
     options.endTime = mcap::MaxTime;
   }
   options.readOrder = read_order_;
-
-  auto topic_filter = [this](std::string_view topic) {
-    bool topic_a_service_event = is_topic_name_a_service_event(topic);
-
-    const auto & include_list =
-      topic_a_service_event ? storage_filter_.services_events : storage_filter_.topics;
-
-    const auto & exclude_list = topic_a_service_event ? storage_filter_.exclude_service_events
-                                                      : storage_filter_.exclude_topics;
-    // if topic not found in exclude list or regex_to_exclude
-    if (!is_topic_in_black_list_or_exclude_regex(topic, exclude_list,
-                                                 storage_filter_.regex_to_exclude)) {
-      // if topic selected by include list or regex
-      if (is_topic_selected_by_white_list_or_regex(topic, include_list, storage_filter_.regex)) {
-        return true;
+  if (!storage_filter_.topics.empty()) {
+    options.topicFilter = [this](std::string_view topic) {
+      for (const auto & match_topic : storage_filter_.topics) {
+        if (match_topic == topic) {
+          return true;
+        }
       }
-    }
-    return false;
-  };
-  options.topicFilter = topic_filter;
-
+      return false;
+    };
+  }
+#ifdef ROSBAG2_STORAGE_MCAP_HAS_STORAGE_FILTER_TOPIC_REGEX
+  if (!storage_filter_.topics_regex.empty()) {
+    options.topicFilter = [this](std::string_view topic) {
+      std::smatch m;
+      std::string topic_string(topic);
+      std::regex re(storage_filter_.topics_regex);
+      return std::regex_match(topic_string, m, re);
+    };
+  }
+#endif
   linear_view_ =
     std::make_unique<mcap::LinearMessageView>(mcap_reader_->readMessages(OnProblem, options));
   linear_iterator_ = std::make_unique<mcap::LinearMessageView::Iterator>(linear_view_->begin());
@@ -687,7 +551,7 @@ bool MCAPStorage::enqueued_message_is_already_read()
   if (next_ == nullptr) {
     return false;
   }
-  if (last_read_time_point_ != next_->recv_timestamp) {
+  if (last_read_time_point_ != next_->time_stamp) {
     return false;
   }
   if (read_order_ == mcap::ReadMessageOptions::ReadOrder::ReverseLogTimeOrder) {
@@ -774,7 +638,7 @@ std::shared_ptr<rosbag2_storage::SerializedBagMessage> MCAPStorage::read_next()
   if (!has_next()) {
     throw std::runtime_error{"No next message is available."};
   }
-  last_read_time_point_ = next_->recv_timestamp;
+  last_read_time_point_ = next_->time_stamp;
   last_read_message_offset_ = last_enqueued_message_offset_;
   // Importantly, clear next_ via move so that a next message can be read.
   return std::move(next_);
@@ -869,11 +733,11 @@ void MCAPStorage::write_lock_free(std::shared_ptr<const rosbag2_storage::Seriali
   mcap::Message mcap_msg;
   mcap_msg.channelId = channel_it->second;
   mcap_msg.sequence = 0;
-  if (msg->recv_timestamp < 0) {
-    RCUTILS_LOG_WARN_NAMED(LOG_NAME, "Invalid message timestamp %ld", msg->recv_timestamp);
+  if (msg->time_stamp < 0) {
+    RCUTILS_LOG_WARN_NAMED(LOG_NAME, "Invalid message timestamp %ld", msg->time_stamp);
   }
-  mcap_msg.logTime = mcap::Timestamp(msg->recv_timestamp);
-  mcap_msg.publishTime = mcap::Timestamp(msg->send_timestamp);
+  mcap_msg.logTime = mcap::Timestamp(msg->time_stamp);
+  mcap_msg.publishTime = mcap_msg.logTime;
   mcap_msg.dataSize = msg->serialized_data->buffer_length;
   mcap_msg.data = reinterpret_cast<const std::byte *>(msg->serialized_data->buffer);
   const auto status = mcap_writer_->write(mcap_msg);
@@ -889,7 +753,7 @@ void MCAPStorage::write_lock_free(std::shared_ptr<const rosbag2_storage::Seriali
   // Increment global message count
   metadata_.message_count++;
   // Determine recording duration
-  const auto message_time = time_point(std::chrono::nanoseconds(msg->recv_timestamp));
+  const auto message_time = time_point(std::chrono::nanoseconds(msg->time_stamp));
   metadata_.duration = std::max(metadata_.duration, message_time - metadata_.starting_time);
 }
 
@@ -932,9 +796,8 @@ void MCAPStorage::create_topic(const rosbag2_storage::TopicMetadata & topic,
     channel.topic = topic.name;
     channel.messageEncoding = topic_info.topic_metadata.serialization_format;
     channel.schemaId = schema_id;
-    channel.metadata.emplace(
-      "offered_qos_profiles",
-      rosbag2_storage::serialize_rclcpp_qos_vector(topic_info.topic_metadata.offered_qos_profiles));
+    channel.metadata.emplace("offered_qos_profiles",
+                             topic_info.topic_metadata.offered_qos_profiles);
     channel.metadata.emplace("topic_type_hash", topic_info.topic_metadata.type_description_hash);
     mcap_writer_->addChannel(channel);
     channel_ids_.emplace(topic.name, channel.id);
@@ -960,18 +823,23 @@ void MCAPStorage::update_metadata(const rosbag2_storage::BagMetadata & bag_metad
       "MCAP storage plugin does not support message compression, "
       "consider using chunk compression by setting `compression: 'Zstd'` in storage config");
   }
-
-  mcap::Metadata metadata;
-  metadata.name = "rosbag2";
-  YAML::Node metadata_node = YAML::convert<rosbag2_storage::BagMetadata>::encode(bag_metadata);
-  std::string serialized_metadata = YAML::Dump(metadata_node);
-  metadata.metadata = {{"serialized_metadata", serialized_metadata}};
-  mcap::Status status = mcap_writer_->write(metadata);
-  if (!status.ok()) {
-    OnProblem(status);
-  }
+  ensure_rosdistro_metadata_added();
 }
 #endif
+
+void MCAPStorage::ensure_rosdistro_metadata_added()
+{
+  if (!has_added_ros_distro_metadata_) {
+    mcap::Metadata metadata;
+    metadata.name = "rosbag2";
+    metadata.metadata = {{"ROS_DISTRO", rcpputils::get_env_var("ROS_DISTRO")}};
+    mcap::Status status = mcap_writer_->write(metadata);
+    if (!status.ok()) {
+      OnProblem(status);
+    }
+  }
+  has_added_ros_distro_metadata_ = true;
+}
 
 }  // namespace rosbag2_storage_plugins
 

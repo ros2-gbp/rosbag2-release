@@ -39,7 +39,7 @@ public:
     rclcpp::init(0, nullptr);
 
     auto topics_and_types =
-      std::vector<rosbag2_storage::TopicMetadata>{{0u, "topic1", "test_msgs/Strings", "", {}, ""}};
+      std::vector<rosbag2_storage::TopicMetadata>{{"topic1", "test_msgs/Strings", "", "", ""}};
 
     std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages;
     messages.reserve(num_test_messages_);
@@ -71,7 +71,7 @@ public:
 };
 
 TEST_F(Rosbag2PlayCallbacksTestFixture, nullptr_as_callback) {
-  MockPlayer player(std::move(reader_), storage_options_, play_options_);
+  MockPlayer player(move(reader_), storage_options_, play_options_);
   EXPECT_EQ(player.add_on_play_message_pre_callback(nullptr), Player::invalid_callback_handle);
   EXPECT_EQ(player.add_on_play_message_post_callback(nullptr), Player::invalid_callback_handle);
 
@@ -80,7 +80,7 @@ TEST_F(Rosbag2PlayCallbacksTestFixture, nullptr_as_callback) {
 }
 
 TEST_F(Rosbag2PlayCallbacksTestFixture, register_unregister_callbacks) {
-  MockPlayer player(std::move(reader_), storage_options_, play_options_);
+  MockPlayer player(move(reader_), storage_options_, play_options_);
 
   auto lambda_as_callback = [](std::shared_ptr<rosbag2_storage::SerializedBagMessage>) {
       ASSERT_FALSE(true) << "This code should not be called \n";
@@ -110,21 +110,24 @@ TEST_F(Rosbag2PlayCallbacksTestFixture, register_unregister_callbacks) {
   player.pause();   // Put player in pause mode before starting
   ASSERT_TRUE(player.is_paused());
 
-  // Run playback asynchronously in a separate thread
-  player.play();
+  // Run play asynchronously in separate thread
+  std::future<void> play_future_result =
+    std::async(std::launch::async, [&]() {player.play();});
 
   for (size_t i = 1; i < num_test_messages_; i++) {
     EXPECT_TRUE(player.play_next());
   }
   player.resume();   // Resume playback for playing the last message
   ASSERT_FALSE(player.is_paused());
-  player.wait_for_playback_to_finish();
+
+  play_future_result.wait();
+  play_future_result.get();
   EXPECT_FALSE(player.play_next());
 }
 
 TEST_F(Rosbag2PlayCallbacksTestFixture, call_callbacks) {
   using SerializedBagMessage = rosbag2_storage::SerializedBagMessage;
-  MockPlayer player(std::move(reader_), storage_options_, play_options_);
+  MockPlayer player(move(reader_), storage_options_, play_options_);
 
   testing::MockFunction<void(std::shared_ptr<SerializedBagMessage>)> mock_pre_callback;
   EXPECT_CALL(mock_pre_callback, Call(_)).Times(Exactly(static_cast<int>(num_test_messages_)));
@@ -145,7 +148,9 @@ TEST_F(Rosbag2PlayCallbacksTestFixture, call_callbacks) {
   player.pause();  // Put player in pause mode before starting
   ASSERT_TRUE(player.is_paused());
 
-  player.play();
+  // Run play asynchronously in separate thread
+  std::future<void> play_future_result =
+    std::async(std::launch::async, [&]() {player.play();});
 
   for (size_t i = 1; i < num_test_messages_; i++) {
     EXPECT_TRUE(player.play_next());
@@ -153,6 +158,8 @@ TEST_F(Rosbag2PlayCallbacksTestFixture, call_callbacks) {
 
   player.resume();  // Resume playback for playing the last message
   ASSERT_FALSE(player.is_paused());
-  player.wait_for_playback_to_finish();
+
+  play_future_result.wait();
+  play_future_result.get();
   EXPECT_FALSE(player.play_next());
 }

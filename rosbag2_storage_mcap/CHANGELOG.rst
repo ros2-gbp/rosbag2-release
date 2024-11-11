@@ -2,46 +2,34 @@
 Changelog for package rosbag2_storage_mcap
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.26.5 (2024-09-06)
+0.22.8 (2024-11-09)
 -------------------
 
-0.26.4 (2024-06-27)
+0.22.7 (2024-07-11)
 -------------------
 
-0.26.3 (2024-05-15)
+0.22.6 (2024-02-07)
+-------------------
+* Use rw_lock to protect mcap metadata lists. (`#1566 <https://github.com/ros2/rosbag2/issues/1566>`_)
+* Remove rcpputils::fs dependencies from rosbag2_storages (`#1564 <https://github.com/ros2/rosbag2/issues/1564>`_)
+* Link and compile against rosbag2_storage_mcap: Fixed issue 1492 (`#1497 <https://github.com/ros2/rosbag2/issues/1497>`_)
+* Contributors: Alejandro Hernández Cordero, Chris Lalancette, Kenta Yonekura, Michael Orlov, Roman, Tomoya Fujita
+
+0.22.5 (2023-11-18)
 -------------------
 
-0.26.2 (2024-04-24)
+0.22.4 (2023-10-24)
 -------------------
 
-0.26.1 (2024-04-17)
+0.22.3 (2023-09-08)
 -------------------
 
-0.26.0 (2024-04-16)
+0.22.2 (2023-07-14)
 -------------------
-* Support service 2/2 --- rosbag2 service play (`#1481 <https://github.com/ros2/rosbag2/issues/1481>`_)
-* Use middleware send and receive timestamps from message_info during recording (`#1531 <https://github.com/ros2/rosbag2/issues/1531>`_)
-* Update to use yaml-cpp version 0.8.0. (`#1605 <https://github.com/ros2/rosbag2/issues/1605>`_)
-* Check existence of a file before passing it to the mcap reader (`#1594 <https://github.com/ros2/rosbag2/issues/1594>`_)
-* Contributors: Barry Xu, Chris Lalancette, Christopher Wecht, jmachowinski, Michael Orlov
-
-0.25.0 (2024-03-27)
--------------------
-* Add topic_id returned by storage to the TopicMetadata (`#1538 <https://github.com/ros2/rosbag2/issues/1538>`_)
-* Use rw_lock to protect mcap metadata lists. (`#1561 <https://github.com/ros2/rosbag2/issues/1561>`_)
-* Remove rcpputils::fs dependencies from rosbag2_storages (`#1558 <https://github.com/ros2/rosbag2/issues/1558>`_)
-* remove unused headers (`#1544 <https://github.com/ros2/rosbag2/issues/1544>`_)
-* Link and compile against rosbag2_storage_mcap: Fixed issue 1492 (`#1496 <https://github.com/ros2/rosbag2/issues/1496>`_)
-* Use enum values for offered_qos_profiles in code and string names in serialized metadata (`#1476 <https://github.com/ros2/rosbag2/issues/1476>`_)
-* Store serialized metadata in MCAP file (`#1423 <https://github.com/ros2/rosbag2/issues/1423>`_)
-* Contributors: Alejandro Hernández Cordero, Michael Orlov, Patrick Roncagliolo, Roman Sokolkov, Tomoya Fujita, uupks
-
-0.24.0 (2023-07-11)
--------------------
-* Implement storing and loading ROS_DISTRO from metadata.yaml and mcap files (`#1241 <https://github.com/ros2/rosbag2/issues/1241>`_)
+* Add ROS_DISTRO metadata record to mcap file when opening for writing (`#1371 <https://github.com/ros2/rosbag2/issues/1371>`_)
 * Contributors: Emerson Knapp
 
-0.23.0 (2023-04-28)
+0.22.1 (2023-05-18)
 -------------------
 
 0.22.0 (2023-04-18)

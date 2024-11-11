@@ -2,64 +2,38 @@
 Changelog for package ros2bag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.26.5 (2024-09-06)
+0.22.8 (2024-11-09)
 -------------------
-* Add cli option compression-threads-priority (`#1768 <https://github.com/ros2/rosbag2/issues/1768>`_) (`#1778 <https://github.com/ros2/rosbag2/issues/1778>`_)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-  (cherry picked from commit 25c3e1c2effdaea3b880c39ff7580b2f38a44b1c)
-  Co-authored-by: Roman <rsokolkov@gmail.com>
+
+0.22.7 (2024-07-11)
+-------------------
+* Allow to specify start offset from CLI arguments equal to 0.0 for the rosbag2 player (`#1714 <https://github.com/ros2/rosbag2/issues/1714>`_)
+* Add --log-level to ros2 bag play and record (`#1654 <https://github.com/ros2/rosbag2/issues/1654>`_)
+* Resolve recording option problem (`#1649 <https://github.com/ros2/rosbag2/issues/1649>`_)
+* Contributors: Barry Xu, Michael Orlov, Rein Appeldoorn, Roman
+
+0.22.6 (2024-02-07)
+-------------------
+
+0.22.5 (2023-11-18)
+-------------------
+
+0.22.4 (2023-10-24)
+-------------------
+
+0.22.3 (2023-09-08)
+-------------------
+
+0.22.2 (2023-07-14)
+-------------------
+* Wait for /clock before beginning recording when using sim time (`#1391 <https://github.com/ros2/rosbag2/issues/1391>`_)
+* Fix wrong descritpion for '--ignore-leaf-topics' (`#1345 <https://github.com/ros2/rosbag2/issues/1345>`_)
+* Contributors: Barry Xu
+
+0.22.1 (2023-05-18)
+-------------------
+* Cleanup the help text for ros2 bag record. (`#1329 <https://github.com/ros2/rosbag2/issues/1329>`_) (`#1333 <https://github.com/ros2/rosbag2/issues/1333>`_)
 * Contributors: mergify[bot]
-
-0.26.4 (2024-06-27)
--------------------
-* fix(start-offset): allow specifying a start offset of 0 (`#1682 <https://github.com/ros2/rosbag2/issues/1682>`_) (`#1713 <https://github.com/ros2/rosbag2/issues/1713>`_)
-  Co-authored-by: Rein Appeldoorn <reinzor@gmail.com>
-* Exclude recorded /clock topic when --clock option is specified (`#1646 <https://github.com/ros2/rosbag2/issues/1646>`_) (`#1706 <https://github.com/ros2/rosbag2/issues/1706>`_)
-  Co-authored-by: Kosuke Takeuchi <kosuke.tnp@gmail.com>
-* [jazzy] Sweep cleanup in rosbag2 recorder CLI args verification code (backport `#1633 <https://github.com/ros2/rosbag2/issues/1633>`_) (`#1684 <https://github.com/ros2/rosbag2/issues/1684>`_)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* Add --log-level to ros2 bag play and record (`#1625 <https://github.com/ros2/rosbag2/issues/1625>`_) (`#1674 <https://github.com/ros2/rosbag2/issues/1674>`_)
-  Co-authored-by: Roman Sokolkov <rsokolkov@gmail.com>
-* [jazzy] Add optional  '--topics' CLI argument for 'ros2 bag record' (backport `#1632 <https://github.com/ros2/rosbag2/issues/1632>`_) (`#1640 <https://github.com/ros2/rosbag2/issues/1640>`_)
-  Co-authored-by: Tomoya Fujita <Tomoya.Fujita@sony.com>
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-
-0.26.3 (2024-05-15)
--------------------
-
-0.26.2 (2024-04-24)
--------------------
-
-0.26.1 (2024-04-17)
--------------------
-
-0.26.0 (2024-04-16)
--------------------
-* Add option to disable recorder keyboard controls (`#1607 <https://github.com/ros2/rosbag2/issues/1607>`_)
-* Support service 2/2 --- rosbag2 service play (`#1481 <https://github.com/ros2/rosbag2/issues/1481>`_)
-* Added exclude-topic-types to record (`#1582 <https://github.com/ros2/rosbag2/issues/1582>`_)
-* Contributors: Alejandro Hernández Cordero, Barry Xu, Bernd Pfrommer, Michael Orlov
-
-0.25.0 (2024-03-27)
--------------------
-* Overhaul in the rosbag2_transport::TopicFilter class and relevant tests (`#1585 <https://github.com/ros2/rosbag2/issues/1585>`_)
-* Filter topic by type  (`#1577 <https://github.com/ros2/rosbag2/issues/1577>`_)
-* Implement service recording and display info about recorded services (`#1480 <https://github.com/ros2/rosbag2/issues/1480>`_)
-* Add python3-yaml as a dependency (`#1490 <https://github.com/ros2/rosbag2/issues/1490>`_)
-* Fix the description of paramter '--topics' for play (`#1426 <https://github.com/ros2/rosbag2/issues/1426>`_)
-* Contributors: Alejandro Hernández Cordero, Barry Xu, Michael Orlov, Michal Sojka
-
-0.24.0 (2023-07-11)
--------------------
-* When using sim time, wait for /clock before beginning recording (`#1378 <https://github.com/ros2/rosbag2/issues/1378>`_)
-* Revert "Don't record sim-time messages before first /clock (`#1354 <https://github.com/ros2/rosbag2/issues/1354>`_)" (`#1377 <https://github.com/ros2/rosbag2/issues/1377>`_)
-* Don't record sim-time messages before first /clock (`#1354 <https://github.com/ros2/rosbag2/issues/1354>`_)
-* Fix wrong descritpion for '--ignore-leaf-topics' (`#1344 <https://github.com/ros2/rosbag2/issues/1344>`_)
-* Cleanup the help text for ros2 bag record. (`#1329 <https://github.com/ros2/rosbag2/issues/1329>`_)
-* Contributors: Barry Xu, Chris Lalancette, Emerson Knapp
-
-0.23.0 (2023-04-28)
--------------------
 
 0.22.0 (2023-04-18)
 -------------------

@@ -38,9 +38,8 @@ template<typename T>
 class Writer : public rosbag2_cpp::Writer
 {
 public:
-  template<typename ... Args>
-  explicit Writer(Args && ... args)
-  : rosbag2_cpp::Writer(std::make_unique<T>(std::forward<Args>(args)...))
+  Writer()
+  : rosbag2_cpp::Writer(std::make_unique<T>())
   {}
 
   /// Write a serialized message to a bag file
@@ -48,22 +47,13 @@ public:
     const std::string & topic_name, const std::string & message,
     const rcutils_time_point_value_t & time_stamp)
   {
-    write(topic_name, message, time_stamp, time_stamp);
-  }
-
-  void write(
-    const std::string & topic_name, const std::string & message,
-    const rcutils_time_point_value_t & recv_timestamp,
-    const rcutils_time_point_value_t & send_timestamp)
-  {
     auto bag_message =
       std::make_shared<rosbag2_storage::SerializedBagMessage>();
 
     bag_message->topic_name = topic_name;
     bag_message->serialized_data =
       rosbag2_storage::make_serialized_message(message.c_str(), message.length());
-    bag_message->recv_timestamp = recv_timestamp;
-    bag_message->send_timestamp = send_timestamp;
+    bag_message->time_stamp = time_stamp;
 
     rosbag2_cpp::Writer::write(bag_message);
   }
@@ -106,12 +96,7 @@ PYBIND11_MODULE(_writer, m) {
     pybind11::overload_cast<
       const rosbag2_storage::StorageOptions &, const rosbag2_cpp::ConverterOptions &
     >(&PyWriter::open))
-  .def(
-    "write", pybind11::overload_cast<const std::string &, const std::string &,
-    const rcutils_time_point_value_t &>(&PyWriter::write))
-  .def(
-    "write", pybind11::overload_cast<const std::string &, const std::string &,
-    const rcutils_time_point_value_t &, const rcutils_time_point_value_t &>(&PyWriter::write))
+  .def("write", &PyWriter::write)
   .def("close", &PyWriter::close)
   .def("remove_topic", &PyWriter::remove_topic)
   .def(
@@ -122,19 +107,13 @@ PYBIND11_MODULE(_writer, m) {
   ;
 
   pybind11::class_<PyCompressionWriter>(m, "SequentialCompressionWriter")
-  .def(pybind11::init<rosbag2_compression::CompressionOptions>())
+  .def(pybind11::init())
   .def(
     "open",
     pybind11::overload_cast<
       const rosbag2_storage::StorageOptions &, const rosbag2_cpp::ConverterOptions &
     >(&PyCompressionWriter::open))
-  .def(
-    "write", pybind11::overload_cast<const std::string &, const std::string &,
-    const rcutils_time_point_value_t &>(&PyCompressionWriter::write))
-  .def(
-    "write", pybind11::overload_cast<const std::string &, const std::string &,
-    const rcutils_time_point_value_t &,
-    const rcutils_time_point_value_t &>(&PyCompressionWriter::write))
+  .def("write", &PyCompressionWriter::write)
   .def("remove_topic", &PyCompressionWriter::remove_topic)
   .def(
     "create_topic",
