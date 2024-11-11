@@ -2,6 +2,11 @@
 Changelog for package rosbag2_transport
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.22.8 (2024-11-09)
+-------------------
+* Allow unknown types in bag rewrite (`#1818 <https://github.com/ros2/rosbag2/issues/1818>`_)
+* Contributors: Alejandro Hernández Cordero, Michael Orlov
+
 0.22.7 (2024-07-11)
 -------------------
 * Gracefully handle SIGINT and SIGTERM signals for play and burst CLI (`#1690 <https://github.com/ros2/rosbag2/issues/1690>`_)
