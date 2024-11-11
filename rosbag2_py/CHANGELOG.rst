@@ -2,6 +2,11 @@
 Changelog for package rosbag2_py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.22.8 (2024-11-09)
+-------------------
+* Bugfix for wrong timestamps in ros2 bag info (`#1753 <https://github.com/ros2/rosbag2/issues/1753>`_)
+* Contributors: Michael Orlov
+
 0.22.7 (2024-07-11)
 -------------------
 * Gracefully handle SIGINT and SIGTERM signals for play and burst CLI (`#1690 <https://github.com/ros2/rosbag2/issues/1690>`_)
