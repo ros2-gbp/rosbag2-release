@@ -1,0 +1,12 @@
+Source: ros-iron-rosbag2
+Section: misc
+Priority: optional
+Maintainer: Michael Orlov <michael.orlov@apex.ai>
+Build-Depends: debhelper (>= 9.0.0), ros-iron-ament-cmake, ros-iron-rosbag2-test-common <!nocheck>, ros-iron-rosbag2-tests <!nocheck>, ros-iron-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-iron-rosbag2
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-iron-ros2bag, ros-iron-rosbag2-compression, ros-iron-rosbag2-compression-zstd, ros-iron-rosbag2-cpp, ros-iron-rosbag2-py, ros-iron-rosbag2-storage, ros-iron-rosbag2-storage-default-plugins, ros-iron-rosbag2-transport, ros-iron-shared-queues-vendor, ros-iron-ros-workspace
+Description: Meta package for rosbag2 related packages
