@@ -1,0 +1,12 @@
+Source: ros-iron-zstd-vendor
+Section: misc
+Priority: optional
+Maintainer: Michael Orlov <michael.orlov@apex.ai>
+Build-Depends: debhelper (>= 9.0.0), git, libzstd-dev, ros-iron-ament-cmake, ros-iron-ros-workspace
+Homepage: https://facebook.github.io/zstd/
+Standards-Version: 3.9.2
+
+Package: ros-iron-zstd-vendor
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libzstd-dev, ros-iron-ros-workspace
+Description: Zstd compression vendor package, providing a dependency for Zstd.
