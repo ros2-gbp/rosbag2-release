@@ -21,7 +21,6 @@
 
 #include "rosbag2_storage/serialized_bag_message.hpp"
 #include "rosbag2_storage/bag_metadata.hpp"
-#include "rosbag2_storage/message_definition.hpp"
 #include "rosbag2_storage/topic_metadata.hpp"
 #include "rosbag2_storage/visibility_control.hpp"
 
@@ -39,11 +38,7 @@ public:
 
   virtual void write(const std::vector<std::shared_ptr<const SerializedBagMessage>> & msg) = 0;
 
-  virtual void update_metadata(const BagMetadata & bag_metadata) = 0;
-
-  virtual void create_topic(
-    const TopicMetadata & topic,
-    const rosbag2_storage::MessageDefinition & message_definition) = 0;
+  virtual void create_topic(const TopicMetadata & topic) = 0;
 
   virtual void remove_topic(const TopicMetadata & topic) = 0;
 };

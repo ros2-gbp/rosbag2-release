@@ -86,10 +86,10 @@ bool Reindexer::compare_relative_file(
     throw std::runtime_error(error_text.c_str());
   }
 
-  auto first_file_num = std::stoul(first_match.str(1), nullptr, 10);
-  auto second_file_num = std::stoul(second_match.str(1), nullptr, 10);
+  auto first_db_num = std::stoul(first_match.str(1), nullptr, 10);
+  auto second_db_num = std::stoul(second_match.str(1), nullptr, 10);
 
-  return first_file_num < second_file_num;
+  return first_db_num < second_db_num;
 }
 
 /// Retrieve bag storage files from the bag directory.
@@ -122,7 +122,7 @@ void Reindexer::get_bag_files(
     }
   } while (rcutils_dir_iter_next(dir_iter));
 
-  // Sort relative file path by number
+  // Sort relative file path by database number
   std::sort(
     output.begin(), output.end(),
     [&, this](rcpputils::fs::path a, rcpputils::fs::path b) {
@@ -165,13 +165,11 @@ void Reindexer::aggregate_metadata(
   const rosbag2_storage::StorageOptions & storage_options)
 {
   std::map<std::string, rosbag2_storage::TopicInformation> temp_topic_info;
-  std::chrono::time_point<std::chrono::high_resolution_clock> latest_log_start =
-    std::chrono::time_point<std::chrono::high_resolution_clock>::min();
 
   // In order to most accurately reconstruct the metadata, we need to
   // visit each of the contained relative files files in the bag,
   // open them, read the info, and write it into an aggregated metadata object.
-  ROSBAG2_CPP_LOG_DEBUG_STREAM("Extracting metadata from bag file(s)");
+  ROSBAG2_CPP_LOG_DEBUG_STREAM("Extracting metadata from database(s)");
   for (const auto & f_ : files) {
     ROSBAG2_CPP_LOG_DEBUG_STREAM("Extracting from file: " + f_.string());
 
@@ -191,15 +189,6 @@ void Reindexer::aggregate_metadata(
     rosbag2_cpp::ConverterOptions blank_converter_options {};
     bag_reader->open(temp_so, blank_converter_options);
     auto temp_metadata = bag_reader->get_metadata();
-    metadata_.storage_identifier = temp_metadata.storage_identifier;
-
-    // try to find the last log for the most complete custom data section
-    if (latest_log_start < temp_metadata.starting_time) {
-      latest_log_start = temp_metadata.starting_time;
-      if (!temp_metadata.custom_data.empty()) {
-        metadata_.custom_data = temp_metadata.custom_data;
-      }
-    }
 
     if (temp_metadata.starting_time < metadata_.starting_time) {
       metadata_.starting_time = temp_metadata.starting_time;
@@ -260,13 +249,13 @@ void Reindexer::reindex(const rosbag2_storage::StorageOptions & storage_options)
   std::vector<rcpputils::fs::path> files;
   get_bag_files(base_folder_, files);
   if (files.empty()) {
-    throw std::runtime_error("No storage files found for reindexing. Abort");
+    throw std::runtime_error("No database files found for reindexing. Abort");
   }
 
   init_metadata(files, storage_options);
   ROSBAG2_CPP_LOG_DEBUG_STREAM("Completed init_metadata");
 
-  // Collect all metadata from files
+  // Collect all metadata from database files
   aggregate_metadata(files, bag_reader, storage_options);
   ROSBAG2_CPP_LOG_DEBUG_STREAM("Completed aggregate_metadata");
 

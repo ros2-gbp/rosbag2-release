@@ -22,7 +22,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include "rosbag2_transport/topic_filter.hpp"
+#include "./topic_filter.hpp"
 
 using namespace ::testing;  // NOLINT
 
