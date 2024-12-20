@@ -75,14 +75,15 @@ std::shared_ptr<rosbag2_storage::SerializedBagMessage> Converter::convert(
   // deserialize
   rosbag2_cpp::introspection_message_set_topic_name(
     allocated_ros_message.get(), message->topic_name.c_str());
-  allocated_ros_message->time_stamp = message->time_stamp;
+  allocated_ros_message->time_stamp = message->recv_timestamp;
   input_converter_->deserialize(message, rmw_ts, allocated_ros_message);
 
   // re-serialize with the new serializer
   auto output_message = std::make_shared<rosbag2_storage::SerializedBagMessage>();
   output_message->serialized_data = rosbag2_storage::make_empty_serialized_message(0);
   output_message->topic_name = std::string(allocated_ros_message->topic_name);
-  output_message->time_stamp = allocated_ros_message->time_stamp;
+  output_message->recv_timestamp = message->recv_timestamp;
+  output_message->send_timestamp = message->send_timestamp;
   output_converter_->serialize(allocated_ros_message, rmw_ts, output_message);
   return output_message;
 }
