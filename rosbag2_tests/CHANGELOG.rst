@@ -2,6 +2,20 @@
 Changelog for package rosbag2_tests
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.26.6 (2024-12-18)
+-------------------
+* [jazzy] Add "--sort" CLI option to the "ros2 bag info" command (backport `#1804 <https://github.com/ros2/rosbag2/issues/1804>`_) (`#1838 <https://github.com/ros2/rosbag2/issues/1838>`_)
+  Co-authored-by: Soenke Prophet <soenke.prophet@gmail.com>
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+  Co-authored-by: Sanoronas <soenke.prophet@gmail.com>
+* [jazzy] Add computation of size contribution to info verb (backport `#1726 <https://github.com/ros2/rosbag2/issues/1726>`_) (`#1872 <https://github.com/ros2/rosbag2/issues/1872>`_)
+  Co-authored-by: Nicola Loi <nicolaloi@outlook.com>
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+* Improve the reliability of rosbag2 tests (`#1796 <https://github.com/ros2/rosbag2/issues/1796>`_) (`#1806 <https://github.com/ros2/rosbag2/issues/1806>`_)
+  Co-authored-by: Chris Lalancette <clalancette@gmail.com>
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+* Contributors: Marco A. Gutierrez, mergify[bot]
+
 0.26.5 (2024-09-06)
 -------------------
 * Small cleanups to the rosbag2 tests. (`#1792 <https://github.com/ros2/rosbag2/issues/1792>`_) (`#1793 <https://github.com/ros2/rosbag2/issues/1793>`_)
