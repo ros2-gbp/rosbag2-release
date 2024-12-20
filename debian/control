@@ -1,0 +1,12 @@
+Source: ros-jazzy-ros2bag
+Section: misc
+Priority: optional
+Maintainer: Michael Orlov <michael.orlov@apex.ai>
+Build-Depends: debhelper (>= 9.0.0), python3-pytest <!nocheck>, ros-jazzy-ament-copyright <!nocheck>, ros-jazzy-ament-flake8 <!nocheck>, ros-jazzy-ament-pep257 <!nocheck>, ros-jazzy-launch-testing <!nocheck>, ros-jazzy-launch-testing-ros <!nocheck>, ros-jazzy-rosbag2-storage-default-plugins <!nocheck>, ros-jazzy-rosbag2-test-common <!nocheck>, ros-jazzy-ros-workspace, python3-all, python3-setuptools, dh-python
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-jazzy-ros2bag
+Architecture: any
+Depends: ${python3:Depends}, ${misc:Depends}, python3-yaml, ros-jazzy-ament-index-python, ros-jazzy-rclpy, ros-jazzy-ros2cli, ros-jazzy-rosbag2-py, ros-jazzy-ros-workspace
+Description: Entry point for rosbag in ROS 2
