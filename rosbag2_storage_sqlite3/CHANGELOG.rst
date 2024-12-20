@@ -2,6 +2,9 @@
 Changelog for package rosbag2_storage_default_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.26.6 (2024-12-18)
+-------------------
+
 0.26.5 (2024-09-06)
 -------------------
 * Fix incorrect zero size for sqlite storage (`#1759 <https://github.com/ros2/rosbag2/issues/1759>`_) (`#1761 <https://github.com/ros2/rosbag2/issues/1761>`_)

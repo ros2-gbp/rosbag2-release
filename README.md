@@ -138,6 +138,14 @@ $ ros2 bag play <bag>
 The bag argument can be a directory containing `metadata.yaml` and one or more storage files, or to a single storage file such as `.mcap` or `.db3`.
 The Player will automatically detect which storage implementation to use for playing.
 
+To play back multiple bags:
+
+```
+$ ros2 bag play <bag1> -i <bag2> -i <bag3>
+```
+
+Messages from all provided bags will be played in order, based on their original recording reception timestamps.
+
 #### Controlling playback via services
 
 The Rosbag2 player provides the following services for remote control, which can be called via `ros2 service` commandline or from your nodes,
@@ -377,14 +385,14 @@ def generate_launch_description():
 ## Using with composition
 
 Play and record are fundamental tasks of `rosbag2`. However, playing or recording data at high rates may have limitations (e.g. spurious packet drops) due to one of the following:
-- low network bandwith
+- low network bandwidth
 - high CPU load
 - slow mass memory
 - ROS 2 middleware serialization/deserialization delays & overhead
 
 ROS 2 C++ nodes can benefit from intra-process communication to partially or completely bypass network transport of messages between two nodes.
 
-Multiple _components_ can be _composed_, either [statically](https://docs.ros.org/en/rolling/Tutorials/Intermediate/Composition.html#compile-time-composition-using-ros-services) or [dynamically](https://docs.ros.org/en/rolling/Tutorials/Intermediate/Composition.html#run-time-composition-using-ros-services-with-a-publisher-and-subscriber): all the composed component will share the same address space because they will be loaded in a single process.
+Multiple _components_ can be _composed_, either [statically](https://docs.ros.org/en/rolling/Tutorials/Intermediate/Composition.html#compile-time-composition-with-hardcoded-nodes) or [dynamically](https://docs.ros.org/en/rolling/Tutorials/Intermediate/Composition.html#run-time-composition-using-ros-services-with-a-publisher-and-subscriber): all the composed component will share the same address space because they will be loaded in a single process.
 
 A prerequirement is for each C++ node to be [_composable_](https://docs.ros.org/en/rolling/Concepts/Intermediate/About-Composition.html?highlight=composition) and to follow the [guidelines](https://docs.ros.org/en/rolling/Tutorials/Demos/Intra-Process-Communication.html?highlight=intra) for efficient publishing & subscription.
 
