@@ -2,6 +2,25 @@
 Changelog for package ros2bag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.26.6 (2024-12-18)
+-------------------
+* Publish clock after delay is over and disable delay on next loops (`#1861 <https://github.com/ros2/rosbag2/issues/1861>`_) (`#1878 <https://github.com/ros2/rosbag2/issues/1878>`_)
+  Co-authored-by: Nicola Loi <nicolaloi@outlook.com>
+* [jazzy] Add support for replaying multiple bags (backport `#1848 <https://github.com/ros2/rosbag2/issues/1848>`_) (`#1873 <https://github.com/ros2/rosbag2/issues/1873>`_)
+  Co-authored-by: Christophe Bedard <christophe.bedard@apex.ai>
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+* [jazzy] Add "--sort" CLI option to the "ros2 bag info" command (backport `#1804 <https://github.com/ros2/rosbag2/issues/1804>`_) (`#1838 <https://github.com/ros2/rosbag2/issues/1838>`_)
+  Co-authored-by: Soenke Prophet <soenke.prophet@gmail.com>
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+  Co-authored-by: Sanoronas <soenke.prophet@gmail.com>
+* [jazzy] Add computation of size contribution to info verb (backport `#1726 <https://github.com/ros2/rosbag2/issues/1726>`_) (`#1872 <https://github.com/ros2/rosbag2/issues/1872>`_)
+  Co-authored-by: Michael Orlov <morlovmr@gmail.com>
+  Co-authored-by: Nicola Loi <nicolaloi@outlook.com>
+* Rename rclpy.qos.QoS*Policy to rclpy.qos.*Policy (`#1832 <https://github.com/ros2/rosbag2/issues/1832>`_) (`#1841 <https://github.com/ros2/rosbag2/issues/1841>`_)
+  (cherry picked from commit 786c3c4b8ab05271630371cf515130ba02a9cde8)
+  Co-authored-by: Christophe Bedard <christophe.bedard@apex.ai>
+* Contributors: Marco A. Gutierrez, mergify[bot]
+
 0.26.5 (2024-09-06)
 -------------------
 * Add cli option compression-threads-priority (`#1768 <https://github.com/ros2/rosbag2/issues/1768>`_) (`#1778 <https://github.com/ros2/rosbag2/issues/1778>`_)
@@ -9,6 +28,7 @@ Changelog for package ros2bag
   (cherry picked from commit 25c3e1c2effdaea3b880c39ff7580b2f38a44b1c)
   Co-authored-by: Roman <rsokolkov@gmail.com>
 * Contributors: mergify[bot]
+
 
 0.26.4 (2024-06-27)
 -------------------
