@@ -77,6 +77,7 @@ public:
   ROSBAG2_CPP_PUBLIC
   virtual bool sleep_until(rclcpp::Time time) = 0;
 
+
   /**
    * Change the rate of the flow of time for the clock.
    * \param rate new rate of clock playback
