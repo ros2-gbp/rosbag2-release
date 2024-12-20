@@ -2,6 +2,36 @@
 Changelog for package rosbag2_transport
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.26.6 (2024-12-18)
+-------------------
+* Publish clock after delay is over and disable delay on next loops (`#1861 <https://github.com/ros2/rosbag2/issues/1861>`_) (`#1878 <https://github.com/ros2/rosbag2/issues/1878>`_)
+  (cherry picked from commit 15b82607d0e36a6ff87f60405b072919d16fb03d)
+  Co-authored-by: Nicola Loi <nicolaloi@outlook.com>
+* [jazzy] Add PlayerClock::wakeup() to interrupt sleeping (backport `#1869 <https://github.com/ros2/rosbag2/issues/1869>`_) (`#1875 <https://github.com/ros2/rosbag2/issues/1875>`_)
+  (cherry picked from commit c8feaea5b64e824bbe76e920f48a3ca39b72f9fc)
+  Co-authored-by: Christophe Bedard <christophe.bedard@apex.ai>
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+* Add debug information for flaky can_record_again_after_stop test (`#1871 <https://github.com/ros2/rosbag2/issues/1871>`_) (`#1874 <https://github.com/ros2/rosbag2/issues/1874>`_)
+  (cherry picked from commit 4602b2ce829842e17ccb8bf4a74c135d6c8f2623)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+* [jazzy] Add support for replaying multiple bags (backport `#1848 <https://github.com/ros2/rosbag2/issues/1848>`_) (`#1873 <https://github.com/ros2/rosbag2/issues/1873>`_)
+  (cherry picked from commit 125db50b4d9a585bab33f2908008fe1168bb9cf3)
+  Co-authored-by: Christophe Bedard <christophe.bedard@apex.ai>
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+* Reintroduce `Don't warn for unknown types if topics are not selected` (`#1825 <https://github.com/ros2/rosbag2/issues/1825>`_) (`#1827 <https://github.com/ros2/rosbag2/issues/1827>`_)
+  (cherry picked from commit e75d6d659fcae243b8486a94173255b237817f22)
+  Co-authored-by: Ramon Wijnands <ramon.wijnands007@gmail.com>
+* Allow unknown types in bag rewrite (`#1812 <https://github.com/ros2/rosbag2/issues/1812>`_) (`#1817 <https://github.com/ros2/rosbag2/issues/1817>`_)
+  (cherry picked from commit cd7bd63696604973e23c739afa6387556f3e7781)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+* Improve the reliability of rosbag2 tests (`#1796 <https://github.com/ros2/rosbag2/issues/1796>`_) (`#1806 <https://github.com/ros2/rosbag2/issues/1806>`_)
+  Co-authored-by: Chris Lalancette <clalancette@gmail.com>
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+* Removed warnings (`#1794 <https://github.com/ros2/rosbag2/issues/1794>`_) (`#1810 <https://github.com/ros2/rosbag2/issues/1810>`_)
+  (cherry picked from commit 88c51a133a9a9aa3ef65a851f4d2aed448803fa1)
+  Co-authored-by: Alejandro Hernández Cordero <ahcorde@gmail.com>
+* Contributors: Marco A. Gutierrez, mergify[bot]
+
 0.26.5 (2024-09-06)
 -------------------
 * Small cleanups to the rosbag2 tests. (`#1792 <https://github.com/ros2/rosbag2/issues/1792>`_) (`#1793 <https://github.com/ros2/rosbag2/issues/1793>`_)
