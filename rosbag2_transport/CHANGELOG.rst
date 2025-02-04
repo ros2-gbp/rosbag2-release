@@ -2,67 +2,45 @@
 Changelog for package rosbag2_transport
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.26.6 (2024-12-18)
+0.31.0 (2025-02-02)
 -------------------
-* Publish clock after delay is over and disable delay on next loops (`#1861 <https://github.com/ros2/rosbag2/issues/1861>`_) (`#1878 <https://github.com/ros2/rosbag2/issues/1878>`_)
-  (cherry picked from commit 15b82607d0e36a6ff87f60405b072919d16fb03d)
-  Co-authored-by: Nicola Loi <nicolaloi@outlook.com>
-* [jazzy] Add PlayerClock::wakeup() to interrupt sleeping (backport `#1869 <https://github.com/ros2/rosbag2/issues/1869>`_) (`#1875 <https://github.com/ros2/rosbag2/issues/1875>`_)
-  (cherry picked from commit c8feaea5b64e824bbe76e920f48a3ca39b72f9fc)
-  Co-authored-by: Christophe Bedard <christophe.bedard@apex.ai>
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* Add debug information for flaky can_record_again_after_stop test (`#1871 <https://github.com/ros2/rosbag2/issues/1871>`_) (`#1874 <https://github.com/ros2/rosbag2/issues/1874>`_)
-  (cherry picked from commit 4602b2ce829842e17ccb8bf4a74c135d6c8f2623)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* [jazzy] Add support for replaying multiple bags (backport `#1848 <https://github.com/ros2/rosbag2/issues/1848>`_) (`#1873 <https://github.com/ros2/rosbag2/issues/1873>`_)
-  (cherry picked from commit 125db50b4d9a585bab33f2908008fe1168bb9cf3)
-  Co-authored-by: Christophe Bedard <christophe.bedard@apex.ai>
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* Reintroduce `Don't warn for unknown types if topics are not selected` (`#1825 <https://github.com/ros2/rosbag2/issues/1825>`_) (`#1827 <https://github.com/ros2/rosbag2/issues/1827>`_)
-  (cherry picked from commit e75d6d659fcae243b8486a94173255b237817f22)
-  Co-authored-by: Ramon Wijnands <ramon.wijnands007@gmail.com>
-* Allow unknown types in bag rewrite (`#1812 <https://github.com/ros2/rosbag2/issues/1812>`_) (`#1817 <https://github.com/ros2/rosbag2/issues/1817>`_)
-  (cherry picked from commit cd7bd63696604973e23c739afa6387556f3e7781)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* Improve the reliability of rosbag2 tests (`#1796 <https://github.com/ros2/rosbag2/issues/1796>`_) (`#1806 <https://github.com/ros2/rosbag2/issues/1806>`_)
-  Co-authored-by: Chris Lalancette <clalancette@gmail.com>
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* Removed warnings (`#1794 <https://github.com/ros2/rosbag2/issues/1794>`_) (`#1810 <https://github.com/ros2/rosbag2/issues/1810>`_)
-  (cherry picked from commit 88c51a133a9a9aa3ef65a851f4d2aed448803fa1)
-  Co-authored-by: Alejandro Hernández Cordero <ahcorde@gmail.com>
-* Contributors: Marco A. Gutierrez, mergify[bot]
+* Use tmpfs in rosbag2 temporary_directory_fixture (`#1901 <https://github.com/ros2/rosbag2/issues/1901>`_)
+* Bugfix: Recorder discovery does not restart after being stopped (`#1894 <https://github.com/ros2/rosbag2/issues/1894>`_)
+* Bugfix. Event publisher not starting for second run after stop (`#1888 <https://github.com/ros2/rosbag2/issues/1888>`_)
+* Add support for replaying based on publication timestamp (`#1876 <https://github.com/ros2/rosbag2/issues/1876>`_)
+* Publish clock after delay is over and disable delay on next loops (`#1861 <https://github.com/ros2/rosbag2/issues/1861>`_)
+* Add PlayerClock::wakeup() to interrupt sleeping (`#1869 <https://github.com/ros2/rosbag2/issues/1869>`_)
+* Add debug information for flaky can_record_again_after_stop test (`#1871 <https://github.com/ros2/rosbag2/issues/1871>`_)
+* Support replaying multiple bags (`#1848 <https://github.com/ros2/rosbag2/issues/1848>`_)
+* Contributors: Christophe Bedard, Michael Orlov, Nicola Loi, Øystein Sture
 
-0.26.5 (2024-09-06)
+0.30.0 (2024-11-26)
 -------------------
-* Small cleanups to the rosbag2 tests. (`#1792 <https://github.com/ros2/rosbag2/issues/1792>`_) (`#1793 <https://github.com/ros2/rosbag2/issues/1793>`_)
-  (cherry picked from commit 604cebcf11775151efa94f7c30ba1aea68e90c5c)
-  Co-authored-by: Chris Lalancette <clalancette@gmail.com>
-* Add cli option compression-threads-priority (`#1768 <https://github.com/ros2/rosbag2/issues/1768>`_) (`#1778 <https://github.com/ros2/rosbag2/issues/1778>`_)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-  (cherry picked from commit 25c3e1c2effdaea3b880c39ff7580b2f38a44b1c)
-  Co-authored-by: Roman <rsokolkov@gmail.com>
-* Bugfix for bag_split event callbacks called to early with file compression (`#1643 <https://github.com/ros2/rosbag2/issues/1643>`_) (`#1732 <https://github.com/ros2/rosbag2/issues/1732>`_)
-  (cherry picked from commit 1877b53847bda4d1f2668187b79fa27a796c3438)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* Contributors: mergify[bot]
+* Reintroduce `Don't warn for unknown types if topics are not selected` (`#1825 <https://github.com/ros2/rosbag2/issues/1825>`_)
+* Allow unknown types in bag rewrite (`#1812 <https://github.com/ros2/rosbag2/issues/1812>`_)
+* Improve the reliability of rosbag2 tests (`#1796 <https://github.com/ros2/rosbag2/issues/1796>`_)
+* Contributors: Alejandro Hernández Cordero, Chris Lalancette, Michael Orlov, Ramon Wijnands, Roman
 
-0.26.4 (2024-06-27)
+0.29.0 (2024-09-03)
 -------------------
-* Bugfix for issue where unable to create composable nodes with compression (`#1679 <https://github.com/ros2/rosbag2/issues/1679>`_) (`#1716 <https://github.com/ros2/rosbag2/issues/1716>`_)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* Add unit tests to cover message's send and received timestamps during recording (`#1641 <https://github.com/ros2/rosbag2/issues/1641>`_) (`#1673 <https://github.com/ros2/rosbag2/issues/1673>`_)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* Add support for "all" and "exclude" in RecordOptions YAML decoder (`#1664 <https://github.com/ros2/rosbag2/issues/1664>`_) (`#1676 <https://github.com/ros2/rosbag2/issues/1676>`_)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* Contributors: mergify[bot]
+* Removed warnings (`#1794 <https://github.com/ros2/rosbag2/issues/1794>`_)
+* Small cleanups to the rosbag2 tests. (`#1792 <https://github.com/ros2/rosbag2/issues/1792>`_)
+* Add cli option compression-threads-priority (`#1768 <https://github.com/ros2/rosbag2/issues/1768>`_)
+* [WIP] Remove rcpputils::fs dependencies in rosbag2 packages (`#1740 <https://github.com/ros2/rosbag2/issues/1740>`_)
+* Bugfix for bag_split event callbacks called to early with file compression (`#1643 <https://github.com/ros2/rosbag2/issues/1643>`_)
+* Contributors: Alejandro Hernández Cordero, Chris Lalancette, Michael Orlov, Roman
 
-0.26.3 (2024-05-15)
+0.28.0 (2024-06-17)
 -------------------
+* Bugfix for issue where unable to create composable nodes with compression (`#1679 <https://github.com/ros2/rosbag2/issues/1679>`_)
+* Add support for "all" and "exclude" in RecordOptions YAML decoder (`#1664 <https://github.com/ros2/rosbag2/issues/1664>`_)
+* Add unit tests to cover message's send and received timestamps during recording (`#1641 <https://github.com/ros2/rosbag2/issues/1641>`_)
+* Contributors: Michael Orlov
 
-0.26.2 (2024-04-24)
+0.27.0 (2024-04-30)
 -------------------
-* Removed warnings - unqualified-std-cast-call (`#1618 <https://github.com/ros2/rosbag2/issues/1618>`_) (`#1622 <https://github.com/ros2/rosbag2/issues/1622>`_)
-* Contributors: mergify[bot]
+* Removed warnings - unqualified-std-cast-call (`#1618 <https://github.com/ros2/rosbag2/issues/1618>`_)
+* Contributors: Alejandro Hernández Cordero
 
 0.26.1 (2024-04-17)
 -------------------

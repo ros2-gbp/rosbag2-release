@@ -2,52 +2,36 @@
 Changelog for package ros2bag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.26.6 (2024-12-18)
+0.31.0 (2025-02-02)
 -------------------
-* Publish clock after delay is over and disable delay on next loops (`#1861 <https://github.com/ros2/rosbag2/issues/1861>`_) (`#1878 <https://github.com/ros2/rosbag2/issues/1878>`_)
-  Co-authored-by: Nicola Loi <nicolaloi@outlook.com>
-* [jazzy] Add support for replaying multiple bags (backport `#1848 <https://github.com/ros2/rosbag2/issues/1848>`_) (`#1873 <https://github.com/ros2/rosbag2/issues/1873>`_)
-  Co-authored-by: Christophe Bedard <christophe.bedard@apex.ai>
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* [jazzy] Add "--sort" CLI option to the "ros2 bag info" command (backport `#1804 <https://github.com/ros2/rosbag2/issues/1804>`_) (`#1838 <https://github.com/ros2/rosbag2/issues/1838>`_)
-  Co-authored-by: Soenke Prophet <soenke.prophet@gmail.com>
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-  Co-authored-by: Sanoronas <soenke.prophet@gmail.com>
-* [jazzy] Add computation of size contribution to info verb (backport `#1726 <https://github.com/ros2/rosbag2/issues/1726>`_) (`#1872 <https://github.com/ros2/rosbag2/issues/1872>`_)
-  Co-authored-by: Michael Orlov <morlovmr@gmail.com>
-  Co-authored-by: Nicola Loi <nicolaloi@outlook.com>
-* Rename rclpy.qos.QoS*Policy to rclpy.qos.*Policy (`#1832 <https://github.com/ros2/rosbag2/issues/1832>`_) (`#1841 <https://github.com/ros2/rosbag2/issues/1841>`_)
-  (cherry picked from commit 786c3c4b8ab05271630371cf515130ba02a9cde8)
-  Co-authored-by: Christophe Bedard <christophe.bedard@apex.ai>
-* Contributors: Marco A. Gutierrez, mergify[bot]
+* Add test_xmllint.py to python packages. (`#1879 <https://github.com/ros2/rosbag2/issues/1879>`_)
+* Add support for replaying based on publication timestamp (`#1876 <https://github.com/ros2/rosbag2/issues/1876>`_)
+* Publish clock after delay is over and disable delay on next loops (`#1861 <https://github.com/ros2/rosbag2/issues/1861>`_)
+* Support replaying multiple bags (`#1848 <https://github.com/ros2/rosbag2/issues/1848>`_)
+* Contributors: Chris Lalancette, Christophe Bedard, Nicola Loi
 
-0.26.5 (2024-09-06)
+0.30.0 (2024-11-26)
 -------------------
-* Add cli option compression-threads-priority (`#1768 <https://github.com/ros2/rosbag2/issues/1768>`_) (`#1778 <https://github.com/ros2/rosbag2/issues/1778>`_)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-  (cherry picked from commit 25c3e1c2effdaea3b880c39ff7580b2f38a44b1c)
-  Co-authored-by: Roman <rsokolkov@gmail.com>
-* Contributors: mergify[bot]
+* Rename rclpy.qos.QoS*Policy to rclpy.qos.*Policy (`#1832 <https://github.com/ros2/rosbag2/issues/1832>`_)
+* Add "--sort" CLI option to the "ros2 bag info" command (`#1804 <https://github.com/ros2/rosbag2/issues/1804>`_)
+* Contributors: Alejandro Hernández Cordero, Christophe Bedard, Nicola Loi, Roman, Sanoronas
 
-
-0.26.4 (2024-06-27)
+0.29.0 (2024-09-03)
 -------------------
-* fix(start-offset): allow specifying a start offset of 0 (`#1682 <https://github.com/ros2/rosbag2/issues/1682>`_) (`#1713 <https://github.com/ros2/rosbag2/issues/1713>`_)
-  Co-authored-by: Rein Appeldoorn <reinzor@gmail.com>
-* Exclude recorded /clock topic when --clock option is specified (`#1646 <https://github.com/ros2/rosbag2/issues/1646>`_) (`#1706 <https://github.com/ros2/rosbag2/issues/1706>`_)
-  Co-authored-by: Kosuke Takeuchi <kosuke.tnp@gmail.com>
-* [jazzy] Sweep cleanup in rosbag2 recorder CLI args verification code (backport `#1633 <https://github.com/ros2/rosbag2/issues/1633>`_) (`#1684 <https://github.com/ros2/rosbag2/issues/1684>`_)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* Add --log-level to ros2 bag play and record (`#1625 <https://github.com/ros2/rosbag2/issues/1625>`_) (`#1674 <https://github.com/ros2/rosbag2/issues/1674>`_)
-  Co-authored-by: Roman Sokolkov <rsokolkov@gmail.com>
-* [jazzy] Add optional  '--topics' CLI argument for 'ros2 bag record' (backport `#1632 <https://github.com/ros2/rosbag2/issues/1632>`_) (`#1640 <https://github.com/ros2/rosbag2/issues/1640>`_)
-  Co-authored-by: Tomoya Fujita <Tomoya.Fujita@sony.com>
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+* Add cli option compression-threads-priority (`#1768 <https://github.com/ros2/rosbag2/issues/1768>`_)
+* Add computation of size contribution to info verb (`#1726 <https://github.com/ros2/rosbag2/issues/1726>`_)
+* Contributors: Nicola Loi, Roman
 
-0.26.3 (2024-05-15)
+0.28.0 (2024-06-17)
 -------------------
+* fix(start-offset): allow specifying a start offset of 0 (`#1682 <https://github.com/ros2/rosbag2/issues/1682>`_)
+* Exclude recorded /clock topic when --clock option is specified (`#1646 <https://github.com/ros2/rosbag2/issues/1646>`_)
+* Sweep cleanup in rosbag2 recorder CLI args verification code (`#1633 <https://github.com/ros2/rosbag2/issues/1633>`_)
+* Add --log-level to ros2 bag play and record (`#1625 <https://github.com/ros2/rosbag2/issues/1625>`_)
+* Add optional  '--topics' CLI argument for 'ros2 bag record' (`#1632 <https://github.com/ros2/rosbag2/issues/1632>`_)
+* Contributors: Kosuke Takeuchi, Michael Orlov, Rein Appeldoorn, Roman
 
-0.26.2 (2024-04-24)
+0.27.0 (2024-04-30)
 -------------------
 
 0.26.1 (2024-04-17)

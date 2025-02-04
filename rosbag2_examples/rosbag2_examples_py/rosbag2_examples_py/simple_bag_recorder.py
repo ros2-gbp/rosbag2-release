@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import rclpy
+from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from rclpy.serialization import serialize_message
 import rosbag2_py
@@ -24,13 +25,13 @@ class SimpleBagRecorder(Node):
         super().__init__('simple_bag_recorder')
         self.writer = rosbag2_py.SequentialWriter()
 
-        storage_options = rosbag2_py._storage.StorageOptions(
+        storage_options = rosbag2_py.StorageOptions(
             uri='my_bag',
             storage_id='sqlite3')
-        converter_options = rosbag2_py._storage.ConverterOptions('', '')
+        converter_options = rosbag2_py.ConverterOptions('', '')
         self.writer.open(storage_options, converter_options)
 
-        topic_info = rosbag2_py._storage.TopicMetadata(
+        topic_info = rosbag2_py.TopicMetadata(
             id=0,
             name='chatter',
             type='std_msgs/msg/String',
@@ -52,10 +53,12 @@ class SimpleBagRecorder(Node):
 
 
 def main(args=None):
-    rclpy.init(args=args)
-    sbr = SimpleBagRecorder()
-    rclpy.spin(sbr)
-    rclpy.shutdown()
+    try:
+        with rclpy.init(args=args):
+            sbr = SimpleBagRecorder()
+            rclpy.spin(sbr)
+    except (KeyboardInterrupt, ExternalShutdownException):
+        pass
 
 
 if __name__ == '__main__':

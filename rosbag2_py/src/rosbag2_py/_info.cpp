@@ -45,11 +45,11 @@ public:
   }
 
   void print_output(
-    const rosbag2_storage::BagMetadata & metadata_info, const std::string & sorting_method = "name")
+    const rosbag2_storage::BagMetadata & metadata_info, const std::string & sorting_method)
   {
     InfoSortingMethod sort_method = info_sorting_method_from_string(sorting_method);
     // Output formatted metadata
-    std::cout << format_bag_meta_data(metadata_info, false, false, {}, sort_method) << std::endl;
+    std::cout << format_bag_meta_data(metadata_info, {}, false, false, sort_method) << std::endl;
   }
 
   void print_output_topic_name_only(
@@ -74,7 +74,7 @@ public:
   void print_output_verbose(
     const std::string & uri,
     const rosbag2_storage::BagMetadata & metadata_info,
-    const std::string & sorting_method = "name")
+    const std::string & sorting_method)
   {
     std::vector<std::shared_ptr<rosbag2_cpp::rosbag2_service_info_t>> all_services_info;
     for (auto & file_info : metadata_info.files) {
@@ -101,7 +101,7 @@ public:
 
     rosbag2_py::InfoSortingMethod sort_method = info_sorting_method_from_string(sorting_method);
     // Output formatted metadata and service info
-    std::cout << format_bag_meta_data(metadata_info, true, true, messages_size, sort_method);
+    std::cout << format_bag_meta_data(metadata_info, messages_size, true, true, sort_method);
     std::cout <<
       format_service_info(all_services_info, messages_size, true, sort_method) << std::endl;
   }

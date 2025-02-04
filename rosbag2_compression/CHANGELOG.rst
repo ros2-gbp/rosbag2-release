@@ -2,41 +2,28 @@
 Changelog for package rosbag2_compression
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.26.6 (2024-12-18)
+0.31.0 (2025-02-02)
 -------------------
-* Bugfix: Update metadata with new file_info before saving it first time (`#1843 <https://github.com/ros2/rosbag2/issues/1843>`_) (`#1853 <https://github.com/ros2/rosbag2/issues/1853>`_)
-  (cherry picked from commit b5098eff15281c9e79853e8bb2ae9a0a104e6ea5)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* Make snapshot writing into a new file each time it is triggered (`#1842 <https://github.com/ros2/rosbag2/issues/1842>`_) (`#1849 <https://github.com/ros2/rosbag2/issues/1849>`_)
-  (cherry picked from commit 1877b53847bda4d1f2668187b79fa27a796c3438)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* Contributors: Marco A. Gutierrez, mergify[bot]
 
-0.26.5 (2024-09-06)
+0.30.0 (2024-11-26)
 -------------------
-* Add cli option compression-threads-priority (`#1768 <https://github.com/ros2/rosbag2/issues/1768>`_) (`#1778 <https://github.com/ros2/rosbag2/issues/1778>`_)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-  (cherry picked from commit 25c3e1c2effdaea3b880c39ff7580b2f38a44b1c)
-  Co-authored-by: Roman <rsokolkov@gmail.com>
-* Bugfix for bag_split event callbacks called to early with file compression (`#1643 <https://github.com/ros2/rosbag2/issues/1643>`_) (`#1732 <https://github.com/ros2/rosbag2/issues/1732>`_)
-  (cherry picked from commit 1877b53847bda4d1f2668187b79fa27a796c3438)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* Contributors: mergify[bot]
+* Bugfix: Update metadata with new file_info before saving it first time (`#1843 <https://github.com/ros2/rosbag2/issues/1843>`_)
+* Make snapshot writing into a new file each time it is triggered (`#1842 <https://github.com/ros2/rosbag2/issues/1842>`_)
+* Contributors: Alejandro Hernández Cordero, Michael Orlov, Roman
 
-0.26.4 (2024-06-27)
+0.29.0 (2024-09-03)
 -------------------
-* Fix for regression in `open_succeeds_twice` and `minimal_writer_example` tests (`#1667 <https://github.com/ros2/rosbag2/issues/1667>`_) (`#1675 <https://github.com/ros2/rosbag2/issues/1675>`_)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* Contributors: mergify[bot]
+* Add cli option compression-threads-priority (`#1768 <https://github.com/ros2/rosbag2/issues/1768>`_)
+* Bugfix for bag_split event callbacks called to early with file compression (`#1643 <https://github.com/ros2/rosbag2/issues/1643>`_)
+* Contributors: Michael Orlov, Roman
 
-0.26.3 (2024-05-15)
+0.28.0 (2024-06-17)
 -------------------
-* Bugfix for writer not being able to open again after closing (`#1599 <https://github.com/ros2/rosbag2/issues/1599>`_) (`#1639 <https://github.com/ros2/rosbag2/issues/1639>`_)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-  Co-authored-by: yschulz <yschulz854@gmail.com>
-* Contributors: mergify[bot]
+* Fix for regression in `open_succeeds_twice` and `minimal_writer_example` tests (`#1667 <https://github.com/ros2/rosbag2/issues/1667>`_)
+* Bugfix for writer not being able to open again after closing (`#1599 <https://github.com/ros2/rosbag2/issues/1599>`_)
+* Contributors: Michael Orlov, yschulz
 
-0.26.2 (2024-04-24)
+0.27.0 (2024-04-30)
 -------------------
 
 0.26.1 (2024-04-17)

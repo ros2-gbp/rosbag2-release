@@ -1,4 +1,4 @@
-# Copyright 2023 Open Source Robotics Foundation, Inc.
+# Copyright 2024 Sony Group Corporation.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,50 +11,44 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from example_interfaces.msg import Int32
+import sys
+
 import rclpy
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
-from rclpy.serialization import serialize_message
 import rosbag2_py
+from std_msgs.msg import String
 
 
-class DataGeneratorNode(Node):
+class SimpleBagReader(Node):
 
-    def __init__(self):
-        super().__init__('data_generator_node')
-        self.data = Int32()
-        self.data.data = 0
-        self.writer = rosbag2_py.SequentialWriter()
-
+    def __init__(self, bag_filename):
+        super().__init__('simple_bag_reader')
+        self.reader = rosbag2_py.SequentialReader()
         storage_options = rosbag2_py.StorageOptions(
-            uri='timed_synthetic_bag',
+            uri=bag_filename,
             storage_id='sqlite3')
         converter_options = rosbag2_py.ConverterOptions('', '')
-        self.writer.open(storage_options, converter_options)
+        self.reader.open(storage_options, converter_options)
 
-        topic_info = rosbag2_py.TopicMetadata(
-            id=0,
-            name='synthetic',
-            type='example_interfaces/msg/Int32',
-            serialization_format='cdr')
-        self.writer.create_topic(topic_info)
-
-        self.timer = self.create_timer(1, self.timer_callback)
+        self.publisher = self.create_publisher(String, 'chatter', 10)
+        self.timer = self.create_timer(0.1, self.timer_callback)
 
     def timer_callback(self):
-        self.writer.write(
-            'synthetic',
-            serialize_message(self.data),
-            self.get_clock().now().nanoseconds)
-        self.data.data += 1
+        while self.reader.has_next():
+            msg = self.reader.read_next()
+            if msg[0] != 'chatter':
+                continue
+            self.publisher.publish(msg[1])
+            self.get_logger().info('Publish serialized data to ' + msg[0])
+            break
 
 
 def main(args=None):
     try:
         with rclpy.init(args=args):
-            dgn = DataGeneratorNode()
-            rclpy.spin(dgn)
+            sbr = SimpleBagReader(sys.argv[1])
+            rclpy.spin(sbr)
     except (KeyboardInterrupt, ExternalShutdownException):
         pass
 

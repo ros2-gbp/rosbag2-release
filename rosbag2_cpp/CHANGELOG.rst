@@ -1,56 +1,38 @@
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package rosbag2
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package rosbag2_cpp
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.26.6 (2024-12-18)
+0.31.0 (2025-02-02)
 -------------------
-* Add more logging info to storage and reader/writer open operations (`#1881 <https://github.com/ros2/rosbag2/issues/1881>`_) (`#1882 <https://github.com/ros2/rosbag2/issues/1882>`_)
-  (cherry picked from commit 0823be2723e04715baacf99625b844cb88f58c21)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* [jazzy] Add PlayerClock::wakeup() to interrupt sleeping (backport `#1869 <https://github.com/ros2/rosbag2/issues/1869>`_) (`#1875 <https://github.com/ros2/rosbag2/issues/1875>`_)
-  Co-authored-by: Christophe Bedard <christophe.bedard@apex.ai>
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* [jazzy] Add support for replaying multiple bags (backport `#1848 <https://github.com/ros2/rosbag2/issues/1848>`_) (`#1873 <https://github.com/ros2/rosbag2/issues/1873>`_)
-  Co-authored-by: Christophe Bedard <christophe.bedard@apex.ai>
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* [jazzy] Add computation of size contribution to info verb (backport `#1726 <https://github.com/ros2/rosbag2/issues/1726>`_) (`#1872 <https://github.com/ros2/rosbag2/issues/1872>`_)
-  Co-authored-by: Nicola Loi <nicolaloi@outlook.com>
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* Bugfix: Update metadata with new file_info before saving it first time (`#1843 <https://github.com/ros2/rosbag2/issues/1843>`_) (`#1853 <https://github.com/ros2/rosbag2/issues/1853>`_)
-  (cherry picked from commit b5098eff15281c9e79853e8bb2ae9a0a104e6ea5)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* Make snapshot writing into a new file each time it is triggered (`#1842 <https://github.com/ros2/rosbag2/issues/1842>`_) (`#1849 <https://github.com/ros2/rosbag2/issues/1849>`_)
-* Bugfix for rosbag2_cpp serialization converter (`#1814 <https://github.com/ros2/rosbag2/issues/1814>`_) (`#1822 <https://github.com/ros2/rosbag2/issues/1822>`_)
-  (cherry picked from commit 6e82f52f3917c365ce60f9ffd8f5248e25c0fe55)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* Allow unknown types in bag rewrite (`#1812 <https://github.com/ros2/rosbag2/issues/1812>`_) (`#1817 <https://github.com/ros2/rosbag2/issues/1817>`_)
-  (cherry picked from commit cd7bd63696604973e23c739afa6387556f3e7781)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* Contributors: Marco A. Gutierrez, mergify[bot]
+* Add more logging info to storage and reader/writer open operations (`#1881 <https://github.com/ros2/rosbag2/issues/1881>`_)
+* Add PlayerClock::wakeup() to interrupt sleeping (`#1869 <https://github.com/ros2/rosbag2/issues/1869>`_)
+* Support replaying multiple bags (`#1848 <https://github.com/ros2/rosbag2/issues/1848>`_)
+* Contributors: Christophe Bedard, Michael Orlov
 
-0.26.5 (2024-09-06)
+0.30.0 (2024-11-26)
 -------------------
-* Bugfix for bag_split event callbacks called to early with file compression (`#1643 <https://github.com/ros2/rosbag2/issues/1643>`_) (`#1732 <https://github.com/ros2/rosbag2/issues/1732>`_)
-  (cherry picked from commit 1877b53847bda4d1f2668187b79fa27a796c3438)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* Contributors: mergify[bot]
+* Bugfix: Update metadata with new file_info before saving it first time (`#1843 <https://github.com/ros2/rosbag2/issues/1843>`_)
+* Make snapshot writing into a new file each time it is triggered (`#1842 <https://github.com/ros2/rosbag2/issues/1842>`_)
+* Bugfix for rosbag2_cpp serialization converter (`#1814 <https://github.com/ros2/rosbag2/issues/1814>`_)
+* Allow unknown types in bag rewrite (`#1812 <https://github.com/ros2/rosbag2/issues/1812>`_)
+* Contributors: Alejandro Hernández Cordero, Michael Orlov, Nicola Loi, Tomoya Fujita
 
-0.26.4 (2024-06-27)
+0.29.0 (2024-09-03)
 -------------------
-* Add topics with zero message counts to the SQLiteStorage::get_metadata(). (`#1725 <https://github.com/ros2/rosbag2/issues/1725>`_) (`#1731 <https://github.com/ros2/rosbag2/issues/1731>`_)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-  Co-authored-by: Tomoya Fujita <Tomoya.Fujita@sony.com>
-* Propagate "custom_data" and "ros_distro" in to the metadata.yaml file during re-indexing (`#1700 <https://github.com/ros2/rosbag2/issues/1700>`_) (`#1710 <https://github.com/ros2/rosbag2/issues/1710>`_)
-  Co-authored-by: Cole Tucker <coalman321@users.noreply.github.com>
+* Add computation of size contribution to info verb (`#1726 <https://github.com/ros2/rosbag2/issues/1726>`_)
+* [WIP] Remove rcpputils::fs dependencies in rosbag2 packages (`#1740 <https://github.com/ros2/rosbag2/issues/1740>`_)
+* Removed deprecated write method (`#1738 <https://github.com/ros2/rosbag2/issues/1738>`_)
+* Bugfix for bag_split event callbacks called to early with file compression (`#1643 <https://github.com/ros2/rosbag2/issues/1643>`_)
+* Add topics with zero message counts to the SQLiteStorage::get_metadata(). (`#1725 <https://github.com/ros2/rosbag2/issues/1725>`_)
+* Contributors: Alejandro Hernández Cordero, Michael Orlov, Nicola Loi, Tomoya Fujita
 
-0.26.3 (2024-05-15)
+0.28.0 (2024-06-17)
 -------------------
-* Bugfix for writer not being able to open again after closing (`#1599 <https://github.com/ros2/rosbag2/issues/1599>`_) (`#1639 <https://github.com/ros2/rosbag2/issues/1639>`_)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-  Co-authored-by: yschulz <yschulz854@gmail.com>
-* Contributors: mergify[bot]
+* Propagate "custom_data" and "ros_distro" in to the metadata.yaml file during re-indexing (`#1700 <https://github.com/ros2/rosbag2/issues/1700>`_)
+* Bugfix for writer not being able to open again after closing (`#1599 <https://github.com/ros2/rosbag2/issues/1599>`_)
+* Contributors: Cole Tucker, yschulz
 
-0.26.2 (2024-04-24)
+0.27.0 (2024-04-30)
 -------------------
 
 0.26.1 (2024-04-17)
