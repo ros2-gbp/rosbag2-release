@@ -24,6 +24,8 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rcutils REQUIRED)
+find_package(rcpputils REQUIRED)
+find_package(test_msgs REQUIRED)
 
 add_library(${PROJECT_NAME} INTERFACE)
 target_include_directories(${PROJECT_NAME} INTERFACE
@@ -32,6 +34,7 @@ target_include_directories(${PROJECT_NAME} INTERFACE
 target_link_libraries(${PROJECT_NAME} INTERFACE
   rclcpp::rclcpp
   rcutils::rcutils
+  ${test_msgs_TARGETS}
 )
 
 install(
@@ -48,7 +51,7 @@ endif()
 
 ament_python_install_package(${PROJECT_NAME})
 
-ament_export_dependencies(rclcpp rcutils)
+ament_export_dependencies(rclcpp rcutils test_msgs)
 
 # Export old-style CMake variables
 ament_export_include_directories("include/${PROJECT_NAME}")
