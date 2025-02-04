@@ -29,11 +29,11 @@ rosbag2 is part of the ROS 2 command line interface as `ros2 bag`.
 These verbs are available for `ros2 bag`:
 
 * `ros2 bag burst`
-* `ros2 bag convert`
-* `ros2 bag info`
+* [`ros2 bag convert`](#converting-bags)
+* [`ros2 bag info`](#analyzing-data)
 * `ros2 bag list`
-* `ros2 bag play`
-* `ros2 bag record`
+* [`ros2 bag play`](#replaying-data)
+* [`ros2 bag record`](#recording-data)
 * `ros2 bag reindex`
 
 For up-to-date information on the available options for each, use `ros2 bag <verb> --help`.
@@ -137,6 +137,35 @@ $ ros2 bag play <bag>
 
 The bag argument can be a directory containing `metadata.yaml` and one or more storage files, or to a single storage file such as `.mcap` or `.db3`.
 The Player will automatically detect which storage implementation to use for playing.
+
+To play back multiple bags:
+
+```
+$ ros2 bag play <bag1> -i <bag2> -i <bag3>
+```
+
+Messages from all provided bags will be played in order, based on their original recording reception timestamps.
+
+Options:
+
+* `--topics`:
+  Space-delimited list of topics to play.
+* `--services`:
+  Space-delimited list of services to play.
+* `-e,--regex`:
+  Play only topics and services matches with regular expression.
+* `-x,--exclude-regex`:
+  Regular expressions to exclude topics and services from replay.
+* `--exclude-topics`:
+  Space-delimited list of topics not to play.
+* `--exclude-services`:
+  Space-delimited list of services not to play.
+* `--message-order {received,sent}`:
+  The reference to use for bag message chronological ordering.
+  Choices: reception timestamp (`received`), publication timestamp (`sent`).
+  Default: reception timestamp.
+
+For more options, run with `--help`.
 
 #### Controlling playback via services
 
@@ -377,14 +406,14 @@ def generate_launch_description():
 ## Using with composition
 
 Play and record are fundamental tasks of `rosbag2`. However, playing or recording data at high rates may have limitations (e.g. spurious packet drops) due to one of the following:
-- low network bandwith
+- low network bandwidth
 - high CPU load
 - slow mass memory
 - ROS 2 middleware serialization/deserialization delays & overhead
 
 ROS 2 C++ nodes can benefit from intra-process communication to partially or completely bypass network transport of messages between two nodes.
 
-Multiple _components_ can be _composed_, either [statically](https://docs.ros.org/en/rolling/Tutorials/Intermediate/Composition.html#compile-time-composition-using-ros-services) or [dynamically](https://docs.ros.org/en/rolling/Tutorials/Intermediate/Composition.html#run-time-composition-using-ros-services-with-a-publisher-and-subscriber): all the composed component will share the same address space because they will be loaded in a single process.
+Multiple _components_ can be _composed_, either [statically](https://docs.ros.org/en/rolling/Tutorials/Intermediate/Composition.html#compile-time-composition-with-hardcoded-nodes) or [dynamically](https://docs.ros.org/en/rolling/Tutorials/Intermediate/Composition.html#run-time-composition-using-ros-services-with-a-publisher-and-subscriber): all the composed component will share the same address space because they will be loaded in a single process.
 
 A prerequirement is for each C++ node to be [_composable_](https://docs.ros.org/en/rolling/Concepts/Intermediate/About-Composition.html?highlight=composition) and to follow the [guidelines](https://docs.ros.org/en/rolling/Tutorials/Demos/Intra-Process-Communication.html?highlight=intra) for efficient publishing & subscription.
 
