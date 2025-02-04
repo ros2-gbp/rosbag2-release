@@ -184,6 +184,13 @@ public:
     const rosbag2_storage::StorageOptions & storage_options,
     PlayOptions & play_options)
   {
+    play_impl(std::vector{storage_options}, play_options, false);
+  }
+
+  void play(
+    const std::vector<rosbag2_storage::StorageOptions> & storage_options,
+    PlayOptions & play_options)
+  {
     play_impl(storage_options, play_options, false);
   }
 
@@ -192,7 +199,7 @@ public:
     PlayOptions & play_options,
     size_t num_messages)
   {
-    play_impl(storage_options, play_options, true, num_messages);
+    play_impl(std::vector{storage_options}, play_options, true, num_messages);
   }
 
 protected:
@@ -240,14 +247,19 @@ protected:
   }
 
   void play_impl(
-    const rosbag2_storage::StorageOptions & storage_options,
+    const std::vector<rosbag2_storage::StorageOptions> & storage_options,
     PlayOptions & play_options,
     bool burst = false,
     size_t burst_num_messages = 0)
   {
     install_signal_handlers();
     try {
-      auto reader = rosbag2_transport::ReaderWriterFactory::make_reader(storage_options);
+      std::vector<rosbag2_transport::Player::reader_storage_options_pair_t> readers_with_options{};
+      readers_with_options.reserve(storage_options.size());
+      for (const auto & options : storage_options) {
+        readers_with_options.emplace_back(
+          rosbag2_transport::ReaderWriterFactory::make_reader(options), options);
+      }
       std::shared_ptr<KeyboardHandler> keyboard_handler;
       if (!play_options.disable_keyboard_controls) {
 #ifndef _WIN32
@@ -260,7 +272,7 @@ protected:
 #endif
       }
       auto player = std::make_shared<rosbag2_transport::Player>(
-        std::move(reader), std::move(keyboard_handler), storage_options, play_options);
+        std::move(readers_with_options), std::move(keyboard_handler), play_options);
 
       rclcpp::executors::SingleThreadedExecutor exec;
       exec.add_node(player);
@@ -548,11 +560,17 @@ PYBIND11_MODULE(_transport, m) {
   .def_readwrite("disable_loan_message", &PlayOptions::disable_loan_message)
   .def_readwrite("publish_service_requests", &PlayOptions::publish_service_requests)
   .def_readwrite("service_requests_source", &PlayOptions::service_requests_source)
+  .def_readwrite("message_order", &PlayOptions::message_order)
   ;
 
   py::enum_<rosbag2_transport::ServiceRequestsSource>(m, "ServiceRequestsSource")
   .value("SERVICE_INTROSPECTION", rosbag2_transport::ServiceRequestsSource::SERVICE_INTROSPECTION)
   .value("CLIENT_INTROSPECTION", rosbag2_transport::ServiceRequestsSource::CLIENT_INTROSPECTION)
+  ;
+
+  py::enum_<rosbag2_transport::MessageOrder>(m, "MessageOrder")
+  .value("RECEIVED_TIMESTAMP", rosbag2_transport::MessageOrder::RECEIVED_TIMESTAMP)
+  .value("SENT_TIMESTAMP", rosbag2_transport::MessageOrder::SENT_TIMESTAMP)
   ;
 
   py::class_<RecordOptions>(m, "RecordOptions")
@@ -591,7 +609,18 @@ PYBIND11_MODULE(_transport, m) {
   py::class_<rosbag2_py::Player>(m, "Player")
   .def(py::init<>())
   .def(py::init<const std::string &>())
-  .def("play", &rosbag2_py::Player::play, py::arg("storage_options"), py::arg("play_options"))
+  .def(
+    "play",
+    py::overload_cast<const rosbag2_storage::StorageOptions &, PlayOptions &>(
+      &rosbag2_py::Player::play),
+    py::arg("storage_options"),
+    py::arg("play_options"))
+  .def(
+    "play",
+    py::overload_cast<const std::vector<rosbag2_storage::StorageOptions> &, PlayOptions &>(
+      &rosbag2_py::Player::play),
+    py::arg("storage_options"),
+    py::arg("play_options"))
   .def(
     "burst", &rosbag2_py::Player::burst, py::arg("storage_options"), py::arg("play_options"),
     py::arg("num_messages"))
