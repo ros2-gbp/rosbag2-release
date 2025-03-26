@@ -58,7 +58,6 @@ class TestStorageStructs(unittest.TestCase):
 
     def test_topic_metadata_ctor(self):
         topic_metadata = TopicMetadata(
-            id=0,
             name='topic',
             type='msgs/Msg',
             serialization_format='format'
@@ -68,7 +67,6 @@ class TestStorageStructs(unittest.TestCase):
     def test_topic_information_ctor(self):
         topic_information = TopicInformation(
             topic_metadata=TopicMetadata(
-                id=0,
                 name='topic',
                 type='msgs/Msg',
                 serialization_format='format'),
@@ -87,7 +85,6 @@ class TestStorageStructs(unittest.TestCase):
             message_count=12)
         topic_information = TopicInformation(
             topic_metadata=TopicMetadata(
-                id=0,
                 name='topic',
                 type='msgs/Msg',
                 serialization_format='format'),
@@ -106,9 +103,5 @@ class TestStorageStructs(unittest.TestCase):
             topics_with_message_count=[topic_information],
             compression_format='aaaa',
             compression_mode='bbbbb',
-            custom_data={
-                'keya': 'valuea',
-                'keyb': 'valueb'
-            }
         )
         assert metadata

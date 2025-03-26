@@ -53,15 +53,6 @@ public:
   virtual rcutils_time_point_value_t now() const = 0;
 
   /**
-   * @brief Convert an arbitrary ROSTime to a SteadyTime, based on the current reference snapshot.
-   * @param ros_time - time point in ROSTime
-   * @return time point in steady clock i.e. std::chrono::steady_clock
-   */
-  ROSBAG2_CPP_PUBLIC
-  virtual std::chrono::steady_clock::time_point
-  ros_to_steady(rcutils_time_point_value_t ros_time) const = 0;
-
-  /**
    * Try to sleep (non-busy) the current thread until the provided time is reached - according to this Clock
    *
    * Return true if the time has been reached, false if it was not successfully reached after sleeping
@@ -76,19 +67,6 @@ public:
    */
   ROSBAG2_CPP_PUBLIC
   virtual bool sleep_until(rclcpp::Time time) = 0;
-
-  /**
-   * \return whether the clock is currently sleeping.
-   */
-  ROSBAG2_CPP_PUBLIC
-  virtual bool is_sleeping() = 0;
-
-  /**
-   * \brief Wake up the clock if it is sleeping.
-   * \note This will wake any waiting `sleep_until`.
-   */
-  ROSBAG2_CPP_PUBLIC
-  virtual void wakeup() = 0;
 
   /**
    * Change the rate of the flow of time for the clock.
