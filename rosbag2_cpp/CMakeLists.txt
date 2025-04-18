@@ -73,7 +73,8 @@ add_library(${PROJECT_NAME} SHARED
   src/rosbag2_cpp/writer.cpp
   src/rosbag2_cpp/writers/sequential_writer.cpp
   src/rosbag2_cpp/reindexer.cpp
-  src/rosbag2_cpp/service_utils.cpp)
+  src/rosbag2_cpp/service_utils.cpp
+  src/rosbag2_cpp/action_utils.cpp)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
   pluginlib::pluginlib
@@ -270,6 +271,15 @@ if(BUILD_TESTING)
 
   function(test_serialization_converter_for_rmw_implementation)
     set(rmw_implementation_env_var RMW_IMPLEMENTATION=${rmw_implementation})
+
+    # If the rmw_implementation is rmw_zenoh_cpp, run the tests with multicast discovery enabled.
+    # Note: This is a temporary change that will be reverted before we branch into Kilted.
+    if(rmw_implementation STREQUAL "rmw_zenoh_cpp")
+      list(APPEND rmw_implementation_env_var
+        ZENOH_CONFIG_OVERRIDE=scouting/multicast/enabled=true
+      )
+    endif()
+
     ament_add_gmock_test(test_serialization_converter
       TEST_NAME test_serialization_converter${target_suffix}
       ENV ${rmw_implementation_env_var}
@@ -298,6 +308,16 @@ if(BUILD_TESTING)
     test/rosbag2_cpp/test_service_utils.cpp)
   if(TARGET test_service_utils)
     target_link_libraries(test_service_utils
+      ${PROJECT_NAME}
+      rosbag2_test_common::rosbag2_test_common
+      ${test_msgs_TARGETS}
+    )
+  endif()
+
+  ament_add_gmock(test_action_utils
+    test/rosbag2_cpp/test_action_utils.cpp)
+  if(TARGET test_action_utils)
+    target_link_libraries(test_action_utils
       ${PROJECT_NAME}
       rosbag2_test_common::rosbag2_test_common
       ${test_msgs_TARGETS}
