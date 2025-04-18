@@ -21,6 +21,7 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -178,7 +179,7 @@ RecorderImpl::RecorderImpl(
             "use_sim_time and is_discovery_disabled both set, but are incompatible settings. "
             "The /clock topic needs to be discovered to record with sim time.");
   }
-  if (!record_options.disable_keyboard_controls) {
+  if (!record_options_.disable_keyboard_controls) {
     std::string key_str = enum_key_code_to_str(Recorder::kPauseResumeToggleKey);
     toggle_paused_key_callback_handle_ =
       keyboard_handler_->add_key_press_callback(
@@ -190,7 +191,6 @@ RecorderImpl::RecorderImpl(
       node->get_logger(),
       "Press " << key_str << " for pausing/resuming");
   }
-  topic_filter_ = std::make_unique<TopicFilter>(record_options, node->get_node_graph_interface());
 
   for (auto & topic : record_options_.topics) {
     topic = rclcpp::expand_topic_or_service_name(
@@ -215,6 +215,8 @@ RecorderImpl::RecorderImpl(
       exclude_service_event_topic, node->get_name(),
       node->get_namespace(), false);
   }
+
+  topic_filter_ = std::make_unique<TopicFilter>(record_options_, node->get_node_graph_interface());
 }
 
 RecorderImpl::~RecorderImpl()
@@ -267,6 +269,7 @@ void RecorderImpl::record()
     throw std::runtime_error("No serialization format specified!");
   }
 
+  subscriptions_.clear();
   writer_->open(
     storage_options_,
     {rmw_get_serialization_format(), record_options_.rmw_serialization_format});
@@ -460,6 +463,8 @@ void RecorderImpl::stop_discovery()
           "discovery_future_.wait_for(" << record_options_.topic_polling_interval.count() <<
             ") return status: " <<
             (status == std::future_status::timeout ? "timeout" : "deferred"));
+      } else {
+        discovery_future_.get();
       }
     }
   } else {
@@ -486,21 +491,20 @@ void RecorderImpl::topics_discovery()
   }
   while (rclcpp::ok() && discovery_running_) {
     try {
+      if (!record_options_.topics.empty() &&
+        subscriptions_.size() == record_options_.topics.size())
+      {
+        RCLCPP_INFO(
+          node->get_logger(), "All requested topics are subscribed. Stopping discovery...");
+        return;
+      }
+
       auto topics_to_subscribe = get_requested_or_available_topics();
       for (const auto & topic_and_type : topics_to_subscribe) {
         warn_if_new_qos_for_subscribed_topic(topic_and_type.first);
       }
       auto missing_topics = get_missing_topics(topics_to_subscribe);
       subscribe_topics(missing_topics);
-
-      if (!record_options_.topics.empty() &&
-        subscriptions_.size() == record_options_.topics.size())
-      {
-        RCLCPP_INFO(
-          node->get_logger(),
-          "All requested topics are subscribed. Stopping discovery...");
-        return;
-      }
     } catch (const std::exception & e) {
       RCLCPP_ERROR_STREAM(node->get_logger(), "Failure in topics discovery.\nError: " << e.what());
     } catch (...) {
@@ -521,9 +525,9 @@ std::unordered_map<std::string, std::string>
 RecorderImpl::get_missing_topics(const std::unordered_map<std::string, std::string> & all_topics)
 {
   std::unordered_map<std::string, std::string> missing_topics;
-  for (const auto & i : all_topics) {
-    if (subscriptions_.find(i.first) == subscriptions_.end()) {
-      missing_topics.emplace(i.first, i.second);
+  for (const auto & [topic_name, topic_type] : all_topics) {
+    if (subscriptions_.find(topic_name) == subscriptions_.end()) {
+      missing_topics.emplace(topic_name, topic_type);
     }
   }
   return missing_topics;
@@ -549,6 +553,9 @@ void RecorderImpl::subscribe_topics(
 
 void RecorderImpl::subscribe_topic(const rosbag2_storage::TopicMetadata & topic)
 {
+  if (subscriptions_.find(topic.name) != subscriptions_.end()) {
+    return;
+  }
   // Need to create topic in writer before we are trying to create subscription. Since in
   // callback for subscription we are calling writer_->write(bag_message); and it could happened
   // that callback called before we reached out the line: writer_->create_topic(topic)
@@ -559,12 +566,9 @@ void RecorderImpl::subscribe_topic(const rosbag2_storage::TopicMetadata & topic)
   auto subscription = create_subscription(topic.name, topic.type, subscription_qos);
   if (subscription) {
     subscriptions_.insert({topic.name, subscription});
-    RCLCPP_INFO_STREAM(
-      node->get_logger(),
-      "Subscribed to topic '" << topic.name << "'");
+    RCLCPP_INFO_STREAM(node->get_logger(), "Subscribed to topic '" << topic.name << "'");
   } else {
     writer_->remove_topic(topic);
-    subscriptions_.erase(topic.name);
   }
 }
 
