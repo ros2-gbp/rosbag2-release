@@ -14,8 +14,11 @@
 
 from common import get_rosbag_options
 
+import pytest
+
 from rclpy.serialization import deserialize_message, serialize_message
 import rosbag2_py
+from rosbag2_test_common import TESTED_STORAGE_IDS
 from rosidl_runtime_py.utilities import get_message
 from std_msgs.msg import String
 
@@ -31,13 +34,14 @@ def create_topic(writer, topic_name, topic_type, serialization_format='cdr'):
     :return:
     """
     topic_name = topic_name
-    topic = rosbag2_py.TopicMetadata(name=topic_name, type=topic_type,
+    topic = rosbag2_py.TopicMetadata(id=0, name=topic_name, type=topic_type,
                                      serialization_format=serialization_format)
 
     writer.create_topic(topic)
 
 
-def test_sequential_writer(tmp_path):
+@pytest.mark.parametrize('storage_id', TESTED_STORAGE_IDS)
+def test_sequential_writer(tmp_path, storage_id):
     """
     Test for sequential writer.
 
@@ -45,7 +49,7 @@ def test_sequential_writer(tmp_path):
     """
     bag_path = str(tmp_path / 'tmp_write_test')
 
-    storage_options, converter_options = get_rosbag_options(bag_path)
+    storage_options, converter_options = get_rosbag_options(bag_path, storage_id)
 
     writer = rosbag2_py.SequentialWriter()
     writer.open(storage_options, converter_options)
@@ -63,7 +67,7 @@ def test_sequential_writer(tmp_path):
 
     # close bag and create new storage instance
     del writer
-    storage_options, converter_options = get_rosbag_options(bag_path)
+    storage_options, converter_options = get_rosbag_options(bag_path, storage_id)
 
     reader = rosbag2_py.SequentialReader()
     reader.open(storage_options, converter_options)

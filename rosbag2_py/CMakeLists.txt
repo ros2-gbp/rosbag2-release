@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.20)
 project(rosbag2_py)
 
 # Default to C99
@@ -6,22 +6,14 @@ if(NOT CMAKE_C_STANDARD)
   set(CMAKE_C_STANDARD 99)
 endif()
 
-# Default to C++14
+# Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
-# Figure out Python3 debug/release before anything else can find_package it
-if(WIN32 AND CMAKE_BUILD_TYPE STREQUAL "Debug")
-  find_package(python_cmake_module REQUIRED)
-  find_package(PythonExtra REQUIRED)
-
-  # Force FindPython3 to use the debug interpreter where ROS 2 expects it
-  set(Python3_EXECUTABLE "${PYTHON_EXECUTABLE_DEBUG}")
 endif()
 
 find_package(ament_cmake REQUIRED)
@@ -32,6 +24,21 @@ find_package(rosbag2_cpp REQUIRED)
 find_package(rosbag2_storage REQUIRED)
 find_package(rosbag2_transport REQUIRED)
 
+# By default, without the settings below, find_package(Python3) will attempt
+# to find the newest python version it can, and additionally will find the
+# most specific version.  For instance, on a system that has
+# /usr/bin/python3.10, /usr/bin/python3.11, and /usr/bin/python3, it will find
+# /usr/bin/python3.11, even if /usr/bin/python3 points to /usr/bin/python3.10.
+# The behavior we want is to prefer the "system" installed version unless the
+# user specifically tells us othewise through the Python3_EXECUTABLE hint.
+# Setting CMP0094 to NEW means that the search will stop after the first
+# python version is found.  Setting Python3_FIND_UNVERSIONED_NAMES means that
+# the search will prefer /usr/bin/python3 over /usr/bin/python3.11.  And that
+# latter functionality is only available in CMake 3.20 or later, so we need
+# at least that version.
+cmake_policy(SET CMP0094 NEW)
+set(Python3_FIND_UNVERSIONED_NAMES FIRST)
+
 # Find python before pybind11
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 
@@ -40,62 +47,84 @@ find_package(pybind11 REQUIRED)
 
 ament_python_install_package(${PROJECT_NAME})
 
-pybind11_add_module(_reader SHARED
+pybind11_add_module(_compression_options
+  src/rosbag2_py/_compression_options.cpp
+)
+target_link_libraries(_compression_options PUBLIC
+  rosbag2_compression::rosbag2_compression
+)
+
+pybind11_add_module(_message_definitions
+  src/rosbag2_py/_message_definitions.cpp
+)
+target_link_libraries(_message_definitions PUBLIC
+  rosbag2_cpp::rosbag2_cpp
+)
+
+pybind11_add_module(_reader
   src/rosbag2_py/_reader.cpp
 )
-ament_target_dependencies(_reader PUBLIC
-  "rosbag2_compression"
-  "rosbag2_cpp"
-  "rosbag2_storage"
+target_link_libraries(_reader PUBLIC
+  rosbag2_compression::rosbag2_compression
+  rosbag2_cpp::rosbag2_cpp
+  rosbag2_storage::rosbag2_storage
 )
 
-pybind11_add_module(_storage SHARED
+pybind11_add_module(_storage
   src/rosbag2_py/_storage.cpp
   src/rosbag2_py/format_bag_metadata.cpp
+  src/rosbag2_py/info_sorting_method.cpp
 )
-ament_target_dependencies(_storage PUBLIC
-  "rosbag2_cpp"
-  "rosbag2_storage"
+target_link_libraries(_storage PUBLIC
+  rosbag2_cpp::rosbag2_cpp
+  rosbag2_storage::rosbag2_storage
 )
 
-pybind11_add_module(_writer SHARED
+pybind11_add_module(_writer
   src/rosbag2_py/_writer.cpp
 )
-ament_target_dependencies(_writer PUBLIC
-  "rosbag2_compression"
-  "rosbag2_cpp"
-  "rosbag2_storage"
+target_link_libraries(_writer PUBLIC
+  rosbag2_compression::rosbag2_compression
+  rosbag2_cpp::rosbag2_cpp
+  rosbag2_storage::rosbag2_storage
 )
 
-pybind11_add_module(_info SHARED
+pybind11_add_module(_info
   src/rosbag2_py/_info.cpp
+  src/rosbag2_py/format_bag_metadata.cpp
+  src/rosbag2_py/format_action_info.cpp
+  src/rosbag2_py/format_service_info.cpp
+  src/rosbag2_py/format_utils.cpp
+  src/rosbag2_py/info_sorting_method.cpp
 )
-ament_target_dependencies(_info PUBLIC
-  "rosbag2_cpp"
-  "rosbag2_storage"
+target_link_libraries(_info PUBLIC
+  rosbag2_cpp::rosbag2_cpp
+  rosbag2_storage::rosbag2_storage
 )
 
-pybind11_add_module(_transport SHARED
+pybind11_add_module(_transport
   src/rosbag2_py/_transport.cpp
 )
-ament_target_dependencies(_transport PUBLIC
-  "rosbag2_compression"
-  "rosbag2_cpp"
-  "rosbag2_storage"
-  "rosbag2_transport"
+target_link_libraries(_transport PUBLIC
+  rosbag2_compression::rosbag2_compression
+  rosbag2_cpp::rosbag2_cpp
+  rosbag2_storage::rosbag2_storage
+  rosbag2_transport::rosbag2_transport
 )
 
-pybind11_add_module(_reindexer SHARED
+pybind11_add_module(_reindexer
   src/rosbag2_py/_reindexer.cpp
 )
-ament_target_dependencies(_reindexer PUBLIC
-  "rosbag2_cpp"
-  "rosbag2_storage"
+target_link_libraries(_reindexer PUBLIC
+  rosbag2_cpp::rosbag2_cpp
+  rosbag2_storage::rosbag2_storage
 )
 
 # Install cython modules as sub-modules of the project
 install(
   TARGETS
+    _compression_options
+    _message_definitions
     _reader
     _storage
     _writer
@@ -109,6 +138,7 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
   find_package(ament_cmake_pytest REQUIRED)
+  find_package(rosbag2_test_msgdefs REQUIRED)
 
   set(append_env_vars "PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR}")
   set(set_env_vars "ROSBAG2_PY_TEST_RESOURCES_DIR=${CMAKE_CURRENT_SOURCE_DIR}/test/resources")
@@ -148,9 +178,18 @@ if(BUILD_TESTING)
     APPEND_ENV "${append_env_vars}"
     ENV "${set_env_vars}"
   )
-
+  ament_add_pytest_test(test_compression_py
+    "test/test_compression.py"
+    APPEND_ENV "${append_env_vars}"
+    ENV "${set_env_vars}"
+  )
   ament_add_pytest_test(test_storage_py
     "test/test_storage.py"
+    APPEND_ENV "${append_env_vars}"
+    ENV "${set_env_vars}"
+  )
+  ament_add_pytest_test(test_message_definitions_py
+    "test/test_message_definitions.py"
     APPEND_ENV "${append_env_vars}"
     ENV "${set_env_vars}"
   )
