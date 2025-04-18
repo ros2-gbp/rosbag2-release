@@ -31,6 +31,8 @@
 #include "rclcpp/publisher.hpp"
 #include "rclcpp/qos.hpp"
 
+#include "rclcpp_action/generic_client.hpp"
+
 #include "rosbag2_cpp/clocks/player_clock.hpp"
 #include "rosbag2_interfaces/msg/read_split_event.hpp"
 #include "rosbag2_interfaces/srv/get_rate.hpp"
@@ -213,6 +215,14 @@ public:
   ROSBAG2_TRANSPORT_PUBLIC
   bool play();
 
+  /// \brief Waits on the condition variable until the play thread starts and the message's queue
+  /// will be filled.
+  /// @param timeout Maximum time in the fraction of seconds to wait for player to start.
+  /// If timeout is negative, the wait_for_playback_to_start will be a blocking call.
+  /// @return true if playback successfully started during timeout, otherwise false.
+  ROSBAG2_TRANSPORT_PUBLIC
+  bool wait_for_playback_to_start(std::chrono::duration<double> timeout = std::chrono::seconds(-1));
+
   /// \brief Waits on the condition variable until the play thread finishes.
   /// @param timeout Maximum time in the fraction of seconds to wait for player to finish.
   /// If timeout is negative, the wait_for_playback_to_finish will be a blocking call.
@@ -331,15 +341,23 @@ protected:
   ROSBAG2_TRANSPORT_PUBLIC
   std::unordered_map<std::string, std::shared_ptr<rclcpp::GenericClient>> get_service_clients();
 
+  /// \brief Getter for clients corresponding to each action name
+  /// \return Hashtable representing action name to client
+  ROSBAG2_TRANSPORT_PUBLIC
+  std::unordered_map<std::string, std::shared_ptr<rclcpp_action::GenericClient>>
+  get_action_clients();
+
+  /// \brief Goal handle for action client is in processing.
+  /// \return true if goal handle is in processing, otherwise false.
+  /// \exception std::exception No action client is created for this action name.
+  ROSBAG2_TRANSPORT_PUBLIC
+  bool
+  is_goal_handle_in_processing(std::string action_name, const rclcpp_action::GoalUUID & goal_id);
+
   /// \brief Getter for inner clock_publisher
   /// \return Shared pointer to the inner clock_publisher
   ROSBAG2_TRANSPORT_PUBLIC
   rclcpp::Publisher<rosgraph_msgs::msg::Clock>::SharedPtr get_clock_publisher();
-
-  /// \brief Blocks and wait on condition variable until first message will be taken from read
-  /// queue
-  ROSBAG2_TRANSPORT_PUBLIC
-  void wait_for_playback_to_start();
 
   /// \brief Getter for the number of registered on_play_msg_pre_callbacks
   /// \return Number of registered on_play_msg_pre_callbacks
