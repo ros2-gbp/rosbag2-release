@@ -1,0 +1,12 @@
+Source: ros-kilted-rosbag2-storage
+Section: misc
+Priority: optional
+Maintainer: Michael Orlov <michael.orlov@apex.ai>
+Build-Depends: debhelper (>= 9.0.0), ros-kilted-ament-cmake, ros-kilted-ament-cmake-gmock <!nocheck>, ros-kilted-ament-cmake-gtest <!nocheck>, ros-kilted-ament-lint-auto <!nocheck>, ros-kilted-ament-lint-common <!nocheck>, ros-kilted-pluginlib, ros-kilted-rclcpp, ros-kilted-rcutils, ros-kilted-rmw, ros-kilted-rosbag2-test-common <!nocheck>, ros-kilted-yaml-cpp-vendor, ros-kilted-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-kilted-rosbag2-storage
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-kilted-pluginlib, ros-kilted-rclcpp, ros-kilted-rcutils, ros-kilted-rmw, ros-kilted-yaml-cpp-vendor, ros-kilted-ros-workspace
+Description: ROS2 independent storage format to store serialized ROS2 messages
