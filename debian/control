@@ -1,0 +1,12 @@
+Source: ros-kilted-rosbag2-performance-benchmarking-msgs
+Section: misc
+Priority: optional
+Maintainer: ROS Tooling Working Group <ros-tooling@googlegroups.com>
+Build-Depends: debhelper (>= 9.0.0), ros-kilted-ament-cmake, ros-kilted-ament-cmake-gtest <!nocheck>, ros-kilted-ament-lint-auto <!nocheck>, ros-kilted-ament-lint-common <!nocheck>, ros-kilted-rosidl-cmake <!nocheck>, ros-kilted-rosidl-default-generators, ros-kilted-rosidl-typesupport-cpp <!nocheck>, ros-kilted-ros-workspace, ros-kilted-rosidl-typesupport-fastrtps-c, ros-kilted-rosidl-typesupport-fastrtps-cpp
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-kilted-rosbag2-performance-benchmarking-msgs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-kilted-rosidl-default-runtime, ros-kilted-ros-workspace
+Description: A package containing rosbag2 performance benchmarking specific messages.
