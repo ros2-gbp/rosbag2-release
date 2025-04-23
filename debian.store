@@ -1,1 +1,1 @@
-{"base": "4854ff8fd", "parent": "debian/rolling/liblz4_vendor", "previous": "71f428c65", "trim": "", "trimbase": ""}
+{"base": "bd366cfb6cd3", "parent": "debian/kilted/liblz4_vendor", "previous": "21de59a41b6e", "trim": "", "trimbase": ""}
