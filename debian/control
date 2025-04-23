@@ -1,0 +1,12 @@
+Source: ros-kilted-rosbag2
+Section: misc
+Priority: optional
+Maintainer: Michael Orlov <michael.orlov@apex.ai>
+Build-Depends: debhelper (>= 9.0.0), ros-kilted-ament-cmake, ros-kilted-rosbag2-test-common <!nocheck>, ros-kilted-rosbag2-tests <!nocheck>, ros-kilted-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-kilted-rosbag2
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-kilted-ros2bag, ros-kilted-rosbag2-compression, ros-kilted-rosbag2-compression-zstd, ros-kilted-rosbag2-cpp, ros-kilted-rosbag2-py, ros-kilted-rosbag2-storage, ros-kilted-rosbag2-storage-default-plugins, ros-kilted-rosbag2-transport, ros-kilted-ros-workspace
+Description: Meta package for rosbag2 related packages
