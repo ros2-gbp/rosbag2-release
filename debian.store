@@ -1,1 +1,1 @@
-{"base": "b09cf0e5c", "parent": "debian/rolling/rosbag2_interfaces", "previous": "e63414303", "trim": "", "trimbase": ""}
+{"base": "138c2857e470", "parent": "debian/kilted/rosbag2_interfaces", "previous": "9c7cd2640bfe", "trim": "", "trimbase": ""}
