@@ -1,0 +1,12 @@
+Source: ros-kilted-rosbag2-py
+Section: misc
+Priority: optional
+Maintainer: Michael Orlov <michael.orlov@apex.ai>
+Build-Depends: debhelper (>= 9.0.0), python3-dev, python3-pytest <!nocheck>, ros-kilted-ament-cmake-python, ros-kilted-ament-cmake-ros, ros-kilted-ament-lint-auto <!nocheck>, ros-kilted-ament-lint-common <!nocheck>, ros-kilted-pybind11-vendor, ros-kilted-rcl-interfaces <!nocheck>, ros-kilted-rosbag2-compression, ros-kilted-rosbag2-compression-zstd <!nocheck>, ros-kilted-rosbag2-cpp, ros-kilted-rosbag2-storage, ros-kilted-rosbag2-storage-default-plugins <!nocheck>, ros-kilted-rosbag2-test-common <!nocheck>, ros-kilted-rosbag2-test-msgdefs <!nocheck>, ros-kilted-rosbag2-transport, ros-kilted-rosidl-runtime-py <!nocheck>, ros-kilted-std-msgs <!nocheck>, ros-kilted-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-kilted-rosbag2-py
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-kilted-pybind11-vendor, ros-kilted-rclpy, ros-kilted-rosbag2-compression, ros-kilted-rosbag2-cpp, ros-kilted-rosbag2-storage, ros-kilted-rosbag2-transport, ros-kilted-rpyutils, ros-kilted-ros-workspace
+Description: Python API for rosbag2
