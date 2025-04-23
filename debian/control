@@ -1,0 +1,12 @@
+Source: ros-kilted-rosbag2-transport
+Section: misc
+Priority: optional
+Maintainer: Michael Orlov <michael.orlov@apex.ai>
+Build-Depends: debhelper (>= 9.0.0), ros-kilted-ament-cmake-gmock <!nocheck>, ros-kilted-ament-cmake-ros, ros-kilted-ament-index-cpp <!nocheck>, ros-kilted-ament-lint-auto <!nocheck>, ros-kilted-ament-lint-common <!nocheck>, ros-kilted-composition-interfaces <!nocheck>, ros-kilted-keyboard-handler, ros-kilted-rclcpp, ros-kilted-rclcpp-action, ros-kilted-rclcpp-components, ros-kilted-rcpputils, ros-kilted-rcutils, ros-kilted-rmw, ros-kilted-rmw-implementation-cmake <!nocheck>, ros-kilted-rosbag2-compression, ros-kilted-rosbag2-compression-zstd <!nocheck>, ros-kilted-rosbag2-cpp, ros-kilted-rosbag2-interfaces, ros-kilted-rosbag2-storage, ros-kilted-rosbag2-storage-default-plugins <!nocheck>, ros-kilted-rosbag2-test-common <!nocheck>, ros-kilted-test-msgs <!nocheck>, ros-kilted-yaml-cpp-vendor, ros-kilted-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-kilted-rosbag2-transport
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-kilted-keyboard-handler, ros-kilted-rclcpp, ros-kilted-rclcpp-action, ros-kilted-rclcpp-components, ros-kilted-rcpputils, ros-kilted-rcutils, ros-kilted-rmw, ros-kilted-rosbag2-compression, ros-kilted-rosbag2-cpp, ros-kilted-rosbag2-interfaces, ros-kilted-rosbag2-storage, ros-kilted-yaml-cpp-vendor, ros-kilted-ros-workspace
+Description: Layer encapsulating ROS middleware to allow rosbag2 to be used with or without middleware
