@@ -1,1 +1,1 @@
-{"base": "130897877", "parent": "debian/rolling/shared_queues_vendor", "previous": "9b6930c52", "trim": "", "trimbase": ""}
+{"base": "bea6a1a8abbb", "parent": "debian/kilted/shared_queues_vendor", "previous": "18e8712ff332", "trim": "", "trimbase": ""}
