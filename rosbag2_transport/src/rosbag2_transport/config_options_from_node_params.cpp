@@ -16,7 +16,6 @@
 #include <vector>
 
 #include "rclcpp/logging.hpp"
-#include "rosbag2_cpp/action_utils.hpp"
 #include "rosbag2_cpp/service_utils.hpp"
 #include "rosbag2_storage/qos.hpp"
 #include "rosbag2_transport/play_options.hpp"
@@ -141,9 +140,6 @@ PlayOptions get_play_options_from_node_params(rclcpp::Node & node)
   }
   play_options.services_to_filter = service_list;
 
-  play_options.actions_to_filter = node.declare_parameter<std::vector<std::string>>(
-    "play.actions_to_filter", std::vector<std::string>());
-
   play_options.regex_to_filter =
     node.declare_parameter<std::string>("play.regex_to_filter", "");
 
@@ -160,9 +156,6 @@ PlayOptions get_play_options_from_node_params(rclcpp::Node & node)
     service = rosbag2_cpp::service_name_to_service_event_topic_name(service);
   }
   play_options.exclude_services_to_filter = exclude_service_list;
-
-  play_options.exclude_actions_to_filter = node.declare_parameter<std::vector<std::string>>(
-    "play.exclude_actions_to_filter", std::vector<std::string>());
 
   std::string qos_profile_overrides_path =
     node.declare_parameter<std::string>("play.qos_profile_overrides_path", "");
@@ -229,11 +222,11 @@ PlayOptions get_play_options_from_node_params(rclcpp::Node & node)
   auto service_requests_source =
     node.declare_parameter<std::string>("play.service_requests_source", "SERVICE_INTROSPECTION");
   if (service_requests_source == "SERVICE_INTROSPECTION") {
-    play_options.service_requests_source = ServiceRequestsSource::SERVER_INTROSPECTION;
+    play_options.service_requests_source = ServiceRequestsSource::SERVICE_INTROSPECTION;
   } else if (service_requests_source == "CLIENT_INTROSPECTION") {
     play_options.service_requests_source = ServiceRequestsSource::CLIENT_INTROSPECTION;
   } else {
-    play_options.service_requests_source = ServiceRequestsSource::SERVER_INTROSPECTION;
+    play_options.service_requests_source = ServiceRequestsSource::SERVICE_INTROSPECTION;
     RCLCPP_ERROR(
       node.get_logger(),
       "play.service_requests_source doesn't support %s. It must be one of SERVICE_INTROSPECTION"
@@ -244,31 +237,6 @@ PlayOptions get_play_options_from_node_params(rclcpp::Node & node)
   play_options.publish_service_requests =
     node.declare_parameter<bool>("play.publish_service_request", false);
 
-  play_options.send_actions_as_client =
-    node.declare_parameter<bool>("play.send_actions_as_client", false);
-
-  auto message_order =
-    node.declare_parameter<std::string>("play.message_order", "RECEIVED_TIMESTAMP");
-  if (message_order == "RECEIVED_TIMESTAMP") {
-    play_options.message_order = MessageOrder::RECEIVED_TIMESTAMP;
-  } else if (message_order == "SENT_TIMESTAMP") {
-    play_options.message_order = MessageOrder::SENT_TIMESTAMP;
-  } else {
-    play_options.message_order = MessageOrder::RECEIVED_TIMESTAMP;
-    RCLCPP_ERROR(
-      node.get_logger(),
-      "play.message_order doesn't support %s. It must be one of RECEIVED_TIMESTAMP"
-      " and SENT_TIMESTAMP. Changed it to default value RECEIVED_TIMESTAMP.",
-      message_order.c_str());
-  }
-
-  play_options.progress_bar_update_rate = param_utils::declare_integer_node_params<int32_t>(
-    node, "play.progress_bar_update_rate", std::numeric_limits<int32_t>::min(),
-    std::numeric_limits<int32_t>::max(), 3);
-
-  play_options.progress_bar_separation_lines = param_utils::declare_integer_node_params<uint32_t>(
-    node, "play.progress_bar_separation_lines", 0, std::numeric_limits<uint32_t>::max(), 2);
-
   return play_options;
 }
 
@@ -277,7 +245,6 @@ RecordOptions get_record_options_from_node_params(rclcpp::Node & node)
   RecordOptions record_options{};
   record_options.all_topics = node.declare_parameter<bool>("record.all_topics", false);
   record_options.all_services = node.declare_parameter<bool>("record.all_services", false);
-  record_options.all_actions = node.declare_parameter<bool>("record.all_actions", false);
 
   record_options.is_discovery_disabled =
     node.declare_parameter<bool>("record.is_discovery_disabled", false);
@@ -296,9 +263,6 @@ RecordOptions get_record_options_from_node_params(rclcpp::Node & node)
   }
   record_options.services = service_list;
 
-  record_options.actions = node.declare_parameter<std::vector<std::string>>(
-    "record.actions", std::vector<std::string>());
-
   record_options.exclude_topics = node.declare_parameter<std::vector<std::string>>(
     "record.exclude_topics", std::vector<std::string>());
 
@@ -312,9 +276,6 @@ RecordOptions get_record_options_from_node_params(rclcpp::Node & node)
     service = rosbag2_cpp::service_name_to_service_event_topic_name(service);
   }
   record_options.exclude_service_events = exclude_service_list;
-
-  record_options.exclude_actions = node.declare_parameter<std::vector<std::string>>(
-    "record.exclude_actions", std::vector<std::string>());
 
   record_options.rmw_serialization_format =
     node.declare_parameter<std::string>("record.rmw_serialization_format", "cdr");

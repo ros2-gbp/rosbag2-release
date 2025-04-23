@@ -3,46 +3,24 @@ import rosbag2_py._storage
 from _typeshed import Incomplete
 from typing import ClassVar, List, overload
 
-class MessageOrder:
-    __members__: ClassVar[dict] = ...  # read-only
-    RECEIVED_TIMESTAMP: ClassVar[MessageOrder] = ...
-    SENT_TIMESTAMP: ClassVar[MessageOrder] = ...
-    __entries: ClassVar[dict] = ...
-    def __init__(self, value: int) -> None: ...
-    def __eq__(self, other: object) -> bool: ...
-    def __hash__(self) -> int: ...
-    def __index__(self) -> int: ...
-    def __int__(self) -> int: ...
-    def __ne__(self, other: object) -> bool: ...
-    @property
-    def name(self) -> str: ...
-    @property
-    def value(self) -> int: ...
-
 class PlayOptions:
-    actions_to_filter: List[str]
     clock_publish_frequency: float
     clock_publish_on_topic_publish: bool
     clock_topics: List[str]
     delay: float
     disable_keyboard_controls: bool
     disable_loan_message: bool
-    exclude_actions_to_filter: List[str]
     exclude_regex_to_filter: str
     exclude_service_events_to_filter: List[str]
     exclude_topics_to_filter: List[str]
     loop: bool
-    message_order: Incomplete
     node_prefix: str
     playback_duration: float
     playback_until_timestamp: int
-    progress_bar_separation_lines: int
-    progress_bar_update_rate: int
     publish_service_requests: bool
     rate: float
     read_ahead_queue_size: int
     regex_to_filter: str
-    send_actions_as_client: bool
     service_requests_source: Incomplete
     services_to_filter: List[str]
     start_offset: float
@@ -67,8 +45,6 @@ class Player:
     def play(self, storage_options: List[rosbag2_py._storage.StorageOptions], play_options: PlayOptions) -> None: ...
 
 class RecordOptions:
-    actions: List[str]
-    all_actions: bool
     all_services: bool
     all_topics: bool
     compression_format: str
@@ -77,7 +53,6 @@ class RecordOptions:
     compression_threads: int
     compression_threads_priority: int
     disable_keyboard_controls: bool
-    exclude_actions: List[str]
     exclude_regex: str
     exclude_service_events: List[str]
     exclude_topic_types: List[str]

@@ -2,28 +2,24 @@
 Changelog for package rosbag2_storage_mcap
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.32.0 (2025-04-18)
+0.26.7 (2025-04-22)
 -------------------
-* Add message sequence number to the messages write API (`#1961 <https://github.com/ros2/rosbag2/issues/1961>`_)
-* Add actions replay feature (`#1955 <https://github.com/ros2/rosbag2/issues/1955>`_)
-* Upstream quality changes from Apex.AI part 1 (`#1903 <https://github.com/ros2/rosbag2/issues/1903>`_)
-* Contributors: Barry Xu, Michael Orlov
+* [jazzy] Upstream quality changes from Apex.AI part 1 (backport `#1903 <https://github.com/ros2/rosbag2/issues/1903>`_) (`#1909 <https://github.com/ros2/rosbag2/issues/1909>`_)
+* Contributors: mergify[bot], Michael Orlov
 
-0.31.0 (2025-02-02)
+0.26.6 (2024-12-18)
 -------------------
 
-0.30.0 (2024-11-26)
+0.26.5 (2024-09-06)
 -------------------
 
-0.29.0 (2024-09-03)
+0.26.4 (2024-06-27)
 -------------------
 
-0.28.0 (2024-06-17)
+0.26.3 (2024-05-15)
 -------------------
-* Add vscode gitignore rule and remove vscode folder (`#1698 <https://github.com/ros2/rosbag2/issues/1698>`_)
-* Contributors: methylDragon
 
-0.27.0 (2024-04-30)
+0.26.2 (2024-04-24)
 -------------------
 
 0.26.1 (2024-04-17)

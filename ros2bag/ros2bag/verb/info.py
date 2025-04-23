@@ -28,8 +28,7 @@ class InfoVerb(VerbExtension):
         )
         parser.add_argument(
             '-v', '--verbose', action='store_true',
-            help='Display verbose information about request/response services, actions and'
-                 ' print messages size contribution on per topic bases.'
+            help='Display request/response information for services'
         )
         available_sorting_methods = Info().get_sorting_methods()
         parser.add_argument(

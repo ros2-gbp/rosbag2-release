@@ -34,12 +34,6 @@ struct StorageFilter
   // are returned.
   std::vector<std::string> services_events;
 
-  // Action interface names to whitelist when reading a bag. Only messages
-  // matching these specified action interface names will be returned. If
-  // list is empty, the filter is ignored and all messages of actions are
-  // returned.
-  std::vector<std::string> actions_interfaces;
-
   // Regular expression of topic names and service name to whitelist when
   // playing a bag.Only messages matching these specified topics or services
   // will be returned. If the string is empty, the filter is ignored and all
@@ -56,11 +50,6 @@ struct StorageFilter
   // is empty, the filter is ignored and all messages of service event topics
   // are returned.
   std::vector<std::string> exclude_service_events = {};
-
-  // Action interface names to blacklist when reading a bag. Only messages
-  // unmatching these service event topics will be returned. If list is empty,
-  // the filter is ignored and all messages of actions are returned.
-  std::vector<std::string> exclude_actions_interfaces = {};
 
   // Regular expression of topic names and service events names to blacklist when
   // playing a bag. Only messages not matching these topics and service events will

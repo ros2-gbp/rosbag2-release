@@ -59,7 +59,6 @@ with add_dll_directories_from_env('PATH'):
         Info,
     )
     from rosbag2_py._transport import (
-        MessageOrder,
         Player,
         PlayOptions,
         ServiceRequestsSource,
@@ -99,7 +98,6 @@ __all__ = [
     'TopicInformation',
     'BagMetadata',
     'MessageDefinition',
-    'MessageOrder',
     'MetadataIo',
     'Info',
     'Player',

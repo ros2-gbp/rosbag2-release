@@ -30,7 +30,6 @@ find_package(ament_cmake_ros REQUIRED)
 find_package(keyboard_handler REQUIRED)
 find_package(rcl REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(rclcpp_action REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(rcpputils REQUIRED)
 find_package(rcutils REQUIRED)
@@ -47,9 +46,7 @@ add_library(${PROJECT_NAME} SHARED
   src/rosbag2_transport/bag_rewrite.cpp
   src/rosbag2_transport/player.cpp
   src/rosbag2_transport/play_options.cpp
-  src/rosbag2_transport/player_progress_bar.cpp
   src/rosbag2_transport/player_service_client.cpp
-  src/rosbag2_transport/player_action_client.cpp
   src/rosbag2_transport/reader_writer_factory.cpp
   src/rosbag2_transport/recorder.cpp
   src/rosbag2_transport/record_options.cpp
@@ -61,7 +58,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 target_link_libraries(${PROJECT_NAME} PUBLIC
   keyboard_handler::keyboard_handler
   rclcpp::rclcpp
-  rclcpp_action::rclcpp_action
   rosbag2_cpp::rosbag2_cpp
   ${rosbag2_interfaces_TARGETS}
   rosbag2_storage::rosbag2_storage
@@ -108,7 +104,6 @@ ament_export_targets(export_${PROJECT_NAME})
 ament_export_dependencies(
   keyboard_handler
   rclcpp
-  rclcpp_action
   rosbag2_cpp
   rosbag2_interfaces
   rosbag2_storage
@@ -130,20 +125,10 @@ if(BUILD_TESTING)
   # prevents finding it repeatedly in each local scope
   ament_find_gmock()
 
-  # If the rmw_implementation is rmw_zenoh_cpp, run the tests with multicast discovery enabled.
-  # Note: This is a temporary change that will be reverted before we branch into Kilted.
-  function(append_evars_if_rmw_zenoh rmw_implementation_env_var rmw_implementation)
-    if("${rmw_implementation}" STREQUAL "rmw_zenoh_cpp")
-      list(APPEND ${rmw_implementation_env_var} "ZENOH_CONFIG_OVERRIDE=scouting/multicast/enabled=true")
-      set(${rmw_implementation_env_var} "${${rmw_implementation_env_var}}" PARENT_SCOPE)
-    endif()
-  endfunction()
-
   ament_add_gmock_executable(test_play test/rosbag2_transport/test_play.cpp)
   target_link_libraries(test_play rosbag2_transport ${test_msgs_TARGETS} rosbag2_test_common::rosbag2_test_common)
   function(test_play_for_rmw_implementation)
     set(rmw_implementation_env_var RMW_IMPLEMENTATION=${rmw_implementation})
-    append_evars_if_rmw_zenoh(rmw_implementation_env_var ${rmw_implementation})
 
     # disable the following tests for connext
     # due to slower discovery of nodes
@@ -170,7 +155,6 @@ if(BUILD_TESTING)
   )
   function(test_composable_player_for_rmw_implementation)
     set(rmw_implementation_env_var RMW_IMPLEMENTATION=${rmw_implementation})
-    append_evars_if_rmw_zenoh(rmw_implementation_env_var ${rmw_implementation})
 
     ament_add_gmock_test(test_composable_player
       TEST_NAME test_composable_player${target_suffix}
@@ -183,7 +167,6 @@ if(BUILD_TESTING)
   target_link_libraries(test_play_loop rosbag2_transport ${test_msgs_TARGETS} rosbag2_test_common::rosbag2_test_common)
   function(test_play_loop_for_rmw_implementation)
     set(rmw_implementation_env_var RMW_IMPLEMENTATION=${rmw_implementation})
-    append_evars_if_rmw_zenoh(rmw_implementation_env_var ${rmw_implementation})
 
     # disable the following tests for connext
     # due to slower discovery of nodes
@@ -204,7 +187,6 @@ if(BUILD_TESTING)
   target_link_libraries(test_play_publish_clock rosbag2_transport ${test_msgs_TARGETS} rosbag2_test_common::rosbag2_test_common)
   function(test_play_publish_clock_for_rmw_implementation)
     set(rmw_implementation_env_var RMW_IMPLEMENTATION=${rmw_implementation})
-    append_evars_if_rmw_zenoh(rmw_implementation_env_var ${rmw_implementation})
 
     # disable the following tests for connext
     # due to slower discovery of nodes
@@ -225,7 +207,6 @@ if(BUILD_TESTING)
   target_link_libraries(test_play_timing rosbag2_transport ${test_msgs_TARGETS} rosbag2_test_common::rosbag2_test_common)
   function(test_play_timing_for_rmw_implementation)
     set(rmw_implementation_env_var RMW_IMPLEMENTATION=${rmw_implementation})
-    append_evars_if_rmw_zenoh(rmw_implementation_env_var ${rmw_implementation})
 
     ament_add_gmock_test(test_play_timing
       TEST_NAME test_play_timing${target_suffix}
@@ -238,7 +219,6 @@ if(BUILD_TESTING)
   target_link_libraries(test_play_callbacks rosbag2_transport ${test_msgs_TARGETS} rosbag2_test_common::rosbag2_test_common)
   function(test_play_callbacks_for_rmw_implementation)
     set(rmw_implementation_env_var RMW_IMPLEMENTATION=${rmw_implementation})
-    append_evars_if_rmw_zenoh(rmw_implementation_env_var ${rmw_implementation})
 
     ament_add_gmock_test(test_play_callbacks
       TEST_NAME test_play_callbacks${target_suffix}
@@ -251,7 +231,6 @@ if(BUILD_TESTING)
   target_link_libraries(test_player_stop rosbag2_transport ${test_msgs_TARGETS} rosbag2_test_common::rosbag2_test_common rmw::rmw)
   function(test_player_stop_for_rmw_implementation)
     set(rmw_implementation_env_var RMW_IMPLEMENTATION=${rmw_implementation})
-    append_evars_if_rmw_zenoh(rmw_implementation_env_var ${rmw_implementation})
 
     ament_add_gmock_test(test_player_stop
       TEST_NAME test_player_stop${target_suffix}
@@ -264,7 +243,6 @@ if(BUILD_TESTING)
   target_link_libraries(test_play_seek rosbag2_transport ${test_msgs_TARGETS} rosbag2_test_common::rosbag2_test_common)
   function(test_play_seek_for_rmw_implementation)
     set(rmw_implementation_env_var RMW_IMPLEMENTATION=${rmw_implementation})
-    append_evars_if_rmw_zenoh(rmw_implementation_env_var ${rmw_implementation})
 
     ament_add_gmock_test(test_play_seek
       TEST_NAME test_play_seek${target_suffix}
@@ -277,7 +255,6 @@ if(BUILD_TESTING)
   target_link_libraries(test_play_services rosbag2_transport ${test_msgs_TARGETS} rosbag2_test_common::rosbag2_test_common)
   function(test_play_services_for_rmw_implementation)
     set(rmw_implementation_env_var RMW_IMPLEMENTATION=${rmw_implementation})
-    append_evars_if_rmw_zenoh(rmw_implementation_env_var ${rmw_implementation})
 
     ament_add_gmock_test(test_play_services
       TEST_NAME test_play_services${target_suffix}
@@ -290,7 +267,6 @@ if(BUILD_TESTING)
   target_link_libraries(test_play_topic_remap rosbag2_transport ${test_msgs_TARGETS} rosbag2_test_common::rosbag2_test_common)
   function(test_play_topic_remap_for_rmw_implementation)
     set(rmw_implementation_env_var RMW_IMPLEMENTATION=${rmw_implementation})
-    append_evars_if_rmw_zenoh(rmw_implementation_env_var ${rmw_implementation})
 
     # disable the following tests for connext
     # due to slower discovery of nodes
@@ -312,7 +288,6 @@ if(BUILD_TESTING)
   target_link_libraries(test_play_duration rosbag2_transport ${test_msgs_TARGETS} rosbag2_test_common::rosbag2_test_common)
   function(test_play_duration_for_rmw_implementation)
     set(rmw_implementation_env_var RMW_IMPLEMENTATION=${rmw_implementation})
-    append_evars_if_rmw_zenoh(rmw_implementation_env_var ${rmw_implementation})
 
     ament_add_gmock_test(test_play_duration
       TEST_NAME test_play_duration${target_suffix}
@@ -326,7 +301,6 @@ if(BUILD_TESTING)
   target_link_libraries(test_play_next rosbag2_transport ${test_msgs_TARGETS} rosbag2_test_common::rosbag2_test_common)
   function(test_play_next_for_rmw_implementation)
     set(rmw_implementation_env_var RMW_IMPLEMENTATION=${rmw_implementation})
-    append_evars_if_rmw_zenoh(rmw_implementation_env_var ${rmw_implementation})
 
     ament_add_gmock_test(test_play_next
       TEST_NAME test_play_next${target_suffix}
@@ -340,7 +314,6 @@ if(BUILD_TESTING)
   target_link_libraries(test_play_until rosbag2_transport ${test_msgs_TARGETS} rosbag2_test_common::rosbag2_test_common)
   function(test_play_until_for_rmw_implementation)
     set(rmw_implementation_env_var RMW_IMPLEMENTATION=${rmw_implementation})
-    append_evars_if_rmw_zenoh(rmw_implementation_env_var ${rmw_implementation})
 
     ament_add_gmock_test(test_play_until
       TEST_NAME test_play_until${target_suffix}
@@ -354,7 +327,6 @@ if(BUILD_TESTING)
   target_link_libraries(test_burst rosbag2_transport ${test_msgs_TARGETS} rosbag2_test_common::rosbag2_test_common)
   function(test_burst_for_rmw_implementation)
     set(rmw_implementation_env_var RMW_IMPLEMENTATION=${rmw_implementation})
-    append_evars_if_rmw_zenoh(rmw_implementation_env_var ${rmw_implementation})
 
     ament_add_gmock_test(test_burst
       TEST_NAME test_burst${target_suffix}
@@ -368,7 +340,6 @@ if(BUILD_TESTING)
   target_link_libraries(test_record rosbag2_transport ${test_msgs_TARGETS} rosbag2_test_common::rosbag2_test_common rmw::rmw)
   function(test_record_for_rmw_implementation)
     set(rmw_implementation_env_var RMW_IMPLEMENTATION=${rmw_implementation})
-    append_evars_if_rmw_zenoh(rmw_implementation_env_var ${rmw_implementation})
 
     # disable the following tests for connext
     # due to slower discovery of nodes
@@ -389,7 +360,6 @@ if(BUILD_TESTING)
   target_link_libraries(test_record_all rosbag2_transport ${test_msgs_TARGETS} rosbag2_test_common::rosbag2_test_common)
   function(test_record_all_for_rmw_implementation)
     set(rmw_implementation_env_var RMW_IMPLEMENTATION=${rmw_implementation})
-    append_evars_if_rmw_zenoh(rmw_implementation_env_var ${rmw_implementation})
 
     ament_add_gmock_test(test_record_all
       TEST_NAME test_record_all${target_suffix}
@@ -402,7 +372,6 @@ if(BUILD_TESTING)
   target_link_libraries(test_record_all_ignore_leaf_topics rosbag2_transport ${test_msgs_TARGETS} rosbag2_test_common::rosbag2_test_common)
   function(test_record_all_ignore_leaf_topics_for_rmw_implementation)
     set(rmw_implementation_env_var RMW_IMPLEMENTATION=${rmw_implementation})
-    append_evars_if_rmw_zenoh(rmw_implementation_env_var ${rmw_implementation})
 
     ament_add_gmock_test(test_record_all_ignore_leaf_topics
       TEST_NAME test_record_all_ignore_leaf_topics${target_suffix}
@@ -420,7 +389,6 @@ if(BUILD_TESTING)
   )
   function(test_record_all_include_unpublished_topics_for_rmw_implementation)
     set(rmw_implementation_env_var RMW_IMPLEMENTATION=${rmw_implementation})
-    append_evars_if_rmw_zenoh(rmw_implementation_env_var ${rmw_implementation})
 
     ament_add_gmock_test(test_record_all_include_unpublished_topics
       TEST_NAME test_record_all_include_unpublished_topics${target_suffix}
@@ -433,7 +401,6 @@ if(BUILD_TESTING)
   target_link_libraries(test_record_all_no_discovery rosbag2_transport ${test_msgs_TARGETS} rosbag2_test_common::rosbag2_test_common)
   function(test_record_all_no_discovery_for_rmw_implementation)
     set(rmw_implementation_env_var RMW_IMPLEMENTATION=${rmw_implementation})
-    append_evars_if_rmw_zenoh(rmw_implementation_env_var ${rmw_implementation})
 
     ament_add_gmock_test(test_record_all_no_discovery
       TEST_NAME test_record_all_no_discovery${target_suffix}
@@ -446,7 +413,6 @@ if(BUILD_TESTING)
   target_link_libraries(test_record_all_use_sim_time rosbag2_transport ${test_msgs_TARGETS} rosbag2_test_common::rosbag2_test_common)
   function(test_record_all_use_sim_time_for_rmw_implementation)
     set(rmw_implementation_env_var RMW_IMPLEMENTATION=${rmw_implementation})
-    append_evars_if_rmw_zenoh(rmw_implementation_env_var ${rmw_implementation})
 
     ament_add_gmock_test(test_record_all_use_sim_time
       TEST_NAME test_record_all_use_sim_time${target_suffix}
@@ -459,7 +425,6 @@ if(BUILD_TESTING)
   target_link_libraries(test_keyboard_controls rosbag2_transport ${test_msgs_TARGETS} rosbag2_test_common::rosbag2_test_common)
   function(test_keyboard_controls_for_rmw_implementation)
     set(rmw_implementation_env_var RMW_IMPLEMENTATION=${rmw_implementation})
-    append_evars_if_rmw_zenoh(rmw_implementation_env_var ${rmw_implementation})
 
     ament_add_gmock_test(test_keyboard_controls
       TEST_NAME test_keyboard_controls${target_suffix}
@@ -472,7 +437,6 @@ if(BUILD_TESTING)
   target_link_libraries(test_record_regex rosbag2_transport ${test_msgs_TARGETS} rosbag2_test_common::rosbag2_test_common)
   function(test_record_regex_for_rmw_implementation)
     set(rmw_implementation_env_var RMW_IMPLEMENTATION=${rmw_implementation})
-    append_evars_if_rmw_zenoh(rmw_implementation_env_var ${rmw_implementation})
 
     # disable the following tests for connext
     # due to slower discovery of nodes
@@ -493,7 +457,6 @@ if(BUILD_TESTING)
   target_link_libraries(test_record_services rosbag2_transport ${test_msgs_TARGETS} rosbag2_test_common::rosbag2_test_common)
   function(test_record_services_for_rmw_implementation)
     set(rmw_implementation_env_var RMW_IMPLEMENTATION=${rmw_implementation})
-    append_evars_if_rmw_zenoh(rmw_implementation_env_var ${rmw_implementation})
 
     ament_add_gmock_test(test_record_services
       TEST_NAME test_record_services${target_suffix}
@@ -512,7 +475,6 @@ if(BUILD_TESTING)
   )
   function(test_composable_recorder_for_rmw_implementation)
     set(rmw_implementation_env_var RMW_IMPLEMENTATION=${rmw_implementation})
-    append_evars_if_rmw_zenoh(rmw_implementation_env_var ${rmw_implementation})
 
     ament_add_gmock_test(test_composable_recorder
       TEST_NAME test_composable_recorder${target_suffix}
@@ -530,7 +492,6 @@ if(BUILD_TESTING)
   )
   function(test_load_composable_components_for_rmw_implementation)
     set(rmw_implementation_env_var RMW_IMPLEMENTATION=${rmw_implementation})
-    append_evars_if_rmw_zenoh(rmw_implementation_env_var ${rmw_implementation})
 
     ament_add_gmock_test(test_load_composable_components
       TEST_NAME test_load_composable_components${target_suffix}
@@ -573,9 +534,6 @@ if(BUILD_TESTING)
     rcpputils::rcpputils
     rosbag2_test_common::rosbag2_test_common
   )
-
-  ament_add_gmock(test_player_progress_bar test/rosbag2_transport/test_player_progress_bar.cpp)
-  target_link_libraries(test_player_progress_bar ${PROJECT_NAME})
 endif()
 
 ament_package()

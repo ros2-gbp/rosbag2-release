@@ -2,24 +2,27 @@
 Changelog for package rosbag2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.32.0 (2025-04-18)
+0.26.7 (2025-04-22)
 -------------------
 
-0.31.0 (2025-02-02)
+0.26.6 (2024-12-18)
 -------------------
-* Support replaying multiple bags (`#1848 <https://github.com/ros2/rosbag2/issues/1848>`_)
-* Contributors: Christophe Bedard
+* [jazzy] Add support for replaying multiple bags (backport `#1848 <https://github.com/ros2/rosbag2/issues/1848>`_) (`#1873 <https://github.com/ros2/rosbag2/issues/1873>`_)
+  (cherry picked from commit 125db50b4d9a585bab33f2908008fe1168bb9cf3)
+  Co-authored-by: Christophe Bedard <christophe.bedard@apex.ai>
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+* Contributors: Marco A. Gutierrez, mergify[bot]
 
-0.30.0 (2024-11-26)
--------------------
-
-0.29.0 (2024-09-03)
--------------------
-
-0.28.0 (2024-06-17)
+0.26.5 (2024-09-06)
 -------------------
 
-0.27.0 (2024-04-30)
+0.26.4 (2024-06-27)
+-------------------
+
+0.26.3 (2024-05-15)
+-------------------
+
+0.26.2 (2024-04-24)
 -------------------
 
 0.26.1 (2024-04-17)
