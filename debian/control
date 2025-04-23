@@ -1,0 +1,12 @@
+Source: ros-kilted-rosbag2-converter-default-plugins
+Section: misc
+Priority: optional
+Maintainer: Karsten Knese <karsten@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), ros-kilted-ament-cmake, ros-kilted-ament-cmake-gmock <!nocheck>, ros-kilted-ament-index-cpp, ros-kilted-ament-lint-auto <!nocheck>, ros-kilted-ament-lint-common <!nocheck>, ros-kilted-pluginlib, ros-kilted-rcpputils, ros-kilted-rcpputils <!nocheck>, ros-kilted-rmw, ros-kilted-rmw-fastrtps-cpp, ros-kilted-rmw-fastrtps-cpp <!nocheck>, ros-kilted-rosbag2-cpp, ros-kilted-rosbag2-cpp <!nocheck>, ros-kilted-rosbag2-test-common <!nocheck>, ros-kilted-rosidl-runtime-cpp, ros-kilted-test-msgs <!nocheck>, ros-kilted-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-kilted-rosbag2-converter-default-plugins
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-kilted-ament-index-cpp, ros-kilted-pluginlib, ros-kilted-rcpputils, ros-kilted-rmw, ros-kilted-rmw-fastrtps-cpp, ros-kilted-rosbag2-cpp, ros-kilted-rosidl-runtime-cpp, ros-kilted-ros-workspace
+Description: Package containing default plugins for format converters
