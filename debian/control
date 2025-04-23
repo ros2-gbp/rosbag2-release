@@ -1,0 +1,12 @@
+Source: ros-kilted-rosbag2-tests
+Section: misc
+Priority: optional
+Maintainer: Michael Orlov <michael.orlov@apex.ai>
+Build-Depends: debhelper (>= 9.0.0), ros-kilted-ament-cmake, ros-kilted-ament-cmake-gmock <!nocheck>, ros-kilted-ament-index-cpp, ros-kilted-ament-lint-auto <!nocheck>, ros-kilted-ament-lint-common <!nocheck>, ros-kilted-rclcpp <!nocheck>, ros-kilted-rcpputils <!nocheck>, ros-kilted-ros2bag <!nocheck>, ros-kilted-rosbag2-compression <!nocheck>, ros-kilted-rosbag2-compression-zstd <!nocheck>, ros-kilted-rosbag2-cpp <!nocheck>, ros-kilted-rosbag2-interfaces <!nocheck>, ros-kilted-rosbag2-storage <!nocheck>, ros-kilted-rosbag2-storage-default-plugins <!nocheck>, ros-kilted-rosbag2-test-common <!nocheck>, ros-kilted-rosbag2-transport <!nocheck>, ros-kilted-std-msgs <!nocheck>, ros-kilted-test-msgs <!nocheck>, ros-kilted-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-kilted-rosbag2-tests
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-kilted-ament-index-cpp, ros-kilted-ros-workspace
+Description: Tests package for rosbag2
