@@ -456,7 +456,8 @@ void RecorderImpl::stop_discovery()
   std::lock_guard<std::mutex> state_lock(discovery_mutex_);
   if (discovery_running_.exchange(false)) {
     if (discovery_future_.valid()) {
-      auto status = discovery_future_.wait_for(2 * record_options_.topic_polling_interval);
+      auto status = discovery_future_.wait_for(
+        std::chrono::milliseconds(500) + record_options_.topic_polling_interval);
       if (status != std::future_status::ready) {
         RCLCPP_ERROR_STREAM(
           node->get_logger(),
@@ -566,7 +567,13 @@ void RecorderImpl::subscribe_topic(const rosbag2_storage::TopicMetadata & topic)
   auto subscription = create_subscription(topic.name, topic.type, subscription_qos);
   if (subscription) {
     subscriptions_.insert({topic.name, subscription});
-    RCLCPP_INFO_STREAM(node->get_logger(), "Subscribed to topic '" << topic.name << "'");
+    if (node->get_logger().get_effective_level() == rclcpp::Logger::Level::Debug) {
+      RCLCPP_DEBUG_STREAM(node->get_logger(),
+        "Subscribed to topic '" << topic.name << "' with QoS:\n" << subscription_qos.to_string());
+    } else {
+      RCLCPP_INFO_STREAM(node->get_logger(), "Subscribed to topic '" << topic.name << "'");
+    }
+
   } else {
     writer_->remove_topic(topic);
   }
