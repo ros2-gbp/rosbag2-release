@@ -1,1 +1,1 @@
-{"base": "fea329232", "parent": "debian/rolling/rosbag2_storage_sqlite3", "previous": "31dcd17a2", "trim": "", "trimbase": ""}
+{"base": "94a0afd67", "parent": "debian/rolling/rosbag2_storage_sqlite3", "previous": "2acadba76", "trim": "", "trimbase": ""}
