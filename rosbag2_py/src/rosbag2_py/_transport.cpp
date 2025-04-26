@@ -501,7 +501,7 @@ void bag_rewrite(
     rosbag2_storage::StorageOptions storage_options{};
     YAML::convert<rosbag2_storage::StorageOptions>::decode(bag_node, storage_options);
     rosbag2_transport::RecordOptions record_options = bag_rewrite_default_record_options();
-    record_options = bag_node.as<rosbag2_transport::RecordOptions>();
+    YAML::convert<rosbag2_transport::RecordOptions>::decode(bag_node, record_options);
     output_options.push_back(std::make_pair(storage_options, record_options));
   }
   rosbag2_transport::bag_rewrite(input_options, output_options);
@@ -525,10 +525,12 @@ PYBIND11_MODULE(_transport, m) {
   .def_readwrite("rate", &PlayOptions::rate)
   .def_readwrite("topics_to_filter", &PlayOptions::topics_to_filter)
   .def_readwrite("services_to_filter", &PlayOptions::services_to_filter)
+  .def_readwrite("actions_to_filter", &PlayOptions::actions_to_filter)
   .def_readwrite("regex_to_filter", &PlayOptions::regex_to_filter)
   .def_readwrite("exclude_regex_to_filter", &PlayOptions::exclude_regex_to_filter)
   .def_readwrite("exclude_topics_to_filter", &PlayOptions::exclude_topics_to_filter)
   .def_readwrite("exclude_service_events_to_filter", &PlayOptions::exclude_services_to_filter)
+  .def_readwrite("exclude_actions_to_filter", &PlayOptions::exclude_actions_to_filter)
   .def_property(
     "topic_qos_profile_overrides",
     &PlayOptions::getTopicQoSProfileOverrides,
@@ -556,15 +558,24 @@ PYBIND11_MODULE(_transport, m) {
     "playback_until_timestamp",
     &PlayOptions::getPlaybackUntilTimestamp,
     &PlayOptions::setPlaybackUntilTimestamp)
+  .def_readwrite("progress_bar_update_rate", &PlayOptions::progress_bar_update_rate)
+  .def_readwrite("progress_bar_separation_lines", &PlayOptions::progress_bar_separation_lines)
   .def_readwrite("wait_acked_timeout", &PlayOptions::wait_acked_timeout)
   .def_readwrite("disable_loan_message", &PlayOptions::disable_loan_message)
   .def_readwrite("publish_service_requests", &PlayOptions::publish_service_requests)
+  .def_readwrite("send_actions_as_client", &PlayOptions::send_actions_as_client)
   .def_readwrite("service_requests_source", &PlayOptions::service_requests_source)
+  .def_readwrite("message_order", &PlayOptions::message_order)
   ;
 
   py::enum_<rosbag2_transport::ServiceRequestsSource>(m, "ServiceRequestsSource")
-  .value("SERVICE_INTROSPECTION", rosbag2_transport::ServiceRequestsSource::SERVICE_INTROSPECTION)
+  .value("SERVICE_INTROSPECTION", rosbag2_transport::ServiceRequestsSource::SERVER_INTROSPECTION)
   .value("CLIENT_INTROSPECTION", rosbag2_transport::ServiceRequestsSource::CLIENT_INTROSPECTION)
+  ;
+
+  py::enum_<rosbag2_transport::MessageOrder>(m, "MessageOrder")
+  .value("RECEIVED_TIMESTAMP", rosbag2_transport::MessageOrder::RECEIVED_TIMESTAMP)
+  .value("SENT_TIMESTAMP", rosbag2_transport::MessageOrder::SENT_TIMESTAMP)
   ;
 
   py::class_<RecordOptions>(m, "RecordOptions")
@@ -598,6 +609,9 @@ PYBIND11_MODULE(_transport, m) {
   .def_readwrite("services", &RecordOptions::services)
   .def_readwrite("all_services", &RecordOptions::all_services)
   .def_readwrite("disable_keyboard_controls", &RecordOptions::disable_keyboard_controls)
+  .def_readwrite("actions", &RecordOptions::actions)
+  .def_readwrite("all_actions", &RecordOptions::all_actions)
+  .def_readwrite("exclude_actions", &RecordOptions::exclude_actions)
   ;
 
   py::class_<rosbag2_py::Player>(m, "Player")

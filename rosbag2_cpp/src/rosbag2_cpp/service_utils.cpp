@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <cstring>
+#include <string>
 
 #include "rcl/service_introspection.h"
 
@@ -30,13 +31,16 @@ bool is_service_event_topic(const std::string & topic_name, const std::string & 
 {
   if (topic_name.length() <= kServiceEventTopicPostfixLen) {
     return false;
-  } else {
-    // The end of the topic name should be "/_service_event"
-    if (topic_name.substr(topic_name.length() - kServiceEventTopicPostfixLen) !=
-      RCL_SERVICE_INTROSPECTION_TOPIC_POSTFIX)
-    {
-      return false;
-    }
+  }
+
+  if (topic_name.find("/_action/") != std::string::npos) {
+    return false;
+  }
+
+  if (topic_name.substr(topic_name.length() - kServiceEventTopicPostfixLen) !=
+    RCL_SERVICE_INTROSPECTION_TOPIC_POSTFIX)
+  {
+    return false;
   }
 
   if (topic_type.length() <= kServiceEventTypePostfixLen) {

@@ -26,9 +26,9 @@ namespace rosbag2_py
 
 std::string format_bag_meta_data(
   const rosbag2_storage::BagMetadata & metadata,
+  const std::unordered_map<std::string, uint64_t> & messages_size = {},
   bool verbose = false,
   bool only_topic = false,
-  const std::unordered_map<std::string, uint64_t> & messages_size = {},
   InfoSortingMethod sort_method = InfoSortingMethod::NAME);
 
 }  // namespace rosbag2_py

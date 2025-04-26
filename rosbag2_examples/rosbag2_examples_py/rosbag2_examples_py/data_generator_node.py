@@ -13,6 +13,7 @@
 # limitations under the License.
 from example_interfaces.msg import Int32
 import rclpy
+from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from rclpy.serialization import serialize_message
 import rosbag2_py
@@ -28,7 +29,7 @@ class DataGeneratorNode(Node):
 
         storage_options = rosbag2_py.StorageOptions(
             uri='timed_synthetic_bag',
-            storage_id='sqlite3')
+            storage_id='mcap')
         converter_options = rosbag2_py.ConverterOptions('', '')
         self.writer.open(storage_options, converter_options)
 
@@ -50,10 +51,12 @@ class DataGeneratorNode(Node):
 
 
 def main(args=None):
-    rclpy.init(args=args)
-    dgn = DataGeneratorNode()
-    rclpy.spin(dgn)
-    rclpy.shutdown()
+    try:
+        with rclpy.init(args=args):
+            dgn = DataGeneratorNode()
+            rclpy.spin(dgn)
+    except (KeyboardInterrupt, ExternalShutdownException):
+        pass
 
 
 if __name__ == '__main__':
