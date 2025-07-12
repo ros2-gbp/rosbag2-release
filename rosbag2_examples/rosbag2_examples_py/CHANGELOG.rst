@@ -2,35 +2,30 @@
 Changelog for package rosbag2_examples_py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.33.0 (2025-04-25)
+0.26.8 (2025-07-10)
 -------------------
-* Upstream quality changes from Apex.AI part-2 (`#1924 <https://github.com/ros2/rosbag2/issues/1924>`_)
-* Add a simple example showing how to convert bags to the csv file (`#1974 <https://github.com/ros2/rosbag2/issues/1974>`_)
-* Contributors: Michael Orlov, Christophe Bedard
+* [jazzy] Upstream quality changes from Apex.AI part-2 (backport `#1924 <https://github.com/ros2/rosbag2/issues/1924>`_) (`#1987 <https://github.com/ros2/rosbag2/issues/1987>`_)
+* Add a simple example showing how to convert bags to the csv file (`#1974 <https://github.com/ros2/rosbag2/issues/1974>`_) (`#1982 <https://github.com/ros2/rosbag2/issues/1982>`_)
+* Contributors: Michael Orlov <morlovmr@gmail.com>, Christophe Bedard <bedard.christophe@gmail.com>
 
-0.32.0 (2025-04-18)
+0.26.7 (2025-04-22)
 -------------------
+* Avoid using internal modules for examples. (backport `#1905 <https://github.com/ros2/rosbag2/issues/1905>`_) (`#1907 <https://github.com/ros2/rosbag2/issues/1907>`_)
+* Contributors: Tomoya Fujita, Alejandro Hernandez Cordero
 
-0.31.0 (2025-02-02)
--------------------
-* avoid using internal modules for examples. (`#1905 <https://github.com/ros2/rosbag2/issues/1905>`_)
-* Add test_xmllint.py to python packages. (`#1879 <https://github.com/ros2/rosbag2/issues/1879>`_)
-* Contributors: Chris Lalancette, Tomoya Fujita
-
-0.30.0 (2024-11-26)
+0.26.6 (2024-12-18)
 -------------------
 
-0.29.0 (2024-09-03)
--------------------
-* simple_bag_reader.py should publish the data for each timer callback. (`#1767 <https://github.com/ros2/rosbag2/issues/1767>`_)
-* Change the python examples to use the rclpy context manager. (`#1758 <https://github.com/ros2/rosbag2/issues/1758>`_)
-* Add rosbag2_examples_cpp/simple_bag_reader.cpp. (`#1683 <https://github.com/ros2/rosbag2/issues/1683>`_)
-* Contributors: Chris Lalancette, Tomoya Fujita
-
-0.28.0 (2024-06-17)
+0.26.5 (2024-09-06)
 -------------------
 
-0.27.0 (2024-04-30)
+0.26.4 (2024-06-27)
+-------------------
+
+0.26.3 (2024-05-15)
+-------------------
+
+0.26.2 (2024-04-24)
 -------------------
 
 0.26.1 (2024-04-17)

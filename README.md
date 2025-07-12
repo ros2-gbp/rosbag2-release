@@ -147,60 +147,16 @@ When you have a recorded bag, you can use Rosbag2 to play it back:
 $ ros2 bag play <bag>
 ```
 
-The bag argument can be a directory containing `metadata.yaml` and one or more storage files, or
-to a single storage file such as `.mcap` or `.db3`.
+The bag argument can be a directory containing `metadata.yaml` and one or more storage files, or to a single storage file such as `.mcap` or `.db3`.
 The Player will automatically detect which storage implementation to use for playing.
-A progress bar to track the playback progress will be displayed in the terminal by default.
 
 To play back multiple bags:
 
 ```
-$ ros2 bag play <bag1> -i <bag2> -i <bag3>
+$ ros2 bag play -i <bag1> -i <bag2> -i <bag3>
 ```
 
-Messages from all provided bags will be played in order, based on their original recording
-reception timestamps.
-
-Options:
-
-* `--topics`:
-  Space-delimited list of topics to play.
-* `--services`:
-  Space-delimited list of services to play.
-* `--actions`:
-  Space-delimited list of actions to play.
-* `-e,--regex`:
-  Play only topics and services matches with regular expression.
-* `-x,--exclude-regex`:
-  Regular expressions to exclude topics and services from replay.
-* `--exclude-topics`:
-  Space-delimited list of topics not to play.
-* `--exclude-services`:
-  Space-delimited list of services not to play.
-* `--exclude-actions`:
-  Space-delimited list of actions not to play.
-* `--message-order {received,sent}`:
-  The reference to use for bag message chronological ordering.
-  Choices: reception timestamp (`received`), publication timestamp (`sent`).
-  Default: reception timestamp.
-* `--progress-bar-update-rate [Hz]`:
-  Print a progress bar for the playback with a specified maximum update rate in times per second
-  (Hz). Negative values mark an update for every published message, while a zero value disables
-  the progress bar. Default is 3 Hz.
-* `--progress-bar-separation-lines`:
-  The number of lines to separate the progress bar from the rest of the playback player output.
-  It prevents mixing external log messages with the progress bar string. Default to 2.
-
-For more options, run with `--help`.
-
-#### Playback action messages as action client
-
-If you want Rosbag2 to replay recorded action messages in the role of an action client, you need to specify the --send-actions-as-client parameter.
-```
-$ ros2 bag play --send-actions-as-client <bag>
-```
-Rosbag2 will send recorded goal request, cancel request and result request to action server.  
-For more information, please refer to https://github.com/ros2/rosbag2/blob/rolling/docs/design/rosbag2_record_replay_action.md.
+Messages from all provided bags will be played in order, based on their original recording reception timestamps.
 
 #### Controlling playback via services
 
@@ -290,20 +246,20 @@ output_bags:
   max_bagfile_duration: 0
   storage_preset_profile: ""
   storage_config_uri: ""
+  # optional filter for msg time t [nsec since epoch]:  start_time_ns <= t <= end_time_ns
+  # start_time_ns: 1744227144744197147
+  # end_time_ns: 1744227145734665546
   all_topics: false
   topics: []
   topic_types: []
   all_services: false
   services: []
-  all_actions: false
-  actions: []
   rmw_serialization_format: ""  # defaults to using the format of the input topic
   regex: ""
   exclude_regex: ""
   exclude_topics: []
   exclude_topic_types: []
   exclude_services: []
-  exclude_actions: []
   compression_mode: ""
   compression_format: ""
   compression_queue_size: 1

@@ -62,10 +62,30 @@ TEST(test_local_message_definition_source, can_find_msg_deps)
     "float32 c\n");
 }
 
+TEST(test_local_message_definition_source, can_find_msg_definition_in_nested_subfolder)
+{
+  LocalMessageDefinitionSource source;
+  auto result =
+    source.get_full_text("rosbag2_test_msgdefs/msg/nested_sub_dir/AnotherBasicMsg");
+  ASSERT_EQ(result.encoding, "ros2msg");
+  // Note: By design The top-level message definition for MSG format is present first, with no
+  // delimiter. All dependent .msg definitions are preceded by a two-line delimiter:
+  ASSERT_EQ(result.encoded_message_definition, "float32 c\n");
+}
+
+TEST(test_local_message_definition_source, can_find_action_definition_in_nested_subfolder)
+{
+  LocalMessageDefinitionSource source;
+  auto result =
+    source.get_full_text("rosbag2_test_msgdefs/nested_sub_dir/action/BasicMsg");
+  ASSERT_EQ(result.encoding, "unknown");
+  ASSERT_TRUE(result.encoded_message_definition.empty());
+}
+
 TEST(test_local_message_definition_source, can_find_srv_deps_in_msg)
 {
   LocalMessageDefinitionSource source;
-  auto result = source.get_full_text("rosbag2_test_msgdefs/srv/ComplexSrvMsg");
+  auto result = source.get_full_text("rosbag2_test_msgdefs/srv/ComplexSrvMsg_Event");
   ASSERT_EQ(result.encoding, "ros2msg");
   ASSERT_EQ(
     result.encoded_message_definition,
@@ -83,7 +103,7 @@ TEST(test_local_message_definition_source, can_find_srv_deps_in_msg)
 TEST(test_local_message_definition_source, can_find_srv_deps_in_idl)
 {
   LocalMessageDefinitionSource source;
-  auto result = source.get_full_text("rosbag2_test_msgdefs/srv/ComplexSrvIdl");
+  auto result = source.get_full_text("rosbag2_test_msgdefs/srv/ComplexSrvIdl_Event");
   ASSERT_EQ(result.encoding, "ros2idl");
   ASSERT_EQ(
     result.encoded_message_definition,
@@ -92,55 +112,6 @@ TEST(test_local_message_definition_source, can_find_srv_deps_in_idl)
     "rosbag2_test_msgdefs/BasicIdl req\n"
     "---\n"
     "rosbag2_test_msgdefs/BasicIdl resp\n"
-    "\n"
-    "================================================================================\n"
-    "MSG: rosbag2_test_msgdefs/BasicIdl\n"
-    "\n"
-    "================================================================================\n"
-    "IDL: rosbag2_test_msgdefs/BasicIdl\n"
-    "module rosbag2_test_msgdefs {\n"
-    "  module msg {\n"
-    "    struct BasicIdl {\n"
-    "        float x;\n"
-    "    };\n"
-    "  };\n"
-    "};\n") << result.encoded_message_definition << std::endl;
-}
-
-TEST(test_local_message_definition_source, can_find_action_deps_in_msg)
-{
-  LocalMessageDefinitionSource source;
-  auto result = source.get_full_text("rosbag2_test_msgdefs/action/ComplexActionMsg");
-  ASSERT_EQ(result.encoding, "ros2msg");
-  ASSERT_EQ(
-    result.encoded_message_definition,
-    "================================================================================\n"
-    "ACTION: rosbag2_test_msgdefs/action/ComplexActionMsg\n"
-    "rosbag2_test_msgdefs/BasicMsg goal\n"
-    "---\n"
-    "rosbag2_test_msgdefs/BasicMsg result\n"
-    "---\n"
-    "rosbag2_test_msgdefs/BasicMsg feedback\n"
-    "\n"
-    "================================================================================\n"
-    "MSG: rosbag2_test_msgdefs/BasicMsg\n"
-    "float32 c\n") << result.encoded_message_definition << std::endl;
-}
-
-TEST(test_local_message_definition_source, can_find_action_deps_in_idl)
-{
-  LocalMessageDefinitionSource source;
-  auto result = source.get_full_text("rosbag2_test_msgdefs/action/ComplexActionIdl");
-  ASSERT_EQ(result.encoding, "ros2idl");
-  ASSERT_EQ(
-    result.encoded_message_definition,
-    "================================================================================\n"
-    "ACTION: rosbag2_test_msgdefs/action/ComplexActionIdl\n"
-    "rosbag2_test_msgdefs/BasicIdl goal\n"
-    "---\n"
-    "rosbag2_test_msgdefs/BasicIdl result\n"
-    "---\n"
-    "rosbag2_test_msgdefs/BasicIdl feedback\n"
     "\n"
     "================================================================================\n"
     "MSG: rosbag2_test_msgdefs/BasicIdl\n"
@@ -224,9 +195,40 @@ TEST(test_local_message_definition_source, no_crash_on_bad_name)
 {
   LocalMessageDefinitionSource source;
   rosbag2_storage::MessageDefinition result;
+
+  // The following type names are not valid, but it should not crash
   ASSERT_NO_THROW(
   {
-    result = source.get_full_text("rosbag2_test_msgdefs/idl/BasicSrv_Request");
+    // The typename without preceding package name
+    result = source.get_full_text("/msg/String");
+  });
+  ASSERT_EQ(result.encoding, "unknown");
+
+  ASSERT_NO_THROW(
+  {
+    // Missing the actual type name after format specifier
+    result = source.get_full_text("std_msgs/msg/");
+  });
+  ASSERT_EQ(result.encoding, "unknown");
+
+  ASSERT_NO_THROW(
+  {
+    // Missing package name before the first slash
+    result = source.get_full_text("/String");
+  });
+  ASSERT_EQ(result.encoding, "unknown");
+
+  ASSERT_NO_THROW(
+  {
+    // Hyphens are not allowed in package names
+    result = source.get_full_text("std-msgs/String");
+  });
+  ASSERT_EQ(result.encoding, "unknown");
+
+  ASSERT_NO_THROW(
+  {
+    // File extensions are not allowed
+    result = source.get_full_text("std_msgs/String.msg");
   });
   ASSERT_EQ(result.encoding, "unknown");
 }

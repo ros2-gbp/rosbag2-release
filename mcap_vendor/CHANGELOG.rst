@@ -2,30 +2,31 @@
 Changelog for package mcap_vendor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.33.0 (2025-04-25)
+0.26.8 (2025-07-10)
+-------------------
+* mcap_vendor: update to v1.3.1 (`#2069 <https://github.com/ros2/rosbag2/issues/2069>`_)
+* Backporting Missing cstdint Include (`#2008 <https://github.com/ros2/rosbag2/issues/2008>`_) (`#2015 <https://github.com/ros2/rosbag2/issues/2015>`_)
+* Contributors: james-rms, David Anthony <djanthony@gmail.com>, Barry Xu <barry.xu@sony.com>
+
+0.26.7 (2025-04-22)
 -------------------
 
-0.32.0 (2025-04-18)
+0.26.6 (2024-12-18)
 -------------------
 
-0.31.0 (2025-02-02)
+0.26.5 (2024-09-06)
 -------------------
 
-0.30.0 (2024-11-26)
+0.26.4 (2024-06-27)
 -------------------
 
-0.29.0 (2024-09-03)
+0.26.3 (2024-05-15)
 -------------------
-* Update mcap (`#1774 <https://github.com/ros2/rosbag2/issues/1774>`_)
-  Update mcap cpp to last version
-* Contributors: mosfet80
+* Update mcap-releases-cpp- into CMakeLists.txt (`#1612 <https://github.com/ros2/rosbag2/issues/1612>`_) (`#1631 <https://github.com/ros2/rosbag2/issues/1631>`_)
+  Co-authored-by: mosfet80 <realeandrea@yahoo.it>
+* Contributors: mergify[bot]
 
-0.28.0 (2024-06-17)
--------------------
-* Update mcap-releases-cpp- into CMakeLists.txt (`#1612 <https://github.com/ros2/rosbag2/issues/1612>`_)
-* Contributors: mosfet80
-
-0.27.0 (2024-04-30)
+0.26.2 (2024-04-24)
 -------------------
 
 0.26.1 (2024-04-17)

@@ -12,14 +12,13 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ComplexIdl.idl"
   "msg/BasicIdl.idl"
   "msg/BasicMsg.msg"
+  "msg/nested_sub_dir/AnotherBasicMsg.msg"
   "msg/ComplexMsg.msg"
   "msg/ComplexMsgDependsOnIdl.msg"
   "srv/BasicSrv.srv"
   "srv/ComplexSrvMsg.srv"
   "srv/ComplexSrvIdl.srv"
-  "action/BasicAction.action"
-  "action/ComplexActionMsg.action"
-  "action/ComplexActionIdl.action"
+  "nested_sub_dir/action/BasicMsg.action"
   ADD_LINTER_TESTS
 )
 

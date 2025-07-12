@@ -58,6 +58,12 @@ public:
       [this]() {
         exec_.spin();
       });
+
+    // Wait for the executor to start spinning in the newly spawned thread to avoid race conditions
+    if (!wait_until_condition([this]() {return exec_.is_spinning();}, std::chrono::seconds(5))) {
+      std::cerr << "Failed to start spinning node: " << node_->get_name() << std::endl;
+      throw std::runtime_error("Failed to start spinning node");
+    }
   }
 
   ~ClockPublisher()
@@ -91,8 +97,7 @@ TEST_F(RecordIntegrationTestFixture, record_all_with_sim_time)
 
   rosbag2_transport::RecordOptions record_options =
   {
-    false, false, false, false, {string_topic, clock_topic}, {}, {}, {}, {}, {}, {}, {},
-    "rmw_format", 100ms
+    false, false, false, {string_topic, clock_topic}, {}, {}, {}, {}, {}, "rmw_format", 100ms
   };
   record_options.use_sim_time = true;
   auto recorder = std::make_shared<MockRecorder>(

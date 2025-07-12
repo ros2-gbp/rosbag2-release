@@ -49,18 +49,9 @@ protected:
     fs::remove_all(tmp_dir_path);
     fs::create_directories(tmp_dir_path);
 
-    std::vector<std::string> topics = {"topic1",
-                                       "service_topic1/_service_event",
-                                       "action1/_action/send_goal/_service_event",
-                                       "topic2",
-                                       "action_topic2/_action/cancel_goal/_service_event",
-                                       "service_topic2/_service_event",
-                                       "action1/_action/get_result/_service_event",
-                                       "topic3",
-                                       "action1/_action/feedback",
-                                       "action1/_action/status"};
+    std::vector<std::string> topics = {"topic1", "service_topic1/_service_event", "topic2",
+                                       "service_topic2/_service_event", "topic3"};
 
-    // Since the topic type will not be used in testing, use a fixed value.
     rosbag2_storage::TopicMetadata topic_metadata_1 = {
       1u, topics[0], "std_msgs/msg/String", "cdr", {rclcpp::QoS(1)}, "type_hash1"};
     rosbag2_storage::TopicMetadata topic_metadata_2 = {
@@ -71,16 +62,6 @@ protected:
       4u, topics[3], "std_msgs/msg/String", "cdr", {rclcpp::QoS(4)}, "type_hash4"};
     rosbag2_storage::TopicMetadata topic_metadata_5 = {
       5u, topics[4], "std_msgs/msg/String", "cdr", {rclcpp::QoS(5)}, "type_hash5"};
-    rosbag2_storage::TopicMetadata topic_metadata_6 = {
-      6u, topics[5], "std_msgs/msg/String", "cdr", {rclcpp::QoS(6)}, "type_hash6"};
-    rosbag2_storage::TopicMetadata topic_metadata_7 = {
-      7u, topics[6], "std_msgs/msg/String", "cdr", {rclcpp::QoS(7)}, "type_hash7"};
-    rosbag2_storage::TopicMetadata topic_metadata_8 = {
-      8u, topics[7], "std_msgs/msg/String", "cdr", {rclcpp::QoS(8)}, "type_hash8"};
-    rosbag2_storage::TopicMetadata topic_metadata_9 = {
-      9u, topics[8], "std_msgs/msg/String", "cdr", {rclcpp::QoS(9)}, "type_hash9"};
-    rosbag2_storage::TopicMetadata topic_metadata_10 = {
-      10u, topics[9], "std_msgs/msg/String", "cdr", {rclcpp::QoS(10)}, "type_hash10"};
 
     const rosbag2_storage::MessageDefinition definition = {"std_msgs/msg/String", "ros2msg",
                                                            "string data", ""};
@@ -90,14 +71,9 @@ protected:
       string_messages = {
         std::make_tuple("topic1 message", 1, topic_metadata_1, definition),
         std::make_tuple("service event topic 1 message", 2, topic_metadata_2, definition),
-        std::make_tuple("action1 send goal event message", 3, topic_metadata_3, definition),
-        std::make_tuple("topic2 message", 3, topic_metadata_4, definition),
-        std::make_tuple("action_topic2 cancel goal event message", 4, topic_metadata_5, definition),
-        std::make_tuple("service event topic 2 message", 4, topic_metadata_6, definition),
-        std::make_tuple("action1 get result event message", 5, topic_metadata_7, definition),
-        std::make_tuple("topic3 message", 5, topic_metadata_8, definition),
-        std::make_tuple("action1 feedback message", 6, topic_metadata_9, definition),
-        std::make_tuple("action1 status message", 7, topic_metadata_10, definition)};
+        std::make_tuple("topic2 message", 3, topic_metadata_3, definition),
+        std::make_tuple("service event topic 2 message", 4, topic_metadata_4, definition),
+        std::make_tuple("topic3 message", 5, topic_metadata_5, definition)};
 
     rosbag2_storage::StorageFactory factory;
     rosbag2_storage::StorageOptions options;
@@ -163,43 +139,18 @@ TEST_F(McapTopicFilterTestFixture, CanSelectTopicsAndServicesWithEmptyFilters)
   EXPECT_TRUE(readable_storage->has_next());
   auto first_message = readable_storage->read_next();
   EXPECT_THAT(first_message->topic_name, Eq("topic1"));
-
   EXPECT_TRUE(readable_storage->has_next());
   auto second_message = readable_storage->read_next();
   EXPECT_THAT(second_message->topic_name, Eq("service_topic1/_service_event"));
-
   EXPECT_TRUE(readable_storage->has_next());
   auto third_message = readable_storage->read_next();
-  EXPECT_THAT(third_message->topic_name, Eq("action1/_action/send_goal/_service_event"));
-
+  EXPECT_THAT(third_message->topic_name, Eq("topic2"));
   EXPECT_TRUE(readable_storage->has_next());
   auto fourth_message = readable_storage->read_next();
-  EXPECT_THAT(fourth_message->topic_name, Eq("topic2"));
-
+  EXPECT_THAT(fourth_message->topic_name, Eq("service_topic2/_service_event"));
   EXPECT_TRUE(readable_storage->has_next());
   auto fifth_message = readable_storage->read_next();
-  EXPECT_THAT(fifth_message->topic_name, Eq("action_topic2/_action/cancel_goal/_service_event"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto sixth_message = readable_storage->read_next();
-  EXPECT_THAT(sixth_message->topic_name, Eq("service_topic2/_service_event"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto seventh_message = readable_storage->read_next();
-  EXPECT_THAT(seventh_message->topic_name, Eq("action1/_action/get_result/_service_event"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto eighth_message = readable_storage->read_next();
-  EXPECT_THAT(eighth_message->topic_name, Eq("topic3"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto ninth_message = readable_storage->read_next();
-  EXPECT_THAT(ninth_message->topic_name, Eq("action1/_action/feedback"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto tenth_message = readable_storage->read_next();
-  EXPECT_THAT(tenth_message->topic_name, Eq("action1/_action/status"));
-
+  EXPECT_THAT(fifth_message->topic_name, Eq("topic3"));
   EXPECT_FALSE(readable_storage->has_next());
 }
 
@@ -214,35 +165,12 @@ TEST_F(McapTopicFilterTestFixture, CanSelectWithTopicsListOnly)
   EXPECT_TRUE(readable_storage->has_next());
   auto first_message = readable_storage->read_next();
   EXPECT_THAT(first_message->topic_name, Eq("topic1"));
-
   EXPECT_TRUE(readable_storage->has_next());
   auto second_message = readable_storage->read_next();
   EXPECT_THAT(second_message->topic_name, Eq("service_topic1/_service_event"));
-
   EXPECT_TRUE(readable_storage->has_next());
   auto third_message = readable_storage->read_next();
-  EXPECT_THAT(third_message->topic_name, Eq("action1/_action/send_goal/_service_event"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto fourth_message = readable_storage->read_next();
-  EXPECT_THAT(fourth_message->topic_name, Eq("action_topic2/_action/cancel_goal/_service_event"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto fifth_message = readable_storage->read_next();
-  EXPECT_THAT(fifth_message->topic_name, Eq("service_topic2/_service_event"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto sixth_message = readable_storage->read_next();
-  EXPECT_THAT(sixth_message->topic_name, Eq("action1/_action/get_result/_service_event"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto seventh_message = readable_storage->read_next();
-  EXPECT_THAT(seventh_message->topic_name, Eq("action1/_action/feedback"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto eighth_message = readable_storage->read_next();
-  EXPECT_THAT(eighth_message->topic_name, Eq("action1/_action/status"));
-
+  EXPECT_THAT(third_message->topic_name, Eq("service_topic2/_service_event"));
   EXPECT_FALSE(readable_storage->has_next());
 }
 
@@ -257,79 +185,16 @@ TEST_F(McapTopicFilterTestFixture, CanSelectWithServiceEventsListOnly)
   EXPECT_TRUE(readable_storage->has_next());
   auto first_message = readable_storage->read_next();
   EXPECT_THAT(first_message->topic_name, Eq("topic1"));
-
+  EXPECT_TRUE(readable_storage->has_next());
   EXPECT_TRUE(readable_storage->has_next());
   auto second_message = readable_storage->read_next();
-  EXPECT_THAT(second_message->topic_name, Eq("action1/_action/send_goal/_service_event"));
-
+  EXPECT_THAT(second_message->topic_name, Eq("topic2"));
   EXPECT_TRUE(readable_storage->has_next());
   auto third_message = readable_storage->read_next();
-  EXPECT_THAT(third_message->topic_name, Eq("topic2"));
-
+  EXPECT_THAT(third_message->topic_name, Eq("service_topic2/_service_event"));
   EXPECT_TRUE(readable_storage->has_next());
   auto fourth_message = readable_storage->read_next();
-  EXPECT_THAT(fourth_message->topic_name, Eq("action_topic2/_action/cancel_goal/_service_event"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto fifth_message = readable_storage->read_next();
-  EXPECT_THAT(fifth_message->topic_name, Eq("service_topic2/_service_event"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto sixth_message = readable_storage->read_next();
-  EXPECT_THAT(sixth_message->topic_name, Eq("action1/_action/get_result/_service_event"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto seventh_message = readable_storage->read_next();
-  EXPECT_THAT(seventh_message->topic_name, Eq("topic3"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto eighth_message = readable_storage->read_next();
-  EXPECT_THAT(eighth_message->topic_name, Eq("action1/_action/feedback"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto ninth_message = readable_storage->read_next();
-  EXPECT_THAT(ninth_message->topic_name, Eq("action1/_action/status"));
-
-  EXPECT_FALSE(readable_storage->has_next());
-}
-
-TEST_F(McapTopicFilterTestFixture, CanSelectWithActionsListOnly)
-{
-  auto readable_storage = open_test_bag_for_read_only();
-
-  rosbag2_storage::StorageFilter storage_filter{};
-  // When an action is added to the filter, it translates to all related action topics being added.
-  storage_filter.actions_interfaces = {"action_topic2/_action/send_goal/_service_event",
-                                       "action_topic2/_action/cancel_goal/_service_event",
-                                       "action_topic2/_action/get_result/_service_event",
-                                       "action_topic2/_action/feedback",
-                                       "action_topic2/_action/status"};
-  readable_storage->set_filter(storage_filter);
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto first_message = readable_storage->read_next();
-  EXPECT_THAT(first_message->topic_name, Eq("topic1"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto second_message = readable_storage->read_next();
-  EXPECT_THAT(second_message->topic_name, Eq("service_topic1/_service_event"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto third_message = readable_storage->read_next();
-  EXPECT_THAT(third_message->topic_name, Eq("topic2"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto fourth_message = readable_storage->read_next();
-  EXPECT_THAT(fourth_message->topic_name, Eq("action_topic2/_action/cancel_goal/_service_event"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto fifth_message = readable_storage->read_next();
-  EXPECT_THAT(fifth_message->topic_name, Eq("service_topic2/_service_event"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto sixth_message = readable_storage->read_next();
-  EXPECT_THAT(sixth_message->topic_name, Eq("topic3"));
-
+  EXPECT_THAT(fourth_message->topic_name, Eq("topic3"));
   EXPECT_FALSE(readable_storage->has_next());
 }
 
@@ -344,41 +209,19 @@ TEST_F(McapTopicFilterTestFixture, TestResetFilter)
   EXPECT_TRUE(readable_storage->has_next());
   auto first_message = readable_storage->read_next();
   EXPECT_THAT(first_message->topic_name, Eq("topic1"));
-
   EXPECT_TRUE(readable_storage->has_next());
   auto second_message = readable_storage->read_next();
   EXPECT_THAT(second_message->topic_name, Eq("service_topic1/_service_event"));
-
   EXPECT_TRUE(readable_storage->has_next());
   auto third_message = readable_storage->read_next();
-  EXPECT_THAT(third_message->topic_name, Eq("action1/_action/send_goal/_service_event"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto fourth_message = readable_storage->read_next();
-  EXPECT_THAT(fourth_message->topic_name, Eq("action_topic2/_action/cancel_goal/_service_event"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto fifth_message = readable_storage->read_next();
-  EXPECT_THAT(fifth_message->topic_name, Eq("service_topic2/_service_event"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto sixth_message = readable_storage->read_next();
-  EXPECT_THAT(sixth_message->topic_name, Eq("action1/_action/get_result/_service_event"));
+  EXPECT_THAT(third_message->topic_name, Eq("service_topic2/_service_event"));
+  EXPECT_FALSE(readable_storage->has_next());
 
   readable_storage->reset_filter();
 
   EXPECT_TRUE(readable_storage->has_next());
-  auto seventh_message = readable_storage->read_next();
-  EXPECT_THAT(seventh_message->topic_name, Eq("topic3"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto eighth_message = readable_storage->read_next();
-  EXPECT_THAT(eighth_message->topic_name, Eq("action1/_action/feedback"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto ninth_message = readable_storage->read_next();
-  EXPECT_THAT(ninth_message->topic_name, Eq("action1/_action/status"));
-
+  auto fourth_message = readable_storage->read_next();
+  EXPECT_THAT(fourth_message->topic_name, Eq("topic3"));
   EXPECT_FALSE(readable_storage->has_next());
 }
 
@@ -427,68 +270,28 @@ TEST_F(McapTopicFilterTestFixture, CanSelectFromServicesListAndRegexWithTopics)
   EXPECT_FALSE(readable_storage->has_next());
 }
 
-TEST_F(McapTopicFilterTestFixture, CanSelectFromActionsListAndRegexWithTopics)
-{
-  auto readable_storage = open_test_bag_for_read_only();
-  // Set service list and regex for topic
-  rosbag2_storage::StorageFilter storage_filter{};
-  storage_filter.actions_interfaces = {"action_topic2/_action/send_goal/_service_event",
-                                       "action_topic2/_action/cancel_goal/_service_event",
-                                       "action_topic2/_action/get_result/_service_event",
-                                       "action_topic2/_action/feedback",
-                                       "action_topic2/_action/status"};
-  storage_filter.regex = "topic(1|3)";  // Add topic1 and topic3
-  readable_storage->set_filter(storage_filter);
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto first_message = readable_storage->read_next();
-  EXPECT_THAT(first_message->topic_name, Eq("topic1"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto second_message = readable_storage->read_next();
-  EXPECT_THAT(second_message->topic_name, Eq("action_topic2/_action/cancel_goal/_service_event"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto third_message = readable_storage->read_next();
-  EXPECT_THAT(third_message->topic_name, Eq("topic3"));
-
-  EXPECT_FALSE(readable_storage->has_next());
-}
-
-TEST_F(McapTopicFilterTestFixture, CanSelectFromTopicsListServiceListAndActionList)
+TEST_F(McapTopicFilterTestFixture, CanSelectFromTopicsListAndServiceList)
 {
   auto readable_storage = open_test_bag_for_read_only();
   // Set topic list and service list
   rosbag2_storage::StorageFilter storage_filter{};
   storage_filter.topics = {"topic2", "topic3"};
   storage_filter.services_events = {"service_topic1/_service_event"};
-  storage_filter.actions_interfaces = {"action_topic2/_action/send_goal/_service_event",
-                                       "action_topic2/_action/cancel_goal/_service_event",
-                                       "action_topic2/_action/get_result/_service_event",
-                                       "action_topic2/_action/feedback",
-                                       "action_topic2/_action/status"};
   readable_storage->set_filter(storage_filter);
 
   EXPECT_TRUE(readable_storage->has_next());
   auto first_message = readable_storage->read_next();
   EXPECT_THAT(first_message->topic_name, Eq("service_topic1/_service_event"));
-
   EXPECT_TRUE(readable_storage->has_next());
   auto second_message = readable_storage->read_next();
   EXPECT_THAT(second_message->topic_name, Eq("topic2"));
-
   EXPECT_TRUE(readable_storage->has_next());
   auto third_message = readable_storage->read_next();
-  EXPECT_THAT(third_message->topic_name, Eq("action_topic2/_action/cancel_goal/_service_event"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto fourth_message = readable_storage->read_next();
-  EXPECT_THAT(fourth_message->topic_name, Eq("topic3"));
-
+  EXPECT_THAT(third_message->topic_name, Eq("topic3"));
   EXPECT_FALSE(readable_storage->has_next());
 }
 
-TEST_F(McapTopicFilterTestFixture, FilterTopicsServicesAndActionsWithRegexOnly)
+TEST_F(McapTopicFilterTestFixture, FilterTopicsAndServicesWithRegexOnly)
 {
   auto readable_storage = open_test_bag_for_read_only();
   // No topic list and service list. Only regex
@@ -499,19 +302,13 @@ TEST_F(McapTopicFilterTestFixture, FilterTopicsServicesAndActionsWithRegexOnly)
   EXPECT_TRUE(readable_storage->has_next());
   auto first_message = readable_storage->read_next();
   EXPECT_THAT(first_message->topic_name, Eq("topic2"));
-
   EXPECT_TRUE(readable_storage->has_next());
   auto second_message = readable_storage->read_next();
-  EXPECT_THAT(second_message->topic_name, Eq("action_topic2/_action/cancel_goal/_service_event"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto third_message = readable_storage->read_next();
-  EXPECT_THAT(third_message->topic_name, Eq("service_topic2/_service_event"));
-
+  EXPECT_THAT(second_message->topic_name, Eq("service_topic2/_service_event"));
   EXPECT_FALSE(readable_storage->has_next());
 }
 
-TEST_F(McapTopicFilterTestFixture, FilterTopicsServicesActionsWithRegexAndNonexistentTopicsList)
+TEST_F(McapTopicFilterTestFixture, FilterTopicsAndServicesWithRegexAndNonexistentTopicsList)
 {
   auto readable_storage = open_test_bag_for_read_only();
   // Topics list with non-existent topic and regex with topic and service event
@@ -523,19 +320,13 @@ TEST_F(McapTopicFilterTestFixture, FilterTopicsServicesActionsWithRegexAndNonexi
   EXPECT_TRUE(readable_storage->has_next());
   auto first_message = readable_storage->read_next();
   EXPECT_THAT(first_message->topic_name, Eq("topic2"));
-
   EXPECT_TRUE(readable_storage->has_next());
   auto second_message = readable_storage->read_next();
-  EXPECT_THAT(second_message->topic_name, Eq("action_topic2/_action/cancel_goal/_service_event"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto third_message = readable_storage->read_next();
-  EXPECT_THAT(third_message->topic_name, Eq("service_topic2/_service_event"));
-
+  EXPECT_THAT(second_message->topic_name, Eq("service_topic2/_service_event"));
   EXPECT_FALSE(readable_storage->has_next());
 }
 
-TEST_F(McapTopicFilterTestFixture, FilterTopicsServicesActionsWithRegexAndNonexistentServicesList)
+TEST_F(McapTopicFilterTestFixture, FilterTopicsAndServicesWithRegexAndNonexistentServicesList)
 {
   auto readable_storage = open_test_bag_for_read_only();
   // Service events list with non-existent service and regex with topic and service event
@@ -547,77 +338,33 @@ TEST_F(McapTopicFilterTestFixture, FilterTopicsServicesActionsWithRegexAndNonexi
   EXPECT_TRUE(readable_storage->has_next());
   auto first_message = readable_storage->read_next();
   EXPECT_THAT(first_message->topic_name, Eq("topic2"));
-
   EXPECT_TRUE(readable_storage->has_next());
   auto second_message = readable_storage->read_next();
-  EXPECT_THAT(second_message->topic_name, Eq("action_topic2/_action/cancel_goal/_service_event"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto third_message = readable_storage->read_next();
-  EXPECT_THAT(third_message->topic_name, Eq("service_topic2/_service_event"));
-
+  EXPECT_THAT(second_message->topic_name, Eq("service_topic2/_service_event"));
   EXPECT_FALSE(readable_storage->has_next());
 }
 
-TEST_F(McapTopicFilterTestFixture, FilterTopicsServicesActionsWithRegexAndNonexistentActionsList)
+TEST_F(McapTopicFilterTestFixture, FilterTopicsAndServicesWithBlackListsAndExcludeRegexOnly)
 {
   auto readable_storage = open_test_bag_for_read_only();
-  // Action list with non-existent action and regex with action
-  rosbag2_storage::StorageFilter storage_filter{};
-  storage_filter.actions_interfaces = {"non-existent_action/_action/send_goal/_service_event",
-                                       "non-existent_action/_action/cancel_goal/_service_event",
-                                       "non-existent_action/_action/get_result/_service_event",
-                                       "non-existent_action/_action/feedback",
-                                       "non-existent_action/_action/status"};
-  storage_filter.regex = ".*topic2.*";
-  readable_storage->set_filter(storage_filter);
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto first_message = readable_storage->read_next();
-  EXPECT_THAT(first_message->topic_name, Eq("topic2"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto second_message = readable_storage->read_next();
-  EXPECT_THAT(second_message->topic_name, Eq("action_topic2/_action/cancel_goal/_service_event"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto third_message = readable_storage->read_next();
-  EXPECT_THAT(third_message->topic_name, Eq("service_topic2/_service_event"));
-
-  EXPECT_FALSE(readable_storage->has_next());
-}
-
-TEST_F(McapTopicFilterTestFixture, FilterTopicsServicesAndActionsWithBlackListsAndExcludeRegexOnly)
-{
-  auto readable_storage = open_test_bag_for_read_only();
-  // No topic list, service list, action list and regex.
-  // Set excluded topic list, excluded service list, excluded action list and excluded regex
+  // No topic list, service list and regex.
+  // Set excluded topic list, excluded service list and excluded regex
   rosbag2_storage::StorageFilter storage_filter{};
   storage_filter.exclude_topics = {"topic1"};
   storage_filter.exclude_service_events = {"service_topic2/_service_event"};
-  storage_filter.exclude_actions_interfaces = {
-    "action1/_action/send_goal/_service_event", "action1/_action/cancel_goal/_service_event",
-    "action1/_action/get_result/_service_event", "action1/_action/feedback",
-    "action1/_action/status"};
   storage_filter.regex_to_exclude = "^topic3$";
   readable_storage->set_filter(storage_filter);
 
   EXPECT_TRUE(readable_storage->has_next());
   auto first_message = readable_storage->read_next();
   EXPECT_THAT(first_message->topic_name, Eq("service_topic1/_service_event"));
-
   EXPECT_TRUE(readable_storage->has_next());
   auto second_message = readable_storage->read_next();
   EXPECT_THAT(second_message->topic_name, Eq("topic2"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto third_message = readable_storage->read_next();
-  EXPECT_THAT(third_message->topic_name, Eq("action_topic2/_action/cancel_goal/_service_event"));
-
   EXPECT_FALSE(readable_storage->has_next());
 }
 
-TEST_F(McapTopicFilterTestFixture, FilterTopicsServicesAndActionsExcludeOverlapsWithIncludeLists)
+TEST_F(McapTopicFilterTestFixture, FilterTopicsAndServicesExcludeOverlapsWithIncludeLists)
 {
   auto readable_storage = open_test_bag_for_read_only();
   // Exclude from include lists
@@ -625,40 +372,19 @@ TEST_F(McapTopicFilterTestFixture, FilterTopicsServicesAndActionsExcludeOverlaps
   storage_filter.topics = {"topic1", "topic2", "topic3"};
   storage_filter.services_events = {"service_topic1/_service_event",
                                     "service_topic2/_service_event"};
-  storage_filter.actions_interfaces = {"action1/_action/send_goal/_service_event",
-                                       "action1/_action/cancel_goal/_service_event",
-                                       "action1/_action/get_result/_service_event",
-                                       "action1/_action/feedback",
-                                       "action1/_action/status",
-                                       "action_topic2/_action/send_goal/_service_event",
-                                       "action_topic2/_action/cancel_goal/_service_event",
-                                       "action_topic2/_action/get_result/_service_event",
-                                       "action_topic2/_action/feedback",
-                                       "action_topic2/_action/status"};
   storage_filter.exclude_topics = {"topic1"};
   storage_filter.exclude_service_events = {"service_topic2/_service_event"};
-  storage_filter.exclude_actions_interfaces = {
-    "action1/_action/send_goal/_service_event", "action1/_action/cancel_goal/_service_event",
-    "action1/_action/get_result/_service_event", "action1/_action/feedback",
-    "action1/_action/status"};
   readable_storage->set_filter(storage_filter);
 
   EXPECT_TRUE(readable_storage->has_next());
   auto first_message = readable_storage->read_next();
   EXPECT_THAT(first_message->topic_name, Eq("service_topic1/_service_event"));
-
   EXPECT_TRUE(readable_storage->has_next());
   auto second_message = readable_storage->read_next();
   EXPECT_THAT(second_message->topic_name, Eq("topic2"));
-
   EXPECT_TRUE(readable_storage->has_next());
   auto third_message = readable_storage->read_next();
-  EXPECT_THAT(third_message->topic_name, Eq("action_topic2/_action/cancel_goal/_service_event"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto fourth_message = readable_storage->read_next();
-  EXPECT_THAT(fourth_message->topic_name, Eq("topic3"));
-
+  EXPECT_THAT(third_message->topic_name, Eq("topic3"));
   EXPECT_FALSE(readable_storage->has_next());
 }
 
@@ -667,18 +393,13 @@ TEST_F(McapTopicFilterTestFixture, FilterWithRegexAndExcludeRegex)
   auto readable_storage = open_test_bag_for_read_only();
   // Set regex and excluded regex.
   rosbag2_storage::StorageFilter storage_filter{};
-  storage_filter.regex = ".*topic2.*";
-  storage_filter.regex_to_exclude = "service.*";
+  storage_filter.regex = ".*topic1.*";
+  storage_filter.regex_to_exclude = ".*service.*";
   readable_storage->set_filter(storage_filter);
 
   EXPECT_TRUE(readable_storage->has_next());
   auto first_message = readable_storage->read_next();
-  EXPECT_THAT(first_message->topic_name, Eq("topic2"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto second_message = readable_storage->read_next();
-  EXPECT_THAT(second_message->topic_name, Eq("action_topic2/_action/cancel_goal/_service_event"));
-
+  EXPECT_THAT(first_message->topic_name, Eq("topic1"));
   EXPECT_FALSE(readable_storage->has_next());
 }
 
@@ -693,30 +414,11 @@ TEST_F(McapTopicFilterTestFixture, FilterWithExcludeRegexOnly)
   EXPECT_TRUE(readable_storage->has_next());
   auto first_message = readable_storage->read_next();
   EXPECT_THAT(first_message->topic_name, Eq("topic1"));
-
   EXPECT_TRUE(readable_storage->has_next());
   auto second_message = readable_storage->read_next();
   EXPECT_THAT(second_message->topic_name, Eq("service_topic1/_service_event"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto third_message = readable_storage->read_next();
-  EXPECT_THAT(third_message->topic_name, Eq("action1/_action/send_goal/_service_event"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto fourth_message = readable_storage->read_next();
-  EXPECT_THAT(fourth_message->topic_name, Eq("action1/_action/get_result/_service_event"));
-
   EXPECT_TRUE(readable_storage->has_next());
   auto fifth_message = readable_storage->read_next();
   EXPECT_THAT(fifth_message->topic_name, Eq("topic3"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto sixth_message = readable_storage->read_next();
-  EXPECT_THAT(sixth_message->topic_name, Eq("action1/_action/feedback"));
-
-  EXPECT_TRUE(readable_storage->has_next());
-  auto seventh_message = readable_storage->read_next();
-  EXPECT_THAT(seventh_message->topic_name, Eq("action1/_action/status"));
-
   EXPECT_FALSE(readable_storage->has_next());
 }

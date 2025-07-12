@@ -63,14 +63,6 @@ public:
           }
         }
       }
-
-      if (!filter_.actions_interfaces.empty()) {
-        for (const auto & filter_action : filter_.actions_interfaces) {
-          if (!messages_[num_read_]->topic_name.compare(filter_action)) {
-            return true;
-          }
-        }
-      }
       num_read_++;
     }
     return false;
