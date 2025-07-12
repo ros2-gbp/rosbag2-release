@@ -153,7 +153,7 @@ The Player will automatically detect which storage implementation to use for pla
 To play back multiple bags:
 
 ```
-$ ros2 bag play <bag1> -i <bag2> -i <bag3>
+$ ros2 bag play -i <bag1> -i <bag2> -i <bag3>
 ```
 
 Messages from all provided bags will be played in order, based on their original recording reception timestamps.
@@ -246,6 +246,9 @@ output_bags:
   max_bagfile_duration: 0
   storage_preset_profile: ""
   storage_config_uri: ""
+  # optional filter for msg time t [nsec since epoch]:  start_time_ns <= t <= end_time_ns
+  # start_time_ns: 1744227144744197147
+  # end_time_ns: 1744227145734665546
   all_topics: false
   topics: []
   topic_types: []
