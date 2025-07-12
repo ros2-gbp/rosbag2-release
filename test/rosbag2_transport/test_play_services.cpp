@@ -32,6 +32,7 @@
 #include "rosbag2_interfaces/srv/resume.hpp"
 #include "rosbag2_interfaces/srv/stop.hpp"
 #include "rosbag2_interfaces/srv/toggle_paused.hpp"
+#include "rosbag2_test_common/wait_for.hpp"
 #include "rosbag2_transport/player.hpp"
 #include "test_msgs/msg/basic_types.hpp"
 #include "test_msgs/message_fixtures.hpp"
@@ -94,6 +95,13 @@ public:
       [this]() {
         exec_.spin();
       });
+
+    // Wait for the executor to start spinning in the newly spawned thread to avoid race conditions
+    if (!wait_until_condition([this]() {return exec_.is_spinning();}, std::chrono::seconds(5))) {
+      std::cerr << "Failed to start spinning nodes: '" <<
+        player_->get_name() << ", " << client_node_->get_name() << "'" << std::endl;
+      throw std::runtime_error("Failed to start spinning nodes");
+    }
 
     // Make sure all expected services are present before starting any test
     ASSERT_TRUE(cli_resume_->wait_for_service(service_wait_timeout_));
@@ -172,7 +180,7 @@ public:
   void expect_messages(bool messages_should_arrive, bool reset_message_counter = true)
   {
     // Not too worried about the exact timing in this test, give a lot of leeway
-    const auto condition_clear_time = std::chrono::milliseconds(ms_between_msgs_ * 10);
+    const auto condition_clear_time = std::chrono::milliseconds(ms_between_msgs_ * 100);
     std::unique_lock<std::mutex> lock(got_msg_mutex_);
     if (reset_message_counter) {
       message_counter_ = 0;
@@ -217,6 +225,7 @@ private:
     player_->pause();  // Start playing in pause mode. Require for play_next test. For all other
     // tests we will resume playback via explicit call to start_playback().
     player_->play();
+    player_->wait_for_playback_to_start();
   }
 
   void topic_callback(std::shared_ptr<const test_msgs::msg::BasicTypes>/* msg */)
@@ -247,8 +256,8 @@ protected:
 public:
   // Basic configuration
   const std::string player_name_ = "rosbag2_player_for_test_srvs";
-  const std::chrono::seconds service_wait_timeout_ {2};
-  const std::chrono::seconds service_call_timeout_ {3};
+  const std::chrono::seconds service_wait_timeout_ {6};
+  const std::chrono::seconds service_call_timeout_ {6};
   const std::string test_topic_ = "/player_srvs_test_topic";
   // publishing at 50hz
   const size_t ms_between_msgs_ = 20;

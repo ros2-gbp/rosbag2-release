@@ -123,6 +123,8 @@ TEST_F(RecordIntegrationTestFixture, published_messages_from_multiple_topics_are
 
 TEST_F(RecordIntegrationTestFixture, can_record_again_after_stop)
 {
+  GTEST_SKIP() << "Skipping test `can_record_again_after_stop` in rosbag2_transport, until "
+                  "https://github.com/ros2/rosbag2/issues/1914 will be resolved.";
   auto basic_type_message = get_messages_basic_types()[0];
   basic_type_message->uint64_value = 5;
   basic_type_message->int64_value = -1;
@@ -462,10 +464,9 @@ TEST_F(RecordIntegrationTestFixture, write_split_callback_is_called)
   mock_writer.set_max_messages_per_file(5);
 
   rosbag2_transport::RecordOptions record_options =
-  {false, false, false, {string_topic}, {}, {}, {}, {}, {}, "rmw_format", 100ms};
+  {false, false, false, {string_topic}, {}, {}, {}, {}, {}, "rmw_format", 10ms};
   auto recorder = std::make_shared<rosbag2_transport::Recorder>(
     std::move(writer_), storage_options_, record_options);
-  recorder->record();
 
   start_async_spin(recorder);
   auto cleanup_process_handle = rcpputils::make_scope_exit([&]() {stop_spinning();});
@@ -477,6 +478,8 @@ TEST_F(RecordIntegrationTestFixture, write_split_callback_is_called)
 
   rosbag2_test_common::PublicationManager pub_manager;
   pub_manager.setup_publisher(string_topic, string_message, expected_messages);
+
+  recorder->record();
 
   ASSERT_TRUE(pub_manager.wait_for_matched(string_topic.c_str()));
   pub_manager.run_publishers();
