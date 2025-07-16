@@ -15,8 +15,6 @@
 #ifndef ROSBAG2_TEST_COMMON__MEMORY_MANAGEMENT_HPP_
 #define ROSBAG2_TEST_COMMON__MEMORY_MANAGEMENT_HPP_
 
-#include <gtest/gtest.h>
-
 #include <memory>
 #include <string>
 
@@ -34,18 +32,16 @@ public:
 
   template<typename T>
   inline
-  std::shared_ptr<rcutils_uint8_array_t> serialize_message(std::shared_ptr<T> message)
+  std::shared_ptr<rmw_serialized_message_t>
+  serialize_message(std::shared_ptr<T> message)
   {
     rclcpp::Serialization<T> ser;
-    auto serialized_msg = std::make_shared<rclcpp::SerializedMessage>();
-    ser.serialize_message(message.get(), serialized_msg.get());
+    rclcpp::SerializedMessage serialized_message;
+    ser.serialize_message(message.get(), &serialized_message);
 
-    auto msg = new rcutils_uint8_array_t;
-    *msg = serialized_msg->release_rcl_serialized_message();
-    return std::shared_ptr<rcutils_uint8_array_t>(msg, [](rmw_serialized_message_t * msg) {
-               EXPECT_EQ(rmw_serialized_message_fini(msg), RMW_RET_OK);
-               delete msg;
-    });
+    auto ret = std::make_shared<rmw_serialized_message_t>();
+    *ret = serialized_message.release_rcl_serialized_message();
+    return ret;
   }
 
   template<typename T>
@@ -62,13 +58,10 @@ public:
 
   std::shared_ptr<rmw_serialized_message_t> make_initialized_message()
   {
-    rclcpp::SerializedMessage serialized_msg(0u);
-    auto msg = new rcutils_uint8_array_t;
-    *msg = serialized_msg.release_rcl_serialized_message();
-    return std::shared_ptr<rcutils_uint8_array_t>(msg, [](rmw_serialized_message_t * msg) {
-               EXPECT_EQ(rmw_serialized_message_fini(msg), RMW_RET_OK);
-               delete msg;
-    });
+    rclcpp::SerializedMessage serialized_message(0u);
+    auto ret = std::make_shared<rmw_serialized_message_t>();
+    *ret = serialized_message.release_rcl_serialized_message();
+    return ret;
   }
 };
 

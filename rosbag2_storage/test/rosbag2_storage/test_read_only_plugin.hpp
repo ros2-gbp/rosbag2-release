@@ -31,16 +31,11 @@ public:
     const rosbag2_storage::StorageOptions & storage_options,
     rosbag2_storage::storage_interfaces::IOFlag flag) override;
 
-  bool set_read_order(const rosbag2_storage::ReadOrder &) override;
-
   bool has_next() override;
 
   std::shared_ptr<rosbag2_storage::SerializedBagMessage> read_next() override;
 
   std::vector<rosbag2_storage::TopicMetadata> get_all_topics_and_types() override;
-
-  void get_all_message_definitions(
-    std::vector<rosbag2_storage::MessageDefinition> & definitions) override;
 
   rosbag2_storage::BagMetadata get_metadata() override;
 
