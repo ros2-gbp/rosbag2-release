@@ -22,6 +22,7 @@
 #include "rosbag2_cpp/visibility_control.hpp"
 
 #include "rosbag2_storage/serialized_bag_message.hpp"
+#include "rosbag2_storage/message_definition.hpp"
 #include "rosbag2_storage/storage_options.hpp"
 #include "rosbag2_storage/topic_metadata.hpp"
 
@@ -43,15 +44,24 @@ public:
 
   virtual void create_topic(const rosbag2_storage::TopicMetadata & topic_with_type) = 0;
 
+  virtual void create_topic(
+    const rosbag2_storage::TopicMetadata & topic_with_type,
+    const rosbag2_storage::MessageDefinition & message_definition) = 0;
+
   virtual void remove_topic(const rosbag2_storage::TopicMetadata & topic_with_type) = 0;
 
-  virtual void write(std::shared_ptr<rosbag2_storage::SerializedBagMessage> message) = 0;
+  virtual void write(std::shared_ptr<const rosbag2_storage::SerializedBagMessage> message) = 0;
 
   /**
    * Triggers a snapshot for writers that support it.
    * \returns true if snapshot is successful, false if snapshot fails or is not supported
    */
   virtual bool take_snapshot() = 0;
+
+  /**
+   * Close the current bagfile and opens the next bagfile.
+   */
+  virtual void split_bagfile() = 0;
 
   virtual void add_event_callbacks(const bag_events::WriterEventCallbacks & callbacks) = 0;
 };

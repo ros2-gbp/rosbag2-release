@@ -2,54 +2,98 @@
 Changelog for package rosbag2_test_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.15.15 (2025-07-16)
---------------------
+0.26.9 (2025-08-11)
+-------------------
 
-0.15.14 (2025-03-25)
---------------------
+0.26.8 (2025-07-10)
+-------------------
+* [jazzy] Address flakiness in tests where need to spin a node (backport `#2001 <https://github.com/ros2/rosbag2/issues/2001>`_) (`#2019 <https://github.com/ros2/rosbag2/issues/2019>`_)
+* [jazzy] Upstream quality changes from Apex.AI part-2 (backport `#1924 <https://github.com/ros2/rosbag2/issues/1924>`_) (`#1987 <https://github.com/ros2/rosbag2/issues/1987>`_)
+* [jazzy] Use DDS queue depth for subscriptions as a maximum value across publishers (backport `#1960 <https://github.com/ros2/rosbag2/issues/1960>`_) (`#1980 <https://github.com/ros2/rosbag2/issues/1980>`_)
+* Contributors: Michael Orlov <morlovmr@gmail.com>, Christophe Bedard <bedard.christophe@gmail.com>
 
-0.15.13 (2024-11-25)
---------------------
+0.26.7 (2025-04-22)
+-------------------
+* [jazzy] Upstream quality changes from Apex.AI part 1 (backport `#1903 <https://github.com/ros2/rosbag2/issues/1903>`_) (`#1909 <https://github.com/ros2/rosbag2/issues/1909>`_)
+* [jazzy] Use tmpfs in rosbag2 temporary_directory_fixture (backport `#1901 <https://github.com/ros2/rosbag2/issues/1901>`_) (`#1904 <https://github.com/ros2/rosbag2/issues/1904>`_)
+* Contributors: mergify[bot], Michael Orlov
 
-0.15.12 (2024-07-28)
---------------------
-* [humble] rosbag2_cpp: test more than one storage plugin (backport `#1196 <https://github.com/ros2/rosbag2/issues/1196>`_) (`#1721 <https://github.com/ros2/rosbag2/issues/1721>`_)
+0.26.6 (2024-12-18)
+-------------------
+* Add debug information for flaky can_record_again_after_stop test (`#1871 <https://github.com/ros2/rosbag2/issues/1871>`_) (`#1874 <https://github.com/ros2/rosbag2/issues/1874>`_)
+  (cherry picked from commit 4602b2ce829842e17ccb8bf4a74c135d6c8f2623)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+* Improve the reliability of rosbag2 tests (`#1796 <https://github.com/ros2/rosbag2/issues/1796>`_) (`#1806 <https://github.com/ros2/rosbag2/issues/1806>`_)
+* Contributors: Marco A. Gutierrez, mergify[bot]
+
+0.26.5 (2024-09-06)
+-------------------
+* Small cleanups to the rosbag2 tests. (`#1792 <https://github.com/ros2/rosbag2/issues/1792>`_) (`#1793 <https://github.com/ros2/rosbag2/issues/1793>`_)
+  (cherry picked from commit 604cebcf11775151efa94f7c30ba1aea68e90c5c)
+  Co-authored-by: Chris Lalancette <clalancette@gmail.com>
 * Contributors: mergify[bot]
 
-0.15.11 (2024-05-20)
---------------------
-
-0.15.10 (2024-05-17)
---------------------
-
-0.15.9 (2024-01-24)
+0.26.4 (2024-06-27)
 -------------------
 
-0.15.8 (2023-09-19)
+0.26.3 (2024-05-15)
 -------------------
 
-0.15.7 (2023-07-18)
+0.26.2 (2024-04-24)
 -------------------
 
-0.15.6 (2023-06-05)
+0.26.1 (2024-04-17)
 -------------------
-* Add extra checks in execute_and_wait_until_completion(..) (`#1346 <https://github.com/ros2/rosbag2/issues/1346>`_) (`#1357 <https://github.com/ros2/rosbag2/issues/1357>`_)
+
+0.26.0 (2024-04-16)
+-------------------
+* Support service 2/2 --- rosbag2 service play (`#1481 <https://github.com/ros2/rosbag2/issues/1481>`_)
+* Contributors: Barry Xu
+
+0.25.0 (2024-03-27)
+-------------------
+* Make some changes for newer versions of uncrustify. (`#1578 <https://github.com/ros2/rosbag2/issues/1578>`_)
+* Implement service recording and display info about recorded services (`#1480 <https://github.com/ros2/rosbag2/issues/1480>`_)
+* Contributors: Barry Xu, Chris Lalancette
+
+0.24.0 (2023-07-11)
+-------------------
+* Add extra checks in execute_and_wait_until_completion(..) (`#1346 <https://github.com/ros2/rosbag2/issues/1346>`_)
+* Address flakiness in rosbag2_play_end_to_end tests (`#1297 <https://github.com/ros2/rosbag2/issues/1297>`_)
 * Contributors: Michael Orlov
 
-0.15.5 (2023-04-25)
--------------------
-* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_) (`#1224 <https://github.com/ros2/rosbag2/issues/1224>`_)
-* Contributors: mergify[bot]
-
-0.15.4 (2023-01-10)
+0.23.0 (2023-04-28)
 -------------------
 
-0.15.3 (2022-11-07)
+0.22.0 (2023-04-18)
 -------------------
-* Fix for ros2 bag play exit with non-zero code on SIGINT (`#1126 <https://github.com/ros2/rosbag2/issues/1126>`_) (`#1147 <https://github.com/ros2/rosbag2/issues/1147>`_)
-* Contributors: mergify[bot]
 
-0.15.2 (2022-05-11)
+0.21.0 (2023-04-12)
+-------------------
+* Update rosbag2 to C++17. (`#1238 <https://github.com/ros2/rosbag2/issues/1238>`_)
+* Use target_link_libraries instead of ament_target_dependencies (`#1202 <https://github.com/ros2/rosbag2/issues/1202>`_)
+* Contributors: Chris Lalancette, Daisuke Nishimatsu, Michael Orlov
+
+0.20.0 (2023-02-14)
+-------------------
+
+0.19.0 (2023-01-13)
+-------------------
+* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_)
+* rosbag2_py: parametrize tests across storage plugins (`#1203 <https://github.com/ros2/rosbag2/issues/1203>`_)
+* Contributors: Michael Orlov, james-rms
+
+0.18.0 (2022-11-15)
+-------------------
+* Fix for ros2 bag play exit with non-zero code on SIGINT (`#1126 <https://github.com/ros2/rosbag2/issues/1126>`_)
+* Contributors: Michael Orlov
+
+0.17.0 (2022-07-30)
+-------------------
+* Split up the include of rclcpp.hpp (`#1027 <https://github.com/ros2/rosbag2/issues/1027>`_)
+* Contributors: Chris Lalancette
+
+0.16.0 (2022-05-11)
 -------------------
 
 0.15.1 (2022-04-06)

@@ -2,50 +2,101 @@
 Changelog for package rosbag2_performance_benchmarking
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.15.15 (2025-07-16)
---------------------
-
-0.15.14 (2025-03-25)
---------------------
-
-0.15.13 (2024-11-25)
---------------------
-
-0.15.12 (2024-07-28)
---------------------
-* [humble] Remove explicit sqlite3 from code (backport `#1166 <https://github.com/ros2/rosbag2/issues/1166>`_) (`#1723 <https://github.com/ros2/rosbag2/issues/1723>`_)
+0.26.9 (2025-08-11)
+-------------------
+* Fix warning: initialize number_of_threads (`#2121 <https://github.com/ros2/rosbag2/issues/2121>`_) (`#2123 <https://github.com/ros2/rosbag2/issues/2123>`_)
+  Co-authored-by: Cristóbal Arroyo <cristobal.arroyo@ekumenlabs.com>
+* Bugfix: `prosbag2_performance_benchmarking` outputs incorrect results for topics with frequency more than 1 kHz (`#2077 <https://github.com/ros2/rosbag2/issues/2077>`_) (`#2080 <https://github.com/ros2/rosbag2/issues/2080>`_)
+  Co-authored-by: Michael Orlov <morlovmr@gmail.com>
+* Fixes in the rosbag2_performance_benchmarking message data generator (`#2078 <https://github.com/ros2/rosbag2/issues/2078>`_) (`#2084 <https://github.com/ros2/rosbag2/issues/2084>`_)
+  Co-authored-by: Michael Orlov <morlovmr@gmail.com>
+* Enable `rosbag2_performance_benchmarking` package to be built by default (`#2093 <https://github.com/ros2/rosbag2/issues/2093>`_) (`#2097 <https://github.com/ros2/rosbag2/issues/2097>`_)
+  Co-authored-by: Michael Orlov <morlovmr@gmail.com>
+* Fix for failure in the benchmark_launch when using Process.wait twice (`#2076 <https://github.com/ros2/rosbag2/issues/2076>`_) (`#2082 <https://github.com/ros2/rosbag2/issues/2082>`_)
+  Co-authored-by: Michael Orlov <morlovmr@gmail.com>
 * Contributors: mergify[bot]
 
-0.15.11 (2024-05-20)
---------------------
+0.26.8 (2025-07-10)
+-------------------
+* [jazzy] Upstream quality changes from Apex.AI part-2 (backport `#1924 <https://github.com/ros2/rosbag2/issues/1924>`_) (`#1987 <https://github.com/ros2/rosbag2/issues/1987>`_)
+* Contributors: Michael Orlov <morlovmr@gmail.com>, Christophe Bedard <bedard.christophe@gmail.com>
 
-0.15.10 (2024-05-17)
---------------------
-
-0.15.9 (2024-01-24)
+0.26.7 (2025-04-22)
 -------------------
 
-0.15.8 (2023-09-19)
+0.26.6 (2024-12-18)
 -------------------
 
-0.15.7 (2023-07-18)
+0.26.5 (2024-09-06)
 -------------------
 
-0.15.6 (2023-06-05)
+0.26.4 (2024-06-27)
 -------------------
 
-0.15.5 (2023-04-25)
--------------------
-* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_) (`#1224 <https://github.com/ros2/rosbag2/issues/1224>`_)
-* Contributors: mergify[bot]
-
-0.15.4 (2023-01-10)
+0.26.3 (2024-05-15)
 -------------------
 
-0.15.3 (2022-11-07)
+0.26.2 (2024-04-24)
 -------------------
 
-0.15.2 (2022-05-11)
+0.26.1 (2024-04-17)
+-------------------
+
+0.26.0 (2024-04-16)
+-------------------
+* Use middleware send and receive timestamps from message_info during recording (`#1531 <https://github.com/ros2/rosbag2/issues/1531>`_)
+* Update to use yaml-cpp version 0.8.0. (`#1605 <https://github.com/ros2/rosbag2/issues/1605>`_)
+* Contributors: Chris Lalancette, jmachowinski
+
+0.25.0 (2024-03-27)
+-------------------
+* Add option to set compression threads priority (`#1457 <https://github.com/ros2/rosbag2/issues/1457>`_)
+* Add per group statistics for rosbag2_performance_benchmarking report (`#1306 <https://github.com/ros2/rosbag2/issues/1306>`_)
+* Contributors: Michael Orlov, jmachowinski
+
+0.24.0 (2023-07-11)
+-------------------
+* Set CPU affinity for producers and recorder from benchmark parameters (`#1305 <https://github.com/ros2/rosbag2/issues/1305>`_)
+* Add CPU usage to rosbag2_performance_benchmarking results report (`#1304 <https://github.com/ros2/rosbag2/issues/1304>`_)
+* Add config option to use storage_id parameter in benchmark_launch.py (`#1303 <https://github.com/ros2/rosbag2/issues/1303>`_)
+* Contributors: Michael Orlov
+
+0.23.0 (2023-04-28)
+-------------------
+
+0.22.0 (2023-04-18)
+-------------------
+* Add tests for rosbag2_performance_benchmarking pkg (`#1268 <https://github.com/ros2/rosbag2/issues/1268>`_)
+* Contributors: Michael Orlov
+
+0.21.0 (2023-04-12)
+-------------------
+* Fix expectations for rosbag2 return code in rosbag2_performance_benchmarking (`#1267 <https://github.com/ros2/rosbag2/issues/1267>`_)
+* Update rosbag2 to C++17. (`#1238 <https://github.com/ros2/rosbag2/issues/1238>`_)
+* Use thread pool to run benchmark publishers in rosbag2_performance_benchmarking (`#1250 <https://github.com/ros2/rosbag2/issues/1250>`_)
+* Use target_link_libraries instead of ament_target_dependencies (`#1202 <https://github.com/ros2/rosbag2/issues/1202>`_)
+* Contributors: Chris Lalancette, Daisuke Nishimatsu, Michael Orlov, Shane Loretz, carlossvg
+
+0.20.0 (2023-02-14)
+-------------------
+* Skip ament_package() call when not building rosbag2_performance_benchmarking (`#1242 <https://github.com/ros2/rosbag2/issues/1242>`_)
+* Contributors: Shane Loretz
+
+0.19.0 (2023-01-13)
+-------------------
+* Add option to specify a message type (`#1153 <https://github.com/ros2/rosbag2/issues/1153>`_)
+* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_)
+* Replace language for "db3"/"db"/"database" (`#1194 <https://github.com/ros2/rosbag2/issues/1194>`_)
+* Remove explicit sqlite3 from code (`#1166 <https://github.com/ros2/rosbag2/issues/1166>`_)
+* Contributors: Emerson Knapp, Michael Orlov, carlossvg
+
+0.18.0 (2022-11-15)
+-------------------
+
+0.17.0 (2022-07-30)
+-------------------
+
+0.16.0 (2022-05-11)
 -------------------
 
 0.15.1 (2022-04-06)

@@ -14,12 +14,11 @@
 
 #include <gmock/gmock.h>
 
+#include <filesystem>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-
-#include "rcpputils/filesystem_helper.hpp"
 
 #include "mock_converter.hpp"
 #include "mock_converter_factory.hpp"
@@ -37,7 +36,7 @@
 
 using namespace testing;  // NOLINT
 
-namespace fs = rcpputils::fs;
+namespace fs = std::filesystem;
 
 class SerializationConverterTest : public Test
 {
@@ -65,6 +64,8 @@ public:
           }),
         Return(storage_)));
     EXPECT_CALL(*storage_factory_, open_read_write(_)).Times(AtLeast(1));
+
+    ON_CALL(*storage_, set_read_order).WillByDefault(Return(true));
 
     ON_CALL(
       *storage_,
@@ -126,7 +127,7 @@ TEST_F(SerializationConverterTest, default_rmw_converter_can_deserialize) {
 
   auto mock_converter = std::make_unique<StrictMock<MockConverter>>();
   std::vector<std::shared_ptr<const rosbag2_cpp::rosbag2_introspection_message_t>>
-  intercepted_converter_messages;
+    intercepted_converter_messages;
   EXPECT_CALL(
     *mock_converter,
     serialize(
@@ -153,7 +154,7 @@ TEST_F(SerializationConverterTest, default_rmw_converter_can_deserialize) {
   auto message = make_test_msg();
   writer_->open(storage_options_, {rmw_serialization_format, mock_serialization_format});
 
-  writer_->create_topic({test_topic_name_, "std_msgs/msg/String", "", {}});
+  writer_->create_topic({0u, test_topic_name_, "std_msgs/msg/String", "", {}, ""});
   writer_->write(message);
 
   ASSERT_EQ(intercepted_converter_messages.size(), 1);
@@ -201,7 +202,7 @@ TEST_F(SerializationConverterTest, default_rmw_converter_can_serialize) {
   auto message = make_test_msg();
   writer_->open(storage_options_, {mock_serialization_format, rmw_serialization_format});
 
-  writer_->create_topic({test_topic_name_, "std_msgs/msg/String", "", {}});
+  writer_->create_topic({0u, test_topic_name_, "std_msgs/msg/String", "", {}, ""});
   writer_->write(message);
 
   ASSERT_EQ(mock_storage_data_.size(), 1);

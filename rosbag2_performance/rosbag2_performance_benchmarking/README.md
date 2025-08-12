@@ -19,13 +19,14 @@ To run test benchmark (with `test.yaml` and `mixed_110Mbs.yaml`):
 ros2 launch rosbag2_performance_benchmarking benchmark_launch.py benchmark:=`ros2 pkg prefix rosbag2_performance_benchmarking`/share/rosbag2_performance_benchmarking/config/benchmarks/test.yaml producers:=`ros2 pkg prefix rosbag2_performance_benchmarking`/share/rosbag2_performance_benchmarking/config/producers/mixed_110Mbs.yaml
 ```
 
-The summary of benchmark goes into result file described in benchmark config: `<db_root_folder>/<BENCHMARK_NAME>/summary_result_file` where `BENCHMARK_NAME` is a name generated from config names, transport type and timestamp.
+The summary of benchmark goes into result file described in benchmark config: `<bag_root_folder>/<BENCHMARK_NAME>/summary_result_file` where `BENCHMARK_NAME` is a name generated from config names, transport type and timestamp.
 
 For human friendly output, a postprocess report generation tool can be used. Launch it with benchmark result directory as an `-i` argument (directory with `summary_result_file` file):
 
 ```bash
 scripts/report_gen.py -i <BENCHMARK_RESULT_DIR>
 ```
+
 #### Binaries
 
 These are used in the launch file:
@@ -39,12 +40,31 @@ storage uri, which is used to read the bag metadata file.
 
 Note that while you can opt to select compression for benchmarking, the generated data is random so it is likely not representative for this specific case. To publish non-random data, you need to modify the ByteProducer.
 
-## Building
+#### Number of publisher threads
 
-To build the package in the rosbag2 build process, make sure to turn `BUILD_ROSBAG2_BENCHMARKS` flag on (e.g. `colcon build --cmake-args -DBUILD_ROSBAG2_BENCHMARKS=1`)
+In the case of the `benchmark_publishers` binary, a pool of threads is created to run the publishers. By default,
+the number of threads is equal to the number of publishers. It is possible to change the number of threads
+using the optional `number_of_threads` parameter.
 
-If you already built rosbag2, you can use `packages-select` option to build benchmarks.
-Example: `colcon build --packages-select rosbag2_performance_benchmarking --cmake-args -DBUILD_ROSBAG2_BENCHMARKS=1`.
+## Running builtin Rosbag2 benchmark tests on CI or local setup
+
+The package contains a set of builtin tests that can be run to verify the performance of the
+Rosbag2 recorder. However, these tests are excluded from the build by default, so you need to enable
+them by setting the `ENABLE_ROSBAG2_BENCHMARK_TESTS` CMake flag to `ON` when building the package.
+To enable and run the rosbag2 benchmark tests with colcon, you need to:
+First build the package with the `ENABLE_ROSBAG2_BENCHMARK_TESTS` CMake option enabled:
+
+```bash
+colcon build --packages-select rosbag2_performance_benchmarking --cmake-args -DENABLE_ROSBAG2_BENCHMARK_TESTS=1
+```
+
+Then, you can run the tests using the `colcon test` command.
+
+```bash
+colcon test --packages-select rosbag2_performance_benchmarking
+```
+
+This will execute the tests defined in the "rosbag2_performance_benchmarking/test/benchmark_test.py".
 
 ## General knowledge: I/O benchmarking
 
@@ -70,7 +90,7 @@ For more sophisticated & accurate benchmarks, see the `fio` command. An example 
 
 Tools that can help in I/O profiling: `sudo apt-get install iotop ioping sysstat`
 * `iotop` works similar as `top` command, but shows disk reads, writes, swaps and I/O %. Can be used at higher frequency in batch mode with specified process to deliver data that can be plotted.
-  *  Example use: `sudo iotop -h -d 0.1 -t -b -o -p <PID>` after running the bag.  
+  *  Example use: `sudo iotop -h -d 0.1 -t -b -o -p <PID>` after running the bag.
 * `ioping` can be used to check latency of requests to device
 * `strace` can help determine syscalls associated with the bottleneck.
   *  Example use: `strace -c ros2 bag record /image --max-cache-size 10 -o ./tmp`. You will see a report after finishing recording with Ctrl-C.

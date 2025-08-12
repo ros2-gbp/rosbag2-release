@@ -43,7 +43,16 @@ public:
 
   void create_topic(const rosbag2_storage::TopicMetadata & topic_with_type) override
   {
-    topics_.emplace(topic_with_type.name, topic_with_type);
+    auto message_definition = rosbag2_storage::MessageDefinition::empty_message_definition_for(
+      topic_with_type.type);
+    topics_.emplace(topic_with_type.name, std::make_pair(topic_with_type, message_definition));
+  }
+
+  void create_topic(
+    const rosbag2_storage::TopicMetadata & topic_with_type,
+    const rosbag2_storage::MessageDefinition & message_definition) override
+  {
+    topics_.emplace(topic_with_type.name, std::make_pair(topic_with_type, message_definition));
   }
 
   void remove_topic(const rosbag2_storage::TopicMetadata & topic_with_type) override
@@ -51,7 +60,7 @@ public:
     (void) topic_with_type;
   }
 
-  void write(std::shared_ptr<rosbag2_storage::SerializedBagMessage> message) override
+  void write(std::shared_ptr<const rosbag2_storage::SerializedBagMessage> message) override
   {
     if (!snapshot_mode_) {
       messages_.push_back(message);
@@ -72,7 +81,7 @@ public:
     return true;
   }
 
-  void split_bagfile()
+  void split_bagfile() override
   {
     auto info = std::make_shared<rosbag2_cpp::bag_events::BagSplitInfo>();
     info->closed_file = "BagFile" + std::to_string(file_number_);
@@ -92,12 +101,13 @@ public:
     }
   }
 
-  const std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> & get_messages()
+  const std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>> & get_messages()
   {
     return messages_;
   }
 
-  const std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> & get_snapshot_buffer()
+  const std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>> &
+  get_snapshot_buffer()
   {
     return snapshot_buffer_;
   }
@@ -107,7 +117,10 @@ public:
     return messages_per_topic_;
   }
 
-  const std::unordered_map<std::string, rosbag2_storage::TopicMetadata> & get_topics()
+  const std::unordered_map<
+    std::string,
+    std::pair<rosbag2_storage::TopicMetadata, rosbag2_storage::MessageDefinition>
+  > & get_topics()
   {
     return topics_;
   }
@@ -128,9 +141,12 @@ public:
   }
 
 private:
-  std::unordered_map<std::string, rosbag2_storage::TopicMetadata> topics_;
-  std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages_;
-  std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> snapshot_buffer_;
+  std::unordered_map<
+    std::string,
+    std::pair<rosbag2_storage::TopicMetadata, rosbag2_storage::MessageDefinition>
+  > topics_;
+  std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>> messages_;
+  std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>> snapshot_buffer_;
   std::unordered_map<std::string, size_t> messages_per_topic_;
   size_t messages_per_file_ = 0;
   bool snapshot_mode_ = false;

@@ -2,69 +2,118 @@
 Changelog for package rosbag2_compression
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.15.15 (2025-07-16)
---------------------
-* [humble] Bugfix: `ros2 bag convert` dropping messages with compression mode message (backport `#1975 <https://github.com/ros2/rosbag2/issues/1975>`_) (`#2012 <https://github.com/ros2/rosbag2/issues/2012>`_)
+0.26.9 (2025-08-11)
+-------------------
+
+0.26.8 (2025-07-10)
+-------------------
+* Bugfix: `ros2 bag convert` dropping messages with compression mode message (`#1975 <https://github.com/ros2/rosbag2/issues/1975>`_) (`#1985 <https://github.com/ros2/rosbag2/issues/1985>`_)
+* Contributors: Ben <benjamin.andrew@swri.org>, Michael Orlov <morlovmr@gmail.com>
+
+0.26.7 (2025-04-22)
+-------------------
+
+0.26.6 (2024-12-18)
+-------------------
+* Bugfix: Update metadata with new file_info before saving it first time (`#1843 <https://github.com/ros2/rosbag2/issues/1843>`_) (`#1853 <https://github.com/ros2/rosbag2/issues/1853>`_)
+  (cherry picked from commit b5098eff15281c9e79853e8bb2ae9a0a104e6ea5)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+* Make snapshot writing into a new file each time it is triggered (`#1842 <https://github.com/ros2/rosbag2/issues/1842>`_) (`#1849 <https://github.com/ros2/rosbag2/issues/1849>`_)
+  (cherry picked from commit 1877b53847bda4d1f2668187b79fa27a796c3438)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+* Contributors: Marco A. Gutierrez, mergify[bot]
+
+0.26.5 (2024-09-06)
+-------------------
+* Add cli option compression-threads-priority (`#1768 <https://github.com/ros2/rosbag2/issues/1768>`_) (`#1778 <https://github.com/ros2/rosbag2/issues/1778>`_)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+  (cherry picked from commit 25c3e1c2effdaea3b880c39ff7580b2f38a44b1c)
+  Co-authored-by: Roman <rsokolkov@gmail.com>
+* Bugfix for bag_split event callbacks called to early with file compression (`#1643 <https://github.com/ros2/rosbag2/issues/1643>`_) (`#1732 <https://github.com/ros2/rosbag2/issues/1732>`_)
+  (cherry picked from commit 1877b53847bda4d1f2668187b79fa27a796c3438)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
 * Contributors: mergify[bot]
 
-0.15.14 (2025-03-25)
---------------------
-
-0.15.13 (2024-11-25)
---------------------
-* [humble] Make snapshot writing into a new file each time it is triggered (backport `#1842 <https://github.com/ros2/rosbag2/issues/1842>`_) (`#1850 <https://github.com/ros2/rosbag2/issues/1850>`_)
-* Prevent using message compression mode with mcap storage (`#1782 <https://github.com/ros2/rosbag2/issues/1782>`_)
-* Contributors: Roman Shtylman, mergify[bot]
-
-0.15.12 (2024-07-28)
---------------------
-* [humble] Bugfix for bag_split event callbacks called to early with file compression (backport `#1643 <https://github.com/ros2/rosbag2/issues/1643>`_) (`#1733 <https://github.com/ros2/rosbag2/issues/1733>`_)
-* [humble] Add option to prevent message loss while converting (backport `#1058 <https://github.com/ros2/rosbag2/issues/1058>`_) (`#1749 <https://github.com/ros2/rosbag2/issues/1749>`_)
+0.26.4 (2024-06-27)
+-------------------
+* Fix for regression in `open_succeeds_twice` and `minimal_writer_example` tests (`#1667 <https://github.com/ros2/rosbag2/issues/1667>`_) (`#1675 <https://github.com/ros2/rosbag2/issues/1675>`_)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
 * Contributors: mergify[bot]
 
-0.15.11 (2024-05-20)
---------------------
-* [humble] Rollback to rcpputils::fs and workaround failure in "open_succeds_twice" on second run. (`#1666 <https://github.com/ros2/rosbag2/issues/1666>`_)
-* Add in a missing cstdint include. (`#1321 <https://github.com/ros2/rosbag2/issues/1321>`_) (`#1663 <https://github.com/ros2/rosbag2/issues/1663>`_)
-* Contributors: Michael Orlov, mergify[bot]
-
-0.15.10 (2024-05-17)
---------------------
-* [humble] Bugfix for writer not being able to open again after closing (backport `#1599 <https://github.com/ros2/rosbag2/issues/1599>`_) (`#1653 <https://github.com/ros2/rosbag2/issues/1653>`_)
-* [humble] Add default initialization for CompressionOptions (backport `#1539 <https://github.com/ros2/rosbag2/issues/1539>`_) (`#1546 <https://github.com/ros2/rosbag2/issues/1546>`_)
+0.26.3 (2024-05-15)
+-------------------
+* Bugfix for writer not being able to open again after closing (`#1599 <https://github.com/ros2/rosbag2/issues/1599>`_) (`#1639 <https://github.com/ros2/rosbag2/issues/1639>`_)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+  Co-authored-by: yschulz <yschulz854@gmail.com>
 * Contributors: mergify[bot]
 
-0.15.9 (2024-01-24)
+0.26.2 (2024-04-24)
 -------------------
 
-0.15.8 (2023-09-19)
+0.26.1 (2024-04-17)
 -------------------
 
-0.15.7 (2023-07-18)
+0.26.0 (2024-04-16)
+-------------------
+* Use middleware send and receive timestamps from message_info during recording (`#1531 <https://github.com/ros2/rosbag2/issues/1531>`_)
+* Contributors: jmachowinski
+
+0.25.0 (2024-03-27)
+-------------------
+* Use std::filesystem instead of rcpputils::fs (`#1576 <https://github.com/ros2/rosbag2/issues/1576>`_)
+* Make some changes for newer versions of uncrustify. (`#1578 <https://github.com/ros2/rosbag2/issues/1578>`_)
+* Add topic_id returned by storage to the TopicMetadata (`#1538 <https://github.com/ros2/rosbag2/issues/1538>`_)
+* Add default initialization for CompressionOptions (`#1539 <https://github.com/ros2/rosbag2/issues/1539>`_)
+* Add option to set compression threads priority (`#1457 <https://github.com/ros2/rosbag2/issues/1457>`_)
+* Fixes pointed out by clang. (`#1493 <https://github.com/ros2/rosbag2/issues/1493>`_)
+* Use enum values for offered_qos_profiles in code and string names in serialized metadata (`#1476 <https://github.com/ros2/rosbag2/issues/1476>`_)
+* Contributors: Arne B, Chris Lalancette, Michael Orlov, Patrick Roncagliolo, Roman Sokolkov, jmachowinski
+
+0.24.0 (2023-07-11)
+-------------------
+* Add in a missing cstdint include. (`#1321 <https://github.com/ros2/rosbag2/issues/1321>`_)
+* Fix warning from ClassLoader in sequential compression reader and writer (`#1299 <https://github.com/ros2/rosbag2/issues/1299>`_)
+* Contributors: Chris Lalancette, Michael Orlov
+
+0.23.0 (2023-04-28)
 -------------------
 
-0.15.6 (2023-06-05)
+0.22.0 (2023-04-18)
 -------------------
-* Deconstruct compression classloader factory in correct order with classes loaded (`#1362 <https://github.com/ros2/rosbag2/issues/1362>`_)
-* Fx memory issue when multiple writers with message compression_mode required (`#1331 <https://github.com/ros2/rosbag2/issues/1331>`_)
-  - Deep copy message when sequential compression writer is writing
-  Co-authored-by: zeal <ziyaolin.zeal@gmail.com>
-* Contributors: Emerson Knapp, zeal-up
+* Add message definition read API (`#1292 <https://github.com/ros2/rosbag2/issues/1292>`_)
+* rosbag2_storage: add type description hash to topic metadata (`#1272 <https://github.com/ros2/rosbag2/issues/1272>`_)
+* Contributors: james-rms
 
-0.15.5 (2023-04-25)
+0.21.0 (2023-04-12)
 -------------------
-* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_) (`#1224 <https://github.com/ros2/rosbag2/issues/1224>`_)
-* Contributors: mergify[bot]
+* rosbag2_cpp: move local message definition source out of MCAP plugin (`#1265 <https://github.com/ros2/rosbag2/issues/1265>`_)
+* Update rosbag2 to C++17. (`#1238 <https://github.com/ros2/rosbag2/issues/1238>`_)
+* Use target_link_libraries instead of ament_target_dependencies (`#1202 <https://github.com/ros2/rosbag2/issues/1202>`_)
+* Contributors: Chris Lalancette, Daisuke Nishimatsu, Michael Orlov, james-rms
 
-0.15.4 (2023-01-10)
+0.20.0 (2023-02-14)
 -------------------
 
-0.15.3 (2022-11-07)
+0.19.0 (2023-01-13)
 -------------------
-* Backport. Add use_sim_time option to record verb (`#1017 <https://github.com/ros2/rosbag2/issues/1017>`_)
-* Contributors: Keisuke Shima
+* set_read_order: return success (`#1177 <https://github.com/ros2/rosbag2/issues/1177>`_)
+* Add `update_metadata(BagMetadata)` API for storage plugin interface (`#1149 <https://github.com/ros2/rosbag2/issues/1149>`_)
+* Contributors: Michael Orlov, james-rms
 
-0.15.2 (2022-05-11)
+0.18.0 (2022-11-15)
+-------------------
+* Reverse read order API and sqlite storage implementation (`#1083 <https://github.com/ros2/rosbag2/issues/1083>`_)
+* Add option to prevent message loss while converting (`#1058 <https://github.com/ros2/rosbag2/issues/1058>`_)
+* set default metadata of compressed message (in case compressor does not set it) (`#1060 <https://github.com/ros2/rosbag2/issues/1060>`_)
+* Contributors: DensoADAS, Emerson Knapp
+
+0.17.0 (2022-07-30)
+-------------------
+* Speed optimization: Preparing copyless publish/subscribing by using const message for writing (`#1010 <https://github.com/ros2/rosbag2/issues/1010>`_)
+* Add the ability to record any key/value pair in 'custom' field in metadata.yaml (`#1038 <https://github.com/ros2/rosbag2/issues/1038>`_)
+* Contributors: DensoADAS, Hunter L. Allen, Joshua Hampp, Michael Orlov, Tony Peng
+
+0.16.0 (2022-05-11)
 -------------------
 
 0.15.1 (2022-04-06)
@@ -119,7 +168,6 @@ Changelog for package rosbag2_compression
 ------------------
 * Explicitly add emersonknapp as maintainer (`#692 <https://github.com/ros2/rosbag2/issues/692>`_)
 * Reindexer core (`#641 <https://github.com/ros2/rosbag2/issues/641>`_)
-  Add a new C++ Reindexer class for reconstructing metadata from bags that are missing it.
 * Contributors: Emerson Knapp, jhdcs
 
 0.7.0 (2021-03-18)

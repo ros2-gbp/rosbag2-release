@@ -18,19 +18,35 @@ from rpyutils import add_dll_directories_from_env
 # to the search path.
 # See https://docs.python.org/3/whatsnew/3.8.html#bpo-36085-whatsnew
 with add_dll_directories_from_env('PATH'):
+    from rosbag2_py._compression_options import (
+        CompressionMode,
+        CompressionOptions,
+        compression_mode_from_string,
+        compression_mode_to_string
+    )
+    from rosbag2_py._message_definitions import (
+        LocalMessageDefinitionSource,
+    )
     from rosbag2_py._reader import (
         SequentialCompressionReader,
         SequentialReader,
         get_registered_readers,
     )
     from rosbag2_py._storage import (
+        BagMetadata,
         ConverterOptions,
         FileInformation,
+        MessageDefinition,
+        MetadataIo,
+        ReadOrder,
+        ReadOrderSortBy,
         StorageFilter,
         StorageOptions,
         TopicMetadata,
         TopicInformation,
-        BagMetadata,
+        convert_rclcpp_qos_to_rclpy_qos,
+        get_default_storage_id,
+        to_rclcpp_qos_vector,
     )
     from rosbag2_py._writer import (
         SequentialCompressionWriter,
@@ -38,17 +54,17 @@ with add_dll_directories_from_env('PATH'):
         get_registered_writers,
         get_registered_compressors,
         get_registered_serializers,
-        get_default_storage_id,
     )
     from rosbag2_py._info import (
         Info,
     )
     from rosbag2_py._transport import (
-        bag_rewrite,
         Player,
         PlayOptions,
+        ServiceRequestsSource,
         Recorder,
         RecordOptions,
+        bag_rewrite,
     )
     from rosbag2_py._reindexer import (
         Reindexer
@@ -56,6 +72,11 @@ with add_dll_directories_from_env('PATH'):
 
 __all__ = [
     'bag_rewrite',
+    'convert_rclcpp_qos_to_rclpy_qos',
+    'CompressionMode',
+    'CompressionOptions',
+    'compression_mode_from_string',
+    'compression_mode_to_string',
     'ConverterOptions',
     'FileInformation',
     'get_default_storage_id',
@@ -63,6 +84,9 @@ __all__ = [
     'get_registered_writers',
     'get_registered_compressors',
     'get_registered_serializers',
+    'to_rclcpp_qos_vector',
+    'ReadOrder',
+    'ReadOrderSortBy',
     'Reindexer',
     'SequentialCompressionReader',
     'SequentialCompressionWriter',
@@ -73,9 +97,13 @@ __all__ = [
     'TopicMetadata',
     'TopicInformation',
     'BagMetadata',
+    'MessageDefinition',
+    'MetadataIo',
     'Info',
     'Player',
     'PlayOptions',
+    'ServiceRequestsSource',
     'Recorder',
     'RecordOptions',
+    'LocalMessageDefinitionSource',
 ]

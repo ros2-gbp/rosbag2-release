@@ -2,57 +2,141 @@
 Changelog for package rosbag2_tests
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.15.15 (2025-07-16)
---------------------
-
-0.15.14 (2025-03-25)
---------------------
-
-0.15.13 (2024-11-25)
---------------------
-
-0.15.12 (2024-07-28)
---------------------
-* [humble] Fix for a false negative integration test with bag split in recorder (backport `#1743 <https://github.com/ros2/rosbag2/issues/1743>`_) (`#1751 <https://github.com/ros2/rosbag2/issues/1751>`_)
-* [humble] Bugfix for wrong timestamps in ros2 bag info (backport `#1745 <https://github.com/ros2/rosbag2/issues/1745>`_) (`#1754 <https://github.com/ros2/rosbag2/issues/1754>`_)
+0.26.9 (2025-08-11)
+-------------------
+* [jazzy] Expose more of the player/recorder API through Python (backport `#2062 <https://github.com/ros2/rosbag2/issues/2062>`_) (`#2100 <https://github.com/ros2/rosbag2/issues/2100>`_)
+  Co-authored-by: Christophe Bedard <bedard.christophe@gmail.com>
+  Co-authored-by: Michael Orlov <morlovmr@gmail.com>
 * Contributors: mergify[bot]
 
-0.15.11 (2024-05-20)
---------------------
+0.26.8 (2025-07-10)
+-------------------
+* [jazzy] Bugfix for deadlocks in Rosbag2 player when calling stop API (backport `#2057 <https://github.com/ros2/rosbag2/issues/2057>`_) (`#2060 <https://github.com/ros2/rosbag2/issues/2060>`_)
+* [jazzy] Address flakiness in tests where need to spin a node (backport `#2001 <https://github.com/ros2/rosbag2/issues/2001>`_) (`#2019 <https://github.com/ros2/rosbag2/issues/2019>`_)
+* [jazzy] Upstream quality changes from Apex.AI part-2 (backport `#1924 <https://github.com/ros2/rosbag2/issues/1924>`_) (`#1987 <https://github.com/ros2/rosbag2/issues/1987>`_)
+* Contributors: Michael Orlov <morlovmr@gmail.com>, Christophe Bedard <bedard.christophe@gmail.com>
 
-0.15.10 (2024-05-17)
---------------------
-* [humble] Bugfix for writer not being able to open again after closing (backport `#1599 <https://github.com/ros2/rosbag2/issues/1599>`_) (`#1653 <https://github.com/ros2/rosbag2/issues/1653>`_)
+0.26.7 (2025-04-22)
+-------------------
+* [jazzy] Upstream quality changes from Apex.AI part 1 (backport `#1903 <https://github.com/ros2/rosbag2/issues/1903>`_) (`#1909 <https://github.com/ros2/rosbag2/issues/1909>`_)
+* Contributors: mergify[bot], Michael Orlov
+
+0.26.6 (2024-12-18)
+-------------------
+* [jazzy] Add "--sort" CLI option to the "ros2 bag info" command (backport `#1804 <https://github.com/ros2/rosbag2/issues/1804>`_) (`#1838 <https://github.com/ros2/rosbag2/issues/1838>`_)
+  Co-authored-by: Soenke Prophet <soenke.prophet@gmail.com>
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+  Co-authored-by: Sanoronas <soenke.prophet@gmail.com>
+* [jazzy] Add computation of size contribution to info verb (backport `#1726 <https://github.com/ros2/rosbag2/issues/1726>`_) (`#1872 <https://github.com/ros2/rosbag2/issues/1872>`_)
+  Co-authored-by: Nicola Loi <nicolaloi@outlook.com>
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+* Improve the reliability of rosbag2 tests (`#1796 <https://github.com/ros2/rosbag2/issues/1796>`_) (`#1806 <https://github.com/ros2/rosbag2/issues/1806>`_)
+  Co-authored-by: Chris Lalancette <clalancette@gmail.com>
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+* Contributors: Marco A. Gutierrez, mergify[bot]
+
+0.26.5 (2024-09-06)
+-------------------
+* Small cleanups to the rosbag2 tests. (`#1792 <https://github.com/ros2/rosbag2/issues/1792>`_) (`#1793 <https://github.com/ros2/rosbag2/issues/1793>`_)
+  (cherry picked from commit 604cebcf11775151efa94f7c30ba1aea68e90c5c)
+  Co-authored-by: Chris Lalancette <clalancette@gmail.com>
+* Bugfix for wrong timestamps in ros2 bag info (`#1745 <https://github.com/ros2/rosbag2/issues/1745>`_) (`#1752 <https://github.com/ros2/rosbag2/issues/1752>`_)
+  (cherry picked from commit da28c9da82824b8ce5f6fc18935d1a954e52b636)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+* Fix for a false negative integration test with bag split in recorder (`#1743 <https://github.com/ros2/rosbag2/issues/1743>`_) (`#1750 <https://github.com/ros2/rosbag2/issues/1750>`_)
+  (cherry picked from commit da1acb29646258899ba73a81c803383c07905613)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
 * Contributors: mergify[bot]
 
-0.15.9 (2024-01-24)
+0.26.4 (2024-06-27)
 -------------------
-
-0.15.8 (2023-09-19)
--------------------
-
-0.15.7 (2023-07-18)
--------------------
-
-0.15.6 (2023-06-05)
--------------------
-
-0.15.5 (2023-04-25)
--------------------
-* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_) (`#1224 <https://github.com/ros2/rosbag2/issues/1224>`_)
+* Propagate "custom_data" and "ros_distro" in to the metadata.yaml file during re-indexing (`#1700 <https://github.com/ros2/rosbag2/issues/1700>`_) (`#1710 <https://github.com/ros2/rosbag2/issues/1710>`_)
+  Co-authored-by: Cole Tucker <coalman321@users.noreply.github.com>
+* [jazzy] Sweep cleanup in rosbag2 recorder CLI args verification code (backport `#1633 <https://github.com/ros2/rosbag2/issues/1633>`_) (`#1684 <https://github.com/ros2/rosbag2/issues/1684>`_)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+* Fix for regression in `open_succeeds_twice` and `minimal_writer_example` tests (`#1667 <https://github.com/ros2/rosbag2/issues/1667>`_) (`#1675 <https://github.com/ros2/rosbag2/issues/1675>`_)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+* [jazzy] Add optional  '--topics' CLI argument for 'ros2 bag record' (backport `#1632 <https://github.com/ros2/rosbag2/issues/1632>`_) (`#1640 <https://github.com/ros2/rosbag2/issues/1640>`_)
+  Co-authored-by: Tomoya Fujita <Tomoya.Fujita@sony.com>
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
 * Contributors: mergify[bot]
 
-0.15.4 (2023-01-10)
+0.26.3 (2024-05-15)
 -------------------
-
-0.15.3 (2022-11-07)
--------------------
-* Fix for ros2 bag play exit with non-zero code on SIGINT (`#1126 <https://github.com/ros2/rosbag2/issues/1126>`_) (`#1147 <https://github.com/ros2/rosbag2/issues/1147>`_)
-* Get rid from attempt to open DB file in `wait_for_db()` test fixture (`#1141 <https://github.com/ros2/rosbag2/issues/1141>`_) (`#1148 <https://github.com/ros2/rosbag2/issues/1148>`_)
-* Readers/info can accept a single bag storage file, and detect its storage id automatically (`#1072 <https://github.com/ros2/rosbag2/issues/1072>`_) (`#1077 <https://github.com/ros2/rosbag2/issues/1077>`_)
+* Bugfix for writer not being able to open again after closing (`#1599 <https://github.com/ros2/rosbag2/issues/1599>`_) (`#1639 <https://github.com/ros2/rosbag2/issues/1639>`_)
+  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
+  Co-authored-by: yschulz <yschulz854@gmail.com>
 * Contributors: mergify[bot]
 
-0.15.2 (2022-05-11)
+0.26.2 (2024-04-24)
+-------------------
+
+0.26.1 (2024-04-17)
+-------------------
+
+0.26.0 (2024-04-16)
+-------------------
+* Use middleware send and receive timestamps from message_info during recording (`#1531 <https://github.com/ros2/rosbag2/issues/1531>`_)
+* Added exclude-topic-types to record (`#1582 <https://github.com/ros2/rosbag2/issues/1582>`_)
+* Contributors: Alejandro Hernández Cordero, jmachowinski
+
+0.25.0 (2024-03-27)
+-------------------
+* Use std::filesystem instead of rcpputils::fs (`#1576 <https://github.com/ros2/rosbag2/issues/1576>`_)
+* Filter topic by type  (`#1577 <https://github.com/ros2/rosbag2/issues/1577>`_)
+* Make some changes for newer versions of uncrustify. (`#1578 <https://github.com/ros2/rosbag2/issues/1578>`_)
+* Add topic_id returned by storage to the TopicMetadata (`#1538 <https://github.com/ros2/rosbag2/issues/1538>`_)
+* Improve performance in SqliteStorage::get_bagfile_size() (`#1516 <https://github.com/ros2/rosbag2/issues/1516>`_)
+* Implement service recording and display info about recorded services (`#1480 <https://github.com/ros2/rosbag2/issues/1480>`_)
+* Mark play_end_to_end test as xfail in Windows (`#1452 <https://github.com/ros2/rosbag2/issues/1452>`_)
+* Contributors: Alejandro Hernández Cordero, Barry Xu, Chris Lalancette, Cristóbal Arroyo, Michael Orlov, Roman Sokolkov
+
+0.24.0 (2023-07-11)
+-------------------
+* Implement storing and loading ROS_DISTRO from metadata.yaml and mcap files (`#1241 <https://github.com/ros2/rosbag2/issues/1241>`_)
+* Address flakiness in rosbag2_play_end_to_end tests (`#1297 <https://github.com/ros2/rosbag2/issues/1297>`_)
+* Contributors: Emerson Knapp, Michael Orlov
+
+0.23.0 (2023-04-28)
+-------------------
+
+0.22.0 (2023-04-18)
+-------------------
+* Add type_hash in MessageDefinition struct (`#1296 <https://github.com/ros2/rosbag2/issues/1296>`_)
+* Contributors: Michael Orlov
+
+0.21.0 (2023-04-12)
+-------------------
+* rosbag2_cpp: move local message definition source out of MCAP plugin (`#1265 <https://github.com/ros2/rosbag2/issues/1265>`_)
+* Update rosbag2 to C++17. (`#1238 <https://github.com/ros2/rosbag2/issues/1238>`_)
+* Use target_link_libraries instead of ament_target_dependencies (`#1202 <https://github.com/ros2/rosbag2/issues/1202>`_)
+* Contributors: Chris Lalancette, Daisuke Nishimatsu, Michael Orlov, james-rms
+
+0.20.0 (2023-02-14)
+-------------------
+
+0.19.0 (2023-01-13)
+-------------------
+* rosbag2_storage: set MCAP as default plugin (`#1160 <https://github.com/ros2/rosbag2/issues/1160>`_)
+* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_)
+* Parametrize all rosbag2_tests for both supported storage plugins (`#1221 <https://github.com/ros2/rosbag2/issues/1221>`_)
+* Make rosbag2_tests agnostic to storage implementation (`#1192 <https://github.com/ros2/rosbag2/issues/1192>`_)
+* Contributors: Emerson Knapp, Michael Orlov, james-rms
+
+0.18.0 (2022-11-15)
+-------------------
+* Get rid from attempt to open DB file in `wait_for_db()` test fixture (`#1141 <https://github.com/ros2/rosbag2/issues/1141>`_)
+* Fix for ros2 bag play exit with non-zero code on SIGINT (`#1126 <https://github.com/ros2/rosbag2/issues/1126>`_)
+* Move sqlite3 storage implementation to rosbag2_storage_sqlite3 package (`#1113 <https://github.com/ros2/rosbag2/issues/1113>`_)
+* Readers/info can accept a single bag storage file, and detect its storage id automatically (`#1072 <https://github.com/ros2/rosbag2/issues/1072>`_)
+* Contributors: Emerson Knapp, Michael Orlov
+
+0.17.0 (2022-07-30)
+-------------------
+* Add the ability to record any key/value pair in 'custom' field in metadata.yaml (`#1038 <https://github.com/ros2/rosbag2/issues/1038>`_)
+* Contributors: Hunter L. Allen, Tony Peng
+
+0.16.0 (2022-05-11)
 -------------------
 
 0.15.1 (2022-04-06)

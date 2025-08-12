@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <string>
+#include <unordered_map>
 
 #include "rosbag2_storage/storage_options.hpp"
 
@@ -31,6 +32,9 @@ Node convert<rosbag2_storage::StorageOptions>::encode(
   node["storage_preset_profile"] = storage_options.storage_preset_profile;
   node["storage_config_uri"] = storage_options.storage_config_uri;
   node["snapshot_mode"] = storage_options.snapshot_mode;
+  node["start_time_ns"] = storage_options.start_time_ns;
+  node["end_time_ns"] = storage_options.end_time_ns;
+  node["custom_data"] = storage_options.custom_data;
   return node;
 }
 
@@ -46,6 +50,10 @@ bool convert<rosbag2_storage::StorageOptions>::decode(
     node, "storage_preset_profile", storage_options.storage_preset_profile);
   optional_assign<std::string>(node, "storage_config_uri", storage_options.storage_config_uri);
   optional_assign<bool>(node, "snapshot_mode", storage_options.snapshot_mode);
+  optional_assign<int64_t>(node, "start_time_ns", storage_options.start_time_ns);
+  optional_assign<int64_t>(node, "end_time_ns", storage_options.end_time_ns);
+  using KEY_VALUE_MAP = std::unordered_map<std::string, std::string>;
+  optional_assign<KEY_VALUE_MAP>(node, "custom_data", storage_options.custom_data);
   return true;
 }
 

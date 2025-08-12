@@ -25,6 +25,9 @@
 namespace config_utils
 {
 
+constexpr std::string_view DEFAULT_MESSAGE_TYPE =
+  "rosbag2_performance_benchmarking_msgs::msg::ByteArray";
+
 /// Helper function to fill group_config with qos parameters
 void load_qos_configuration(
   rclcpp::Node & node,
@@ -33,6 +36,9 @@ void load_qos_configuration(
 
 /// Acquires the parameter determining whether to wait for subscriber
 bool wait_for_subscriptions_from_node_parameters(rclcpp::Node & node);
+
+/// Gets the number of threads used for the thread pool
+size_t get_number_of_threads_from_node_parameters(rclcpp::Node & node);
 
 /// Acquires publisher parameters from the node
 std::vector<PublisherGroupConfig> publisher_groups_from_node_parameters(

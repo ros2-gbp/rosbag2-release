@@ -14,12 +14,11 @@
 
 #include <gmock/gmock.h>
 
+#include <filesystem>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-
-#include "rcpputils/filesystem_helper.hpp"
 
 #include "rosbag2_cpp/reader.hpp"
 #include "rosbag2_cpp/readers/sequential_reader.hpp"
@@ -33,6 +32,7 @@
 #include "mock_storage_factory.hpp"
 
 using namespace testing;  // NOLINT
+namespace fs = std::filesystem;
 
 class MultifileReaderTest : public Test
 {
@@ -41,10 +41,10 @@ public:
   : storage_(std::make_shared<NiceMock<MockStorage>>()),
     converter_factory_(std::make_shared<StrictMock<MockConverterFactory>>()),
     storage_serialization_format_("rmw1_format"),
-    storage_uri_(rcpputils::fs::temp_directory_path().string()),
+    storage_uri_(fs::temp_directory_path().generic_string()),
     relative_path_1_("some_relative_path_1"),
     relative_path_2_("some_relative_path_2"),
-    absolute_path_1_((rcpputils::fs::path(storage_uri_) / "some/folder").string()),
+    absolute_path_1_((fs::path(storage_uri_) / "some/folder").generic_string()),
     default_storage_options_({storage_uri_, ""})
   {}
 
@@ -53,7 +53,7 @@ public:
     auto metadata = get_metadata();
 
     auto topic_with_type = rosbag2_storage::TopicMetadata{
-      "topic", "test_msgs/BasicTypes", storage_serialization_format_, ""};
+      0u, "topic", "test_msgs/BasicTypes", storage_serialization_format_, {}, ""};
     auto topics_and_types = std::vector<rosbag2_storage::TopicMetadata>{topic_with_type};
     metadata.topics_with_message_count.push_back({topic_with_type, 10});
 
@@ -67,6 +67,7 @@ public:
 
     EXPECT_CALL(*storage_, get_all_topics_and_types())
     .Times(AtMost(1)).WillRepeatedly(Return(topics_and_types));
+    ON_CALL(*storage_, set_read_order).WillByDefault(Return(true));
     ON_CALL(*storage_, read_next()).WillByDefault(Return(message));
     EXPECT_CALL(*storage_factory, open_read_only(_)).WillRepeatedly(Return(storage_));
 
@@ -107,7 +108,7 @@ public:
   {
     relative_path_1_ = "rosbag_name/some_relative_path_1";
     relative_path_2_ = "rosbag_name/some_relative_path_2";
-    absolute_path_1_ = (rcpputils::fs::path(storage_uri_) / "some/folder").string();
+    absolute_path_1_ = (fs::path(storage_uri_) / "some/folder").generic_string();
   }
 
   rosbag2_storage::BagMetadata get_metadata() const override
@@ -137,11 +138,11 @@ TEST_F(MultifileReaderTest, has_next_reads_next_file)
     reader_->get_implementation_handle());
 
   auto resolved_relative_path_1 =
-    (rcpputils::fs::path(storage_uri_) / relative_path_1_).string();
+    (fs::path(storage_uri_) / relative_path_1_).generic_string();
   auto resolved_relative_path_2 =
-    (rcpputils::fs::path(storage_uri_) / relative_path_2_).string();
+    (fs::path(storage_uri_) / relative_path_2_).generic_string();
   auto resolved_absolute_path_1 =
-    rcpputils::fs::path(absolute_path_1_).string();
+    fs::path(absolute_path_1_).generic_string();
   EXPECT_EQ(sr.get_current_file(), resolved_relative_path_1);
   reader_->read_next();  // calls has_next false then true
   EXPECT_EQ(sr.get_current_file(), resolved_relative_path_2);
@@ -169,11 +170,11 @@ TEST_F(MultifileReaderTestVersion3, has_next_reads_next_file_version3)
 
   // Legacy version <=3 have a parent_path() prefixed in the relative files
   auto resolved_relative_path_1 =
-    (rcpputils::fs::path(storage_uri_).parent_path() / relative_path_1_).string();
+    (fs::path(storage_uri_).parent_path() / relative_path_1_).generic_string();
   auto resolved_relative_path_2 =
-    (rcpputils::fs::path(storage_uri_).parent_path() / relative_path_2_).string();
+    (fs::path(storage_uri_).parent_path() / relative_path_2_).generic_string();
   auto resolved_absolute_path_1 =
-    rcpputils::fs::path(absolute_path_1_).string();
+    fs::path(absolute_path_1_).generic_string();
   EXPECT_EQ(sr.get_current_file(), resolved_relative_path_1);
   reader_->read_next();  // calls has_next false then true
   EXPECT_EQ(sr.get_current_file(), resolved_relative_path_2);
@@ -228,9 +229,8 @@ TEST_F(MultifileReaderTest, seek_bag)
 {
   init();
   reader_->open(default_storage_options_, {"", storage_serialization_format_});
-  EXPECT_CALL(*storage_, has_next()).Times(3).WillRepeatedly(Return(false));
+  EXPECT_CALL(*storage_, has_next()).Times(1).WillRepeatedly(Return(false));
   EXPECT_CALL(*storage_, seek(_)).Times(3);
-  EXPECT_CALL(*storage_, set_filter(_)).Times(3);
   reader_->seek(9999999999999);
   reader_->has_next();
 }
