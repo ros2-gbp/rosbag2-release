@@ -1,0 +1,12 @@
+Source: ros-jazzy-rosbag2-compression
+Section: misc
+Priority: optional
+Maintainer: Michael Orlov <michael.orlov@apex.ai>
+Build-Depends: debhelper (>= 9.0.0), ros-jazzy-ament-cmake, ros-jazzy-ament-cmake-gmock <!nocheck>, ros-jazzy-ament-lint-auto <!nocheck>, ros-jazzy-ament-lint-common <!nocheck>, ros-jazzy-rclcpp <!nocheck>, ros-jazzy-rcpputils, ros-jazzy-rcutils, ros-jazzy-rosbag2-cpp, ros-jazzy-rosbag2-storage, ros-jazzy-rosbag2-test-common <!nocheck>, ros-jazzy-test-msgs <!nocheck>, ros-jazzy-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-jazzy-rosbag2-compression
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-jazzy-rcpputils, ros-jazzy-rcutils, ros-jazzy-rosbag2-cpp, ros-jazzy-rosbag2-storage, ros-jazzy-ros-workspace
+Description: Compression implementations for rosbag2 bags and messages.
