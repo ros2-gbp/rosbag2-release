@@ -1,0 +1,12 @@
+Source: ros-jazzy-rosbag2-storage-sqlite3
+Section: misc
+Priority: optional
+Maintainer: Michael Orlov <michael.orlov@apex.ai>
+Build-Depends: debhelper (>= 9.0.0), ros-jazzy-ament-cmake, ros-jazzy-ament-cmake-gmock <!nocheck>, ros-jazzy-ament-cmake-python, ros-jazzy-ament-lint-auto <!nocheck>, ros-jazzy-ament-lint-common <!nocheck>, ros-jazzy-pluginlib, ros-jazzy-rcpputils, ros-jazzy-rcutils, ros-jazzy-rosbag2-storage, ros-jazzy-rosbag2-test-common <!nocheck>, ros-jazzy-sqlite3-vendor, ros-jazzy-std-msgs <!nocheck>, ros-jazzy-yaml-cpp-vendor, ros-jazzy-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-jazzy-rosbag2-storage-sqlite3
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-jazzy-pluginlib, ros-jazzy-rcpputils, ros-jazzy-rcutils, ros-jazzy-rosbag2-storage, ros-jazzy-sqlite3-vendor, ros-jazzy-yaml-cpp-vendor, ros-jazzy-ros-workspace
+Description: ROSBag2 SQLite3 storage plugin
