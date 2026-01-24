@@ -1,0 +1,12 @@
+Source: ros-jazzy-rosbag2-storage
+Section: misc
+Priority: optional
+Maintainer: Michael Orlov <michael.orlov@apex.ai>
+Build-Depends: debhelper (>= 9.0.0), ros-jazzy-ament-cmake, ros-jazzy-ament-cmake-gmock <!nocheck>, ros-jazzy-ament-cmake-gtest <!nocheck>, ros-jazzy-ament-lint-auto <!nocheck>, ros-jazzy-ament-lint-common <!nocheck>, ros-jazzy-pluginlib, ros-jazzy-rclcpp, ros-jazzy-rcutils, ros-jazzy-rmw, ros-jazzy-rosbag2-test-common <!nocheck>, ros-jazzy-yaml-cpp-vendor, ros-jazzy-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-jazzy-rosbag2-storage
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-jazzy-pluginlib, ros-jazzy-rclcpp, ros-jazzy-rcutils, ros-jazzy-rmw, ros-jazzy-yaml-cpp-vendor, ros-jazzy-ros-workspace
+Description: ROS2 independent storage format to store serialized ROS2 messages
