@@ -30,54 +30,25 @@ namespace rosbag2_transport
 struct RecordOptions
 {
 public:
-  bool all_topics = false;
-  bool all_services = false;
+  bool all = false;
   bool is_discovery_disabled = false;
   std::vector<std::string> topics;
-  std::vector<std::string> topic_types;
-  std::vector<std::string> services;  // service event topic
-  std::vector<std::string> exclude_topics;
-  std::vector<std::string> exclude_topic_types;
-  std::vector<std::string> exclude_service_events;  // service event topic
   std::string rmw_serialization_format;
   std::chrono::milliseconds topic_polling_interval{100};
   std::string regex = "";
-  std::string exclude_regex = "";
+  std::string exclude = "";
   std::string node_prefix = "";
-  /// \brief Compression mode. Valid values are "file", "message" or "" (no compression).
-  /// \Note: To use compression mode "message", the underlying storage must support this parameter.
-  /// For mcap storage, need to use specific compression options provided via
-  /// StorageOptions::storage_config_uri.
   std::string compression_mode = "";
-  /// \brief Compression format. E.g., "zstd", "bz2", "lz4", etc. Shall be used together with
-  /// compression_mode parameter.
   std::string compression_format = "";
   uint64_t compression_queue_size = 0;
   /// \brief // The number of compression threads
   uint64_t compression_threads = 0;
-  /// \brief Compression threads scheduling priority.
-  /// For Windows the valid values are: THREAD_PRIORITY_LOWEST=-2, THREAD_PRIORITY_BELOW_NORMAL=-1
-  /// and THREAD_PRIORITY_NORMAL=0. For POSIX compatible OSes this is the "nice" value.
-  /// The nice value range is -20 to +19 where -20 is highest, 0 default and +19 is lowest.
-  int32_t compression_threads_priority = 0;
-  /// \brief Path to a YAML file containing topic QoS profile overrides.
-  /// The YAML file must map topic names to rclcpp::QoS profiles.
   std::unordered_map<std::string, rclcpp::QoS> topic_qos_profile_overrides{};
-  /// \brief Include hidden topics. i.e., starting any token of the name with an underscore.
   bool include_hidden_topics = false;
-  /// \brief Include unpublished topics. i.e., topics that have no publishers (only subscribers).
   bool include_unpublished_topics = false;
-  /// \brief Ignore leaf topics. i.e., topics that have no subscribers.
   bool ignore_leaf_topics = false;
-  /// \brief Start recording in paused state if true.
-  /// \Note This parameter is only used during construction of the Recorder class. To pause
-  /// or resume an ongoing recording use the pause and resume services or direct public API.
   bool start_paused = false;
-  /// \brief Use simulated time (if true).
   bool use_sim_time = false;
-  /// \brief Disable keyboard controls if true. This parameter is only used during construction of
-  /// the Recorder class to decide whether to initialize KeyboardHandler class or not.
-  bool disable_keyboard_controls = false;
 };
 
 }  // namespace rosbag2_transport
@@ -88,8 +59,7 @@ template<>
 struct ROSBAG2_TRANSPORT_PUBLIC convert<rosbag2_transport::RecordOptions>
 {
   static Node encode(const rosbag2_transport::RecordOptions & storage_options);
-  static bool decode(
-    const Node & node, rosbag2_transport::RecordOptions & storage_options, int version = 9);
+  static bool decode(const Node & node, rosbag2_transport::RecordOptions & storage_options);
 };
 }  // namespace YAML
 

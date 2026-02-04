@@ -6,10 +6,9 @@ if(NOT CMAKE_C_STANDARD)
   set(CMAKE_C_STANDARD 99)
 endif()
 
-# Default to C++17
+# Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  set(CMAKE_CXX_STANDARD 14)
 endif()
 
 # Windows supplies macros for min and max by default. We should only use min and max from stl
@@ -38,13 +37,12 @@ target_include_directories(${PROJECT_NAME}
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include/${PROJECT_NAME}>)
-target_link_libraries(${PROJECT_NAME}
-  pluginlib::pluginlib
-  rcpputils::rcpputils
-  rcutils::rcutils
-  rosbag2_cpp::rosbag2_cpp
-  rosbag2_storage::rosbag2_storage
-)
+ament_target_dependencies(${PROJECT_NAME}
+  pluginlib
+  rcpputils
+  rcutils
+  rosbag2_cpp
+  rosbag2_storage)
 target_compile_definitions(${PROJECT_NAME} PRIVATE ROSBAG2_COMPRESSION_BUILDING_DLL)
 
 install(
@@ -72,7 +70,6 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   find_package(rclcpp REQUIRED)
   find_package(rosbag2_test_common REQUIRED)
-  find_package(test_msgs REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
   add_library(fake_plugin SHARED
@@ -97,20 +94,13 @@ if(BUILD_TESTING)
 
   ament_add_gmock(test_sequential_compression_reader
     test/rosbag2_compression/test_sequential_compression_reader.cpp)
-  target_link_libraries(test_sequential_compression_reader
-    ${PROJECT_NAME}
-    rosbag2_cpp::rosbag2_cpp
-    rosbag2_storage::rosbag2_storage
-  )
+  target_link_libraries(test_sequential_compression_reader ${PROJECT_NAME})
+  ament_target_dependencies(test_sequential_compression_reader rosbag2_cpp rosbag2_storage)
 
   ament_add_gmock(test_sequential_compression_writer
     test/rosbag2_compression/test_sequential_compression_writer.cpp)
-  target_link_libraries(test_sequential_compression_writer
-    ${PROJECT_NAME}
-    fake_plugin
-    rosbag2_cpp::rosbag2_cpp
-    rosbag2_storage::rosbag2_storage
-  )
+  target_link_libraries(test_sequential_compression_writer ${PROJECT_NAME})
+  ament_target_dependencies(test_sequential_compression_writer rosbag2_cpp rosbag2_storage)
 endif()
 
 ament_package()

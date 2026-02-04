@@ -2,8 +2,7 @@ cmake_minimum_required(VERSION 3.8)
 project(rosbag2_interfaces)
 
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  set(CMAKE_CXX_STANDARD 14)
 endif()
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -18,20 +17,13 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/WriteSplitEvent.msg"
   "srv/Burst.srv"
   "srv/GetRate.srv"
-  "srv/IsDiscoveryRunning.srv"
   "srv/IsPaused.srv"
   "srv/Pause.srv"
-  "srv/Play.srv"
   "srv/PlayNext.srv"
-  "srv/Record.srv"
   "srv/Resume.srv"
   "srv/Seek.srv"
   "srv/SetRate.srv"
   "srv/Snapshot.srv"
-  "srv/SplitBagfile.srv"
-  "srv/StartDiscovery.srv"
-  "srv/Stop.srv"
-  "srv/StopDiscovery.srv"
   "srv/TogglePaused.srv"
   DEPENDENCIES builtin_interfaces
   ADD_LINTER_TESTS

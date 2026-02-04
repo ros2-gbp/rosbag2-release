@@ -12,17 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from ros2bag.api import add_multi_bag_input_arg
-from ros2bag.api import input_bag_arg_to_storage_options
+import argparse
+
 from ros2bag.verb import VerbExtension
 from rosbag2_py import bag_rewrite
+from rosbag2_py import StorageOptions
 
 
 class ConvertVerb(VerbExtension):
     """Given an input bag, write out a new bag with different settings."""
 
     def add_arguments(self, parser, cli_name):
-        add_multi_bag_input_arg(parser, required=True)
+        parser.add_argument(
+            '-i', '--input',
+            required=True,
+            action='append', nargs='+',
+            metavar=('uri', 'storage_id'),
+            help='URI (and optional storage ID) of an input bag. May be provided more than once')
         parser.add_argument(
             '-o', '--output-options',
             type=str, required=True,
@@ -31,6 +37,14 @@ class ConvertVerb(VerbExtension):
                  'objects. See README.md for some examples.')
 
     def main(self, *, args):
-        input_options = input_bag_arg_to_storage_options(args.input)
+        input_options = []
+        for input_bag in args.input:
+            if len(input_bag) > 2:
+                raise argparse.ArgumentTypeError(
+                    f'--input expects 1 or 2 arguments, {len(input_bag)} provided')
+            storage_options = StorageOptions(uri=input_bag[0])
+            if len(input_bag) > 1:
+                storage_options.storage_id = input_bag[1]
+            input_options.append(storage_options)
 
         bag_rewrite(input_options, args.output_options)

@@ -29,10 +29,6 @@ TEST(storage_options, test_yaml_serialization)
   original.storage_preset_profile = "profile";
   original.storage_config_uri = "config_uri";
   original.snapshot_mode = true;
-  original.start_time_ns = 12345000;
-  original.end_time_ns = 23456000;
-  original.custom_data["key1"] = "value1";
-  original.custom_data["key2"] = "value2";
 
   auto node = YAML::convert<rosbag2_storage::StorageOptions>().encode(original);
 
@@ -50,23 +46,4 @@ TEST(storage_options, test_yaml_serialization)
   ASSERT_EQ(original.storage_preset_profile, reconstructed.storage_preset_profile);
   ASSERT_EQ(original.storage_config_uri, reconstructed.storage_config_uri);
   ASSERT_EQ(original.snapshot_mode, reconstructed.snapshot_mode);
-  ASSERT_EQ(original.start_time_ns, reconstructed.start_time_ns);
-  ASSERT_EQ(original.end_time_ns, reconstructed.end_time_ns);
-  ASSERT_EQ(original.custom_data, reconstructed.custom_data);
-}
-
-TEST(storage_options, test_invalid_numeric_value)
-{
-  YAML::Node node;
-  node["uri"] = "some_uri";
-  node["storage_id"] = "some_identification";
-  node["max_bagfile_size"] = "non_numeric_value";
-  try {
-    node.as<rosbag2_storage::StorageOptions>();
-    FAIL() << "Expected YAML::Exception to be thrown";
-  } catch (const YAML::Exception & ex) {
-    std::string error_msg = ex.what();
-    EXPECT_THAT(error_msg, HasSubstr("max_bagfile_size"));
-    EXPECT_THAT(error_msg, HasSubstr("Failed to convert field"));
-  }
 }
