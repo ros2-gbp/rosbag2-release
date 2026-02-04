@@ -1,0 +1,12 @@
+Source: ros-humble-rosbag2-storage-mcap
+Section: misc
+Priority: optional
+Maintainer: Foxglove <ros-tooling@foxglove.dev>
+Build-Depends: debhelper (>= 9.0.0), ros-humble-ament-cmake, ros-humble-ament-cmake-clang-format <!nocheck>, ros-humble-ament-cmake-gmock <!nocheck>, ros-humble-ament-index-cpp, ros-humble-ament-lint-auto <!nocheck>, ros-humble-ament-lint-common <!nocheck>, ros-humble-mcap-vendor, ros-humble-pluginlib, ros-humble-rcpputils <!nocheck>, ros-humble-rcutils, ros-humble-rosbag2-storage, ros-humble-rosbag2-storage-mcap-testdata <!nocheck>, ros-humble-rosbag2-test-common <!nocheck>, ros-humble-std-msgs <!nocheck>, ros-humble-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-humble-rosbag2-storage-mcap
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-humble-ament-index-cpp, ros-humble-mcap-vendor, ros-humble-pluginlib, ros-humble-rcutils, ros-humble-rosbag2-storage, ros-humble-ros-workspace
+Description: rosbag2 storage plugin using the MCAP file format
