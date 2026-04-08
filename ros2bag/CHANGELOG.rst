@@ -2,11 +2,8 @@
 Changelog for package ros2bag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.26.10 (2026-01-21)
+0.26.10 (2026-04-07)
 --------------------
-* add rosbag2_storage_default_plugins to exec_depend of ros2bag. (`#2227 <https://github.com/ros2/rosbag2/issues/2227>`_) (`#2231 <https://github.com/ros2/rosbag2/issues/2231>`_)
-  Co-authored-by: Tomoya Fujita <Tomoya.Fujita@sony.com>
-* Contributors: mergify[bot]
 
 0.26.9 (2025-08-11)
 -------------------
