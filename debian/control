@@ -1,0 +1,12 @@
+Source: ros-jazzy-liblz4-vendor
+Section: misc
+Priority: optional
+Maintainer: Michael Orlov <michael.orlov@apex.ai>
+Build-Depends: debhelper (>= 9.0.0), liblz4-dev, ros-jazzy-ament-cmake, ros-jazzy-ament-cmake-vendor-package, ros-jazzy-ros-workspace
+Homepage: https://github.com/lz4/lz4/
+Standards-Version: 3.9.2
+
+Package: ros-jazzy-liblz4-vendor
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, liblz4-1, liblz4-dev, ros-jazzy-ros-workspace
+Description: LZ4 compression vendor package, providing a dependency for LZ4.
