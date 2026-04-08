@@ -16,9 +16,21 @@
 #define ROSBAG2_PY__FORMAT_BAG_METADATA_HPP_
 
 #include <string>
+#include <unordered_map>
 
+#include "info_sorting_method.hpp"
 #include "rosbag2_storage/bag_metadata.hpp"
 
-std::string format_bag_meta_data(const rosbag2_storage::BagMetadata & metadata);
+namespace rosbag2_py
+{
+
+std::string format_bag_meta_data(
+  const rosbag2_storage::BagMetadata & metadata,
+  bool verbose = false,
+  bool only_topic = false,
+  const std::unordered_map<std::string, uint64_t> & messages_size = {},
+  InfoSortingMethod sort_method = InfoSortingMethod::NAME);
+
+}  // namespace rosbag2_py
 
 #endif  // ROSBAG2_PY__FORMAT_BAG_METADATA_HPP_

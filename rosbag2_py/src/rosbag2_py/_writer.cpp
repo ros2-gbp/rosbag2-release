@@ -23,7 +23,6 @@
 #include "rosbag2_cpp/writer.hpp"
 #include "rosbag2_cpp/writers/sequential_writer.hpp"
 #include "rosbag2_cpp/serialization_format_converter_factory.hpp"
-#include "rosbag2_storage/default_storage_id.hpp"
 #include "rosbag2_storage/ros_helper.hpp"
 #include "rosbag2_storage/storage_filter.hpp"
 #include "rosbag2_storage/storage_interfaces/read_write_interface.hpp"
@@ -49,13 +48,22 @@ public:
     const std::string & topic_name, const std::string & message,
     const rcutils_time_point_value_t & time_stamp)
   {
+    write(topic_name, message, time_stamp, time_stamp);
+  }
+
+  void write(
+    const std::string & topic_name, const std::string & message,
+    const rcutils_time_point_value_t & recv_timestamp,
+    const rcutils_time_point_value_t & send_timestamp)
+  {
     auto bag_message =
       std::make_shared<rosbag2_storage::SerializedBagMessage>();
 
     bag_message->topic_name = topic_name;
     bag_message->serialized_data =
       rosbag2_storage::make_serialized_message(message.c_str(), message.length());
-    bag_message->time_stamp = time_stamp;
+    bag_message->recv_timestamp = recv_timestamp;
+    bag_message->send_timestamp = send_timestamp;
 
     rosbag2_cpp::Writer::write(bag_message);
   }
@@ -98,24 +106,43 @@ PYBIND11_MODULE(_writer, m) {
     pybind11::overload_cast<
       const rosbag2_storage::StorageOptions &, const rosbag2_cpp::ConverterOptions &
     >(&PyWriter::open))
-  .def("write", &PyWriter::write)
+  .def(
+    "write", pybind11::overload_cast<const std::string &, const std::string &,
+    const rcutils_time_point_value_t &>(&PyWriter::write))
+  .def(
+    "write", pybind11::overload_cast<const std::string &, const std::string &,
+    const rcutils_time_point_value_t &, const rcutils_time_point_value_t &>(&PyWriter::write))
   .def("close", &PyWriter::close)
   .def("remove_topic", &PyWriter::remove_topic)
-  .def("create_topic", &PyWriter::create_topic)
+  .def(
+    "create_topic",
+    pybind11::overload_cast<const rosbag2_storage::TopicMetadata &>(&PyWriter::create_topic))
   .def("take_snapshot", &PyWriter::take_snapshot)
+  .def("split_bagfile", &PyWriter::split_bagfile)
   ;
 
   pybind11::class_<PyCompressionWriter>(m, "SequentialCompressionWriter")
-  .def(pybind11::init())
+  .def(pybind11::init<rosbag2_compression::CompressionOptions>())
   .def(
     "open",
     pybind11::overload_cast<
       const rosbag2_storage::StorageOptions &, const rosbag2_cpp::ConverterOptions &
     >(&PyCompressionWriter::open))
-  .def("write", &PyCompressionWriter::write)
+  .def(
+    "write", pybind11::overload_cast<const std::string &, const std::string &,
+    const rcutils_time_point_value_t &>(&PyCompressionWriter::write))
+  .def(
+    "write", pybind11::overload_cast<const std::string &, const std::string &,
+    const rcutils_time_point_value_t &,
+    const rcutils_time_point_value_t &>(&PyCompressionWriter::write))
   .def("remove_topic", &PyCompressionWriter::remove_topic)
-  .def("create_topic", &PyCompressionWriter::create_topic)
+  .def(
+    "create_topic",
+    pybind11::overload_cast<
+      const rosbag2_storage::TopicMetadata &
+    >(&PyCompressionWriter::create_topic))
   .def("take_snapshot", &PyCompressionWriter::take_snapshot)
+  .def("split_bagfile", &PyCompressionWriter::split_bagfile)
   ;
 
   m.def(
@@ -132,9 +159,4 @@ PYBIND11_MODULE(_writer, m) {
     "get_registered_serializers",
     &rosbag2_py::get_registered_serializers,
     "Returns list of serialization format plugins available for rosbag2 recording");
-
-  m.def(
-    "get_default_storage_id",
-    &rosbag2_storage::get_default_storage_id,
-    "Returns the default storage ID used when unspecified in StorageOptions");
 }

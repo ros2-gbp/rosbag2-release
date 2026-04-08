@@ -44,13 +44,15 @@ TEST_F(RosBag2PlayTestFixture, play_bag_file_twice) {
   const float rate = 1.0;
   const bool loop_playback = false;
   double clock_publish_frequency = 0.0;
+  bool clock_publish_per_topic = false;
+  std::vector<std::string> clock_trigger_topics;
   const rclcpp::Duration delay(1, 0);
 
   auto primitive_message1 = get_messages_basic_types()[0];
   primitive_message1->int32_value = test_value;
 
   auto topic_types = std::vector<rosbag2_storage::TopicMetadata>{
-    {"loop_test_topic", "test_msgs/BasicTypes", "", ""}
+    {1u, "loop_test_topic", "test_msgs/BasicTypes", "", {}, ""}
   };
 
   std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages(num_messages,
@@ -67,8 +69,8 @@ TEST_F(RosBag2PlayTestFixture, play_bag_file_twice) {
   auto await_received_messages = sub_->spin_subscriptions();
 
   rosbag2_transport::PlayOptions play_options = {
-    read_ahead_queue_size, "", rate, {}, {}, loop_playback, {},
-    clock_publish_frequency, delay};
+    read_ahead_queue_size, "", rate, {}, {}, "", {}, {}, "", {}, loop_playback, {},
+    clock_publish_frequency, clock_publish_per_topic, clock_trigger_topics, delay};
   auto player = std::make_shared<rosbag2_transport::Player>(
     std::move(
       reader), storage_options_, play_options);
@@ -76,8 +78,10 @@ TEST_F(RosBag2PlayTestFixture, play_bag_file_twice) {
   auto loop_thread = std::async(
     std::launch::async, [&player]() {
       player->play();
+      player->wait_for_playback_to_finish();
       // play again the same bag file
       player->play();
+      player->wait_for_playback_to_finish();
     });
 
   await_received_messages.get();
@@ -104,13 +108,15 @@ TEST_F(RosBag2PlayTestFixture, messages_played_in_loop) {
   const float rate = 1.0;
   const bool loop_playback = true;
   const double clock_publish_frequency = 0.0;
+  bool clock_publish_per_topic = false;
+  std::vector<std::string> clock_trigger_topics;
   const rclcpp::Duration delay(1, 0);
 
   auto primitive_message1 = get_messages_basic_types()[0];
   primitive_message1->int32_value = test_value;
 
   auto topic_types = std::vector<rosbag2_storage::TopicMetadata>{
-    {"loop_test_topic", "test_msgs/BasicTypes", "", ""}
+    {1u, "loop_test_topic", "test_msgs/BasicTypes", "", {}, ""}
   };
 
   std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages(num_messages,
@@ -126,16 +132,15 @@ TEST_F(RosBag2PlayTestFixture, messages_played_in_loop) {
 
   auto await_received_messages = sub_->spin_subscriptions();
 
-  rosbag2_transport::PlayOptions play_options{read_ahead_queue_size, "", rate, {}, {},
-    loop_playback, {}, clock_publish_frequency, delay};
+  rosbag2_transport::PlayOptions play_options{read_ahead_queue_size, "", rate, {}, {}, "",
+    {}, {}, "", {}, loop_playback, {}, clock_publish_frequency, clock_publish_per_topic,
+    clock_trigger_topics, delay};
   auto player = std::make_shared<rosbag2_transport::Player>(
     std::move(
       reader), storage_options_, play_options);
-  std::thread loop_thread(&rosbag2_transport::Player::play, player);
-
+  player->play();
   await_received_messages.get();
   rclcpp::shutdown();
-  loop_thread.join();
 
   auto replayed_test_primitives = sub_->get_received_messages<test_msgs::msg::BasicTypes>(
     "/loop_test_topic");

@@ -22,7 +22,29 @@ class InfoVerb(VerbExtension):
 
     def add_arguments(self, parser, cli_name):  # noqa: D102
         add_standard_reader_args(parser)
+        parser.add_argument(
+            '-t', '--topic-name', action='store_true',
+            help='Only display topic names.'
+        )
+        parser.add_argument(
+            '-v', '--verbose', action='store_true',
+            help='Display request/response information for services'
+        )
+        available_sorting_methods = Info().get_sorting_methods()
+        parser.add_argument(
+            '--sort', default='name', choices=available_sorting_methods,
+            help='Configuration for sorting of output. '
+                 'By default sorts by topic name - use this argument to override.')
 
     def main(self, *, args):  # noqa: D102
+        if args.topic_name and args.verbose:
+            print("Warning! You have set both the '-t' and '-v' parameters. The '-t' parameter "
+                  'will be ignored.')
         m = Info().read_metadata(args.bag_path, args.storage)
-        print(m)
+        if args.verbose:
+            Info().print_output_verbose(args.bag_path, m, args.sort)
+        else:
+            if args.topic_name:
+                Info().print_output_topic_name_only(m, args.sort)
+            else:
+                Info().print_output(m, args.sort)

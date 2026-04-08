@@ -23,12 +23,11 @@
 #ifndef ROSBAG2_CPP__REINDEXER_HPP_
 #define ROSBAG2_CPP__REINDEXER_HPP_
 
+#include <filesystem>
 #include <memory>
 #include <regex>
 #include <string>
 #include <vector>
-
-#include "rcpputils/filesystem_helper.hpp"
 
 #include "rosbag2_cpp/converter.hpp"
 #include "rosbag2_cpp/reader.hpp"
@@ -57,12 +56,8 @@ namespace rosbag2_cpp
 /**
  * Tool to reconstruct bag metadata files in the event of loss or corruption
  *
- * Reindexing is an operation where a bag that is missing a metadata.yaml file can have a new
- *   file created through parsing of the metadata stored within the actual files of the bag.
- *   For instance: Imagine we are working with SQL databases (.db3). We can open the individual
- *   .db3 files within the bag and read their metadata (not the messages themselves) to replicate
- *   a usable metadata.yaml file, so that the bag can once again be read by the standard read
- *   command.
+ * Reindexing recreates metadata.yaml for a bag that is missing that file.
+ * This is done by opening the storage directly and reading the contents to accumulate metadata.
  *
  * Reindexing has some limitations - It cannot perfectly replicate the original metadata file,
  *   since some information known by the program from the start up command cannot be found
@@ -95,27 +90,27 @@ protected:
 
 private:
   std::string regex_bag_pattern_;
-  rcpputils::fs::path base_folder_;   // The folder that the bag files are in
+  std::filesystem::path base_folder_;   // The folder that the bag files are in
   std::shared_ptr<SerializationFormatConverterFactoryInterface> converter_factory_{};
   void get_bag_files(
-    const rcpputils::fs::path & base_folder,
-    std::vector<rcpputils::fs::path> & output);
+    const std::filesystem::path & base_folder,
+    std::vector<std::filesystem::path> & output);
 
   // Prepares the metadata by setting initial values.
   void init_metadata(
-    const std::vector<rcpputils::fs::path> & files,
+    const std::vector<std::filesystem::path> & files,
     const rosbag2_storage::StorageOptions & storage_options);
 
   // Attempts to harvest metadata from all bag files, and aggregates the result
   void aggregate_metadata(
-    const std::vector<rcpputils::fs::path> & files,
+    const std::vector<std::filesystem::path> & files,
     const std::unique_ptr<rosbag2_cpp::readers::SequentialReader> & bag_reader,
     const rosbag2_storage::StorageOptions & storage_options);
 
   // Comparison function for std::sort with our filepath convention
   bool compare_relative_file(
-    const rcpputils::fs::path & first_path,
-    const rcpputils::fs::path & second_path);
+    const std::filesystem::path & first_path,
+    const std::filesystem::path & second_path);
 };
 
 }  // namespace rosbag2_cpp

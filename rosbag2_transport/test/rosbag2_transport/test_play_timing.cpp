@@ -29,6 +29,7 @@
 
 #include "rosbag2_transport_test_fixture.hpp"
 
+using namespace std::chrono_literals;  // NOLINT
 using namespace ::testing;  // NOLINT
 using namespace rosbag2_transport;  // NOLINT
 
@@ -49,14 +50,18 @@ protected:
     auto primitive_message2 = get_messages_strings()[0];
     primitive_message2->string_value = "Hello World 2";
 
-    topics_and_types = {{"topic1", "test_msgs/Strings", "", ""}};
+    topics_and_types = {{1u, "topic1", "test_msgs/Strings", "", {}, ""}};
     messages = {
       serialize_test_message("topic1", 0, primitive_message1),
       serialize_test_message("topic1", 0, primitive_message2)
     };
 
-    messages[0]->time_stamp = 100;
-    messages[1]->time_stamp = messages[0]->time_stamp + message_time_difference.nanoseconds();
+    messages[0]->send_timestamp = 80;
+    messages[0]->recv_timestamp = 90;
+    messages[1]->recv_timestamp = messages[0]->recv_timestamp +
+      message_time_difference.nanoseconds();
+    messages[1]->send_timestamp = messages[0]->send_timestamp +
+      message_time_difference.nanoseconds();
 
     prepared_mock_reader = std::make_unique<MockSequentialReader>();
     prepared_mock_reader->prepare(messages, topics_and_types);
@@ -76,6 +81,28 @@ protected:
   std::unique_ptr<rosbag2_cpp::Reader> reader;
 };
 
+TEST_F(PlayerTestFixture, get_starting_time_returns_correct_value)
+{
+  auto player = std::make_shared<rosbag2_transport::Player>(
+    std::move(reader), storage_options_, play_options_);
+
+  rcutils_time_point_value_t starting_time = player->get_starting_time();
+  // The starting time is the time of the first message in the bag
+  EXPECT_EQ(starting_time, messages[0]->recv_timestamp);
+}
+
+TEST_F(PlayerTestFixture, get_playback_duration_returns_correct_value)
+{
+  auto player = std::make_shared<rosbag2_transport::Player>(
+    std::move(reader), storage_options_, play_options_);
+
+  auto playback_duration = player->get_playback_duration();
+  // The playback duration is the time difference between the first and last message in the bag
+  rcutils_duration_value_t expected_duration =
+    messages.back()->recv_timestamp - messages[0]->recv_timestamp;
+  EXPECT_EQ(playback_duration, expected_duration);
+}
+
 TEST_F(PlayerTestFixture, playing_respects_relative_timing_of_stored_messages)
 {
   auto player = std::make_shared<rosbag2_transport::Player>(
@@ -86,6 +113,7 @@ TEST_F(PlayerTestFixture, playing_respects_relative_timing_of_stored_messages)
   // messages
   auto start = clock.now();
   player->play();
+  player->wait_for_playback_to_finish();
   auto replay_time = clock.now() - start;
   ASSERT_THAT(replay_time, Gt(message_time_difference));
 }
@@ -98,6 +126,7 @@ TEST_F(PlayerTestFixture, playing_rate_2x)
 
   auto start = clock.now();
   player->play();
+  player->wait_for_playback_to_finish();
   auto replay_time = clock.now() - start;
 
   ASSERT_THAT(replay_time, Gt(message_time_difference * 0.5));
@@ -112,6 +141,7 @@ TEST_F(PlayerTestFixture, playing_rate_1x)
 
   auto start = clock.now();
   player->play();
+  player->wait_for_playback_to_finish();
   auto replay_time = clock.now() - start;
   ASSERT_THAT(replay_time, Gt(message_time_difference));
 }
@@ -124,6 +154,7 @@ TEST_F(PlayerTestFixture, playing_rate_halfx)
 
   auto start = clock.now();
   player->play();
+  player->wait_for_playback_to_finish();
   auto replay_time = clock.now() - start;
   ASSERT_THAT(replay_time, Gt(message_time_difference * 2.0));
 }
@@ -137,6 +168,7 @@ TEST_F(PlayerTestFixture, playing_rate_zero)
 
   auto start = clock.now();
   player->play();
+  player->wait_for_playback_to_finish();
   auto replay_time = clock.now() - start;
   ASSERT_THAT(replay_time, Gt(message_time_difference));
 }
@@ -150,16 +182,17 @@ TEST_F(PlayerTestFixture, playing_rate_negative)
 
   auto start = clock.now();
   player->play();
+  player->wait_for_playback_to_finish();
   auto replay_time = clock.now() - start;
   ASSERT_THAT(replay_time, Gt(message_time_difference));
 }
 
 TEST_F(PlayerTestFixture, playing_respects_delay)
 {
-  rclcpp::Duration delay_margin(1, 0);
+  rclcpp::Duration delay_margin(0.5s);
 
-  // Sleep 5.0 seconds before play
-  play_options_.delay = rclcpp::Duration(5, 0);
+  // Sleep 1.0 seconds before play
+  play_options_.delay = rclcpp::Duration(1, 0);
   auto lower_expected_duration = message_time_difference + play_options_.delay;
   auto upper_expected_duration = message_time_difference + play_options_.delay + delay_margin;
   auto player = std::make_shared<rosbag2_transport::Player>(
@@ -167,6 +200,7 @@ TEST_F(PlayerTestFixture, playing_respects_delay)
 
   auto start = clock.now();
   player->play();
+  player->wait_for_playback_to_finish();
   auto replay_time = clock.now() - start;
 
   EXPECT_THAT(replay_time, Gt(lower_expected_duration));
@@ -185,6 +219,7 @@ TEST_F(PlayerTestFixture, play_ignores_invalid_delay)
 
   auto start = clock.now();
   player->play();
+  player->wait_for_playback_to_finish();
   auto replay_time = clock.now() - start;
 
   EXPECT_THAT(replay_time, Gt(lower_expected_duration));
@@ -206,6 +241,7 @@ TEST_F(PlayerTestFixture, play_respects_start_offset)
 
   auto start = clock.now();
   player->play();
+  player->wait_for_playback_to_finish();
   auto replay_duration = clock.now() - start;
 
   EXPECT_THAT(replay_duration, Gt(lower_expected_duration));
@@ -225,6 +261,7 @@ TEST_F(PlayerTestFixture, play_ignores_invalid_start_offset)
 
   auto start = clock.now();
   player->play();
+  player->wait_for_playback_to_finish();
   auto replay_duration = clock.now() - start;
 
   EXPECT_THAT(replay_duration, Gt(lower_expected_duration));

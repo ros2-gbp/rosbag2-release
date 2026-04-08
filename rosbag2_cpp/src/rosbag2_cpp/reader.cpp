@@ -28,7 +28,11 @@ namespace rosbag2_cpp
 
 Reader::Reader(std::unique_ptr<reader_interfaces::BaseReaderInterface> reader_impl)
 : reader_impl_(std::move(reader_impl))
-{}
+{
+  if (!reader_impl_) {
+    throw std::invalid_argument("Reader implementation is a nullptr.");
+  }
+}
 
 Reader::~Reader()
 {
@@ -56,6 +60,11 @@ void Reader::close()
   reader_impl_->close();
 }
 
+bool Reader::set_read_order(const rosbag2_storage::ReadOrder & order)
+{
+  return reader_impl_->set_read_order(order);
+}
+
 bool Reader::has_next()
 {
   return reader_impl_->has_next();
@@ -74,6 +83,12 @@ const rosbag2_storage::BagMetadata & Reader::get_metadata() const
 std::vector<rosbag2_storage::TopicMetadata> Reader::get_all_topics_and_types() const
 {
   return reader_impl_->get_all_topics_and_types();
+}
+
+void Reader::get_all_message_definitions(
+  std::vector<rosbag2_storage::MessageDefinition> & definitions)
+{
+  return reader_impl_->get_all_message_definitions(definitions);
 }
 
 void Reader::set_filter(const rosbag2_storage::StorageFilter & storage_filter)

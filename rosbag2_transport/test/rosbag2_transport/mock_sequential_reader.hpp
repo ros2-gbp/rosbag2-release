@@ -36,16 +36,31 @@ public:
 
   void close() override {}
 
+  bool set_read_order(const rosbag2_storage::ReadOrder &) override
+  {
+    return true;
+  }
+
   bool has_next() override
   {
-    if (filter_.topics.empty()) {
+    if (filter_.topics.empty() && filter_.services_events.empty()) {
       return num_read_ < messages_.size();
     }
 
     while (num_read_ < messages_.size()) {
-      for (const auto & filter_topic : filter_.topics) {
-        if (!messages_[num_read_]->topic_name.compare(filter_topic)) {
-          return true;
+      if (!filter_.topics.empty()) {
+        for (const auto & filter_topic : filter_.topics) {
+          if (!messages_[num_read_]->topic_name.compare(filter_topic)) {
+            return true;
+          }
+        }
+      }
+
+      if (!filter_.services_events.empty()) {
+        for (const auto & filter_service : filter_.services_events) {
+          if (!messages_[num_read_]->topic_name.compare(filter_service)) {
+            return true;
+          }
         }
       }
       num_read_++;
@@ -77,6 +92,12 @@ public:
     return topics_;
   }
 
+  void get_all_message_definitions(std::vector<rosbag2_storage::MessageDefinition> & definitions)
+  override
+  {
+    definitions.clear();
+  }
+
   void set_filter(const rosbag2_storage::StorageFilter & storage_filter) override
   {
     filter_ = storage_filter;
@@ -90,7 +111,11 @@ public:
   void seek(const rcutils_time_point_value_t & timestamp) override
   {
     seek_time_ = timestamp;
-    num_read_ = 0;
+    for (num_read_ = 0; num_read_ < messages_.size(); num_read_++) {
+      if (messages_[num_read_]->recv_timestamp >= seek_time_) {
+        break;
+      }
+    }
   }
 
   void
@@ -107,6 +132,16 @@ public:
     std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages,
     std::vector<rosbag2_storage::TopicMetadata> topics)
   {
+    metadata_.message_count = messages.size();
+    if (!messages.empty()) {
+      const auto message_timestamp = std::chrono::time_point<std::chrono::high_resolution_clock>(
+        std::chrono::nanoseconds(messages[0]->recv_timestamp));
+      metadata_.starting_time = message_timestamp;
+    }
+    metadata_.duration = std::chrono::nanoseconds(messages.back()->recv_timestamp -
+      std::chrono::duration_cast<std::chrono::nanoseconds>(
+        metadata_.starting_time.time_since_epoch()).count());
+
     messages_ = std::move(messages);
     topics_ = std::move(topics);
   }
