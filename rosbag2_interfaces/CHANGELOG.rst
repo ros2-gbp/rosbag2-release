@@ -2,11 +2,8 @@
 Changelog for package rosbag2_interfaces
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.26.10 (2026-01-21)
+0.26.10 (2026-04-07)
 --------------------
-* [jazzy] Add Record, Stop, StartDiscovery, StopDiscovery and IsDiscoveryRunning services for Recorder (backport `#2248 <https://github.com/ros2/rosbag2/issues/2248>`_) (`#2309 <https://github.com/ros2/rosbag2/issues/2309>`_)
-  Co-authored-by: Michael Orlov <morlovmr@gmail.com>
-* Contributors: mergify[bot]
 
 0.26.9 (2025-08-11)
 -------------------
