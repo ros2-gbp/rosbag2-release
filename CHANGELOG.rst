@@ -2,13 +2,12 @@
 Changelog for package rosbag2_compression
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.26.10 (2026-01-21)
+0.26.10 (2026-04-07)
 --------------------
-* [jazzy] Make topics persistent between writer's close() and open() API calls. (backport `#2229 <https://github.com/ros2/rosbag2/issues/2229>`_) (`#2243 <https://github.com/ros2/rosbag2/issues/2243>`_)
-  Co-authored-by: Michael Orlov <morlovmr@gmail.com>
-* Address flakiness in the recorder tests with small cache size (`#2203 <https://github.com/ros2/rosbag2/issues/2203>`_) (`#2207 <https://github.com/ros2/rosbag2/issues/2207>`_)
-  Co-authored-by: Michael Orlov <morlovmr@gmail.com>
-* Contributors: mergify[bot]
+* Fix for a possible race condition in compression writer on close
+  (`#2362 <https://github.com/ros2/rosbag2/issues/2362>`_)
+  (`#2381 <https://github.com/ros2/rosbag2/issues/2381>`_)
+* Contributors: Michael Orlov <morlovmr@gmail.com>, mergify[bot]
 
 0.26.9 (2025-08-11)
 -------------------
