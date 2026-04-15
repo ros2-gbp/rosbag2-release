@@ -28,7 +28,11 @@ namespace rosbag2_cpp
 
 Reader::Reader(std::unique_ptr<reader_interfaces::BaseReaderInterface> reader_impl)
 : reader_impl_(std::move(reader_impl))
-{}
+{
+  if (!reader_impl_) {
+    throw std::invalid_argument("Reader implementation is a nullptr.");
+  }
+}
 
 Reader::~Reader()
 {
@@ -105,6 +109,11 @@ void Reader::seek(const rcutils_time_point_value_t & timestamp)
 void Reader::add_event_callbacks(bag_events::ReaderEventCallbacks & callbacks)
 {
   reader_impl_->add_event_callbacks(callbacks);
+}
+
+bool Reader::has_callback_for_event(bag_events::BagEvent event) const
+{
+  return reader_impl_->has_callback_for_event(event);
 }
 
 }  // namespace rosbag2_cpp
