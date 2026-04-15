@@ -119,7 +119,11 @@ public:
   void seek(const rcutils_time_point_value_t & timestamp) override
   {
     seek_time_ = timestamp;
-    num_read_ = 0;
+    for (num_read_ = 0; num_read_ < messages_.size(); num_read_++) {
+      if (messages_[num_read_]->recv_timestamp >= seek_time_) {
+        break;
+      }
+    }
   }
 
   void
@@ -132,6 +136,11 @@ public:
     }
   }
 
+  bool has_callback_for_event(rosbag2_cpp::bag_events::BagEvent event) const override
+  {
+    return callback_manager_.has_callback_for_event(event);
+  }
+
   void prepare(
     std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages,
     std::vector<rosbag2_storage::TopicMetadata> topics)
@@ -142,6 +151,10 @@ public:
         std::chrono::nanoseconds(messages[0]->recv_timestamp));
       metadata_.starting_time = message_timestamp;
     }
+    metadata_.duration = std::chrono::nanoseconds(messages.back()->recv_timestamp -
+      std::chrono::duration_cast<std::chrono::nanoseconds>(
+        metadata_.starting_time.time_since_epoch()).count());
+
     messages_ = std::move(messages);
     topics_ = std::move(topics);
   }

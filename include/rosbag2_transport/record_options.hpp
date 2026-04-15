@@ -42,12 +42,21 @@ public:
   std::vector<std::string> exclude_topic_types;
   std::vector<std::string> exclude_service_events;  // service event topics list
   std::vector<std::string> exclude_actions;         // actions name list
+  // rmw_serialization_format deprecated. Use output_serialization_format instead
   std::string rmw_serialization_format;
+  std::string input_serialization_format;
+  std::string output_serialization_format;
   std::chrono::milliseconds topic_polling_interval{100};
   std::string regex = "";
   std::string exclude_regex = "";
   std::string node_prefix = "";
+  /// \brief Compression mode. Valid values are "file", "message" or "" (no compression).
+  /// \Note: To use compression mode "message", the underlying storage must support this parameter.
+  /// For mcap storage, need to use specific compression options provided via
+  /// StorageOptions::storage_config_uri.
   std::string compression_mode = "";
+  /// \brief Compression format. E.g., "zstd", "bz2", "lz4", etc. Shall be used together with
+  /// compression_mode parameter.
   std::string compression_format = "";
   uint64_t compression_queue_size = 0;
   /// \brief // The number of compression threads
@@ -57,13 +66,45 @@ public:
   /// and THREAD_PRIORITY_NORMAL=0. For POSIX compatible OSes this is the "nice" value.
   /// The nice value range is -20 to +19 where -20 is highest, 0 default and +19 is lowest.
   int32_t compression_threads_priority = 0;
+  /// \brief Path to a YAML file containing topic QoS profile overrides.
+  /// The YAML file must map topic names to rclcpp::QoS profiles.
   std::unordered_map<std::string, rclcpp::QoS> topic_qos_profile_overrides{};
+  /// \brief Include hidden topics. i.e., starting any token of the name with an underscore.
   bool include_hidden_topics = false;
+  /// \brief Include unpublished topics. i.e., topics that have no publishers (only subscribers).
   bool include_unpublished_topics = false;
+  /// \brief Ignore leaf topics. i.e., topics that have no subscribers.
   bool ignore_leaf_topics = false;
+  /// \brief Start recording in paused state if true.
+  /// \Note This parameter is only used during construction of the Recorder class. To pause
+  /// or resume an ongoing recording use the pause and resume services or direct public API.
   bool start_paused = false;
+  /// \brief Use simulated time (if true).
   bool use_sim_time = false;
+  /// \brief URI of where to read static topics from.
+  std::string static_topics_uri = "";
+  /// \brief Disable keyboard controls if true. This parameter is only used during construction of
+  /// the Recorder class to decide whether to initialize KeyboardHandler class or not.
   bool disable_keyboard_controls = false;
+  /// \brief Maximum rate in times per second (Hz) at which the statistics about lost messages
+  /// will be published. If set to 0, no statistics will be published. The value must be greater
+  /// than or equal to 0 and less than or equal to 1000.
+  float statistics_max_publishing_rate = 1.0f;
+
+  /// \brief Per-topic retention depth for repeating transient-local messages on split/snapshot.
+  /// Empty map disables the feature.
+  std::unordered_map<std::string, size_t> repeat_transient_local_messages{};
+
+  /// \brief Global retention depth for auto-detecting and repeating all transient-local topics
+  /// on split/snapshot. When non-zero, any subscribed topic whose publishers all offer
+  /// TRANSIENT_LOCAL durability will automatically be treated as a repeat-transient-local topic
+  /// with this depth, unless an explicit per-topic entry exists in
+  /// repeat_transient_local_messages. 0 disables the feature.
+  uint32_t repeat_all_transient_local_depth = 0;
+
+  /// Note: Please don't forget to update the YAML serialization and deserialization logic in
+  /// `record_options.cpp` and the test case `test_yaml_serialization_deserialization`
+  /// in `test_record_options.cpp` when updating the fields in RecordOptions.
 };
 
 }  // namespace rosbag2_transport
