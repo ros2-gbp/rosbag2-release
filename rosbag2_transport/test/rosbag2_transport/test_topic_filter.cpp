@@ -27,6 +27,44 @@
 
 using namespace ::testing;  // NOLINT
 
+// Test class to expose protected methods for testing
+class TopicFilterForTest : public rosbag2_transport::TopicFilter
+{
+public:
+  explicit TopicFilterForTest(
+    rosbag2_transport::RecordOptions record_options,
+    rclcpp::node_interfaces::NodeGraphInterface::SharedPtr node_graph = nullptr,
+    bool allow_unknown_types = false)
+  : TopicFilter(std::move(record_options), node_graph, allow_unknown_types) {}
+
+  // Expose protected methods
+  using TopicFilter::topic_selected_by_lists_or_regex;
+  using TopicFilter::take_topic;
+  using TopicFilter::type_is_known;
+
+  // Getter for the caches to verify caching functionality
+  std::unordered_map<std::string, bool> & get_topic_selected_by_lists_or_regex_cache()
+  {
+    return topic_selected_by_lists_or_regex_cache_;
+  }
+
+  // Getter for the delimiter constant
+  static std::string get_topic_name_and_type_delimiter()
+  {
+    return kTopicNameTypeDelimiter_;
+  }
+
+  std::unordered_map<std::string, bool> & get_known_topic_types_cache()
+  {
+    return known_topic_types_cache_;
+  }
+
+  const std::unordered_set<std::string> & get_already_warned_unknown_types() const
+  {
+    return already_warned_unknown_types_;
+  }
+};
+
 class TestTopicFilter : public Test
 {
 protected:
@@ -673,4 +711,304 @@ TEST_F(TestTopicFilter, all_topics_and_all_services_overrides_regex)
   rosbag2_transport::TopicFilter filter{record_options, nullptr, true};
   auto filtered_topics = filter.filter_topics(topics_services_actions_with_types_);
   EXPECT_THAT(filtered_topics, SizeIs(10));
+}
+
+TEST_F(TestTopicFilter, test_topic_selected_by_lists_or_regex_caching) {
+  // Create a TopicFilterForTest with simple options
+  rosbag2_transport::RecordOptions record_options{};
+  record_options.all_topics = true;
+  TopicFilterForTest filter{record_options, nullptr, true};
+
+  const std::string topic_name1 = "/planning1";
+  const std::string topic_name2 = "/planning2";
+  const std::string topic_type = "planning_topic_type";
+  const std::string topic_name_type_delimiter = filter.get_topic_name_and_type_delimiter();
+
+  // Initial cache should be empty
+  EXPECT_TRUE(filter.get_topic_selected_by_lists_or_regex_cache().empty());
+
+  // First take_topic call should add to cache
+  // Note: We are not using topic_selected_by_lists_or_regex(...) directly here because the caching
+  // for the selected topics implemented in the take_topic(...)
+  EXPECT_TRUE(filter.take_topic(topic_name1, {topic_type}));
+  EXPECT_EQ(filter.get_topic_selected_by_lists_or_regex_cache().size(), 1);
+  auto find_in_cache_it =
+    filter.get_topic_selected_by_lists_or_regex_cache().find(
+      topic_name1 + topic_name_type_delimiter + topic_type);
+  ASSERT_TRUE(find_in_cache_it != filter.get_topic_selected_by_lists_or_regex_cache().end());
+  ASSERT_TRUE(find_in_cache_it->second);
+
+  // Second call with same parameters should use cache
+  find_in_cache_it->second = false;  // Modify cached value to test that cache being used
+  EXPECT_FALSE(filter.take_topic(topic_name1, {topic_type}));
+  EXPECT_EQ(filter.get_topic_selected_by_lists_or_regex_cache().size(), 1);  // Cache size unchanged
+
+  // Call with different parameters should add new entry
+  EXPECT_TRUE(filter.take_topic(topic_name2, {topic_type}));
+  EXPECT_EQ(filter.get_topic_selected_by_lists_or_regex_cache().size(), 2);
+}
+
+TEST_F(TestTopicFilter, test_type_is_known_caching) {
+  // Create a TopicFilterForTest with allow_unknown_types = true
+  rosbag2_transport::RecordOptions record_options{};
+  TopicFilterForTest filter{record_options, nullptr, true};
+
+  // Initial cache should be empty
+  EXPECT_TRUE(filter.get_known_topic_types_cache().empty());
+  EXPECT_TRUE(filter.get_already_warned_unknown_types().empty());
+
+  // First call for unknown type should add to cache and set already_warned_unknown_types
+  testing::internal::CaptureStderr();
+  EXPECT_FALSE(filter.type_is_known("/planning1", "planning_topic_type"));
+  std::string output = testing::internal::GetCapturedStderr();
+  EXPECT_EQ(filter.get_already_warned_unknown_types().size(), 1);
+  EXPECT_THAT(output, HasSubstr("Topic '/planning1' has unknown type 'planning_topic_type'"));
+
+  EXPECT_EQ(filter.get_known_topic_types_cache().size(), 1);
+  auto find_in_cache_it = filter.get_known_topic_types_cache().find("planning_topic_type");
+  ASSERT_TRUE(find_in_cache_it != filter.get_known_topic_types_cache().end());
+  ASSERT_FALSE(find_in_cache_it->second);
+
+  // Second call with same type should use cache and not warn again
+  find_in_cache_it->second = true;  // Modify cached value to true to test that cache being used
+  testing::internal::CaptureStderr();
+  EXPECT_TRUE(filter.type_is_known("/planning2", "planning_topic_type"));
+  std::string output2 = testing::internal::GetCapturedStderr();
+  EXPECT_TRUE(output2.empty());
+  EXPECT_EQ(filter.get_known_topic_types_cache().size(), 1);  // Cache size unchanged
+}
+
+TEST_F(TestTopicFilter, test_filter_topics_uses_caching) {
+  rosbag2_transport::RecordOptions record_options{};
+  record_options.all_topics = true;
+  TopicFilterForTest filter{record_options, nullptr, false};
+
+  // Initial caches should be empty
+  EXPECT_TRUE(filter.get_topic_selected_by_lists_or_regex_cache().empty());
+  EXPECT_TRUE(filter.get_known_topic_types_cache().empty());
+
+  // First call should populate caches
+  auto filtered_topics = filter.filter_topics(topics_services_actions_with_types_);
+  // No known topic types, so no topics pass filter
+  EXPECT_THAT(filtered_topics, SizeIs(0));
+
+  // Should have entries in both caches now
+  EXPECT_FALSE(filter.get_topic_selected_by_lists_or_regex_cache().empty());
+  EXPECT_FALSE(filter.get_known_topic_types_cache().empty());
+
+  // Test that calling filter_topics again uses the caches
+  for (auto & [topic_type, is_known] : filter.get_known_topic_types_cache()) {
+    EXPECT_FALSE(is_known) << "topic_type: " << topic_type;  // Expect that all types are unknown
+    // Set all types to known to test that caching is used and some topics are returned
+    is_known = true;
+  }
+
+  auto filtered_topics2 = filter.filter_topics(topics_services_actions_with_types_);
+  EXPECT_THAT(filtered_topics2, SizeIs(Gt(0)));  // Should have some topics now
+}
+
+TEST_F(TestTopicFilter, topic_selected_by_lists_or_regex_service_topics) {
+  // Test specifically for service topic selection with regex
+  rosbag2_transport::RecordOptions record_options{};
+  record_options.regex = "^/planning_service";
+  TopicFilterForTest filter{record_options, nullptr, true};
+
+  EXPECT_TRUE(filter.topic_selected_by_lists_or_regex(
+    "/planning_service/_service_event", "service/srv/planning_service_Event"));
+  EXPECT_FALSE(filter.topic_selected_by_lists_or_regex(
+    "/invalid_service/_service_event", "service/srv/planning_service_Event"));
+}
+
+TEST_F(TestTopicFilter, topic_selected_by_lists_or_regex_action_topics) {
+  // Test specifically for action topic selection with regex
+  rosbag2_transport::RecordOptions record_options{};
+  record_options.regex = "^/planning_action";
+  TopicFilterForTest filter{record_options, nullptr, true};
+
+  EXPECT_TRUE(filter.topic_selected_by_lists_or_regex(
+    "/planning_action/_action/status", "action_msgs/msg/GoalStatusArray"));
+  EXPECT_TRUE(filter.topic_selected_by_lists_or_regex(
+    "/planning_action/_action/feedback", "unknown_pkg/action/Planning_FeedbackMessage"));
+  EXPECT_FALSE(filter.topic_selected_by_lists_or_regex(
+    "/invalid_action/_action/status", "action_msgs/msg/GoalStatusArray"));
+}
+
+TEST_F(TestTopicFilter, take_topic_uses_cache) {
+  rosbag2_transport::RecordOptions record_options{};
+  record_options.all_topics = true;
+  TopicFilterForTest filter{record_options, nullptr, false};
+
+  const std::string topic_name = "/planning_service";
+  const std::string topic_type = "planning_topic_type";
+  const std::string topic_name_type_delimiter = filter.get_topic_name_and_type_delimiter();
+
+  // Initial caches should be empty
+  EXPECT_TRUE(filter.get_topic_selected_by_lists_or_regex_cache().empty());
+  EXPECT_TRUE(filter.get_known_topic_types_cache().empty());
+
+  // First call should populate caches
+  EXPECT_FALSE(filter.take_topic(topic_name, {topic_type}));
+
+  // Should have entries in both caches now
+  EXPECT_FALSE(filter.get_topic_selected_by_lists_or_regex_cache().empty());
+  EXPECT_FALSE(filter.get_known_topic_types_cache().empty());
+
+  auto find_in_known_topics_cache_it = filter.get_known_topic_types_cache().find(topic_type);
+  ASSERT_TRUE(find_in_known_topics_cache_it != filter.get_known_topic_types_cache().end());
+  ASSERT_FALSE(find_in_known_topics_cache_it->second);
+  find_in_known_topics_cache_it->second = true;  // Set to known type to allow topic to pass filter
+
+  // Check that calling again should use the known topic types cache
+  EXPECT_TRUE(filter.take_topic(topic_name, {topic_type}));
+
+  // Check that topic_selected_by_lists_or_regex_cache is used
+  auto find_in_selected_topics_cache_it =
+    filter.get_topic_selected_by_lists_or_regex_cache().find(
+     topic_name + topic_name_type_delimiter + topic_type);
+  ASSERT_TRUE(find_in_selected_topics_cache_it !=
+              filter.get_topic_selected_by_lists_or_regex_cache().end());
+  EXPECT_TRUE(find_in_selected_topics_cache_it->second);
+  // Modify cached value to test that cache being used
+  find_in_selected_topics_cache_it->second = false;
+  EXPECT_FALSE(filter.take_topic(topic_name, {topic_type}));
+}
+
+// Minimal stub for NodeGraphInterface to simulate unpublished topics
+class UnpublishedNodeGraphStub : public rclcpp::node_interfaces::NodeGraphInterface
+{
+public:
+  // Return empty publishers for any topic to mark it unpublished
+  std::vector<rclcpp::TopicEndpointInfo> get_publishers_info_by_topic(
+    const std::string & /*topic_name*/,
+    bool /*no_mangle*/ = false) const override
+  {
+    return {};
+  }
+
+  // Return empty subscriptions; not relevant for this test
+  std::vector<rclcpp::TopicEndpointInfo> get_subscriptions_info_by_topic(
+    const std::string & /*topic_name*/,
+    bool /*no_mangle*/ = false) const override
+  {
+    return {};
+  }
+
+  // Topics/services names and types
+  std::map<std::string, std::vector<std::string>> get_topic_names_and_types(
+    bool /*no_demangle*/ = false) const override
+  {
+    return {};
+  }
+
+  std::map<std::string, std::vector<std::string>> get_service_names_and_types() const override
+  {
+    return {};
+  }
+
+  std::map<std::string, std::vector<std::string>> get_service_names_and_types_by_node(
+    const std::string & /*node_name*/,
+    const std::string & /*namespace_*/) const override
+  {
+    return {};
+  }
+
+  std::map<std::string, std::vector<std::string>> get_client_names_and_types_by_node(
+    const std::string & /*node_name*/,
+    const std::string & /*namespace_*/) const override
+  {
+    return {};
+  }
+
+  std::map<std::string, std::vector<std::string>> get_publisher_names_and_types_by_node(
+    const std::string & /*node_name*/,
+    const std::string & /*namespace_*/,
+    bool /*no_demangle*/ = false) const override
+  {
+    return {};
+  }
+
+  std::map<std::string, std::vector<std::string>> get_subscriber_names_and_types_by_node(
+    const std::string & /*node_name*/,
+    const std::string & /*namespace_*/,
+    bool /*no_demangle*/ = false) const override
+  {
+    return {};
+  }
+
+  // Node names related APIs
+  std::vector<std::string> get_node_names() const override {return {};}
+
+  std::vector<std::tuple<std::string, std::string, std::string>>
+  get_node_names_with_enclaves() const override {return {};}
+
+  std::vector<std::pair<std::string, std::string>>
+  get_node_names_and_namespaces() const override {return {};}
+
+  // Counts
+  size_t count_publishers(const std::string & /*topic_name*/) const override {return 0;}
+  size_t count_subscribers(const std::string & /*topic_name*/) const override {return 0;}
+  size_t count_clients(const std::string & /*service_name*/) const override {return 0;}
+  size_t count_services(const std::string & /*service_name*/) const override {return 0;}
+
+  // Graph condition/event APIs
+  const rcl_guard_condition_t * get_graph_guard_condition() const override {return nullptr;}
+  void notify_graph_change() override {}
+  void notify_shutdown() override {}
+  rclcpp::Event::SharedPtr get_graph_event() override {return nullptr;}
+  void wait_for_graph_change(
+    rclcpp::Event::SharedPtr /*event*/,
+    std::chrono::nanoseconds /*timeout*/) override {}
+  size_t count_graph_users() const override {return 0;}
+
+  // Parameter/service endpoint info APIs
+  std::vector<rclcpp::ServiceEndpointInfo> get_clients_info_by_service(
+    const std::string & /*service_name*/, bool /*no_mangle*/ = false) const override
+  {
+    return {};
+  }
+
+  std::vector<rclcpp::ServiceEndpointInfo> get_servers_info_by_service(
+    const std::string & /*service_name*/, bool /*no_mangle*/ = false) const override
+  {
+    return {};
+  }
+};
+
+TEST_F(TestTopicFilter, static_topics_are_not_filtered_by_unpublished_option)
+{
+  // Prepare topics: one static and one regular
+  std::map<std::string, std::vector<std::string>> topics_and_types {
+    {"/static_topic1", {"test_msgs/BasicTypes"}},
+    {"/static_topic2", {"test_msgs/BasicTypes"}},
+    {"/regular_topic1", {"test_msgs/BasicTypes"}},
+    {"/regular_topic2", {"test_msgs/BasicTypes"}},
+  };
+
+  rosbag2_transport::RecordOptions record_options;
+  record_options.topics = {"/static_topic", "/regular_topic"};
+  record_options.include_unpublished_topics = false;  // filter unpublished topics
+
+  // Provide static topic list; "/static_topic" should bypass unpublished filtering
+  std::vector<std::pair<std::string, std::string>> static_topics_and_types = {
+    {"/static_topic1", "test_msgs/BasicTypes"},
+    {"/static_topic2", "test_msgs/BasicTypes"},
+  };
+
+  auto node_graph = std::make_shared<UnpublishedNodeGraphStub>();
+
+  rosbag2_transport::TopicFilter filter{
+    record_options,
+    node_graph,
+    true,    // allow unknown types to avoid type filtering noise
+    static_topics_and_types
+  };
+
+  auto filtered_topics = filter.filter_topics(topics_and_types);
+
+  // Expect static topic remains, regular unpublished topics are filtered out
+  ASSERT_EQ(2u, filtered_topics.size());
+  EXPECT_TRUE(filtered_topics.find("/static_topic1") != filtered_topics.end());
+  EXPECT_TRUE(filtered_topics.find("/static_topic2") != filtered_topics.end());
+  EXPECT_FALSE(filtered_topics.find("/regular_topic1") != filtered_topics.end());
+  EXPECT_FALSE(filtered_topics.find("/regular_topic2") != filtered_topics.end());
 }
