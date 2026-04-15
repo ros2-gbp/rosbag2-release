@@ -67,17 +67,18 @@ public:
 
     ON_CALL(*storage_, set_read_order).WillByDefault(Return(true));
 
-    ON_CALL(
-      *storage_,
-      write(An<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>>())).WillByDefault(
-      [this](std::shared_ptr<const rosbag2_storage::SerializedBagMessage> serialized_message) {
+    ON_CALL(*storage_,
+            write_message(An<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>>()))
+    .WillByDefault(
+      [this](std::shared_ptr<const rosbag2_storage::SerializedBagMessage> serialized_message)
+      {
         mock_storage_data_.push_back(serialized_message);
-      });
+        return true;
+      }
+    );
 
-    using VectorSharedBagMessages =
-      std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>>;
-
-    EXPECT_CALL(*storage_, write(An<const VectorSharedBagMessages &>())).Times(0);
+    EXPECT_CALL(*storage_,
+                write_messages(An<const rosbag2_storage::SerializedBagMessages &>())).Times(0);
 
     EXPECT_CALL(*storage_, get_bagfile_size()).Times(0);
   }
@@ -145,7 +146,14 @@ TEST_F(SerializationConverterTest, default_rmw_converter_can_deserialize) {
 
   auto rmw_converter =
     std::make_unique<rosbag2_cpp::RMWImplementedConverter>(rmw_serialization_format);
-
+  auto dummy_serialized_msg = std::make_shared<rosbag2_storage::SerializedBagMessage>();
+  const rosidl_message_type_support_t * dummy_type_support = nullptr;
+  EXPECT_THROW(
+    rmw_converter->deserialize(
+      dummy_serialized_msg,
+      dummy_type_support,
+      nullptr
+    ), std::runtime_error);
   EXPECT_CALL(*converter_factory_, load_serializer(mock_serialization_format))
   .WillOnce(Return(ByMove(std::move(mock_converter))));
   EXPECT_CALL(*converter_factory_, load_deserializer(rmw_serialization_format))
@@ -193,7 +201,14 @@ TEST_F(SerializationConverterTest, default_rmw_converter_can_serialize) {
 
   auto rmw_converter =
     std::make_unique<rosbag2_cpp::RMWImplementedConverter>(rmw_serialization_format);
-
+  auto dummy_ros_message = std::make_shared<rosbag2_cpp::rosbag2_introspection_message_t>();
+  const rosidl_message_type_support_t * dummy_type_support = nullptr;
+  EXPECT_THROW(
+    rmw_converter->serialize(
+      dummy_ros_message,
+      dummy_type_support,
+      nullptr
+    ), std::runtime_error);
   EXPECT_CALL(*converter_factory_, load_serializer(rmw_serialization_format))
   .WillOnce(Return(ByMove(std::move(rmw_converter))));
   EXPECT_CALL(*converter_factory_, load_deserializer(mock_serialization_format))
