@@ -56,8 +56,11 @@ protected:
       serialize_test_message("topic1", 0, primitive_message2)
     };
 
-    messages[0]->recv_timestamp = 100;
+    messages[0]->send_timestamp = 80;
+    messages[0]->recv_timestamp = 90;
     messages[1]->recv_timestamp = messages[0]->recv_timestamp +
+      message_time_difference.nanoseconds();
+    messages[1]->send_timestamp = messages[0]->send_timestamp +
       message_time_difference.nanoseconds();
 
     prepared_mock_reader = std::make_unique<MockSequentialReader>();
@@ -77,6 +80,28 @@ protected:
   std::unique_ptr<MockSequentialReader> prepared_mock_reader;
   std::unique_ptr<rosbag2_cpp::Reader> reader;
 };
+
+TEST_F(PlayerTestFixture, get_starting_time_returns_correct_value)
+{
+  auto player = std::make_shared<rosbag2_transport::Player>(
+    std::move(reader), storage_options_, play_options_);
+
+  rcutils_time_point_value_t starting_time = player->get_starting_time();
+  // The starting time is the time of the first message in the bag
+  EXPECT_EQ(starting_time, messages[0]->recv_timestamp);
+}
+
+TEST_F(PlayerTestFixture, get_playback_duration_returns_correct_value)
+{
+  auto player = std::make_shared<rosbag2_transport::Player>(
+    std::move(reader), storage_options_, play_options_);
+
+  auto playback_duration = player->get_playback_duration();
+  // The playback duration is the time difference between the first and last message in the bag
+  rcutils_duration_value_t expected_duration =
+    messages.back()->recv_timestamp - messages[0]->recv_timestamp;
+  EXPECT_EQ(playback_duration, expected_duration);
+}
 
 TEST_F(PlayerTestFixture, playing_respects_relative_timing_of_stored_messages)
 {
@@ -164,19 +189,34 @@ TEST_F(PlayerTestFixture, playing_rate_negative)
 
 TEST_F(PlayerTestFixture, playing_respects_delay)
 {
-  rclcpp::Duration delay_margin(0.5s);
+  rclcpp::Duration upper_bound_tolerance(1s);
+  rclcpp::Duration lower_bound_tolerance(2us);
 
-  // Sleep 1.0 seconds before play
-  play_options_.delay = rclcpp::Duration(1, 0);
-  auto lower_expected_duration = message_time_difference + play_options_.delay;
-  auto upper_expected_duration = message_time_difference + play_options_.delay + delay_margin;
+  // Sleep 5.0 seconds before play
+  play_options_.delay = rclcpp::Duration(5, 0);
+  // Don't expect accuracy more than a few microseconds
+  auto lower_expected_duration = (message_time_difference + play_options_.delay -
+    lower_bound_tolerance).to_chrono<std::chrono::microseconds>();
+  auto upper_expected_duration = (message_time_difference + play_options_.delay +
+    upper_bound_tolerance).to_chrono<std::chrono::microseconds>();
+
+  // Sanity check for steady clock accuracy
+  ASSERT_TRUE(std::chrono::duration_cast<std::chrono::microseconds>(
+      typename std::chrono::steady_clock::duration(1)).count() <= 1) <<
+    "The C++ compiler doesn't provide a precise enough steady_clock. The steady_clock duration"
+    " shall have a resolution of at least 1 microsecond.";
+  static_assert(std::ratio_less_equal_v<std::chrono::steady_clock::period, std::micro>,
+    "The C++ compiler doesn't provide a precise enough steady_clock. The steady_clock period shall"
+    " be at least 1 microsecond.");
+
   auto player = std::make_shared<rosbag2_transport::Player>(
     std::move(reader), storage_options_, play_options_);
 
-  auto start = clock.now();
+  auto start = std::chrono::steady_clock::now();
   player->play();
   player->wait_for_playback_to_finish();
-  auto replay_time = clock.now() - start;
+  auto replay_time =
+    std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start);
 
   EXPECT_THAT(replay_time, Gt(lower_expected_duration));
   EXPECT_THAT(replay_time, Lt(upper_expected_duration));
