@@ -1,11 +1,11 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.20)
 project(mcap_vendor LANGUAGES C CXX)
 
 ## Dependencies
 find_package(ament_cmake REQUIRED)
-find_package(liblz4_vendor REQUIRED)
+find_package(lz4_cmake_module REQUIRED)
 find_package(lz4 REQUIRED)
-find_package(zstd_vendor REQUIRED)
+find_package(zstd_cmake_module REQUIRED)
 find_package(zstd REQUIRED)
 
 # Avoid DOWNLOAD_EXTRACT_TIMESTAMP warning for CMake >= 3.24
@@ -34,8 +34,8 @@ endif()
 macro(build_mcap_vendor)
   include(FetchContent)
   fetchcontent_declare(mcap
-    URL https://github.com/foxglove/mcap/archive/refs/tags/releases/cpp/v1.4.0.tar.gz
-    URL_HASH SHA1=354d894efb6a0c3968885c0e6d43224ff61fa762 # v1.4.0
+    URL https://github.com/foxglove/mcap/archive/refs/tags/releases/cpp/v2.1.3.tar.gz
+    URL_HASH SHA1=591ece619ebff5dfe5234d91c4ea8bb30053c872 # v2.1.3
   )
   fetchcontent_makeavailable(mcap)
 
@@ -71,7 +71,7 @@ build_mcap_vendor()
 
 ament_export_include_directories(include/${PROJECT_NAME})
 ament_export_targets(mcap HAS_LIBRARY_TARGET)
-ament_export_dependencies(liblz4_vendor lz4 zstd_vendor zstd)
+ament_export_dependencies(lz4_cmake_module lz4 zstd_cmake_module zstd)
 
 ## Package
 ament_package()
