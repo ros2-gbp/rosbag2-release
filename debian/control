@@ -1,0 +1,12 @@
+Source: ros-rolling-rosbag2-storage-sqlite3
+Section: misc
+Priority: optional
+Maintainer: Michael Orlov <michael.orlov@apex.ai>
+Build-Depends: debhelper (>= 9.0.0), libsqlite3-dev, libyaml-cpp-dev, ros-rolling-ament-cmake, ros-rolling-ament-cmake-gmock <!nocheck>, ros-rolling-ament-cmake-python, ros-rolling-ament-lint-auto <!nocheck>, ros-rolling-ament-lint-common <!nocheck>, ros-rolling-pluginlib, ros-rolling-rcpputils, ros-rolling-rcutils, ros-rolling-rosbag2-storage, ros-rolling-rosbag2-test-common <!nocheck>, ros-rolling-std-msgs <!nocheck>, ros-rolling-ros-workspace
+Homepage: https://index.ros.org/p/rosbag2_storage_sqlite3/#rolling
+Standards-Version: 3.9.2
+
+Package: ros-rolling-rosbag2-storage-sqlite3
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libsqlite3-dev, libyaml-cpp-dev, ros-rolling-pluginlib, ros-rolling-rcpputils, ros-rolling-rcutils, ros-rolling-rosbag2-storage, ros-rolling-ros-workspace
+Description: ROSBag2 SQLite3 storage plugin
