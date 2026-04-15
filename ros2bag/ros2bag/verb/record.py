@@ -15,6 +15,9 @@
 from argparse import ArgumentParser, FileType
 import datetime
 import os
+import signal
+import threading
+import time
 
 from rclpy.qos import InvalidQoSProfileException
 from ros2bag.api import add_writer_storage_plugin_extensions
@@ -33,6 +36,46 @@ from rosbag2_py import Recorder
 from rosbag2_py import RecordOptions
 from rosbag2_py import StorageOptions
 import yaml
+
+
+def split_key_value(entry, default_value=''):
+    """Split a 'key=value' string. Returns (key, value) or (entry, default_value) if no '='."""
+    if '=' in entry:
+        key, value = entry.split('=', 1)
+        return key, value
+    return entry, default_value
+
+
+def parse_repeat_transient_local_topics(values):
+    repeat_topics = {}
+    if not values:
+        return repeat_topics
+
+    for value in values:
+        topic, depth_str = split_key_value(value, '1')
+
+        if not topic:
+            raise ValueError(
+                f'Invalid value for --repeat-transient-local: "{value}". '
+                'Topic name must not be empty.')
+        if not depth_str:
+            raise ValueError(
+                f'Invalid value for --repeat-transient-local: "{value}". '
+                'Expected format <topic> or <topic>=<depth>.')
+        try:
+            depth = int(depth_str)
+        except ValueError as exc:
+            raise ValueError(
+                f'Invalid depth for --repeat-transient-local: "{value}". '
+                'Depth must be a positive integer.') from exc
+        if depth <= 0:
+            raise ValueError(
+                f'Invalid depth for --repeat-transient-local: "{value}". '
+                'Depth must be greater than 0.')
+
+        repeat_topics[topic] = depth
+
+    return repeat_topics
 
 
 def add_recorder_arguments(parser: ArgumentParser) -> None:
@@ -60,13 +103,17 @@ def add_recorder_arguments(parser: ArgumentParser) -> None:
         help="Storage identifier to be used, defaults to '%(default)s'.")
 
     # Topic filter arguments
-    topics_args_group = parser.add_mutually_exclusive_group()
-    topics_args_group.add_argument(
-        'topics_positional', type=str, default=[], metavar='[Topic ...]', nargs='*',
-        help='Space-delimited list of topics to record. (deprecated)')
-    topics_args_group.add_argument(
+    parser.add_argument(
         '--topics', type=str, default=[], metavar='Topic', nargs='+',
         help='Space-delimited list of topics to record.')
+    parser.add_argument(
+        '--static-topics-path', type=FileType('r'),
+        help='Path to a YAML file with statically defined topic names and types.'
+             'Recorder will expect a YAML file in the following format:\n'
+             'static_topics_and_types_list:\n'
+             ' - [/topic_name1, topic_type1]\n'
+             ' - [/topic_name2, topic_type2]\n'
+             ' - [/topic_name3, topic_type3]')
     parser.add_argument(
         '--services', type=str, metavar='ServiceName', nargs='+',
         help='Space-delimited list of services to record.')
@@ -143,7 +190,7 @@ def add_recorder_arguments(parser: ArgumentParser) -> None:
     # Core config
     parser.add_argument(
         '-f', '--serialization-format', default='', choices=serialization_choices,
-        help='The rmw serialization format in which the messages are saved, defaults to the '
+        help='The serialization format in which the messages are saved, defaults to the '
              'rmw currently in use.')
     parser.add_argument(
         '-b', '--max-bag-size', type=int, default=0,
@@ -157,6 +204,11 @@ def add_recorder_arguments(parser: ArgumentParser) -> None:
              'is disabled. If both splitting by size and duration are enabled, '
              'the bag will split at whichever threshold is reached first.')
     parser.add_argument(
+        '--max-bag-files', type=int, default=0,
+        help='Maximum number of bag files to retain before deleting the oldest bagfile '
+             '(circular logging). Default: %(default)d, unlimited. '
+             'Requires --max-bag-size or --max-bag-duration to be set.')
+    parser.add_argument(
         '--max-cache-size', type=int, default=100 * 1024 * 1024,
         help='Maximum size (in bytes) of messages to hold in each buffer of cache. '
              'Default: %(default)d. The cache is handled through double buffering, '
@@ -164,6 +216,15 @@ def add_recorder_arguments(parser: ArgumentParser) -> None:
              'is needed. A rule of thumb is to cache an order of magnitude corresponding to '
              'about one second of total recorded data volume. '
              'If the value specified is 0, then every message is directly written to disk.')
+    parser.add_argument(
+        '--max-cache-duration', type=int, default=0,
+        help='Maximum cache duration in seconds.\n'
+             'Default: %(default)d, indicates that buffering will be limited by the'
+             ' --max-cache-size parameter only. If the value is more than 0, the cache buffer'
+             ' will be limited by both the series of messages duration and the maximum cache size'
+             ' parameter.\n'
+             'To override the upper bound by total messages size, the --max-cache-size parameter'
+             ' can be set to 0.')
     parser.add_argument(
         '--disable-keyboard-controls', action='store_true', default=False,
         help='disables keyboard controls for recorder')
@@ -188,9 +249,28 @@ def add_recorder_arguments(parser: ArgumentParser) -> None:
              'the "/rosbag2_recorder/snapshot" service is called. e.g. \n '
              'ros2 service call /rosbag2_recorder/snapshot rosbag2_interfaces/Snapshot')
     parser.add_argument(
+        '--repeat-transient-local', type=str, default=[], metavar='Topic[=Depth]', nargs='+',
+        help='Space-delimited list of transient-local topics whose last messages should be '
+             'prepended on bag split and snapshot writes. Format: <topic> or <topic>=<depth>. '
+             'Default depth is 1 when omitted.')
+    parser.add_argument(
+        '--repeat-all-transient-local', type=int, default=0, const=1,
+        nargs='?', metavar='Depth',
+        help='Automatically detect all topics whose publishers offer TRANSIENT_LOCAL '
+             'durability QoS and retain the last <depth> messages per topic, prepending '
+             'them on bag split and snapshot writes. Depth defaults to 1 when omitted. '
+             'Per-topic entries from --repeat-transient-local take precedence over this '
+             'default depth. 0 disables (default).')
+    parser.add_argument(
         '--log-level', type=str, default='info',
         choices=['debug', 'info', 'warn', 'error', 'fatal'],
         help='Logging level.')
+    parser.add_argument(
+        '--stats_max_publishing_rate', type=float, default=1.0,
+        help='Maximum rate in times per second (Hz) at which the statistics about lost '
+             'messages will be published. Default: %(default)s. If set to 0, no statistics will '
+             'be published. The value must be greater than or equal to 0 and less than or equal '
+             'to 1000.')
 
     # Storage configuration
     add_writer_storage_plugin_extensions(parser)
@@ -229,25 +309,22 @@ def add_recorder_arguments(parser: ArgumentParser) -> None:
 
 def check_necessary_argument(args):
     # At least one options out of --all, --all-topics, --all-services, --all-actions, --services,
-    # --actions --topics, --topic-types or --regex must be used
+    # --actions --topics, --topic-types, --static-topics-path or --regex must be used
     if not (args.all or args.all_topics or args.all_services or args.all_actions or
             (args.services and len(args.services) > 0) or
             (args.actions and len(args.actions) > 0) or
             (args.topics and len(args.topics) > 0) or
-            (args.topic_types and len(args.topic_types) > 0) or args.regex):
+            (args.topic_types and len(args.topic_types) > 0) or args.regex or
+            args.static_topics_path):
         return False
     return True
 
 
 def validate_parsed_arguments(args, uri) -> str:
-    if args.topics_positional:
-        print(print_warn('Positional "topics" argument deprecated. '
-                         'Please use optional "--topics" argument instead.'), flush=True)
-        args.topics = args.topics_positional
-
     if not check_necessary_argument(args):
         return print_error('Need to specify at least one option out of --all, --all-topics, '
-                           '--all-services, --services, --topics, --topic-types or --regex')
+                           '--all-services, --services, --topics, --topic-types,'
+                           '--static-topics-path or --regex')
 
     if args.exclude_regex and not \
             (args.all or args.all_topics or args.topic_types or args.all_services or
@@ -284,7 +361,7 @@ def validate_parsed_arguments(args, uri) -> str:
 
     if (args.all or args.all_topics or args.all_services or args.all_actions) and args.regex:
         print(print_warn('--all, --all-topics --all-services or --all-actions will override '
-                         '--regex'),  flush=True)
+                         '--regex'), flush=True)
 
     if os.path.isdir(uri):
         return print_error("Output folder '{}' already exists.".format(uri))
@@ -301,7 +378,45 @@ def validate_parsed_arguments(args, uri) -> str:
     if args.compression_queue_size < 0:
         return print_error('Compression queue size must be at least 0.')
 
+    if args.stats_max_publishing_rate < 0 or args.stats_max_publishing_rate > 1000.0:
+        return print_error('stats_max_publishing_rate must be between 0 and 1000.')
+
+    if args.max_cache_size < 0:
+        return print_error('max_cache_size must be a non-negative integer.')
+
+    if args.max_cache_size > 4294967295:
+        return print_error('max_cache_size must not exceed 4294967295 bytes '
+                           '(~4 GiB, uint32_t max).')
+
+    if args.max_cache_duration < 0:
+        return print_error('max_cache_duration must be a non-negative integer.')
+
+    if args.max_cache_duration > 4294967295:
+        return print_error('max_cache_duration must not exceed 4294967295 seconds '
+                           '(~136 years, uint32_t max).')
+
+    if args.snapshot_mode and args.max_cache_duration == 0 and args.max_cache_size == 0:
+        return print_error('In snapshot mode, either the max_cache_duration or max_cache_size'
+                           ' shall not be set to zero.')
+
+    if args.repeat_all_transient_local < 0:
+        return print_error('--repeat-all-transient-local depth must be a non-negative integer.')
+
+    try:
+        args.repeat_transient_local_messages = parse_repeat_transient_local_topics(
+            args.repeat_transient_local)
+    except ValueError as exc:
+        return print_error(str(exc))
+
     return None
+
+
+# Create termination event
+termination_requested = threading.Event()
+
+
+def signal_handler(signum, _):
+    termination_requested.set()
 
 
 class RecordVerb(VerbExtension):
@@ -331,8 +446,11 @@ class RecordVerb(VerbExtension):
         # Prepare custom_data dictionary
         custom_data = {}
         if args.custom_data:
-            key_value_pairs = [pair.split('=') for pair in args.custom_data]
-            custom_data = {pair[0]: pair[1] for pair in key_value_pairs}
+            custom_data = dict(split_key_value(pair) for pair in args.custom_data)
+
+        static_topics_uri = ''
+        if args.static_topics_path:
+            static_topics_uri = args.static_topics_path.name
 
         storage_config_file = ''
         if args.storage_config_file:
@@ -343,13 +461,16 @@ class RecordVerb(VerbExtension):
             storage_id=args.storage,
             max_bagfile_size=args.max_bag_size,
             max_bagfile_duration=args.max_bag_duration,
+            max_bag_files=args.max_bag_files,
             max_cache_size=args.max_cache_size,
+            max_cache_duration=args.max_cache_duration,
             storage_preset_profile=args.storage_preset_profile,
             storage_config_uri=storage_config_file,
             snapshot_mode=args.snapshot_mode,
             custom_data=custom_data
         )
         record_options = RecordOptions()
+        record_options.static_topics_uri = static_topics_uri
         record_options.all_topics = args.all_topics or args.all
         record_options.all_services = args.all_services or args.all
         record_options.all_actions = args.all_actions or args.all
@@ -361,7 +482,7 @@ class RecordVerb(VerbExtension):
         record_options.actions = args.actions if args.actions else []
 
         record_options.exclude_topic_types = args.exclude_topic_types
-        record_options.rmw_serialization_format = args.serialization_format
+        record_options.output_serialization_format = args.serialization_format
         record_options.topic_polling_interval = datetime.timedelta(
             milliseconds=args.polling_interval)
         record_options.regex = args.regex
@@ -383,13 +504,28 @@ class RecordVerb(VerbExtension):
         record_options.ignore_leaf_topics = args.ignore_leaf_topics
         record_options.use_sim_time = args.use_sim_time
         record_options.disable_keyboard_controls = args.disable_keyboard_controls
+        record_options.statistics_max_publishing_rate = args.stats_max_publishing_rate
+        record_options.repeat_transient_local_messages = args.repeat_transient_local_messages
+        record_options.repeat_all_transient_local_depth = args.repeat_all_transient_local
 
-        recorder = Recorder(args.log_level)
+        recorder = Recorder(storage_options, record_options, args.log_level, args.node_name)
+
+        signal.signal(signal.SIGTERM, signal_handler)
 
         try:
-            recorder.record(storage_options, record_options, args.node_name)
+            # Start the recorder
+            recorder.start_spin()
+            recorder.record()
+            while not termination_requested.is_set():
+                time.sleep(0.1)  # Sleep for 100 msec to avoid busy loop
         except KeyboardInterrupt:
             pass
+        finally:
+            recorder.stop()
+            recorder.stop_spin()
+            signal.signal(signal.SIGTERM, signal.SIG_DFL)
+            termination_requested.clear()
 
+        # Remove newly created directory if it is empty
         if os.path.isdir(uri) and not os.listdir(uri):
             os.rmdir(uri)
