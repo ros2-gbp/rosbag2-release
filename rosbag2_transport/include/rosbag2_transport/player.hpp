@@ -252,6 +252,16 @@ public:
   ROSBAG2_TRANSPORT_PUBLIC
   bool is_paused() const;
 
+  /// \brief Getter method for starting time of the playback.
+  /// \return Returns timestamp of the first message in nanoseconds.
+  ROSBAG2_TRANSPORT_PUBLIC
+  rcutils_time_point_value_t get_starting_time() const;
+
+  /// \brief Getter method for playback duration
+  /// \return Returns duration of the playback in nanoseconds.
+  ROSBAG2_TRANSPORT_PUBLIC
+  rcutils_duration_value_t get_playback_duration() const;
+
   /// Return current playback rate.
   ROSBAG2_TRANSPORT_PUBLIC
   double get_rate() const;
@@ -370,9 +380,11 @@ protected:
   size_t get_number_of_registered_on_play_msg_post_callbacks();
 
   /// \brief Getter for the first of the currently stored storage options
-  /// \return Reference to the first item in the StorageOptions vector
+  /// \return Copy of the first item in the StorageOptions vector
+  // TODO(morlov): Remove this method in Rolling after Lyrical release
+  [[deprecated("Use rosabg2_transport::Player::get_all_storage_options() instead")]]
   ROSBAG2_TRANSPORT_PUBLIC
-  const rosbag2_storage::StorageOptions & get_storage_options();
+  rosbag2_storage::StorageOptions get_storage_options();
 
   /// \brief Getter for the currently stored storage options
   /// \return Copy of the currently stored storage options
