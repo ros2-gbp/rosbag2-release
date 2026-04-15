@@ -15,6 +15,7 @@
 #ifndef ROSBAG2_CPP__WRITER_INTERFACES__BASE_WRITER_INTERFACE_HPP_
 #define ROSBAG2_CPP__WRITER_INTERFACES__BASE_WRITER_INTERFACE_HPP_
 
+#include <cstddef>
 #include <memory>
 
 #include "rosbag2_cpp/bag_events.hpp"
@@ -48,6 +49,15 @@ public:
     const rosbag2_storage::TopicMetadata & topic_with_type,
     const rosbag2_storage::MessageDefinition & message_definition) = 0;
 
+  virtual void create_transient_local_topic(
+    const rosbag2_storage::TopicMetadata & topic_with_type,
+    size_t num_last_messages) = 0;
+
+  virtual void create_transient_local_topic(
+    const rosbag2_storage::TopicMetadata & topic_with_type,
+    size_t num_last_messages,
+    const rosbag2_storage::MessageDefinition & message_definition) = 0;
+
   virtual void remove_topic(const rosbag2_storage::TopicMetadata & topic_with_type) = 0;
 
   virtual void write(std::shared_ptr<const rosbag2_storage::SerializedBagMessage> message) = 0;
@@ -64,6 +74,12 @@ public:
   virtual void split_bagfile() = 0;
 
   virtual void add_event_callbacks(const bag_events::WriterEventCallbacks & callbacks) = 0;
+
+  /**
+   * \brief Check if a callback is registered for the given event.
+   * \return True if there is any callback registered for the event, false otherwise.
+   */
+  [[nodiscard]] virtual bool has_callback_for_event(bag_events::BagEvent event) const = 0;
 };
 
 }  // namespace writer_interfaces
