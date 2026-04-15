@@ -21,7 +21,7 @@
 #include <vector>
 
 #include "rosbag2_cpp/info.hpp"
-#include "rosbag2_cpp/typesupport_helpers.hpp"
+#include "rclcpp/typesupport_helpers.hpp"
 
 #include "rosbag2_storage/metadata_io.hpp"
 #include "rosbag2_storage/ros_helper.hpp"
@@ -54,6 +54,8 @@ Converter::Converter(
     throw std::runtime_error(
             "Could not find converter for format " + converter_options.output_serialization_format);
   }
+  input_serialization_format_ = converter_options.input_serialization_format;
+  output_serialization_format_ = converter_options.output_serialization_format;
 }
 
 Converter::~Converter()
@@ -92,19 +94,29 @@ void Converter::add_topic(const std::string & topic, const std::string & type)
 {
   ConverterTypeSupport type_support;
 
-  type_support.type_support_library = get_typesupport_library(
+  type_support.type_support_library = rclcpp::get_typesupport_library(
     type, "rosidl_typesupport_cpp");
-  type_support.rmw_type_support = get_typesupport_handle(
+  type_support.rmw_type_support = rclcpp::get_message_typesupport_handle(
     type, "rosidl_typesupport_cpp",
-    type_support.type_support_library);
+    *type_support.type_support_library);
 
-  type_support.introspection_type_support_library = get_typesupport_library(
+  type_support.introspection_type_support_library = rclcpp::get_typesupport_library(
     type, "rosidl_typesupport_introspection_cpp");
-  type_support.introspection_type_support = get_typesupport_handle(
+  type_support.introspection_type_support = rclcpp::get_message_typesupport_handle(
     type, "rosidl_typesupport_introspection_cpp",
-    type_support.introspection_type_support_library);
+    *type_support.introspection_type_support_library);
 
   topics_and_types_.insert({topic, type_support});
+}
+
+std::string Converter::get_input_serialization_format() const
+{
+  return input_serialization_format_;
+}
+
+std::string Converter::get_output_serialization_format() const
+{
+  return output_serialization_format_;
 }
 
 }  // namespace rosbag2_cpp
