@@ -1,26 +1,48 @@
 import datetime
 import rosbag2_py._storage
 from _typeshed import Incomplete
-from typing import Any, ClassVar, List, overload
+from typing import Any, ClassVar, Dict, List, overload
+
+class MessageOrder:
+    __members__: ClassVar[dict] = ...  # read-only
+    RECEIVED_TIMESTAMP: ClassVar[MessageOrder] = ...
+    SENT_TIMESTAMP: ClassVar[MessageOrder] = ...
+    __entries: ClassVar[dict] = ...
+    def __init__(self, value: int) -> None: ...
+    def __eq__(self, other: object) -> bool: ...
+    def __hash__(self) -> int: ...
+    def __index__(self) -> int: ...
+    def __int__(self) -> int: ...
+    def __ne__(self, other: object) -> bool: ...
+    @property
+    def name(self) -> str: ...
+    @property
+    def value(self) -> int: ...
 
 class PlayOptions:
+    actions_to_filter: List[str]
     clock_publish_frequency: float
     clock_publish_on_topic_publish: bool
     clock_topics: List[str]
     delay: float
     disable_keyboard_controls: bool
     disable_loan_message: bool
+    exclude_actions_to_filter: List[str]
     exclude_regex_to_filter: str
     exclude_service_events_to_filter: List[str]
     exclude_topics_to_filter: List[str]
     loop: bool
+    message_order: Incomplete
     node_prefix: str
     playback_duration: float
     playback_until_timestamp: int
+    progress_bar_separation_lines: int
+    progress_bar_update_rate: int
     publish_service_requests: bool
     rate: float
     read_ahead_queue_size: int
     regex_to_filter: str
+    send_actions_as_client: bool
     service_requests_source: Incomplete
     services_to_filter: List[str]
     start_offset: float
@@ -76,6 +98,8 @@ class Player:
     def wait_for_playback_to_start_exclusively(self, timeout: float = ...) -> bool: ...
 
 class RecordOptions:
+    actions: List[str]
+    all_actions: bool
     all_services: bool
     all_topics: bool
     compression_format: str
@@ -84,6 +108,7 @@ class RecordOptions:
     compression_threads: int
     compression_threads_priority: int
     disable_keyboard_controls: bool
+    exclude_actions: List[str]
     exclude_regex: str
     exclude_service_events: List[str]
     exclude_topic_types: List[str]
@@ -91,12 +116,18 @@ class RecordOptions:
     ignore_leaf_topics: bool
     include_hidden_topics: bool
     include_unpublished_topics: bool
+    input_serialization_format: str
     is_discovery_disabled: bool
     node_prefix: str
+    output_serialization_format: str
     regex: str
+    repeat_all_transient_local_depth: int
+    repeat_transient_local_messages: Dict[str, int]
     rmw_serialization_format: str
     services: List[str]
     start_paused: bool
+    static_topics_uri: str
+    statistics_max_publishing_rate: float
     topic_polling_interval: datetime.timedelta
     topic_qos_profile_overrides: dict
     topic_types: List[str]
@@ -144,4 +175,4 @@ class ServiceRequestsSource:
     @property
     def value(self) -> int: ...
 
-def bag_rewrite(arg0: List[rosbag2_py._storage.StorageOptions], arg1: str) -> None: ...
+def bag_rewrite(input_options: List[rosbag2_py._storage.StorageOptions], input_config_file: str, output_config_file: str) -> None: ...

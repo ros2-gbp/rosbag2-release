@@ -32,10 +32,12 @@ Node convert<rosbag2_transport::PlayOptions>::encode(
   node["rate"] = play_options.rate;
   node["topics_to_filter"] = play_options.topics_to_filter;
   node["services_to_filter"] = play_options.services_to_filter;
+  node["actions_to_filter"] = play_options.actions_to_filter;
   node["regex_to_filter"] = play_options.regex_to_filter;
   node["exclude_regex_to_filter"] = play_options.exclude_regex_to_filter;
   node["exclude_topics"] = play_options.exclude_topics_to_filter;
   node["exclude_services"] = play_options.exclude_services_to_filter;
+  node["exclude_actions"] = play_options.exclude_actions_to_filter;
   node["topic_qos_profile_overrides"] =
     YAML::convert<std::unordered_map<std::string, rclcpp::QoS>>::encode(
     play_options.topic_qos_profile_overrides);
@@ -58,6 +60,9 @@ Node convert<rosbag2_transport::PlayOptions>::encode(
     std::chrono::nanoseconds(play_options.wait_acked_timeout));
 
   node["disable_loan_message"] = play_options.disable_loan_message;
+
+  node["progress_bar_update_rate"] = play_options.progress_bar_update_rate;
+  node["progress_bar_separation_lines"] = play_options.progress_bar_separation_lines;
 
   return node;
 }
@@ -113,6 +118,12 @@ bool convert<rosbag2_transport::PlayOptions>::decode(
   play_options.wait_acked_timeout = wait_acked_timeout.nanoseconds();
 
   optional_assign<bool>(node, "disable_loan_message", play_options.disable_loan_message);
+
+  optional_assign<int32_t>(
+    node, "progress_bar_update_rate", play_options.progress_bar_update_rate);
+
+  optional_assign<uint32_t>(
+    node, "progress_bar_separation_lines", play_options.progress_bar_separation_lines);
 
   return true;
 }

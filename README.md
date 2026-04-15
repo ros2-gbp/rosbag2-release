@@ -70,9 +70,23 @@ To record a set of predefined topics, one can specify them on the command line e
 $ ros2 bag record <topic1> <topic2> … <topicN>
 ```
 
-The specified topics don't necessarily have to be present at start time.
-The discovery function will automatically recognize if one of the specified topics appeared.
-In the same fashion, this auto discovery can be disabled with `--no-discovery`.
+Press `Ctrl+C` to stop the recording.
+
+The specified topics don't necessarily have to be present at the start time.
+The discovery function will automatically recognize if one of the specified topics appears.
+In the same fashion, this auto-discovery can be disabled with `--no-discovery`.\
+The topics can also be specified via a static topic list with the `--static-topics-path` option.
+Recorder will expect yaml file in the following format:
+
+```yaml
+static_topics_and_types_list:
+ - [/topic_name1, topic_type1]
+ - [/topic_name2, topic_type2]
+ - [/topic_name3, topic_type3]
+```
+
+For topics from the static topics list, subscriptions will be created even if they are not
+discoverable via the ROS graph and even if publishers do not yet exist on those topics.
 
 If not further specified, `ros2 bag record` will create a new folder named to the current time stamp and stores all data within this folder.
 A user defined name can be given with `-o, --output`.
@@ -95,6 +109,54 @@ _Splitting by size_: `ros2 bag record -a -b 100000` will split the bag files whe
 _Splitting by time_: `ros2 bag record -a -d 9000` will split the bag files after a duration of `9000` seconds. This option defaults to `0`, which means data is written to a single file.
 
 If both splitting by size and duration are enabled, the bag will split at whichever threshold is reached first.
+
+#### Repeating transient-local messages on split and snapshot
+
+When a bag file is split or a snapshot is taken, consumers of the new file may need certain
+transient-local (latched) messages — such as `/map` or `/tf_static` — to be present, even if
+they were not published again during the new file's timespan.
+
+The `--repeat-transient-local` option tells the recorder to retain the last N messages for
+specified topics and prepend them when a new bag file starts (on split) or when a snapshot is
+written.
+
+Format: `--repeat-transient-local <topic>[=<depth>] [...]`
+
+The depth controls how many of the most recent messages are retained per topic. If omitted, the
+default depth is `1`.
+
+Examples:
+
+```bash
+# Repeat last message of /map and /tf_static on each bag split
+$ ros2 bag record -a --repeat-transient-local /map /tf_static
+
+# Repeat last 5 messages of /tf_static, last 1 of /map
+$ ros2 bag record -a --repeat-transient-local /tf_static=5 /map
+```
+
+This option also works via node parameters as `record.repeat_transient_local`, accepting a list
+of strings in the same `<topic>` or `<topic>=<depth>` format.
+
+Alternatively, `--repeat-all-transient-local [<depth>]` can be used to automatically detect and
+repeat all topics whose publishers offer `TRANSIENT_LOCAL` durability. The depth defaults to `1`
+when omitted and specifies how many of the most recent messages per topic are retained.
+Per-topic entries from `--repeat-transient-local` take precedence over this default depth.
+
+```bash
+# Auto-detect and repeat all transient-local topics (depth 1)
+$ ros2 bag record -a --repeat-all-transient-local
+
+# Auto-detect with depth 5
+$ ros2 bag record -a --repeat-all-transient-local 5
+
+# Auto-detect all, but override /map to keep last 10 messages
+$ ros2 bag record -a --repeat-all-transient-local --repeat-transient-local /map=10
+```
+
+**Note**: If a topic has both a QoS profile override (via `--qos-profile-overrides-path`) and is
+listed in `--repeat-transient-local`, the QoS override takes precedence. Ensure the override
+includes `transient_local` durability to receive latched messages.
 
 #### Recording with compression
 
@@ -119,16 +181,65 @@ See storage plugin documentation for more detail:
 
 #### Controlling recordings via services
 
-The Rosbag2 recorder provides the following services for remote control, which can be called via `ros2 service` commandline, or from your nodes:
+The Rosbag2 recorder provides the following services for remote control, which can be called via
+`ros2 service` commandline, or from your nodes:
 
 * `~/is_paused [rosbag2_interfaces/srv/IsPaused]`
   * Returns whether recording is currently paused.
 * `~/pause [rosbag2_interfaces/srv/Pause]`
-  * Pauses recording. All messages that have already arrived will be written, but all messages that arrive after pausing will be discarded. Has no effect if already paused. Takes no arguments.
+  * Pauses recording. All messages that have already arrived will be written, but all messages that
+    arrive after pausing will be discarded. Has no effect if already paused. Takes no arguments.
 * `~/resume [rosbag2_interfaces/srv/Resume]`
-  * Resume recording if paused. Has no effect if not paused. Takes no arguments.
+  * Resume recording immediately or schedule resume based on a requested time and mode.
+  * The `publish_time` and `receive_time` resume modes are supported only by the recorder.
+  * Resume modes:
+    - **Node time**: uses the recorder node clock; resumes immediately if `resume_time` is unset
+      or in the past, or is scheduled in the future via the task runner.
+    - **Publish time**: pending resume evaluated against the message source/publication timestamp.
+    - **Receive time**: pending resume evaluated against the recorder receive timestamp.
+  * Topic tracking:
+    - `tracking_topic_name` optionally scopes publish/receive-time evaluation to a single topic.
+      If empty, the evaluation considers all recorded topics.
+  * Pending resume policy:
+    - If a pending timestamp-based resume exists and a new resume request arrives, the newer
+      request overrides the existing pending one.
+    - A timestamp-based resume is performed when a message with a timestamp >= requested
+      `resume_time` is processed on the tracked scope.
+  * Request fields:
+    - `resume_time`: target time; unset or past times cause immediate resume.
+    - `resume_mode`: one of `node_time`, `publish_time`, `receive_time`.
+    - `tracking_topic_name`: optional topic for timestamp-based evaluation.
+  * Response fields:
+    - `return_code`: `success`, `invalid_resume_mode`, `invalid_tracking_topic`, or
+      `resume_failed`.
+    - `error_string`: empty on success, otherwise describes the failure.
 * `~/split_bagfile [rosbag2_interfaces/srv/SplitBagfile]`
-  * Triggers a split to a new file, even if none of the configured split criteria (such as `--max-bag-size` or `--max-bag-duration`) have been met yet
+  * Triggers a split to a new file, either immediately or scheduled based on mode and time.
+  * Split modes:
+    - **Node time**: split by the recorder node clock; executes immediately if `split_time` is
+      unset or in the past, or is scheduled in the future via the task runner.
+    - **Publish time**: pending split evaluated against the message's source/publication timestamp.
+    - **Receive time**: pending split evaluated against the recorder's receive timestamp.
+  * Topic tracking:
+    - `tracking_topic_name` optionally scopes publish/receive-time evaluation to a single topic;
+      If empty, the evaluation considers all recorded topics.
+  * Pending split policy:
+    - If a pending timestamp-based split exists and a new split request arrives, the newer request
+      overrides the existing pending one.
+    - A timestamp-based split is performed when a message with a timestamp >= requested
+      `split_time` is processed on the tracked scope.
+  * Asynchronous execution:
+    - For publish/receive-time modes, splits are executed asynchronously by the task runner and
+      scheduled to be executed immediately after the next qualifying message arrives; therefore
+      the split may not happen exactly at the requested timestamp. This is made to avoid blocking
+      the recorder from processing incoming messages and potentially lost messages due to the long
+      bag split operation.
+    - Future node-time splits are scheduled and may also be executed slightly after the requested
+      time due to task scheduling.
+  * Request fields:
+    - `split_time`: target time; unset or past times cause immediate split.
+    - `split_mode`: one of `node_time`, `publish_time`, `receive_time`.
+    - `tracking_topic_name`: optional topic for timestamp-based evaluation.
 * `~/snapshot [rosbag2_interfaces/srv/Snapshot]`
   * enabled if `--snapshot-mode` is specified. Takes no arguments, triggers a snapshot.
 * `~/record [rosbag2_interfaces/srv/Record]`
@@ -146,10 +257,92 @@ These services enable full remote control of the recording process, allowing you
 
 #### Snapshot mode
 
-The Recorder provides a "snapshot mode", enabled via `--snapshot-mode` or `StorageOptions.snapshot_mode`, which does not write messages to disk as they come in, but instead keeps an in-memory circular buffer of size `--max-cache-size`.
-This entire buffer can be dumped to disk on request, saving data only in specified circumstances such as a detected error condition or point of interest, capturing the "last N bytes" of incoming data, therefore making sure that you can trigger snapshot after the fact of the event.
+The Recorder provides a "snapshot mode", enabled via `--snapshot-mode` or
+`StorageOptions.snapshot_mode`. It does not write messages to disk as they arrive, but keeps an
+in-memory circular buffer bounded by `--max-cache-size` (bytes) and optionally
+`--max-cache-duration` (seconds). The entire buffer can be dumped to disk on request, saving data
+only in specified circumstances (e.g., a detected error condition or point of interest). This
+captures the "last N bytes" or "last T seconds" of incoming data, allowing you to trigger a
+snapshot after the event.
 
-The snapshot is taken by calling the `~/snapshot` service on the recorder, described previously.
+The snapshot is taken by calling the `~/snapshot` service on the recorder, described previously.\
+Triggering a snapshot via CLI:
+
+```bash
+$ ros2 service call /rosbag2_recorder/snapshot rosbag2_interfaces/srv/Snapshot
+```
+
+#### Time-based snapshot and time-limited buffering with --max-cache-duration
+
+Rosbag2 supports generic time-limited buffering for both regular recording and snapshot mode:
+
+- `--max-cache-duration <seconds>`: Maximum cache duration window, in seconds.
+  - Default: `0` — buffer is limited only by `--max-cache-size`.
+  - If `> 0`: buffer is limited by both time and size:
+    - Time bound: retains only the most recent messages within the duration window.
+    - Size bound: respects `--max-cache-size` (bytes).
+
+Configuring bounds options:
+- Time-only buffer: set `--max-cache-size` to `0` and `--max-cache-duration` to a positive value.
+- Size-only buffer: set `--max-cache-duration` to `0` and `--max-cache-size` to a positive value.
+- Time-and-size bounded buffer: set both `--max-cache-size` and `--max-cache-duration` to a 
+  positive values.
+- In snapshot mode, at least one bound must be enabled.
+
+Double-buffering notes:
+- The cache uses double buffering. In pessimistic cases, memory usage can reach up to
+`2 × --max-cache-size`.
+- When time bounding is active:
+  - Snapshot mode: the recorded timespan corresponds to the current buffer window at snapshot 
+    trigger time. i.e., up to `--max-cache-duration` seconds.
+  - Non-snapshot (regular) mode: due to producer/consumer buffer swap and write cadence, the
+    effective observed timespan can be up to approximately `2 × --max-cache-duration` seconds.
+
+Examples:
+- Regular recording, time-only buffer (keep last 30 seconds in cache, regardless of size):
+  ```
+  $ ros2 bag record -a --max-cache-size 0 --max-cache-duration 30
+  ```
+- Snapshot mode, size-only buffer (keep last ~100 MB of recent messages):
+  ```
+  $ ros2 bag record -a --snapshot-mode --max-cache-size 100000000 --max-cache-duration 0
+  ```
+- Snapshot mode, time-and-size bounded (keep last 10 seconds, max 50 MB):
+  ```
+  $ ros2 bag record -a --snapshot-mode --max-cache-size 50000000 --max-cache-duration 10
+  ```
+- Snapshot mode, time-only buffer (keep last 7 seconds regardless of size):
+  ```
+  $ ros2 bag record -a --snapshot-mode --max-cache-size 0 --max-cache-duration 7
+  ```
+
+Operational behavior:
+- In snapshot mode, the file's start/end timestamps reflect the buffered messages at cache 
+  buffer swap time.
+
+#### Statistics about lost messages
+
+Rosbag2 provides the ability to monitor statistics about lost messages in the recorder and on the
+transport layer during recording. The `--stats_max_publishing_rate` option allows to specify
+the maximum rate in times per second (Hz) at which statistics about lost messages are published
+on the predefined `events/rosbag2_messages_lost` topic. The message type is named as
+`rosbag2_interfaces::msg::MessagesLostEvent` and defined in the `rosbag2_interfaces` package.
+Note that the statistics are incremental, and message lost event doesn't include topics with zero
+number of lost messages. i.e., the published statistics will only include topics that have lost
+messages and inner counters reset to zero after each event has been published.
+
+For example:
+
+```
+$ ros2 bag record -a --stats_max_publishing_rate 0.5
+```
+
+In this example, statistics about lost messages will be published at a maximum rate of 0.5 Hz,
+i.e., once per 2 seconds. Setting the value to `0` disables the publishing of statistics. The value
+must be greater than or equal to `0` and less than or equal to `1000`. The default maximum
+publishing rate is 1 Hz. i.e., statistics will be published once per second.
+
+This feature helps in real-time monitoring of message loss during recording.
 
 ### Replaying data <a id="play"></a>
 
@@ -159,8 +352,10 @@ When you have a recorded bag, you can use Rosbag2 to play it back:
 $ ros2 bag play <bag>
 ```
 
-The bag argument can be a directory containing `metadata.yaml` and one or more storage files, or to a single storage file such as `.mcap` or `.db3`.
+The bag argument can be a directory containing `metadata.yaml` and one or more storage files, or
+to a single storage file such as `.mcap` or `.db3`.
 The Player will automatically detect which storage implementation to use for playing.
+A progress bar to track the playback progress will be displayed in the terminal by default.
 
 To play back multiple bags:
 
@@ -168,7 +363,49 @@ To play back multiple bags:
 $ ros2 bag play -i <bag1> -i <bag2> -i <bag3>
 ```
 
-Messages from all provided bags will be played in order, based on their original recording reception timestamps.
+Messages from all provided bags will be played in order, based on their original recording
+reception timestamps.
+
+Options:
+
+* `--topics`:
+  Space-delimited list of topics to play.
+* `--services`:
+  Space-delimited list of services to play.
+* `--actions`:
+  Space-delimited list of actions to play.
+* `-e,--regex`:
+  Play only topics and services matches with regular expression.
+* `-x,--exclude-regex`:
+  Regular expressions to exclude topics and services from replay.
+* `--exclude-topics`:
+  Space-delimited list of topics not to play.
+* `--exclude-services`:
+  Space-delimited list of services not to play.
+* `--exclude-actions`:
+  Space-delimited list of actions not to play.
+* `--message-order {received,sent}`:
+  The reference to use for bag message chronological ordering.
+  Choices: reception timestamp (`received`), publication timestamp (`sent`).
+  Default: reception timestamp.
+* `--progress-bar-update-rate [Hz]`:
+  Print a progress bar for the playback with a specified maximum update rate in times per second
+  (Hz). Negative values mark an update for every published message, while a zero value disables
+  the progress bar. Default is 3 Hz.
+* `--progress-bar-separation-lines`:
+  The number of lines to separate the progress bar from the rest of the playback player output.
+  It prevents mixing external log messages with the progress bar string. Default to 2.
+
+For more options, run with `--help`.
+
+#### Playback action messages as action client
+
+If you want Rosbag2 to replay recorded action messages in the role of an action client, you need to specify the --send-actions-as-client parameter.
+```
+$ ros2 bag play --send-actions-as-client <bag>
+```
+Rosbag2 will send recorded goal request, cancel request and result request to action server.  
+For more information, please refer to https://github.com/ros2/rosbag2/blob/rolling/docs/design/rosbag2_record_replay_action.md.
 
 #### Controlling playback via services
 
@@ -188,6 +425,19 @@ The Rosbag2 player provides the following services for remote control, which can
   * Play a single next message from the bag. Only works while paused.
 * `~/resume [rosbag2_interfaces/srv/Resume]`
   * Resume playback if paused.
+  * The newer `publish_time` and `receive_time` resume modes are recorder-only.
+  * Player only supports `resume_mode = node_time`.
+  * `resume_time` is not supported by player and must be zero for player resume requests.
+  * `tracking_topic_name` is not supported by player and must be empty.
+  * If `resume_mode` is `publish_time` or `receive_time`, player rejects the request with
+    `return_code = invalid_resume_mode` and a descriptive `error_string`.
+  * If `resume_mode` has any other invalid value, player also returns
+    `return_code = invalid_resume_mode`.
+  * If `tracking_topic_name` is set, player rejects the request with
+    `return_code = invalid_tracking_topic` and a descriptive `error_string`.
+  * Response fields:
+    - `return_code`: `success`, `invalid_resume_mode`, or `invalid_tracking_topic`.
+    - `error_string`: empty on success, otherwise describes the failure.
 * `~/seek [rosbag2_interfaces/srv/Seek]`
   * Change the play head to the specified timestamp. Can be forward or backward in time, the next played message is the next immediately after the seeked timestamp.
 * `~/set_rate [rosbag2_interfaces/srv/SetRate]`
@@ -223,55 +473,84 @@ Topic information: Topic: /chatter | Type: std_msgs/String | Count: 9 | Serializ
 ### Converting bags (merge, split, etc.) <a id="convert"></a>
 
 Rosbag2 provides a tool `ros2 bag convert` (or, `rosbag2_transport::bag_rewrite` in the C++ API).
-This allows the user to take one or more input bags, and write them out to one or more output bags with new settings.
+This allows the user to take one or more input bags, and write them out to one or more output
+bags with new settings.
 This flexible feature enables the following features:
 * Merge (multiple input bags, one output bag)
 * Split top-level bags (one input bag, multiple output bags)
-* Split internal files (by time or size - one input bag with fewer internal files, one output bag with more, smaller, internal files)
+* Split internal files (by time or size - one input bag with fewer internal files, one output bag
+  with more, smaller, internal files)
 * Compress/Decompress (output bag(s) with different compression settings than the input(s))
 * Serialization format conversion
 * ... and more!
 
 Here is an example command:
 
-```
-ros2 bag convert --input /path/to/bag1 --input /path/to/bag2 storage_id --output-options output_options.yaml
+```bash
+ros2 bag convert --input /path/to/bag1 --input /path/to/bag2 storage_id \
+  --output-options output_options.yaml
 ```
 
 The `--input` argument may be specified any number of times, and takes 1 or 2 values.
 The first value is the URI of the input bag.
 If a second value is supplied, it specifies the storage implementation of the bag.
-If no storage implementation is specified, Rosbag2 will try to determine it automatically from the bag.
+If no storage implementation is specified, Rosbag2 will try to determine it automatically from
+the bag.
 
-The `--output-options` argument must point to the URI of a YAML file specifying the full recording configuration for each bag to output (`StorageOptions` + `RecordOptions`).
+Alternatively, you can provide input bags via a YAML configuration file using `--input-options`:
+
+```bash
+ros2 bag convert --input-options input_options.yaml --output-options output_options.yaml
+```
+
+The input options file must contain a top-level key `input_bags`, which is a list of
+StorageOptions objects. Each entry must specify at least `uri`, and the file or directory must
+exist.
+
+Example `input_options.yaml`:
+
+```yaml
+input_bags:
+- uri: /path/to/bag_a
+  storage_id: sqlite3
+- uri: /path/to/bag_b
+  storage_id: mcap
+```
+
+**Note:** Either `--input` or `--input-options` must be provided, but not both.
+
+The `--output-options` argument must point to the URI of a YAML file specifying the full recording
+configuration for each bag to output (`StorageOptions` + `RecordOptions`).
 This file must contain a top-level key `output_bags`, which contains a list of these objects.
 
-The only required value in the output bags is `uri` and `storage_id`. All other values are options (however, if no topic selection is specified, this output bag will be empty!).
+The only required value in the output bags is `uri` and `storage_id`. All other values are
+optional (however, if no topic selection is specified, this output bag will be empty!).
 
 This example notes all fields that can have an effect, with a comment on the required ones.
 
-```
+```yaml
 output_bags:
 - uri: /output/bag1  # required
   storage_id: ""  # will use the default storage plugin, if unspecified
   max_bagfile_size: 0
   max_bagfile_duration: 0
   storage_preset_profile: ""
-  storage_config_uri: ""
-  # optional filter for msg time t [nsec since epoch]:  start_time_ns <= t <= end_time_ns
-  # start_time_ns: 1744227144744197147
-  # end_time_ns: 1744227145734665546
+  storage_config_uri: ""  
   all_topics: false
   topics: []
   topic_types: []
   all_services: false
   services: []
-  rmw_serialization_format: ""  # defaults to using the format of the input topic
+  all_actions: false
+  actions: []
+  input_serialization_format: ""   # defaults to using the format of the input topic
+  output_serialization_format: ""  # defaults to using the format of the input topic
   regex: ""
   exclude_regex: ""
   exclude_topics: []
   exclude_topic_types: []
   exclude_services: []
+  exclude_actions: []
   compression_mode: ""
   compression_format: ""
   compression_queue_size: 1
@@ -318,6 +597,32 @@ output_bags:
   compression_mode: file
   compression_format: zstd
 ```
+
+Example cutting a time fragment from a bag:
+
+```
+$ ros2 bag convert --input-options input.yaml --output-options output.yaml
+
+# input.yaml - extract only messages between specific timestamps
+input_bags:
+- uri: /path/to/input_bag
+  storage_id: mcap
+  start_time_ns: 1744227144744197147
+  end_time_ns: 1744227145734665546
+
+# output.yaml
+output_bags:
+- uri: /path/to/fragment_bag
+  storage_id: mcap
+  all_topics: true
+  all_services: true
+```
+
+Note: The `start_time_ns` and `end_time_ns` filter messages based on their timestamps (nanoseconds
+since epoch). Only messages with timestamp `t` where `start_time_ns <= t <= end_time_ns` will be
+included. Note that these timestamps refer to the message's receive timestamps, and it will be more
+efficient to use the `start_time_ns` and `end_time_ns` options on the input bag rather than on the
+output bag.
 
 ### Overriding QoS Profiles
 
@@ -461,7 +766,6 @@ def generate_launch_description():
             ]
         )
     ])
-}
 ```
 
 Here's an example YAML configuration for both composable player and recorder:
@@ -574,10 +878,13 @@ pushd /my/bag/base_dir && ros2 bag record ...
 In launch:
 
 ```python
-ExecuteProcess(
+import launch.actions
+
+launch.actions.ExecuteProcess(
   cmd=['ros2', 'bag', 'record', ...],
-  cwd=my_base_dir,
+  cwd='my_base_dir',
 ),
+```
 
 You can fully customize the output bag name, without any Rosbag2 special features.
 
@@ -585,5 +892,5 @@ For example, you want a timestamp on the bag directory name, but want a custom p
 
 ```bash
 $ ros2 bag record -a -o mybag_"$(date +"%Y_%m_%d-%H_%M_%S")"
-... creates e.g. mybag_2025_02_21-15_35_35
 ```
+... creates e.g. mybag_2025_02_21-15_35_35

@@ -2,66 +2,70 @@
 Changelog for package ros2bag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.26.10 (2026-04-07)
---------------------
-
-0.26.9 (2025-08-11)
--------------------
-* [jazzy] Expose more of the player/recorder API through Python (backport `#2062 <https://github.com/ros2/rosbag2/issues/2062>`_) (`#2100 <https://github.com/ros2/rosbag2/issues/2100>`_)
-  Co-authored-by: Christophe Bedard <bedard.christophe@gmail.com>
-  Co-authored-by: Michael Orlov <morlovmr@gmail.com>
-* Contributors: mergify[bot]
-
-0.26.8 (2025-07-10)
--------------------
-* Change Python player and recorder to be more as a classes (`#2047 <https://github.com/ros2/rosbag2/issues/2047>`_) (`#2054 <https://github.com/ros2/rosbag2/issues/2054>`_)
-* [jazzy] Upstream quality changes from Apex.AI part-2 (backport `#1924 <https://github.com/ros2/rosbag2/issues/1924>`_) (`#1987 <https://github.com/ros2/rosbag2/issues/1987>`_)
-* Contributors: Michael Orlov <morlovmr@gmail.com>, Christophe Bedard <bedard.christophe@gmail.com>
-
-0.26.7 (2025-04-22)
--------------------
-* Fix for failing test_record_qos_profiles on Windows (`#1949 <https://github.com/ros2/rosbag2/issues/1949>`_) (`#1951 <https://github.com/ros2/rosbag2/issues/1951>`_)
-* CLI - update play verb metavar (`#1906 <https://github.com/ros2/rosbag2/issues/1906>`_) (`#1911 <https://github.com/ros2/rosbag2/issues/1911>`_)
-  better show `--clock [Hz]` than `--clock [CLOCK]`
-* Contributors: mergify[bot], Michael Orlov, Patrick Roncagliolo
-
-0.26.6 (2024-12-18)
--------------------
-* Publish clock after delay is over and disable delay on next loops (`#1861 <https://github.com/ros2/rosbag2/issues/1861>`_) (`#1878 <https://github.com/ros2/rosbag2/issues/1878>`_)
-* [jazzy] Add support for replaying multiple bags (backport `#1848 <https://github.com/ros2/rosbag2/issues/1848>`_) (`#1873 <https://github.com/ros2/rosbag2/issues/1873>`_)
-* [jazzy] Add "--sort" CLI option to the "ros2 bag info" command (backport `#1804 <https://github.com/ros2/rosbag2/issues/1804>`_) (`#1838 <https://github.com/ros2/rosbag2/issues/1838>`_)
-* [jazzy] Add computation of size contribution to info verb (backport `#1726 <https://github.com/ros2/rosbag2/issues/1726>`_) (`#1872 <https://github.com/ros2/rosbag2/issues/1872>`_)
-* Rename rclpy.qos.QoS*Policy to rclpy.qos.*Policy (`#1832 <https://github.com/ros2/rosbag2/issues/1832>`_) (`#1841 <https://github.com/ros2/rosbag2/issues/1841>`_)
-* Contributors: Marco A. Gutierrez, mergify[bot], Nicola Loi, Soenke Prophet, Michael Orlov,
-  Christophe Bedard, Sanoronas
-
-0.26.5 (2024-09-06)
--------------------
-* Add cli option compression-threads-priority (`#1768 <https://github.com/ros2/rosbag2/issues/1768>`_) (`#1778 <https://github.com/ros2/rosbag2/issues/1778>`_)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-  (cherry picked from commit 25c3e1c2effdaea3b880c39ff7580b2f38a44b1c)
-  Co-authored-by: Roman <rsokolkov@gmail.com>
-* Contributors: mergify[bot]
-
-
-0.26.4 (2024-06-27)
--------------------
-* fix(start-offset): allow specifying a start offset of 0 (`#1682 <https://github.com/ros2/rosbag2/issues/1682>`_) (`#1713 <https://github.com/ros2/rosbag2/issues/1713>`_)
-  Co-authored-by: Rein Appeldoorn <reinzor@gmail.com>
-* Exclude recorded /clock topic when --clock option is specified (`#1646 <https://github.com/ros2/rosbag2/issues/1646>`_) (`#1706 <https://github.com/ros2/rosbag2/issues/1706>`_)
-  Co-authored-by: Kosuke Takeuchi <kosuke.tnp@gmail.com>
-* [jazzy] Sweep cleanup in rosbag2 recorder CLI args verification code (backport `#1633 <https://github.com/ros2/rosbag2/issues/1633>`_) (`#1684 <https://github.com/ros2/rosbag2/issues/1684>`_)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* Add --log-level to ros2 bag play and record (`#1625 <https://github.com/ros2/rosbag2/issues/1625>`_) (`#1674 <https://github.com/ros2/rosbag2/issues/1674>`_)
-  Co-authored-by: Roman Sokolkov <rsokolkov@gmail.com>
-* [jazzy] Add optional  '--topics' CLI argument for 'ros2 bag record' (backport `#1632 <https://github.com/ros2/rosbag2/issues/1632>`_) (`#1640 <https://github.com/ros2/rosbag2/issues/1640>`_)
-  Co-authored-by: Tomoya Fujita <Tomoya.Fujita@sony.com>
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-
-0.26.3 (2024-05-15)
+0.33.1 (2026-04-14)
 -------------------
 
-0.26.2 (2024-04-24)
+* Add ``--repeat-all-transient-local`` flag for automatic transient-local topic detection (`#2391 <https://github.com/ros2/rosbag2/issues/2391>`_)
+* Repeat transient-local topics: Recorder, CLI, and Python bindings (`#2387 <https://github.com/ros2/rosbag2/issues/2387>`_)
+* Suppress multi-threaded process warning from rosbag2 flake8 (`#2329 <https://github.com/ros2/rosbag2/issues/2329>`_)
+* Remove deprecated arguments and options from ``ros2bag`` (`#2328 <https://github.com/ros2/rosbag2/issues/2328>`_)
+* Implement circular logging by split count (`--max-bag-files`) (`#2218 <https://github.com/ros2/rosbag2/issues/2218>`_)
+* Improve ``ros2 bag convert`` performance for fragment cutting and add ``--input-options`` (`#2325 <https://github.com/ros2/rosbag2/issues/2325>`_)
+* Add static topics feature for recorder (`#2319 <https://github.com/ros2/rosbag2/issues/2319>`_)
+* Add `--max-cache-duration` option for time-bounded snapshots (`#2289 <https://github.com/ros2/rosbag2/issues/2289>`_)
+* Add `rosbag2_storage_default_plugins` to `exec_depend` of `ros2bag` (`#2227 <https://github.com/ros2/rosbag2/issues/2227>`_)
+* Add ``input_serialization_format`` and ``output_serialization_format`` to ``RecordOptions``, deprecating ``rmw_serialization_format`` (`#2215 <https://github.com/ros2/rosbag2/issues/2215>`_)
+* Publish messages lost statistics to 'events/messages_lost' topic (`#2150 <https://github.com/ros2/rosbag2/issues/2150>`_)
+* Expose more of the player and recorder API to Python, and improve signal handling (`#2062 <https://github.com/ros2/rosbag2/issues/2062>`_)
+* Fix setuptools deprecations (`#2087 <https://github.com/ros2/rosbag2/issues/2087>`_)
+* Refactor Python player and recorder APIs into classes (`#2047 <https://github.com/ros2/rosbag2/issues/2047>`_)
+
+* Contributors: Christophe Bedard, Luke Sy, Michael Orlov, Tomoya Fujita, Tony Najjar, mosfet80
+
+0.33.0 (2025-04-25)
+-------------------
+* Upstream quality changes from Apex.AI part-2 (`#1924 <https://github.com/ros2/rosbag2/issues/1924>`_)
+* Contributors: Michael Orlov, Christophe Bedard
+
+0.32.0 (2025-04-18)
+-------------------
+* Add actions replay feature (`#1955 <https://github.com/ros2/rosbag2/issues/1955>`_)
+* Implement actions recording and displaying information about recorded actions features (`#1939 <https://github.com/ros2/rosbag2/issues/1939>`_)
+* Fix for failing test_record_qos_profiles on Windows (`#1949 <https://github.com/ros2/rosbag2/issues/1949>`_)
+* Progress bar for ros2 bag play (`#1836 <https://github.com/ros2/rosbag2/issues/1836>`_)
+* Update CLI play verb metavar (`#1906 <https://github.com/ros2/rosbag2/issues/1906>`_)
+* Contributors: Barry Xu, Michael Orlov, Nicola Loi, Patrick Roncagliolo
+
+0.31.0 (2025-02-02)
+-------------------
+* Add test_xmllint.py to python packages. (`#1879 <https://github.com/ros2/rosbag2/issues/1879>`_)
+* Add support for replaying based on publication timestamp (`#1876 <https://github.com/ros2/rosbag2/issues/1876>`_)
+* Publish clock after delay is over and disable delay on next loops (`#1861 <https://github.com/ros2/rosbag2/issues/1861>`_)
+* Support replaying multiple bags (`#1848 <https://github.com/ros2/rosbag2/issues/1848>`_)
+* Contributors: Chris Lalancette, Christophe Bedard, Nicola Loi
+
+0.30.0 (2024-11-26)
+-------------------
+* Rename rclpy.qos.QoS*Policy to rclpy.qos.*Policy (`#1832 <https://github.com/ros2/rosbag2/issues/1832>`_)
+* Add "--sort" CLI option to the "ros2 bag info" command (`#1804 <https://github.com/ros2/rosbag2/issues/1804>`_)
+* Contributors: Alejandro Hernández Cordero, Christophe Bedard, Nicola Loi, Roman, Sanoronas
+
+0.29.0 (2024-09-03)
+-------------------
+* Add cli option compression-threads-priority (`#1768 <https://github.com/ros2/rosbag2/issues/1768>`_)
+* Add computation of size contribution to info verb (`#1726 <https://github.com/ros2/rosbag2/issues/1726>`_)
+* Contributors: Nicola Loi, Roman
+
+0.28.0 (2024-06-17)
+-------------------
+* fix(start-offset): allow specifying a start offset of 0 (`#1682 <https://github.com/ros2/rosbag2/issues/1682>`_)
+* Exclude recorded /clock topic when --clock option is specified (`#1646 <https://github.com/ros2/rosbag2/issues/1646>`_)
+* Sweep cleanup in rosbag2 recorder CLI args verification code (`#1633 <https://github.com/ros2/rosbag2/issues/1633>`_)
+* Add --log-level to ros2 bag play and record (`#1625 <https://github.com/ros2/rosbag2/issues/1625>`_)
+* Add optional  '--topics' CLI argument for 'ros2 bag record' (`#1632 <https://github.com/ros2/rosbag2/issues/1632>`_)
+* Contributors: Kosuke Takeuchi, Michael Orlov, Rein Appeldoorn, Roman
+
+0.27.0 (2024-04-30)
 -------------------
 
 0.26.1 (2024-04-17)

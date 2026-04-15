@@ -2,46 +2,47 @@
 Changelog for package rosbag2_storage_default_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.26.10 (2026-04-07)
---------------------
-
-0.26.9 (2025-08-11)
+0.33.1 (2026-04-14)
 -------------------
 
-0.26.8 (2025-07-10)
--------------------
-* Bugfix: Undefined behavior in the `rosbag2_storage` and `rosbag2_storage_sqlite3` packages (`#1997 <https://github.com/ros2/rosbag2/issues/1997>`_) (`#1999 <https://github.com/ros2/rosbag2/issues/1999>`_)
-* [jazzy] Upstream quality changes from Apex.AI part-2 (backport `#1924 <https://github.com/ros2/rosbag2/issues/1924>`_) (`#1987 <https://github.com/ros2/rosbag2/issues/1987>`_)
-* Contributors: Michael Orlov <morlovmr@gmail.com>, Christophe Bedard <bedard.christophe@gmail.com>
+* Use new ROSIDL aggregate CMake target (`#2384 <https://github.com/ros2/rosbag2/issues/2384>`_)
+* Implement circular logging by split count (`--max-bag-files`) (`#2218 <https://github.com/ros2/rosbag2/issues/2218>`_)
+* Add `--max-cache-duration` option for time-bounded snapshots (`#2289 <https://github.com/ros2/rosbag2/issues/2289>`_)
+* Fix vulnerable string concatenation by using parameterized queries (`#2290 <https://github.com/ros2/rosbag2/issues/2290>`_)
+* Remove sqlite3_vendor (`#2164 <https://github.com/ros2/rosbag2/issues/2164>`_)
+* Fix CMAKE deprecation (`#2067 <https://github.com/ros2/rosbag2/issues/2067>`_)
+* Introduce new ``BaseWriteInterface`` methods ``write_messages`` and ``write_message`` to provide operation status, deprecating old write APIs (`#2030 <https://github.com/ros2/rosbag2/issues/2030>`_)
+* Fix undefined behavior in the ``rosbag2_storage`` and ``rosbag2_storage_sqlite3`` packages (`#1997 <https://github.com/ros2/rosbag2/issues/1997>`_)
 
-0.26.7 (2025-04-22)
--------------------
+* Contributors: Alejandro Hernández Cordero, Emerson Knapp, Luke Sy, Michael Orlov, Tomoya Fujita, mosfet80
 
-0.26.6 (2024-12-18)
+0.33.0 (2025-04-25)
 -------------------
+* Upstream quality changes from Apex.AI part-2 (`#1924 <https://github.com/ros2/rosbag2/issues/1924>`_)
+* Contributors: Michael Orlov, Christophe Bedard
 
-0.26.5 (2024-09-06)
+0.32.0 (2025-04-18)
 -------------------
-* Fix incorrect zero size for sqlite storage (`#1759 <https://github.com/ros2/rosbag2/issues/1759>`_) (`#1761 <https://github.com/ros2/rosbag2/issues/1761>`_)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-  (cherry picked from commit 86f681d9f525a4b7c3b4133d6b657e342283aad8)
-  Co-authored-by: Roman <rsokolkov@gmail.com>
-* Fix for failing throws_on_invalid_pragma_in_config_file on Windows (`#1742 <https://github.com/ros2/rosbag2/issues/1742>`_) (`#1746 <https://github.com/ros2/rosbag2/issues/1746>`_)
-  (cherry picked from commit 055935d33dd2fed2772657c9dc1f2173eaa7f752)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* Contributors: mergify[bot]
+* Add actions replay feature (`#1955 <https://github.com/ros2/rosbag2/issues/1955>`_)
+* Contributors: Barry Xu
 
-0.26.4 (2024-06-27)
--------------------
-* Add topics with zero message counts to the SQLiteStorage::get_metadata(). (`#1725 <https://github.com/ros2/rosbag2/issues/1725>`_) (`#1731 <https://github.com/ros2/rosbag2/issues/1731>`_)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-  Co-authored-by: Tomoya Fujita <Tomoya.Fujita@sony.com>
-* Contributors: mergify[bot]
-
-0.26.3 (2024-05-15)
+0.31.0 (2025-02-02)
 -------------------
 
-0.26.2 (2024-04-24)
+0.30.0 (2024-11-26)
+-------------------
+
+0.29.0 (2024-09-03)
+-------------------
+* Fix incorrect zero size for sqlite storage (`#1759 <https://github.com/ros2/rosbag2/issues/1759>`_)
+* Fix for failing throws_on_invalid_pragma_in_config_file on Windows (`#1742 <https://github.com/ros2/rosbag2/issues/1742>`_)
+* Add topics with zero message counts to the SQLiteStorage::get_metadata(). (`#1725 <https://github.com/ros2/rosbag2/issues/1725>`_)
+* Contributors: Michael Orlov, Roman, Tomoya Fujita
+
+0.28.0 (2024-06-17)
+-------------------
+
+0.27.0 (2024-04-30)
 -------------------
 
 0.26.1 (2024-04-17)

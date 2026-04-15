@@ -2,33 +2,43 @@
 Changelog for package rosbag2_storage_mcap
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.26.10 (2026-04-07)
---------------------
-
-0.26.9 (2025-08-11)
+0.33.1 (2026-04-14)
 -------------------
 
-0.26.8 (2025-07-10)
+* Use new ROSIDL aggregate CMake target (`#2384 <https://github.com/ros2/rosbag2/issues/2384>`_)
+* Remove unnecessary dependencies on ``yaml_cpp_vendor`` (`#2353 <https://github.com/ros2/rosbag2/issues/2353>`_)
+* Fix MCAPStorage::seek(time) to advance when timestamp matches current time (`#2157 <https://github.com/ros2/rosbag2/issues/2157>`_)
+* Fix CMAKE deprecation (`#2067 <https://github.com/ros2/rosbag2/issues/2067>`_)
+* Introduce new ``BaseWriteInterface`` methods ``write_messages`` and ``write_message`` to provide operation status, deprecating old write APIs (`#2030 <https://github.com/ros2/rosbag2/issues/2030>`_)
+* Update ``index.ros.org/p/`` links for ``rosbag2_storage_mcap`` (`#2034 <https://github.com/ros2/rosbag2/issues/2034>`_)
+
+* Contributors: Chris Lalancette, Christophe Bedard, Emerson Knapp, Michael Orlov, mosfet80
+
+0.33.0 (2025-04-25)
 -------------------
 
-0.26.7 (2025-04-22)
+0.32.0 (2025-04-18)
 -------------------
-* [jazzy] Upstream quality changes from Apex.AI part 1 (backport `#1903 <https://github.com/ros2/rosbag2/issues/1903>`_) (`#1909 <https://github.com/ros2/rosbag2/issues/1909>`_)
-* Contributors: mergify[bot], Michael Orlov
+* Add message sequence number to the messages write API (`#1961 <https://github.com/ros2/rosbag2/issues/1961>`_)
+* Add actions replay feature (`#1955 <https://github.com/ros2/rosbag2/issues/1955>`_)
+* Upstream quality changes from Apex.AI part 1 (`#1903 <https://github.com/ros2/rosbag2/issues/1903>`_)
+* Contributors: Barry Xu, Michael Orlov
 
-0.26.6 (2024-12-18)
--------------------
-
-0.26.5 (2024-09-06)
--------------------
-
-0.26.4 (2024-06-27)
+0.31.0 (2025-02-02)
 -------------------
 
-0.26.3 (2024-05-15)
+0.30.0 (2024-11-26)
 -------------------
 
-0.26.2 (2024-04-24)
+0.29.0 (2024-09-03)
+-------------------
+
+0.28.0 (2024-06-17)
+-------------------
+* Add vscode gitignore rule and remove vscode folder (`#1698 <https://github.com/ros2/rosbag2/issues/1698>`_)
+* Contributors: methylDragon
+
+0.27.0 (2024-04-30)
 -------------------
 
 0.26.1 (2024-04-17)

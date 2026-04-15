@@ -31,6 +31,8 @@
 #include "rclcpp/publisher.hpp"
 #include "rclcpp/qos.hpp"
 
+#include "rclcpp_action/generic_client.hpp"
+
 #include "rosbag2_cpp/clocks/player_clock.hpp"
 #include "rosbag2_interfaces/msg/read_split_event.hpp"
 #include "rosbag2_interfaces/srv/get_rate.hpp"
@@ -349,6 +351,19 @@ protected:
   ROSBAG2_TRANSPORT_PUBLIC
   std::unordered_map<std::string, std::shared_ptr<rclcpp::GenericClient>> get_service_clients();
 
+  /// \brief Getter for clients corresponding to each action name
+  /// \return Hashtable representing action name to client
+  ROSBAG2_TRANSPORT_PUBLIC
+  std::unordered_map<std::string, std::shared_ptr<rclcpp_action::GenericClient>>
+  get_action_clients();
+
+  /// \brief Goal handle for action client is in processing.
+  /// \return true if goal handle is in processing, otherwise false.
+  /// \exception std::exception No action client is created for this action name.
+  ROSBAG2_TRANSPORT_PUBLIC
+  bool
+  is_goal_handle_in_processing(std::string action_name, const rclcpp_action::GoalUUID & goal_id);
+
   /// \brief Getter for inner clock_publisher
   /// \return Shared pointer to the inner clock_publisher
   ROSBAG2_TRANSPORT_PUBLIC
@@ -365,9 +380,11 @@ protected:
   size_t get_number_of_registered_on_play_msg_post_callbacks();
 
   /// \brief Getter for the first of the currently stored storage options
-  /// \return Reference to the first item in the StorageOptions vector
+  /// \return Copy of the first item in the StorageOptions vector
+  // TODO(morlov): Remove this method in Rolling after Lyrical release
+  [[deprecated("Use rosabg2_transport::Player::get_all_storage_options() instead")]]
   ROSBAG2_TRANSPORT_PUBLIC
-  const rosbag2_storage::StorageOptions & get_storage_options();
+  rosbag2_storage::StorageOptions get_storage_options();
 
   /// \brief Getter for the currently stored storage options
   /// \return Copy of the currently stored storage options

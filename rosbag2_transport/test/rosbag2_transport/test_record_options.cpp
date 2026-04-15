@@ -25,14 +25,19 @@ TEST(record_options, test_yaml_serialization_deserialization)
  rosbag2_transport::RecordOptions original;
   original.all_topics = true;
   original.all_services = true;
+  original.all_actions = true;
   original.is_discovery_disabled = true;
   original.topics = {"topic", "other_topic"};
   original.topic_types = {"type_a", "type_b"};
   original.services = {"service", "other_service"};
+  original.actions = {"action", "other_action"};
   original.exclude_topics = {"exclude_topic1", "exclude_topic2"};
   original.exclude_topic_types = {"exclude_type1", "exclude_type2"};
   original.exclude_service_events = {"exclude_service1", "exclude_service2"};
+  original.exclude_actions = {"exclude_action1", "exclude_action2"};
   original.rmw_serialization_format = "cdr";
+  original.input_serialization_format = "cdr";
+  original.output_serialization_format = "cdr";
   original.topic_polling_interval = std::chrono::milliseconds{200};
   original.regex = "[xyz]/topic";
   original.exclude_regex = "[x]/topic";
@@ -48,7 +53,11 @@ TEST(record_options, test_yaml_serialization_deserialization)
   original.ignore_leaf_topics = true;
   original.start_paused = true;
   original.use_sim_time = true;
+  original.static_topics_uri = "/static/topics.yaml";
   original.disable_keyboard_controls = true;
+  original.statistics_max_publishing_rate = 5.0f;
+  original.repeat_transient_local_messages = {{"/map", 1}, {"/tf_static", 5}};
+  original.repeat_all_transient_local_depth = 3;
 
   auto node = YAML::convert<rosbag2_transport::RecordOptions>::encode(original);
 
@@ -60,14 +69,19 @@ TEST(record_options, test_yaml_serialization_deserialization)
   #define CHECK(field) ASSERT_EQ(original.field, reconstructed.field)
   CHECK(all_topics);
   CHECK(all_services);
+  CHECK(all_actions);
   CHECK(is_discovery_disabled);
   CHECK(topics);
   CHECK(topic_types);
   CHECK(services);
+  CHECK(actions);
   CHECK(exclude_topics);
   CHECK(exclude_topic_types);
   CHECK(exclude_service_events);
+  CHECK(exclude_actions);
   CHECK(rmw_serialization_format);
+  CHECK(input_serialization_format);
+  CHECK(output_serialization_format);
   CHECK(topic_polling_interval);
   CHECK(regex);
   CHECK(exclude_regex);
@@ -83,7 +97,13 @@ TEST(record_options, test_yaml_serialization_deserialization)
   CHECK(ignore_leaf_topics);
   CHECK(start_paused);
   CHECK(use_sim_time);
+  CHECK(static_topics_uri);
   CHECK(disable_keyboard_controls);
+  CHECK(repeat_transient_local_messages);
+  CHECK(repeat_all_transient_local_depth);
+  #undef CHECK
+  ASSERT_FLOAT_EQ(original.statistics_max_publishing_rate,
+                  reconstructed.statistics_max_publishing_rate);
 }
 
 TEST(record_options, test_yaml_decode_for_all_and_exclude)
@@ -92,7 +112,8 @@ TEST(record_options, test_yaml_decode_for_all_and_exclude)
     "  all: true\n"
     "  all_topics: false\n"
     "  topics: []\n"
-    "  rmw_serialization_format: \"\"  # defaults to using the format of the input topic\n"
+    "  input_serialization_format: \"\"  # defaults to using the format of the input topic\n"
+    "  output_serialization_format: \"\"  # defaults to using the format of the input topic\n"
     "  regex: \"[xyz]/topic\"\n"
     "  exclude: \"[x]/topic\"\n";
 
@@ -100,6 +121,7 @@ TEST(record_options, test_yaml_decode_for_all_and_exclude)
   auto record_options = loaded_node.as<rosbag2_transport::RecordOptions>();
   ASSERT_EQ(record_options.all_topics, true);
   ASSERT_EQ(record_options.all_services, true);
+  ASSERT_EQ(record_options.all_actions, true);
   ASSERT_EQ(record_options.regex, "[xyz]/topic");
   ASSERT_EQ(record_options.exclude_regex, "[x]/topic");
 }

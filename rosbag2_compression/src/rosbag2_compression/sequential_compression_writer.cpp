@@ -333,12 +333,17 @@ void SequentialCompressionWriter::compress_file(
   BaseCompressorInterface & compressor,
   const std::string & file_relative_to_bag)
 {
+  if (file_relative_to_bag.empty()) {
+    ROSBAG2_COMPRESSION_LOG_DEBUG_STREAM("Cannot compress file with empty path relative to bag."
+                                         " Skipping compression.");
+    return;
+  }
   const auto file_relative_to_pwd = fs::path(base_folder_) / file_relative_to_bag;
-  ROSBAG2_COMPRESSION_LOG_INFO_STREAM("Compressing file: " << file_relative_to_pwd.string());
 
-  if (fs::exists(file_relative_to_pwd) &&
+  if (fs::exists(file_relative_to_pwd) && !fs::is_directory(file_relative_to_pwd) &&
     fs::file_size(file_relative_to_pwd) > 0u)
   {
+    ROSBAG2_COMPRESSION_LOG_INFO_STREAM("Compressing file: " << file_relative_to_pwd.string());
     const auto compressed_uri = compressor.compress_uri(file_relative_to_pwd.string());
     const auto relative_compressed_uri = fs::path(compressed_uri).filename();
     {
@@ -367,7 +372,7 @@ void SequentialCompressionWriter::compress_file(
           "will not be halted because the compressed output was successfully created.");
     }
   } else {
-    ROSBAG2_COMPRESSION_LOG_DEBUG_STREAM(
+    ROSBAG2_COMPRESSION_LOG_WARN_STREAM(
       "Removing last file: \"" << file_relative_to_pwd.string() <<
         "\" because it either is empty or does not exist.");
   }
@@ -434,6 +439,10 @@ void SequentialCompressionWriter::write(
           "from compression queue because it is full. Queue size: " <<
           compressor_message_queue_.size());
       compressor_message_queue_.pop();
+      // Process message lost event
+      auto info = std::make_shared<std::vector<rosbag2_cpp::bag_events::MessagesLostInfo>>();
+      info->emplace_back(rosbag2_cpp::bag_events::MessagesLostInfo{message->topic_name, 1});
+      this->on_messages_lost(std::move(info));
     }
 
     // If no message should be dropped and the queue has still messages,

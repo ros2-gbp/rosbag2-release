@@ -22,8 +22,9 @@
 
 #include "rclcpp/node_interfaces/node_graph_interface.hpp"
 #include "rcpputils/split.hpp"
-#include "rclcpp/typesupport_helpers.hpp"
+#include "rosbag2_cpp/action_utils.hpp"
 #include "rosbag2_cpp/service_utils.hpp"
+#include "rclcpp/typesupport_helpers.hpp"
 
 #include "logging.hpp"
 #include "rosbag2_transport/topic_filter.hpp"
@@ -52,7 +53,9 @@ inline bool has_single_type(
   return true;
 }
 
-
+/// \brief Determine if a topic is hidden i.e. starting any token of the name with an underscore.
+/// @param topic_name - the name of the topic to check
+/// @return Return true if the topic is hidden, false otherwise
 inline bool topic_is_hidden(const std::string & topic_name)
 {
   // According to rclpy's implementation, the indicator for a hidden topic is a leading '_'
@@ -85,6 +88,10 @@ inline bool topic_is_unpublished(
   return publishers_info.empty();
 }
 
+/// \brief Determine if a topic is a leaf topic (i.e. has no subscribers).
+/// @param topic_name - the name of the topic to check
+/// @param node_graph  - the node graph interface to use for checking
+/// @return Return true if the topic is a leaf topic (has no subscribers), false otherwise
 inline bool is_leaf_topic(
   const std::string & topic_name, rclcpp::node_interfaces::NodeGraphInterface & node_graph)
 {
@@ -99,19 +106,43 @@ namespace rosbag2_transport
 TopicFilter::TopicFilter(
   RecordOptions record_options,
   rclcpp::node_interfaces::NodeGraphInterface::SharedPtr node_graph,
-  bool allow_unknown_types)
+  bool allow_unknown_types,
+  const std::vector<std::pair<std::string, std::string>> & static_topic_names_and_types)
 : record_options_(std::move(record_options)),
   allow_unknown_types_(allow_unknown_types),
-  node_graph_(node_graph)
-{}
+  node_graph_(std::move(node_graph))
+{
+  if (record_options_.actions.size() > 0) {
+    for ( auto & action_name : record_options_.actions ) {
+      auto action_interface_names =
+        rosbag2_cpp::action_name_to_action_interface_names(action_name);
+      include_action_interface_names_.insert(
+        action_interface_names.begin(), action_interface_names.end());
+    }
+  }
+
+  if (record_options_.exclude_actions.size() > 0) {
+    for ( auto & action_name : record_options_.exclude_actions ) {
+      auto action_interface_names =
+        rosbag2_cpp::action_name_to_action_interface_names(action_name);
+      exclude_action_interface_names_.insert(
+        action_interface_names.begin(), action_interface_names.end());
+    }
+  }
+
+  static_topics_and_services_.reserve(static_topic_names_and_types.size());
+  for (const auto & [static_topic_name, _] : static_topic_names_and_types) {
+    static_topics_and_services_.push_back(static_topic_name);
+  }
+}
 
 TopicFilter::~TopicFilter() = default;
 
 std::unordered_map<std::string, std::string> TopicFilter::filter_topics(
-  const std::map<std::string, std::vector<std::string>> & topic_names_and_types)
+  const std::map<std::string, std::vector<std::string>> & all_topic_names_and_types)
 {
   std::unordered_map<std::string, std::string> filtered_topics;
-  for (const auto & [topic_name, topic_types] : topic_names_and_types) {
+  for (const auto & [topic_name, topic_types] : all_topic_names_and_types) {
     if (take_topic(topic_name, topic_types)) {
       filtered_topics.insert(std::make_pair(topic_name, topic_types[0]));
     }
@@ -119,20 +150,21 @@ std::unordered_map<std::string, std::string> TopicFilter::filter_topics(
   return filtered_topics;
 }
 
-bool TopicFilter::take_topic(
-  const std::string & topic_name, const std::vector<std::string> & topic_types)
+bool TopicFilter::topic_selected_by_lists_or_regex(
+  const std::string & topic_name,
+  const std::string & topic_type)
 {
-  if (!has_single_type(topic_name, topic_types)) {
-    return false;
+  bool is_action_topic = rosbag2_cpp::is_topic_belong_to_action(topic_name, topic_type);
+  bool is_service_event_topic = false;
+  if (!is_action_topic) {
+    is_service_event_topic = rosbag2_cpp::is_service_event_topic(topic_name, topic_type);
   }
 
-  const std::string & topic_type = topic_types[0];
-  bool is_service_event_topic = rosbag2_cpp::is_service_event_topic(topic_name, topic_type);
-
-
-  if (!is_service_event_topic) {
+  if (!is_service_event_topic && !is_action_topic) {
+    // Regular topic
     if (!record_options_.all_topics &&
       record_options_.topics.empty() &&
+      static_topics_and_services_.empty() &&
       record_options_.topic_types.empty() &&
       record_options_.regex.empty() &&
       !record_options_.include_hidden_topics)
@@ -145,6 +177,7 @@ bool TopicFilter::take_topic(
     if (!record_options_.all_topics) {
       // Not in include topic list. Note: all_topics shall override include topic lists
       if (!topic_in_list(topic_name, record_options_.topics) &&
+        !topic_in_list(topic_name, static_topics_and_services_) &&
         !topic_type_in_list(topic_type, record_options_.topic_types))
       {
         // Not match include regex
@@ -180,9 +213,11 @@ bool TopicFilter::take_topic(
         "Hidden topics are not recorded. Enable them with --include-hidden-topics");
       return false;
     }
-  } else {
+  } else if (is_service_event_topic) {
+    // Service event topic
     if (!record_options_.all_services &&
       record_options_.services.empty() &&
+      static_topics_and_services_.empty() &&
       record_options_.regex.empty())
     {
       // Note: This check is needed to avoid extra checks and service name conversion in case
@@ -195,7 +230,9 @@ bool TopicFilter::take_topic(
 
     if (!record_options_.all_services) {
       // Not in include service list
-      if (!topic_in_list(topic_name, record_options_.services)) {
+      if (!topic_in_list(topic_name, record_options_.services) &&
+        !topic_in_list(topic_name, static_topics_and_services_))
+      {
         // Not match include regex
         if (!record_options_.regex.empty()) {
           std::regex include_regex(record_options_.regex);
@@ -218,13 +255,89 @@ bool TopicFilter::take_topic(
         return false;
       }
     }
+  } else if (is_action_topic) {
+    // action topic
+
+    // Check if topics for action need to be recorded
+    if (!record_options_.all_actions &&
+      static_topics_and_services_.empty() &&
+      record_options_.actions.empty() &&
+      record_options_.regex.empty())
+    {
+      return false;
+    }
+
+    // Convert topic name to action name
+    auto action_name = rosbag2_cpp::action_interface_name_to_action_name(topic_name);
+
+    if (!record_options_.all_actions &&
+      !topic_in_list(topic_name, static_topics_and_services_))
+    {
+      // Not in include action interface list
+      if (include_action_interface_names_.find(topic_name) ==
+        include_action_interface_names_.end())
+      {
+        // Not match include regex
+        if (!record_options_.regex.empty()) {
+          std::regex include_regex(record_options_.regex);
+          if (!std::regex_search(action_name, include_regex)) {
+            return false;
+          }
+        } else {
+          return false;
+        }
+      }
+    }
+
+    if (exclude_action_interface_names_.find(topic_name) !=
+      exclude_action_interface_names_.end())
+    {
+      return false;
+    }
+
+    if (!record_options_.exclude_regex.empty()) {
+      std::regex exclude_regex(record_options_.exclude_regex);
+      if (std::regex_search(action_name, exclude_regex)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+bool TopicFilter::take_topic(
+  const std::string & topic_name, const std::vector<std::string> & topic_types)
+{
+  if (!has_single_type(topic_name, topic_types)) {
+    return false;
+  }
+
+  const std::string & topic_type = topic_types[0];
+
+  bool topic_selected = false;
+  // Check cache first
+  auto lists_or_regex_cache_it =
+    topic_selected_by_lists_or_regex_cache_.find(
+      topic_name + kTopicNameTypeDelimiter_ + topic_type);
+
+  if (lists_or_regex_cache_it != topic_selected_by_lists_or_regex_cache_.end()) {
+    topic_selected = lists_or_regex_cache_it->second;
+  } else {
+    topic_selected = topic_selected_by_lists_or_regex(topic_name, topic_type);
+    topic_selected_by_lists_or_regex_cache_[topic_name + kTopicNameTypeDelimiter_ + topic_type] =
+      topic_selected;
+  }
+
+  if (!topic_selected) {
+    return false;
   }
 
   if (!allow_unknown_types_ && !type_is_known(topic_name, topic_type)) {
     return false;
   }
 
-  if (!record_options_.include_unpublished_topics && node_graph_ &&
+  if (!topic_in_list(topic_name, static_topics_and_services_) &&
+    !record_options_.include_unpublished_topics && node_graph_ &&
     topic_is_unpublished(topic_name, *node_graph_))
   {
     return false;
@@ -241,19 +354,28 @@ bool TopicFilter::take_topic(
 
 bool TopicFilter::type_is_known(const std::string & topic_name, const std::string & topic_type)
 {
-  try {
-    auto package_name = std::get<0>(rclcpp::extract_type_identifier(topic_type));
-    rclcpp::get_typesupport_library_path(package_name, "rosidl_typesupport_cpp");
-  } catch (std::runtime_error & e) {
-    if (already_warned_unknown_types_.find(topic_type) == already_warned_unknown_types_.end()) {
-      already_warned_unknown_types_.emplace(topic_type);
-      ROSBAG2_TRANSPORT_LOG_WARN_STREAM(
-        "Topic '" << topic_name <<
-          "' has unknown type '" << topic_type <<
-          "' . Only topics with known type are supported. Reason: '" << e.what());
+  bool type_known = false;
+  // Check cache first
+  auto cache_it = known_topic_types_cache_.find(topic_type);
+  if (cache_it != known_topic_types_cache_.end()) {
+    type_known = cache_it->second;
+  } else {
+    try {
+      auto package_name = std::get<0>(rclcpp::extract_type_identifier(topic_type));
+      (void)rclcpp::get_typesupport_library_path(package_name, "rosidl_typesupport_cpp");
+      type_known = true;
+    } catch (std::runtime_error & e) {
+      if (already_warned_unknown_types_.find(topic_type) == already_warned_unknown_types_.end()) {
+        already_warned_unknown_types_.emplace(topic_type);
+        ROSBAG2_TRANSPORT_LOG_WARN_STREAM(
+          "Topic '" << topic_name <<
+            "' has unknown type '" << topic_type <<
+            "' . Only topics with known type are supported. Reason: '" << e.what());
+      }
     }
-    return false;
+    known_topic_types_cache_[topic_type] = type_known;
   }
-  return true;
+  return type_known;
 }
+
 }  // namespace rosbag2_transport

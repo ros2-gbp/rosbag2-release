@@ -1,86 +1,88 @@
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package rosbag2
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package rosbag2_cpp
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.26.10 (2026-04-07)
---------------------
-* Fix for a possible race condition in compression writer on close
-  (`#2362 <https://github.com/ros2/rosbag2/issues/2362>`_)
-  (`#2381 <https://github.com/ros2/rosbag2/issues/2381>`_)
-* [jazzy] Add accidentally deleted `typesupport_helper.{cpp}hpp` files
-  (`#2320 <https://github.com/ros2/rosbag2/issues/2320>`_)
-  * Added back, accidentally deleted `typesupport_helper.{cpp}hpp` files
-* Contributors: Michael Orlov <morlovmr@gmail.com>, mergify[bot]
-
-0.26.9 (2025-08-11)
--------------------
-* [jazzy] Fix reindex duration bug when bag file durations overlap (backport `#2036 <https://github.com/ros2/rosbag2/issues/2036>`_) (`#2107 <https://github.com/ros2/rosbag2/issues/2107>`_)
-  Co-authored-by: Chui Vanfleet <26607858+ChuiVanfleet@users.noreply.github.com>
-  Co-authored-by: Michael Orlov <morlovmr@gmail.com>
-* Contributors: mergify[bot]
-
-0.26.8 (2025-07-10)
--------------------
-* [jazzy] Add support for searching message definitions in nested subdirectories (backport `#2055 <https://github.com/ros2/rosbag2/issues/2055>`_) (`#2064 <https://github.com/ros2/rosbag2/issues/2064>`_)
-* [jazzy] Fix for issue when inner message definition not found for service events (`#2042 <https://github.com/ros2/rosbag2/issues/2042>`_)
-* [jazzy] Improvements in message publishing timings (backport `#2025 <https://github.com/ros2/rosbag2/issues/2025>`_) (`#2027 <https://github.com/ros2/rosbag2/issues/2027>`_)
-* [jazzy] Upstream quality changes from Apex.AI part-2 (backport `#1924 <https://github.com/ros2/rosbag2/issues/1924>`_) (`#1987 <https://github.com/ros2/rosbag2/issues/1987>`_)
-* Address clang warning in the `TimeControllerClock::wakeup()` (`#1962 <https://github.com/ros2/rosbag2/issues/1962>`_) (`#1977 <https://github.com/ros2/rosbag2/issues/1977>`_)
-* Contributors: Michael Orlov <morlovmr@gmail.com>, Barry Xu,
-  Alejandro Hernández Cordero<ahcorde@gmail.com>, Christophe Bedard <bedard.christophe@gmail.com>
-
-0.26.7 (2025-04-22)
+0.33.1 (2026-04-14)
 -------------------
 
-0.26.6 (2024-12-18)
--------------------
-* Add more logging info to storage and reader/writer open operations (`#1881 <https://github.com/ros2/rosbag2/issues/1881>`_) (`#1882 <https://github.com/ros2/rosbag2/issues/1882>`_)
-  (cherry picked from commit 0823be2723e04715baacf99625b844cb88f58c21)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* [jazzy] Add PlayerClock::wakeup() to interrupt sleeping (backport `#1869 <https://github.com/ros2/rosbag2/issues/1869>`_) (`#1875 <https://github.com/ros2/rosbag2/issues/1875>`_)
-  Co-authored-by: Christophe Bedard <christophe.bedard@apex.ai>
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* [jazzy] Add support for replaying multiple bags (backport `#1848 <https://github.com/ros2/rosbag2/issues/1848>`_) (`#1873 <https://github.com/ros2/rosbag2/issues/1873>`_)
-  Co-authored-by: Christophe Bedard <christophe.bedard@apex.ai>
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* [jazzy] Add computation of size contribution to info verb (backport `#1726 <https://github.com/ros2/rosbag2/issues/1726>`_) (`#1872 <https://github.com/ros2/rosbag2/issues/1872>`_)
-  Co-authored-by: Nicola Loi <nicolaloi@outlook.com>
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* Bugfix: Update metadata with new file_info before saving it first time (`#1843 <https://github.com/ros2/rosbag2/issues/1843>`_) (`#1853 <https://github.com/ros2/rosbag2/issues/1853>`_)
-  (cherry picked from commit b5098eff15281c9e79853e8bb2ae9a0a104e6ea5)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* Make snapshot writing into a new file each time it is triggered (`#1842 <https://github.com/ros2/rosbag2/issues/1842>`_) (`#1849 <https://github.com/ros2/rosbag2/issues/1849>`_)
-* Bugfix for rosbag2_cpp serialization converter (`#1814 <https://github.com/ros2/rosbag2/issues/1814>`_) (`#1822 <https://github.com/ros2/rosbag2/issues/1822>`_)
-  (cherry picked from commit 6e82f52f3917c365ce60f9ffd8f5248e25c0fe55)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* Allow unknown types in bag rewrite (`#1812 <https://github.com/ros2/rosbag2/issues/1812>`_) (`#1817 <https://github.com/ros2/rosbag2/issues/1817>`_)
-  (cherry picked from commit cd7bd63696604973e23c739afa6387556f3e7781)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* Contributors: Marco A. Gutierrez, mergify[bot]
+* Implement ``transient-local topic`` repetition for Writer API and split/snapshot integration (`#2386 <https://github.com/ros2/rosbag2/issues/2386>`_)
+* Add `TransientLocalMessagesCache` and `RecordOptions` for repeating transient-local topics (`#2385 <https://github.com/ros2/rosbag2/issues/2385>`_)
+* Use new ROSIDL aggregate CMake target (`#2384 <https://github.com/ros2/rosbag2/issues/2384>`_)
+* Fix a possible race condition in compression writer on close (`#2362 <https://github.com/ros2/rosbag2/issues/2362>`_)
+* Fix incorrect serialization format in metadata (`#2372 <https://github.com/ros2/rosbag2/issues/2372>`_)
+* Update Rosbag2 filename format to ``index+name+timestamp`` (`#2265 <https://github.com/ros2/rosbag2/issues/2265>`_)
+* Support relative includes for IDL in local message definition (`#2241 <https://github.com/ros2/rosbag2/issues/2241>`_)
+* Implement circular logging by split count (`--max-bag-files`) (`#2218 <https://github.com/ros2/rosbag2/issues/2218>`_)
+* Add `--max-cache-duration` option for time-bounded snapshots (`#2289 <https://github.com/ros2/rosbag2/issues/2289>`_)
+* Workaround flaky ``bagsize_split_is_at_least_specified_size`` test (`#2311 <https://github.com/ros2/rosbag2/issues/2311>`_)
+* Incorporate upstream minor fixes from Apex.AI (`#2240 <https://github.com/ros2/rosbag2/issues/2240>`_)
+* Update deprecated ament_index_cpp API (`#2268 <https://github.com/ros2/rosbag2/issues/2268>`_)
+* Make topics persistent between writer's close() and open() API calls (`#2229 <https://github.com/ros2/rosbag2/issues/2229>`_)
+* Add nullptr check when pushing new messages to the message cache (`#2219 <https://github.com/ros2/rosbag2/issues/2219>`_)
+* Address recorder test flakiness by increasing cache size (`#2203 <https://github.com/ros2/rosbag2/issues/2203>`_)
+* Log reasoning for not found message definition only in debug log (`#2183 <https://github.com/ros2/rosbag2/issues/2183>`_)
+* Improve error handling in rosbag2_cpp with null checks and exception throwing (`#2127 <https://github.com/ros2/rosbag2/issues/2127>`_)
+* Add null pointer checks in ``Reader`` constructor and ``open()`` method (`#2135 <https://github.com/ros2/rosbag2/issues/2135>`_)
+* Use ``rclcpp typesupport helpers`` in ``rosbag2_cpp`` (`#2017 <https://github.com/ros2/rosbag2/issues/2017>`_)
+* Fix callback not called for MESSAGES_LOST event (`#2105 <https://github.com/ros2/rosbag2/issues/2105>`_)
+* Improve recorder's MessageCache performance (`#2104 <https://github.com/ros2/rosbag2/issues/2104>`_)
+* Fix reindex duration bug when bag file durations overlap (`#2036 <https://github.com/ros2/rosbag2/issues/2036>`_)
+* Fix CMAKE deprecation (`#2067 <https://github.com/ros2/rosbag2/issues/2067>`_)
+* Add support for searching message definitions in nested subdirectories (`#2055 <https://github.com/ros2/rosbag2/issues/2055>`_)
+* Add message loss statistics callbacks and logging (`#2039 <https://github.com/ros2/rosbag2/issues/2039>`_)
+* Use cache to determine action interface inner types (`#2052 <https://github.com/ros2/rosbag2/issues/2052>`_)
+* Fix service/action message definition issue (`#2041 <https://github.com/ros2/rosbag2/issues/2041>`_)
+* Introduce new ``BaseWriteInterface`` methods ``write_messages`` and ``write_message`` to provide operation status, deprecating old write APIs (`#2030 <https://github.com/ros2/rosbag2/issues/2030>`_)
+* Improve message publishing timing by avoiding sporadic wakeups and fixing incorrect intervals on player start (`#2025 <https://github.com/ros2/rosbag2/issues/2025>`_)
 
-0.26.5 (2024-09-06)
--------------------
-* Bugfix for bag_split event callbacks called to early with file compression (`#1643 <https://github.com/ros2/rosbag2/issues/1643>`_) (`#1732 <https://github.com/ros2/rosbag2/issues/1732>`_)
-  (cherry picked from commit 1877b53847bda4d1f2668187b79fa27a796c3438)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* Contributors: mergify[bot]
+* Contributors: Alejandro Hernández Cordero, Barry Xu, Chui Vanfleet, Daisuke Sato, Emerson Knapp, Hunter L. Allen, José Faria, Luke Sy, Michael Orlov, Tomoya Fujita, Tony Najjar, YuJin Hong, mosfet80
 
-0.26.4 (2024-06-27)
+0.33.0 (2025-04-25)
 -------------------
-* Add topics with zero message counts to the SQLiteStorage::get_metadata(). (`#1725 <https://github.com/ros2/rosbag2/issues/1725>`_) (`#1731 <https://github.com/ros2/rosbag2/issues/1731>`_)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-  Co-authored-by: Tomoya Fujita <Tomoya.Fujita@sony.com>
-* Propagate "custom_data" and "ros_distro" in to the metadata.yaml file during re-indexing (`#1700 <https://github.com/ros2/rosbag2/issues/1700>`_) (`#1710 <https://github.com/ros2/rosbag2/issues/1710>`_)
-  Co-authored-by: Cole Tucker <coalman321@users.noreply.github.com>
+* Upstream quality changes from Apex.AI part-2 (`#1924 <https://github.com/ros2/rosbag2/issues/1924>`_)
+* Address clang warning in the `TimeControllerClock::wakeup()` (`#1962 <https://github.com/ros2/rosbag2/issues/1962>`_)
+* Contributors: Alejandro Hernández Cordero, Michael Orlov, Christophe Bedard
 
-0.26.3 (2024-05-15)
+0.32.0 (2025-04-18)
 -------------------
-* Bugfix for writer not being able to open again after closing (`#1599 <https://github.com/ros2/rosbag2/issues/1599>`_) (`#1639 <https://github.com/ros2/rosbag2/issues/1639>`_)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-  Co-authored-by: yschulz <yschulz854@gmail.com>
-* Contributors: mergify[bot]
+* Add support for finding action types message definitions in the `LocalMessageDefinitionSource`
+  class to be able to store actions message definitions during recording. (`#1965 <https://github.com/ros2/rosbag2/issues/1965>`_)
+* Add message sequence number to the messages write API (`#1961 <https://github.com/ros2/rosbag2/issues/1961>`_)
+* Implement actions recording and displaying information about recorded actions features (`#1939 <https://github.com/ros2/rosbag2/issues/1939>`_)
+* Set environment variables to run tests with `rmw_zenoh_cpp` with multicast discovery (`#1946 <https://github.com/ros2/rosbag2/issues/1946>`_)
+* Contributors: Alejandro Hernández Cordero, Barry Xu, Michael Orlov, Tomoya Fujita, Yadunund
 
-0.26.2 (2024-04-24)
+0.31.0 (2025-02-02)
+-------------------
+* Add more logging info to storage and reader/writer open operations (`#1881 <https://github.com/ros2/rosbag2/issues/1881>`_)
+* Add PlayerClock::wakeup() to interrupt sleeping (`#1869 <https://github.com/ros2/rosbag2/issues/1869>`_)
+* Support replaying multiple bags (`#1848 <https://github.com/ros2/rosbag2/issues/1848>`_)
+* Contributors: Christophe Bedard, Michael Orlov
+
+0.30.0 (2024-11-26)
+-------------------
+* Bugfix: Update metadata with new file_info before saving it first time (`#1843 <https://github.com/ros2/rosbag2/issues/1843>`_)
+* Make snapshot writing into a new file each time it is triggered (`#1842 <https://github.com/ros2/rosbag2/issues/1842>`_)
+* Bugfix for rosbag2_cpp serialization converter (`#1814 <https://github.com/ros2/rosbag2/issues/1814>`_)
+* Allow unknown types in bag rewrite (`#1812 <https://github.com/ros2/rosbag2/issues/1812>`_)
+* Contributors: Alejandro Hernández Cordero, Michael Orlov, Nicola Loi, Tomoya Fujita
+
+0.29.0 (2024-09-03)
+-------------------
+* Add computation of size contribution to info verb (`#1726 <https://github.com/ros2/rosbag2/issues/1726>`_)
+* [WIP] Remove rcpputils::fs dependencies in rosbag2 packages (`#1740 <https://github.com/ros2/rosbag2/issues/1740>`_)
+* Removed deprecated write method (`#1738 <https://github.com/ros2/rosbag2/issues/1738>`_)
+* Bugfix for bag_split event callbacks called to early with file compression (`#1643 <https://github.com/ros2/rosbag2/issues/1643>`_)
+* Add topics with zero message counts to the SQLiteStorage::get_metadata(). (`#1725 <https://github.com/ros2/rosbag2/issues/1725>`_)
+* Contributors: Alejandro Hernández Cordero, Michael Orlov, Nicola Loi, Tomoya Fujita
+
+0.28.0 (2024-06-17)
+-------------------
+* Propagate "custom_data" and "ros_distro" in to the metadata.yaml file during re-indexing (`#1700 <https://github.com/ros2/rosbag2/issues/1700>`_)
+* Bugfix for writer not being able to open again after closing (`#1599 <https://github.com/ros2/rosbag2/issues/1599>`_)
+* Contributors: Cole Tucker, yschulz
+
+0.27.0 (2024-04-30)
 -------------------
 
 0.26.1 (2024-04-17)

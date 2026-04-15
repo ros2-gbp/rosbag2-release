@@ -2,44 +2,41 @@
 Changelog for package rosbag2_performance_benchmarking
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.26.10 (2026-04-07)
---------------------
-
-0.26.9 (2025-08-11)
--------------------
-* Fix warning: initialize number_of_threads (`#2121 <https://github.com/ros2/rosbag2/issues/2121>`_) (`#2123 <https://github.com/ros2/rosbag2/issues/2123>`_)
-  Co-authored-by: Cristóbal Arroyo <cristobal.arroyo@ekumenlabs.com>
-* Bugfix: `prosbag2_performance_benchmarking` outputs incorrect results for topics with frequency more than 1 kHz (`#2077 <https://github.com/ros2/rosbag2/issues/2077>`_) (`#2080 <https://github.com/ros2/rosbag2/issues/2080>`_)
-  Co-authored-by: Michael Orlov <morlovmr@gmail.com>
-* Fixes in the rosbag2_performance_benchmarking message data generator (`#2078 <https://github.com/ros2/rosbag2/issues/2078>`_) (`#2084 <https://github.com/ros2/rosbag2/issues/2084>`_)
-  Co-authored-by: Michael Orlov <morlovmr@gmail.com>
-* Enable `rosbag2_performance_benchmarking` package to be built by default (`#2093 <https://github.com/ros2/rosbag2/issues/2093>`_) (`#2097 <https://github.com/ros2/rosbag2/issues/2097>`_)
-  Co-authored-by: Michael Orlov <morlovmr@gmail.com>
-* Fix for failure in the benchmark_launch when using Process.wait twice (`#2076 <https://github.com/ros2/rosbag2/issues/2076>`_) (`#2082 <https://github.com/ros2/rosbag2/issues/2082>`_)
-  Co-authored-by: Michael Orlov <morlovmr@gmail.com>
-* Contributors: mergify[bot]
-
-0.26.8 (2025-07-10)
--------------------
-* [jazzy] Upstream quality changes from Apex.AI part-2 (backport `#1924 <https://github.com/ros2/rosbag2/issues/1924>`_) (`#1987 <https://github.com/ros2/rosbag2/issues/1987>`_)
-* Contributors: Michael Orlov <morlovmr@gmail.com>, Christophe Bedard <bedard.christophe@gmail.com>
-
-0.26.7 (2025-04-22)
+0.33.1 (2026-04-14)
 -------------------
 
-0.26.6 (2024-12-18)
+* Use new ROSIDL aggregate CMake target (`#2384 <https://github.com/ros2/rosbag2/issues/2384>`_)
+* Remove unnecessary dependencies on ``yaml_cpp_vendor`` (`#2353 <https://github.com/ros2/rosbag2/issues/2353>`_)
+* Fix warning by initializing `number_of_threads` (`#2121 <https://github.com/ros2/rosbag2/issues/2121>`_)
+* Enable ``rosbag2_performance_benchmarking`` package to be built by default (`#2093 <https://github.com/ros2/rosbag2/issues/2093>`_)
+* Fix performance benchmarking data generation and environment variable handling (`#2078 <https://github.com/ros2/rosbag2/issues/2078>`_)
+* Fix failure in ``benchmark_launch`` when calling ``Process.wait()`` twice (`#2076 <https://github.com/ros2/rosbag2/issues/2076>`_)
+* Fix incorrect results from ``prosbag2_performance_benchmarking`` for high-frequency topics (`#2077 <https://github.com/ros2/rosbag2/issues/2077>`_)
+* Fix CMAKE deprecation (`#2067 <https://github.com/ros2/rosbag2/issues/2067>`_)
+
+* Contributors: Chris Lalancette, Cristóbal Arroyo, Emerson Knapp, Michael Orlov, mosfet80
+
+0.33.0 (2025-04-25)
+-------------------
+* Upstream quality changes from Apex.AI part-2 (`#1924 <https://github.com/ros2/rosbag2/issues/1924>`_)
+* Contributors: Michael Orlov, Christophe Bedard
+
+0.32.0 (2025-04-18)
 -------------------
 
-0.26.5 (2024-09-06)
+0.31.0 (2025-02-02)
 -------------------
 
-0.26.4 (2024-06-27)
+0.30.0 (2024-11-26)
 -------------------
 
-0.26.3 (2024-05-15)
+0.29.0 (2024-09-03)
 -------------------
 
-0.26.2 (2024-04-24)
+0.28.0 (2024-06-17)
+-------------------
+
+0.27.0 (2024-04-30)
 -------------------
 
 0.26.1 (2024-04-17)

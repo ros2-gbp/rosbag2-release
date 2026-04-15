@@ -61,11 +61,34 @@ class ROSBAG2_CPP_PUBLIC LocalMessageDefinitionSource final
 public:
   /**
    * Concatenate the message definition with its dependencies into a self-contained schema.
-   * The format is different for MSG/SRV and IDL definitions, and is described fully in
+   * The format is different for MSG/SRV/ACTION and IDL definitions, and is described fully in
    * docs/message_definition_encoding.md
    * For SRV type, root_type must include a string '/srv/'.
+   * For ACTION type, root_type must include a string '/action/'.
    */
+  [[deprecated("Use get_full_text_ext() instead, which allows specifying the topic name and "
+     "provides more flexibility in how the message definition is constructed.")]]
   rosbag2_storage::MessageDefinition get_full_text(const std::string & root_type);
+
+  /**
+   * \brief Try to get the message definition and concatenate it with its dependencies into a
+   * self-contained schema.
+   * \details The format is different for MSG/SRV/ACTION and IDL definitions, and is described
+   * fully in the docs/message_definition_encoding.md.
+   * For SRV type, root_type must include a string '/srv/'.
+   * For ACTION type, root_type must include a string '/action/'.
+   * \note That for service or action introspection topics, the topic type will be extended to the
+   * inner original service or action type, respectively, before trying to find the
+   * message definition.
+   * \param[in] topic_name The topic name, which is used to determine the message definition format.
+   * \param[in] root_type The root type of the message definition, which should be a fully qualified
+   * datatype name.
+   * \return A MessageDefinition object containing the encoded message definition and its
+   * dependencies.
+   */
+  rosbag2_storage::MessageDefinition get_full_text_ext(
+    const std::string & root_type,
+    const std::string & topic_name);
 
   enum struct Format
   {
@@ -73,6 +96,7 @@ public:
     MSG = 1,
     IDL = 2,
     SRV = 3,
+    ACTION = 4,
   };
 
   explicit LocalMessageDefinitionSource() = default;
@@ -83,7 +107,9 @@ public:
 private:
   struct MessageSpec
   {
-    MessageSpec(Format format, std::string text, const std::string & package_context);
+    MessageSpec(
+      Format format, std::string text, const std::string & package_context,
+      const std::string & namespace_hint);
     const std::set<std::string> dependencies;
     const std::string text;
     Format format{Format::UNKNOWN};
@@ -144,14 +170,28 @@ private:
 
   std::unordered_map<DefinitionIdentifier,
     MessageSpec, DefinitionIdentifierHash> msg_specs_by_definition_identifier_;
+
+  /**
+   * \brief Action name to inner action interface type cache.
+   *
+   * \note This cache is used to store the inner action interface type for a given action name,
+   * because we can't convert CancelGoalEvent or Status action introspection interface types to
+   * action type directly. Therefore, we will use cache to try to determine the original action
+   * type for CancelGoalEvent, Status action introspection interface types by storing the action
+   * type from other action interface types corresponding to the same action name and original
+   * action type.
+   * The action name is the topic name without the postfix, e.g. for
+   * `/fibonacci/_action/send_goal/_service_event` the action name is `/fibonacci`.
+   */
+  std::unordered_map<std::string, std::string> action_name_to_inner_action_interface_type_cache_;
 };
 
 ROSBAG2_CPP_PUBLIC
 std::set<std::string> parse_definition_dependencies(
   LocalMessageDefinitionSource::Format format,
   const std::string & text,
-  const std::string & package_context);
-
+  const std::string & package_context,
+  const std::string & namespace_hint);
 }  // namespace rosbag2_cpp
 
 #ifdef _WIN32

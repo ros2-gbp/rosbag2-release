@@ -26,7 +26,6 @@
 
 #include "rosbag2_storage/bag_metadata.hpp"
 #include "rosbag2_storage/metadata_io.hpp"
-#include "rosbag2_storage/ros_helper.hpp"
 #include "rosbag2_storage/topic_metadata.hpp"
 
 #include "rosbag2_test_common/tested_storage_ids.hpp"
@@ -211,6 +210,7 @@ TEST_F(SequentialReaderTest, next_file_calls_callback) {
       callback_called = true;
     };
   reader_->add_event_callbacks(callbacks);
+  ASSERT_TRUE(reader_->has_callback_for_event(rosbag2_cpp::bag_events::BagEvent::READ_SPLIT));
 
   reader_->open(default_storage_options_, {"", storage_serialization_format_});
   // Calling read_next() 6 times should trigger the read-split event callback
@@ -251,7 +251,7 @@ TEST_P(ParametrizedTemporaryDirectoryFixture, reader_accepts_bare_file) {
 }
 
 TEST_P(ParametrizedTemporaryDirectoryFixture, get_metadata_include_topics_with_zero_messages) {
-  const auto bag_path = rcpputils::fs::path(temporary_dir_path_) / "bag_with_no_msgs";
+  const auto bag_path = fs::path(temporary_dir_path_) / "bag_with_no_msgs";
   const std::string topic_name = "topic_with_0_messages";
   const auto storage_id = GetParam();
   {

@@ -15,6 +15,7 @@
 #ifndef ROSBAG2_CPP__WRITER_HPP_
 #define ROSBAG2_CPP__WRITER_HPP_
 
+#include <cstddef>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -116,6 +117,15 @@ public:
     const rosbag2_storage::TopicMetadata & topic_with_type,
     const rosbag2_storage::MessageDefinition & message_definition);
 
+  void create_transient_local_topic(
+    const rosbag2_storage::TopicMetadata & topic_with_type,
+    size_t num_last_messages);
+
+  void create_transient_local_topic(
+    const rosbag2_storage::TopicMetadata & topic_with_type,
+    size_t num_last_messages,
+    const rosbag2_storage::MessageDefinition & message_definition);
+
   /**
    * Trigger a snapshot when snapshot mode is enabled.
    * \returns true if snapshot is successful, false if snapshot fails or is not supported
@@ -163,41 +173,23 @@ public:
    * Write a serialized message to a bagfile.
    * The topic will be created if it has not been created already.
    *
-   * \param message rclcpp::SerializedMessage The serialized message to be written to the bagfile
-   * \param topic_name the string of the topic this messages belongs to
-   * \param type_name the string of the type associated with this message
-   * \param time The time stamp of the message
-   * \throws runtime_error if the Writer is not open or duplicating message is failed.
-   */
-  [[deprecated(
-    "Use write(std::shared_ptr<rclcpp::SerializedMessage> message," \
-    " const std::string & topic_name," \
-    " const std::string & type_name," \
-    " const rclcpp::Time & time) instead."
-  )]]
-  void write(
-    const rclcpp::SerializedMessage & message,
-    const std::string & topic_name,
-    const std::string & type_name,
-    const rclcpp::Time & time);
-
-  /**
-   * Write a serialized message to a bagfile.
-   * The topic will be created if it has not been created already.
-   *
    * \warning after calling this function, the serialized data will no longer be managed by message.
    *
    * \param message rclcpp::SerializedMessage The serialized message to be written to the bagfile
    * \param topic_name the string of the topic this messages belongs to
    * \param type_name the string of the type associated with this message
    * \param time The time stamp of the message
+   * \param sequence_number An optional sequence number of the message. If non-zero,
+   * sequence numbers should be unique per channel (per topic and per publisher) and increasing
+   * over time.
    * \throws runtime_error if the Writer is not open.
    */
   void write(
     std::shared_ptr<const rclcpp::SerializedMessage> message,
     const std::string & topic_name,
     const std::string & type_name,
-    const rclcpp::Time & time);
+    const rclcpp::Time & time,
+    uint32_t sequence_number = 0);
 
   /**
    * Write a serialized message to a bagfile.
@@ -210,6 +202,9 @@ public:
    * \param type_name the string of the type associated with this message
    * \param recv_time The time stamp when the message was received
    * \param send_time The time stamp when the message was send
+   * \param sequence_number An optional sequence number of the message. If non-zero,
+   * sequence numbers should be unique per channel (per topic and per publisher) and increasing
+   * over time.
    * \throws runtime_error if the Writer is not open.
    */
   void write(
@@ -217,7 +212,9 @@ public:
     const std::string & topic_name,
     const std::string & type_name,
     const rcutils_time_point_value_t & recv_timestamp,
-    const rcutils_time_point_value_t & send_timestamp);
+    const rcutils_time_point_value_t & send_timestamp,
+    uint32_t sequence_number = 0);
+
   /**
    * Write a non-serialized message to a bagfile.
    * The topic will be created if it has not been created already.
@@ -226,19 +223,24 @@ public:
    * \param topic_name the string of the topic this messages belongs to
    * \param type_name the string of the type associated with this message
    * \param time The time stamp of the message
+   * \param sequence_number An optional sequence number of the message. If non-zero,
+   * sequence numbers should be unique per channel (per topic and per publisher) and increasing
+   * over time.
    * \throws runtime_error if the Writer is not open.
    */
   template<class MessageT>
   void write(
     const MessageT & message,
     const std::string & topic_name,
-    const rclcpp::Time & time)
+    const rclcpp::Time & time,
+    uint32_t sequence_number = 0)
   {
     auto serialized_msg = std::make_shared<rclcpp::SerializedMessage>();
 
     rclcpp::Serialization<MessageT> serialization;
     serialization.serialize_message(&message, serialized_msg.get());
-    return write(serialized_msg, topic_name, rosidl_generator_traits::name<MessageT>(), time);
+    return write(
+      serialized_msg, topic_name, rosidl_generator_traits::name<MessageT>(), time, sequence_number);
   }
 
   writer_interfaces::BaseWriterInterface & get_implementation_handle() const
@@ -246,11 +248,20 @@ public:
     return *writer_impl_;
   }
 
-  /*
+  /**
    * \brief Add callbacks for events that may occur during bag writing.
+   *
    * \param callbacks the structure containing the callback to add for each event.
+   * \throws std::runtime_error if none of the write_split_callback and messages_lost_callback
+   * callbacks are set.
    */
   void add_event_callbacks(bag_events::WriterEventCallbacks & callbacks);
+
+  /**
+   * \brief Check if a callback is registered for the given event.
+   * \return True if there is any callback registered for the event, false otherwise.
+   */
+  [[nodiscard]] bool has_callback_for_event(bag_events::BagEvent event) const;
 
 private:
   std::mutex writer_mutex_;

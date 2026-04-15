@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <csignal>
 #include <chrono>
+#include <filesystem>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -579,8 +580,18 @@ public:
     rclcpp::init(arguments.argc(), arguments.argv(),
                  rclcpp::InitOptions(), rclcpp::SignalHandlerOptions::None);
 
-    if (record_options.rmw_serialization_format.empty()) {
-      record_options.rmw_serialization_format = std::string(rmw_get_serialization_format());
+    if (!record_options.rmw_serialization_format.empty() &&
+      record_options.output_serialization_format.empty())
+    {
+      record_options.output_serialization_format = record_options.rmw_serialization_format;
+      PyErr_WarnEx(PyExc_DeprecationWarning,
+                   "The rmw_serialization_format option is deprecated and will be removed in a "
+                   "future release.\nPlease use output_serialization_format instead.",
+                   1
+      );
+    }
+    if (record_options.output_serialization_format.empty()) {
+      record_options.output_serialization_format = std::string(rmw_get_serialization_format());
     }
     auto writer = rosbag2_transport::ReaderWriterFactory::make_writer(record_options);
 
@@ -681,8 +692,18 @@ public:
     RecordOptions & record_options,
     const std::string & node_name)
   {
-    if (record_options.rmw_serialization_format.empty()) {
-      record_options.rmw_serialization_format = std::string(rmw_get_serialization_format());
+    if (!record_options.rmw_serialization_format.empty() &&
+      record_options.output_serialization_format.empty())
+    {
+      record_options.output_serialization_format = record_options.rmw_serialization_format;
+      PyErr_WarnEx(PyExc_DeprecationWarning,
+                   "The rmw_serialization_format option is deprecated and will be removed in a "
+                   "future release.\nPlease use output_serialization_format instead.",
+                   1
+      );
+    }
+    if (record_options.output_serialization_format.empty()) {
+      record_options.output_serialization_format = std::string(rmw_get_serialization_format());
     }
     auto writer = rosbag2_transport::ReaderWriterFactory::make_writer(record_options);
 
@@ -805,11 +826,58 @@ rosbag2_transport::RecordOptions bag_rewrite_default_record_options()
   return options;
 }
 
-// Simple wrapper to read the output config YAML into structs
+/// \brief Simple wrapper to read the input and output config YAML files into structs
+/// and call rosbag2_transport::bag_rewrite().
 void bag_rewrite(
   const std::vector<rosbag2_storage::StorageOptions> & input_options,
-  std::string output_config_file)
+  const std::string & input_config_file,
+  const std::string & output_config_file)
 {
+  // Validate that only one input source is provided
+  bool has_input_options = !input_options.empty();
+  bool has_input_config = !input_config_file.empty();
+
+  if (!has_input_options && !has_input_config) {
+    throw std::runtime_error(
+      "Either input_options vector or input_config_file must be provided.");
+  }
+
+  if (has_input_options && has_input_config) {
+    throw std::runtime_error("Exactly one input source must be provided: provide either"
+                             " input_options or input_config_file, but not both.");
+  }
+
+  std::vector<rosbag2_storage::StorageOptions> effective_input_options = input_options;
+
+  // Parse input options from YAML if provided
+  if (has_input_config) {
+    effective_input_options.clear();
+    YAML::Node input_yaml = YAML::LoadFile(input_config_file);
+    auto input_nodes = input_yaml["input_bags"];
+    if (!input_nodes) {
+      throw std::runtime_error("Input bag config YAML file must have top-level key 'input_bags'");
+    }
+    if (!input_nodes.IsSequence()) {
+      throw std::runtime_error(
+        "Top-level key 'input_bags' must contain a list of StorageOptions dicts.");
+    }
+
+    for (const auto & bag_node : input_nodes) {
+      rosbag2_storage::StorageOptions storage_options{};
+      YAML::convert<rosbag2_storage::StorageOptions>::decode(bag_node, storage_options);
+
+      if (storage_options.uri.empty()) {
+        throw std::runtime_error("Input bag StorageOptions must specify a non-empty 'uri'.");
+      }
+      if (!std::filesystem::exists(storage_options.uri)) {
+        throw std::runtime_error("Bag path '" + storage_options.uri + "' does not exist!");
+      }
+
+      effective_input_options.push_back(storage_options);
+    }
+  }
+
+  // Parse output options from YAML
   YAML::Node yaml_file = YAML::LoadFile(output_config_file);
   auto bag_nodes = yaml_file["output_bags"];
   if (!bag_nodes) {
@@ -830,7 +898,7 @@ void bag_rewrite(
     YAML::convert<rosbag2_transport::RecordOptions>::decode(bag_node, record_options);
     output_options.push_back(std::make_pair(storage_options, record_options));
   }
-  rosbag2_transport::bag_rewrite(input_options, output_options);
+  rosbag2_transport::bag_rewrite(effective_input_options, output_options);
 }
 
 }  // namespace rosbag2_py
@@ -851,10 +919,12 @@ PYBIND11_MODULE(_transport, m) {
   .def_readwrite("rate", &PlayOptions::rate)
   .def_readwrite("topics_to_filter", &PlayOptions::topics_to_filter)
   .def_readwrite("services_to_filter", &PlayOptions::services_to_filter)
+  .def_readwrite("actions_to_filter", &PlayOptions::actions_to_filter)
   .def_readwrite("regex_to_filter", &PlayOptions::regex_to_filter)
   .def_readwrite("exclude_regex_to_filter", &PlayOptions::exclude_regex_to_filter)
   .def_readwrite("exclude_topics_to_filter", &PlayOptions::exclude_topics_to_filter)
   .def_readwrite("exclude_service_events_to_filter", &PlayOptions::exclude_services_to_filter)
+  .def_readwrite("exclude_actions_to_filter", &PlayOptions::exclude_actions_to_filter)
   .def_property(
     "topic_qos_profile_overrides",
     &PlayOptions::getTopicQoSProfileOverrides,
@@ -882,15 +952,24 @@ PYBIND11_MODULE(_transport, m) {
     "playback_until_timestamp",
     &PlayOptions::getPlaybackUntilTimestamp,
     &PlayOptions::setPlaybackUntilTimestamp)
+  .def_readwrite("progress_bar_update_rate", &PlayOptions::progress_bar_update_rate)
+  .def_readwrite("progress_bar_separation_lines", &PlayOptions::progress_bar_separation_lines)
   .def_readwrite("wait_acked_timeout", &PlayOptions::wait_acked_timeout)
   .def_readwrite("disable_loan_message", &PlayOptions::disable_loan_message)
   .def_readwrite("publish_service_requests", &PlayOptions::publish_service_requests)
+  .def_readwrite("send_actions_as_client", &PlayOptions::send_actions_as_client)
   .def_readwrite("service_requests_source", &PlayOptions::service_requests_source)
+  .def_readwrite("message_order", &PlayOptions::message_order)
   ;
 
   py::enum_<rosbag2_transport::ServiceRequestsSource>(m, "ServiceRequestsSource")
-  .value("SERVICE_INTROSPECTION", rosbag2_transport::ServiceRequestsSource::SERVICE_INTROSPECTION)
+  .value("SERVICE_INTROSPECTION", rosbag2_transport::ServiceRequestsSource::SERVER_INTROSPECTION)
   .value("CLIENT_INTROSPECTION", rosbag2_transport::ServiceRequestsSource::CLIENT_INTROSPECTION)
+  ;
+
+  py::enum_<rosbag2_transport::MessageOrder>(m, "MessageOrder")
+  .value("RECEIVED_TIMESTAMP", rosbag2_transport::MessageOrder::RECEIVED_TIMESTAMP)
+  .value("SENT_TIMESTAMP", rosbag2_transport::MessageOrder::SENT_TIMESTAMP)
   ;
 
   py::class_<RecordOptions>(m, "RecordOptions")
@@ -898,9 +977,12 @@ PYBIND11_MODULE(_transport, m) {
   .def_readwrite("all_topics", &RecordOptions::all_topics)
   .def_readwrite("is_discovery_disabled", &RecordOptions::is_discovery_disabled)
   .def_readwrite("topics", &RecordOptions::topics)
+  .def_readwrite("static_topics_uri", &RecordOptions::static_topics_uri)
   .def_readwrite("topic_types", &RecordOptions::topic_types)
   .def_readwrite("exclude_topic_types", &RecordOptions::exclude_topic_types)
   .def_readwrite("rmw_serialization_format", &RecordOptions::rmw_serialization_format)
+  .def_readwrite("input_serialization_format", &RecordOptions::input_serialization_format)
+  .def_readwrite("output_serialization_format", &RecordOptions::output_serialization_format)
   .def_readwrite("topic_polling_interval", &RecordOptions::topic_polling_interval)
   .def_readwrite("regex", &RecordOptions::regex)
   .def_readwrite("exclude_regex", &RecordOptions::exclude_regex)
@@ -924,6 +1006,13 @@ PYBIND11_MODULE(_transport, m) {
   .def_readwrite("services", &RecordOptions::services)
   .def_readwrite("all_services", &RecordOptions::all_services)
   .def_readwrite("disable_keyboard_controls", &RecordOptions::disable_keyboard_controls)
+  .def_readwrite("actions", &RecordOptions::actions)
+  .def_readwrite("all_actions", &RecordOptions::all_actions)
+  .def_readwrite("exclude_actions", &RecordOptions::exclude_actions)
+  .def_readwrite("statistics_max_publishing_rate", &RecordOptions::statistics_max_publishing_rate)
+  .def_readwrite("repeat_transient_local_messages", &RecordOptions::repeat_transient_local_messages)
+  .def_readwrite("repeat_all_transient_local_depth",
+                 &RecordOptions::repeat_all_transient_local_depth)
   ;
 
   py::class_<rosbag2_py::Player>(m, "Player")
@@ -1281,5 +1370,33 @@ PYBIND11_MODULE(_transport, m) {
   m.def(
     "bag_rewrite",
     &rosbag2_py::bag_rewrite,
-    "Given one or more input bags, output one or more bags with new settings.");
+    py::arg("input_options"),
+    py::arg("input_config_file"),
+    py::arg("output_config_file"),
+    R"pbdoc(
+      Rewrite one or more input bags into one or more output bags according to provided settings.
+
+      Exactly one input source must be provided:
+        - Either `input_options`: a list of StorageOptions describing input bags.
+        - Or `input_config_file`: path to a YAML config file containing `input_bags` entries.
+
+      The `output_config_file` must be a YAML config with an `output_bags` list, where each entry
+      may contain StorageOptions and RecordOptions fields used to configure the output bags.
+
+      Args:
+        input_options (List[StorageOptions], optional):
+          In-memory input bag configurations. Default is an empty list.
+        input_config_file (str, optional):
+          Path to a YAML config file that defines `input_bags`. Default is empty.
+        output_config_file (str):
+          Path to a YAML config file that defines `output_bags` with StorageOptions and
+          RecordOptions.
+
+      Raises:
+        RuntimeError:
+          - If neither or both input sources are provided.
+          - If required YAML keys are missing or misformatted.
+          - If any input bag URI does not exist.
+    )pbdoc"
+  );
 }

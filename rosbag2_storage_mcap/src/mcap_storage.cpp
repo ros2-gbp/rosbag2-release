@@ -18,25 +18,8 @@
 #include "rosbag2_storage/metadata_io.hpp"
 #include "rosbag2_storage/ros_helper.hpp"
 #include "rosbag2_storage/storage_interfaces/read_write_interface.hpp"
+#include "rosbag2_storage/yaml.hpp"
 #include "rosbag2_storage_mcap/visibility_control.hpp"
-
-#ifdef ROSBAG2_STORAGE_MCAP_HAS_YAML_HPP
-  #include "rosbag2_storage/yaml.hpp"
-#else
-  // COMPATIBILITY(foxy, galactic) - this block is available in rosbag2_storage/yaml.hpp in H
-  #ifdef _WIN32
-    // This is necessary because of a bug in yaml-cpp's cmake
-    #define YAML_CPP_DLL
-    // This is necessary because yaml-cpp does not always use dllimport/dllexport consistently
-    #pragma warning(push)
-    #pragma warning(disable : 4251)
-    #pragma warning(disable : 4275)
-  #endif
-  #include "yaml-cpp/yaml.h"
-  #ifdef _WIN32
-    #pragma warning(pop)
-  #endif
-#endif
 
 #include <mcap/mcap.hpp>
 
@@ -221,6 +204,9 @@ public:
   void write(std::shared_ptr<const rosbag2_storage::SerializedBagMessage> msg) override;
   void write(
     const std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>> & msg) override;
+  bool write_message(std::shared_ptr<const rosbag2_storage::SerializedBagMessage> msg) override;
+  std::vector<size_t> write_messages(
+    const rosbag2_storage::SerializedBagMessages & messages) override;
   void create_topic(const rosbag2_storage::TopicMetadata & topic,
                     const rosbag2_storage::MessageDefinition & message_definition) override;
   void remove_topic(const rosbag2_storage::TopicMetadata & topic) override;
@@ -230,12 +216,10 @@ public:
 
 private:
   void read_metadata();
-  void write_lock_free(std::shared_ptr<const rosbag2_storage::SerializedBagMessage> msg);
+  bool write_lock_free(std::shared_ptr<const rosbag2_storage::SerializedBagMessage> msg);
   void open_impl(const std::string & uri, const std::string & preset_profile,
                  rosbag2_storage::storage_interfaces::IOFlag io_flag,
                  const std::string & storage_config_uri);
-
-  static bool is_topic_name_a_service_event(const std::string_view topic_name);
 
   /// \brief Check if topic match with the selection criteria by the white list or regex during
   /// data read.
@@ -566,7 +550,9 @@ bool MCAPStorage::read_and_enqueue_message()
   return true;
 }
 
-bool MCAPStorage::is_topic_name_a_service_event(const std::string_view topic_name)
+namespace
+{
+bool is_topic_name_a_service_event(const std::string_view topic_name)
 {
   // The origin definition is RCL_SERVICE_INTROSPECTION_TOPIC_POSTFIX
   static const char * service_event_topic_postfix = "/_service_event";
@@ -581,6 +567,24 @@ bool MCAPStorage::is_topic_name_a_service_event(const std::string_view topic_nam
   }
   return true;
 }
+
+// The postfix of the action internal topics and service event topics
+const std::vector<std::string> ActionInterfacePostfix = {
+  "/_action/send_goal/_service_event", "/_action/cancel_goal/_service_event",
+  "/_action/get_result/_service_event", "/_action/feedback", "/_action/status"};
+
+bool is_topic_name_related_to_action(const std::string_view topic_name)
+{
+  for (const auto & postfix : ActionInterfacePostfix) {
+    if (topic_name.length() > postfix.length() &&
+        topic_name.compare(topic_name.length() - postfix.length(), postfix.length(), postfix) ==
+          0) {
+      return true;
+    }
+  }
+  return false;
+}
+}  // namespace
 
 template <typename T>
 bool MCAPStorage::is_topic_selected_by_white_list_or_regex(const std::string_view topic_name,
@@ -644,18 +648,25 @@ void MCAPStorage::reset_iterator()
   options.readOrder = read_order_;
 
   auto topic_filter = [this](std::string_view topic) {
-    bool topic_a_service_event = is_topic_name_a_service_event(topic);
+    std::vector<std::string> * include_list = nullptr;
+    std::vector<std::string> * exclude_list = nullptr;
 
-    const auto & include_list =
-      topic_a_service_event ? storage_filter_.services_events : storage_filter_.topics;
+    if (is_topic_name_related_to_action(topic)) {
+      include_list = &storage_filter_.actions_interfaces;
+      exclude_list = &storage_filter_.exclude_actions_interfaces;
+    } else if (is_topic_name_a_service_event(topic)) {
+      include_list = &storage_filter_.services_events;
+      exclude_list = &storage_filter_.exclude_service_events;
+    } else {
+      include_list = &storage_filter_.topics;
+      exclude_list = &storage_filter_.exclude_topics;
+    }
 
-    const auto & exclude_list = topic_a_service_event ? storage_filter_.exclude_service_events
-                                                      : storage_filter_.exclude_topics;
     // if topic not found in exclude list or regex_to_exclude
-    if (!is_topic_in_black_list_or_exclude_regex(topic, exclude_list,
+    if (!is_topic_in_black_list_or_exclude_regex(topic, *exclude_list,
                                                  storage_filter_.regex_to_exclude)) {
       // if topic selected by include list or regex
-      if (is_topic_selected_by_white_list_or_regex(topic, include_list, storage_filter_.regex)) {
+      if (is_topic_selected_by_white_list_or_regex(topic, *include_list, storage_filter_.regex)) {
         return true;
       }
     }
@@ -837,8 +848,11 @@ uint64_t MCAPStorage::get_minimum_split_file_size() const
 /** BaseWriteInterface **/
 void MCAPStorage::write(std::shared_ptr<const rosbag2_storage::SerializedBagMessage> msg)
 {
-  std::lock_guard<std::mutex> lock(mcap_storage_mutex_);
-  write_lock_free(msg);
+  if (!write_message(msg)) {
+    throw std::runtime_error{std::string{"Message on topic '"} + msg->topic_name + "' of size '" +
+                             std::to_string(msg->serialized_data->buffer_length) +
+                             "' bytes failed to write to MCAP file. It will be lost."};
+  }
 }
 
 void MCAPStorage::write(
@@ -846,11 +860,36 @@ void MCAPStorage::write(
 {
   std::lock_guard<std::mutex> lock(mcap_storage_mutex_);
   for (const auto & msg : msgs) {
-    write_lock_free(msg);
+    if (!write_lock_free(msg)) {
+      throw std::runtime_error{std::string{"Message on topic '"} + msg->topic_name + "' of size '" +
+                               std::to_string(msg->serialized_data->buffer_length) +
+                               "' bytes failed to write to MCAP file. It will be lost."};
+    }
   }
 }
 
-void MCAPStorage::write_lock_free(std::shared_ptr<const rosbag2_storage::SerializedBagMessage> msg)
+bool MCAPStorage::write_message(std::shared_ptr<const rosbag2_storage::SerializedBagMessage> msg)
+{
+  std::lock_guard<std::mutex> lock(mcap_storage_mutex_);
+  return write_lock_free(msg);
+}
+
+std::vector<size_t> MCAPStorage::write_messages(
+  const rosbag2_storage::SerializedBagMessages & messages)
+{
+  std::vector<size_t> lost_messages;
+  std::lock_guard<std::mutex> lock(mcap_storage_mutex_);
+  size_t current_message_index = 0;
+  for (const auto & msg : messages) {
+    if (!write_lock_free(msg)) {
+      lost_messages.push_back(current_message_index);
+    }
+    current_message_index++;
+  }
+  return lost_messages;
+}
+
+bool MCAPStorage::write_lock_free(std::shared_ptr<const rosbag2_storage::SerializedBagMessage> msg)
 {
   const auto topic_it = topics_.find(msg->topic_name);
   if (topic_it == topics_.end()) {
@@ -866,7 +905,7 @@ void MCAPStorage::write_lock_free(std::shared_ptr<const rosbag2_storage::Seriali
 
   mcap::Message mcap_msg;
   mcap_msg.channelId = channel_it->second;
-  mcap_msg.sequence = 0;
+  mcap_msg.sequence = msg->sequence_number;
   if (msg->recv_timestamp < 0) {
     RCUTILS_LOG_WARN_NAMED(LOG_NAME, "Invalid message timestamp %ld", msg->recv_timestamp);
   }
@@ -876,9 +915,12 @@ void MCAPStorage::write_lock_free(std::shared_ptr<const rosbag2_storage::Seriali
   mcap_msg.data = reinterpret_cast<const std::byte *>(msg->serialized_data->buffer);
   const auto status = mcap_writer_->write(mcap_msg);
   if (!status.ok()) {
-    throw std::runtime_error{std::string{"Failed to write "} +
-                             std::to_string(msg->serialized_data->buffer_length) +
-                             " byte message to MCAP file: " + status.message};
+    RCUTILS_LOG_DEBUG_NAMED(LOG_NAME,
+                            "Message on topic '%s' of size %zu bytes failed to write to MCAP file:"
+                            " %s",
+                            msg->topic_name.c_str(), msg->serialized_data->buffer_length,
+                            status.message.c_str());
+    return false;
   }
 
   /// Update metadata
@@ -889,6 +931,7 @@ void MCAPStorage::write_lock_free(std::shared_ptr<const rosbag2_storage::Seriali
   // Determine recording duration
   const auto message_time = time_point(std::chrono::nanoseconds(msg->recv_timestamp));
   metadata_.duration = std::max(metadata_.duration, message_time - metadata_.starting_time);
+  return true;
 }
 
 void MCAPStorage::create_topic(const rosbag2_storage::TopicMetadata & topic,

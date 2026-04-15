@@ -2,31 +2,37 @@
 Changelog for package rosbag2_examples_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.26.10 (2026-04-07)
---------------------
-
-0.26.9 (2025-08-11)
+0.33.1 (2026-04-14)
 -------------------
 
-0.26.8 (2025-07-10)
+* Use new ROSIDL aggregate CMake target (`#2384 <https://github.com/ros2/rosbag2/issues/2384>`_)
+* Update subscription callback signatures (`#2225 <https://github.com/ros2/rosbag2/issues/2225>`_)
+* Fix CMAKE deprecation (`#2067 <https://github.com/ros2/rosbag2/issues/2067>`_)
+* Add examples for compressing bag files (`#1956 <https://github.com/ros2/rosbag2/issues/1956>`_)
+
+* Contributors: Emerson Knapp, Maxime Fleury, mini-1235, mosfet80
+
+0.33.0 (2025-04-25)
 -------------------
 
-0.26.7 (2025-04-22)
+0.32.0 (2025-04-18)
 -------------------
 
-0.26.6 (2024-12-18)
+0.31.0 (2025-02-02)
 -------------------
 
-0.26.5 (2024-09-06)
+0.30.0 (2024-11-26)
 -------------------
 
-0.26.4 (2024-06-27)
+0.29.0 (2024-09-03)
+-------------------
+* Add rosbag2_examples_cpp/simple_bag_reader.cpp. (`#1683 <https://github.com/ros2/rosbag2/issues/1683>`_)
+* Contributors: Tomoya Fujita
+
+0.28.0 (2024-06-17)
 -------------------
 
-0.26.3 (2024-05-15)
--------------------
-
-0.26.2 (2024-04-24)
+0.27.0 (2024-04-30)
 -------------------
 
 0.26.1 (2024-04-17)

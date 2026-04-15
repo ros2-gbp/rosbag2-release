@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.20)
 project(rosbag2_interfaces)
 
 if(NOT CMAKE_CXX_STANDARD)
@@ -16,6 +16,8 @@ find_package(rosidl_default_generators REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ReadSplitEvent.msg"
   "msg/WriteSplitEvent.msg"
+  "msg/MessagesLostEventTopicStat.msg"
+  "msg/MessagesLostEvent.msg"
   "srv/Burst.srv"
   "srv/GetRate.srv"
   "srv/IsDiscoveryRunning.srv"

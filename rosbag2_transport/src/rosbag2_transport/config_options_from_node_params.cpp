@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "rclcpp/logging.hpp"
+#include "rosbag2_cpp/action_utils.hpp"
 #include "rosbag2_cpp/service_utils.hpp"
 #include "rosbag2_storage/qos.hpp"
 #include "rosbag2_transport/play_options.hpp"
@@ -50,6 +51,17 @@ rcl_interfaces::msg::ParameterDescriptor float_param_description(
   r.to_value = max;
   d.floating_point_range.push_back(r);
   return d;
+}
+
+/// Split a "key=value" string into a pair. If no '=' is found, returns {entry, default_value}.
+std::pair<std::string, std::string> split_key_value(
+  const std::string & entry, const std::string & default_value = "")
+{
+  auto pos = entry.find('=');
+  if (pos == std::string::npos) {
+    return {entry, default_value};
+  }
+  return {entry.substr(0, pos), entry.substr(pos + 1)};
 }
 
 template<typename T>
@@ -140,6 +152,9 @@ PlayOptions get_play_options_from_node_params(rclcpp::Node & node)
   }
   play_options.services_to_filter = service_list;
 
+  play_options.actions_to_filter = node.declare_parameter<std::vector<std::string>>(
+    "play.actions_to_filter", std::vector<std::string>());
+
   play_options.regex_to_filter =
     node.declare_parameter<std::string>("play.regex_to_filter", "");
 
@@ -156,6 +171,9 @@ PlayOptions get_play_options_from_node_params(rclcpp::Node & node)
     service = rosbag2_cpp::service_name_to_service_event_topic_name(service);
   }
   play_options.exclude_services_to_filter = exclude_service_list;
+
+  play_options.exclude_actions_to_filter = node.declare_parameter<std::vector<std::string>>(
+    "play.exclude_actions_to_filter", std::vector<std::string>());
 
   std::string qos_profile_overrides_path =
     node.declare_parameter<std::string>("play.qos_profile_overrides_path", "");
@@ -222,11 +240,11 @@ PlayOptions get_play_options_from_node_params(rclcpp::Node & node)
   auto service_requests_source =
     node.declare_parameter<std::string>("play.service_requests_source", "SERVICE_INTROSPECTION");
   if (service_requests_source == "SERVICE_INTROSPECTION") {
-    play_options.service_requests_source = ServiceRequestsSource::SERVICE_INTROSPECTION;
+    play_options.service_requests_source = ServiceRequestsSource::SERVER_INTROSPECTION;
   } else if (service_requests_source == "CLIENT_INTROSPECTION") {
     play_options.service_requests_source = ServiceRequestsSource::CLIENT_INTROSPECTION;
   } else {
-    play_options.service_requests_source = ServiceRequestsSource::SERVICE_INTROSPECTION;
+    play_options.service_requests_source = ServiceRequestsSource::SERVER_INTROSPECTION;
     RCLCPP_ERROR(
       node.get_logger(),
       "play.service_requests_source doesn't support %s. It must be one of SERVICE_INTROSPECTION"
@@ -237,6 +255,31 @@ PlayOptions get_play_options_from_node_params(rclcpp::Node & node)
   play_options.publish_service_requests =
     node.declare_parameter<bool>("play.publish_service_request", false);
 
+  play_options.send_actions_as_client =
+    node.declare_parameter<bool>("play.send_actions_as_client", false);
+
+  auto message_order =
+    node.declare_parameter<std::string>("play.message_order", "RECEIVED_TIMESTAMP");
+  if (message_order == "RECEIVED_TIMESTAMP") {
+    play_options.message_order = MessageOrder::RECEIVED_TIMESTAMP;
+  } else if (message_order == "SENT_TIMESTAMP") {
+    play_options.message_order = MessageOrder::SENT_TIMESTAMP;
+  } else {
+    play_options.message_order = MessageOrder::RECEIVED_TIMESTAMP;
+    RCLCPP_ERROR(
+      node.get_logger(),
+      "play.message_order doesn't support %s. It must be one of RECEIVED_TIMESTAMP"
+      " and SENT_TIMESTAMP. Changed it to default value RECEIVED_TIMESTAMP.",
+      message_order.c_str());
+  }
+
+  play_options.progress_bar_update_rate = param_utils::declare_integer_node_params<int32_t>(
+    node, "play.progress_bar_update_rate", std::numeric_limits<int32_t>::min(),
+    std::numeric_limits<int32_t>::max(), 3);
+
+  play_options.progress_bar_separation_lines = param_utils::declare_integer_node_params<uint32_t>(
+    node, "play.progress_bar_separation_lines", 0, std::numeric_limits<uint32_t>::max(), 2);
+
   return play_options;
 }
 
@@ -245,6 +288,7 @@ RecordOptions get_record_options_from_node_params(rclcpp::Node & node)
   RecordOptions record_options{};
   record_options.all_topics = node.declare_parameter<bool>("record.all_topics", false);
   record_options.all_services = node.declare_parameter<bool>("record.all_services", false);
+  record_options.all_actions = node.declare_parameter<bool>("record.all_actions", false);
 
   record_options.is_discovery_disabled =
     node.declare_parameter<bool>("record.is_discovery_disabled", false);
@@ -263,6 +307,9 @@ RecordOptions get_record_options_from_node_params(rclcpp::Node & node)
   }
   record_options.services = service_list;
 
+  record_options.actions = node.declare_parameter<std::vector<std::string>>(
+    "record.actions", std::vector<std::string>());
+
   record_options.exclude_topics = node.declare_parameter<std::vector<std::string>>(
     "record.exclude_topics", std::vector<std::string>());
 
@@ -277,8 +324,16 @@ RecordOptions get_record_options_from_node_params(rclcpp::Node & node)
   }
   record_options.exclude_service_events = exclude_service_list;
 
+  record_options.exclude_actions = node.declare_parameter<std::vector<std::string>>(
+    "record.exclude_actions", std::vector<std::string>());
+
   record_options.rmw_serialization_format =
     node.declare_parameter<std::string>("record.rmw_serialization_format", "cdr");
+
+  record_options.input_serialization_format =
+    node.declare_parameter<std::string>("record.input_serialization_format", "cdr");
+  record_options.output_serialization_format =
+    node.declare_parameter<std::string>("record.output_serialization_format", "cdr");
 
   record_options.topic_polling_interval = param_utils::get_duration_from_node_param(
     node, "record.topic_polling_interval",
@@ -336,6 +391,42 @@ RecordOptions get_record_options_from_node_params(rclcpp::Node & node)
   record_options.disable_keyboard_controls =
     node.declare_parameter<bool>("record.disable_keyboard_controls", false);
 
+  auto repeat_transient_local = node.declare_parameter<std::vector<std::string>>(
+    "record.repeat_transient_local", std::vector<std::string>());
+  for (const auto & entry : repeat_transient_local) {
+    auto [topic_name, depth_str] = param_utils::split_key_value(entry, "1");
+    if (topic_name.empty()) {
+      throw std::invalid_argument(
+              "record.repeat_transient_local topic name cannot be empty.");
+    }
+    if (depth_str.empty()) {
+      throw std::invalid_argument(
+              "record.repeat_transient_local expects entries in <topic> or <topic>=<depth> "
+              "format.");
+    }
+    size_t queue_depth = 1;
+    try {
+      queue_depth = std::stoul(depth_str);
+    } catch (const std::exception &) {
+      throw std::invalid_argument(
+              "record.repeat_transient_local depth must be a positive integer.");
+    }
+    if (queue_depth == 0) {
+      throw std::invalid_argument(
+              "record.repeat_transient_local depth must be greater than 0.");
+    }
+    record_options.repeat_transient_local_messages[topic_name] = queue_depth;
+  }
+
+  auto repeat_all_transient_local_depth = node.declare_parameter<int>(
+    "record.repeat_all_transient_local", 0);
+  if (repeat_all_transient_local_depth < 0) {
+    throw std::invalid_argument(
+            "record.repeat_all_transient_local depth must be a non-negative integer.");
+  }
+  record_options.repeat_all_transient_local_depth =
+    static_cast<uint32_t>(repeat_all_transient_local_depth);
+
   record_options.use_sim_time = node.get_parameter("use_sim_time").get_value<bool>();
 
   if (record_options.use_sim_time && record_options.is_discovery_disabled) {
@@ -343,6 +434,17 @@ RecordOptions get_record_options_from_node_params(rclcpp::Node & node)
             "'use_sim_time' and 'is_discovery_disabled' both set, but are incompatible settings. "
             "The `/clock` topic needs to be discovered to record with sim time.");
   }
+
+  auto desc_rate = param_utils::float_param_description(
+    "Maximum rate in times per second (Hz) at which the statistics about lost messages"
+    " will be published. If set to 0, no statistics will be published. The value must be greater"
+    " than or equal to 0 and less than or equal to 1000.",
+    0.0f,
+    1000.0f);
+  record_options.statistics_max_publishing_rate =
+    static_cast<float>(node.declare_parameter<float>("record.statistics_max_publishing_rate",
+                                                     1.0f,
+                                                     desc_rate));
   return record_options;
 }
 
@@ -366,9 +468,17 @@ get_storage_options_from_node_params(rclcpp::Node & node)
     node, "storage.max_bagfile_duration", 0,
     std::numeric_limits<int64_t>::max(), storage_options.max_bagfile_duration);
 
+  storage_options.max_bag_files = param_utils::declare_integer_node_params<uint64_t>(
+    node, "storage.max_bag_files", 0,
+    std::numeric_limits<int64_t>::max(), storage_options.max_bag_files);
+
   storage_options.max_cache_size = param_utils::declare_integer_node_params<uint64_t>(
     node, "storage.max_cache_size", 0,
     std::numeric_limits<int64_t>::max(), 100 * 1024 * 1024);
+
+  storage_options.max_cache_duration = param_utils::declare_integer_node_params<uint32_t>(
+    node, "storage.max_cache_duration", 0,
+    std::numeric_limits<uint32_t>::max(), storage_options.max_cache_duration);
 
   storage_options.storage_preset_profile =
     node.declare_parameter<std::string>("storage.storage_preset_profile", "");
@@ -379,15 +489,12 @@ get_storage_options_from_node_params(rclcpp::Node & node)
     "storage.custom_data",
     std::vector<std::string>());
   for (const auto & key_value_string : list_of_key_value_strings) {
-    auto delimiter_pos = key_value_string.find("=", 0);
-    if (delimiter_pos == std::string::npos) {
-      std::stringstream ss;
-      ss << "The storage.custom_data expected to be as list of the key=value strings. "
-        "The `=` not found in the " << key_value_string;
-      throw std::invalid_argument(ss.str());
+    auto [key_string, value_string] = param_utils::split_key_value(key_value_string);
+    if (value_string.empty() && key_value_string.find('=') == std::string::npos) {
+      throw std::invalid_argument(
+        "The storage.custom_data expected to be as list of the key=value strings. "
+        "The `=` not found in the " + key_value_string);
     }
-    auto key_string = key_value_string.substr(0, delimiter_pos);
-    auto value_string = key_value_string.substr(delimiter_pos + 1);
     storage_options.custom_data[key_string] = value_string;
   }
 

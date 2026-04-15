@@ -30,26 +30,33 @@ Node convert<rosbag2_transport::RecordOptions>::encode(
   // RecordOptions without updating this function.
   // Note: Please don't forget to update the test case `test_yaml_serialization_deserialization`
   // in `test_record_options.cpp` when updating the fields in RecordOptions.
-  auto & [all_topics, all_services, is_discovery_disabled,
-    topics, topic_types, services,
-    exclude_topics, exclude_topic_types, exclude_service_events,
-    rmw_serialization_format,
+  auto & [all_topics, all_services, all_actions, is_discovery_disabled,
+    topics, topic_types, services, actions,
+    exclude_topics, exclude_topic_types, exclude_service_events, exclude_actions,
+    rmw_serialization_format, input_serialization_format, output_serialization_format,
     topic_polling_interval, regex, exclude_regex, node_prefix,
     compression_mode, compression_format, compression_queue_size, compression_threads,
     compression_threads_priority, topic_qos_profile_overrides,
     include_hidden_topics, include_unpublished_topics, ignore_leaf_topics,
-    start_paused, use_sim_time, disable_keyboard_controls] = record_options;
+    start_paused, use_sim_time, static_topics_uri, disable_keyboard_controls,
+    statistics_max_publishing_rate, repeat_transient_local_messages,
+    repeat_all_transient_local_depth] = record_options;
   Node node;
   node["all_topics"] = all_topics;
   node["all_services"] = all_services;
+  node["all_actions"] = all_actions;
   node["is_discovery_disabled"] = is_discovery_disabled;
   node["topics"] = topics;
   node["topic_types"] = topic_types;
   node["services"] = services;
+  node["actions"] = actions;
   node["exclude_topics"] = exclude_topics;
   node["exclude_topic_types"] = exclude_topic_types;
   node["exclude_services"] = exclude_service_events;
+  node["exclude_actions"] = exclude_actions;
   node["rmw_serialization_format"] = rmw_serialization_format;
+  node["input_serialization_format"] = input_serialization_format;
+  node["output_serialization_format"] = output_serialization_format;
   node["topic_polling_interval"] = topic_polling_interval;
   node["regex"] = regex;
   node["exclude_regex"] = exclude_regex;
@@ -66,7 +73,11 @@ Node convert<rosbag2_transport::RecordOptions>::encode(
   node["ignore_leaf_topics"] = ignore_leaf_topics;
   node["start_paused"] = start_paused;
   node["use_sim_time"] = use_sim_time;
+  node["static_topics_uri"] = static_topics_uri;
   node["disable_keyboard_controls"] = disable_keyboard_controls;
+  node["statistics_max_publishing_rate"] = statistics_max_publishing_rate;
+  node["repeat_transient_local_messages"] = repeat_transient_local_messages;
+  node["repeat_all_transient_local_depth"] = repeat_all_transient_local_depth;
   return node;
 }
 
@@ -77,33 +88,45 @@ bool convert<rosbag2_transport::RecordOptions>::decode(
   // RecordOptions without updating this function.
   // Note: Please don't forget to update the test case `test_yaml_serialization_deserialization`
   // in `test_record_options.cpp` when updating the fields in RecordOptions.
-  auto & [all_topics, all_services, is_discovery_disabled,
-    topics, topic_types, services,
-    exclude_topics, exclude_topic_types, exclude_service_events,
-    rmw_serialization_format,
+  auto & [all_topics, all_services, all_actions, is_discovery_disabled,
+    topics, topic_types, services, actions,
+    exclude_topics, exclude_topic_types, exclude_service_events, exclude_actions,
+    rmw_serialization_format, input_serialization_format, output_serialization_format,
     topic_polling_interval, regex, exclude_regex, node_prefix,
     compression_mode, compression_format, compression_queue_size, compression_threads,
     compression_threads_priority, topic_qos_profile_overrides,
     include_hidden_topics, include_unpublished_topics, ignore_leaf_topics,
-    start_paused, use_sim_time, disable_keyboard_controls] = record_options;
+    start_paused, use_sim_time, static_topics_uri, disable_keyboard_controls,
+    statistics_max_publishing_rate, repeat_transient_local_messages,
+    repeat_all_transient_local_depth] = record_options;
 
   optional_assign<bool>(node, "all_topics", all_topics);
   optional_assign<bool>(node, "all_services", all_services);
+  optional_assign<bool>(node, "all_actions", all_actions);
   bool record_options_all{false};  // Parse `all` for backward compatability and convenient usage
   optional_assign<bool>(node, "all", record_options_all);
   if (record_options_all) {
     all_topics = true;
     all_services = true;
+    all_actions = true;
   }
 
   optional_assign<bool>(node, "is_discovery_disabled", is_discovery_disabled);
   optional_assign<std::vector<std::string>>(node, "topics", topics);
   optional_assign<std::vector<std::string>>(node, "topic_types", topic_types);
   optional_assign<std::vector<std::string>>(node, "services", services);
+  optional_assign<std::vector<std::string>>(node, "actions", actions);
   optional_assign<std::vector<std::string>>(node, "exclude_topics", exclude_topics);
   optional_assign<std::vector<std::string>>(node, "exclude_topic_types", exclude_topic_types);
   optional_assign<std::vector<std::string>>(node, "exclude_services", exclude_service_events);
-  optional_assign<std::string>(node, "rmw_serialization_format", rmw_serialization_format);
+  optional_assign<std::vector<std::string>>(node, "exclude_actions", exclude_actions);
+  optional_assign<std::string>(
+    node, "rmw_serialization_format", rmw_serialization_format);
+  optional_assign<std::string>(
+    node, "input_serialization_format", input_serialization_format);
+  optional_assign<std::string>(
+    node, "output_serialization_format", output_serialization_format);
+
   optional_assign<std::chrono::milliseconds>(
     node, "topic_polling_interval", topic_polling_interval);
 
@@ -130,7 +153,13 @@ bool convert<rosbag2_transport::RecordOptions>::decode(
   optional_assign<bool>(node, "ignore_leaf_topics", ignore_leaf_topics);
   optional_assign<bool>(node, "start_paused", start_paused);
   optional_assign<bool>(node, "use_sim_time", use_sim_time);
+  optional_assign<std::string>(node, "static_topics_uri", static_topics_uri);
   optional_assign<bool>(node, "disable_keyboard_controls", disable_keyboard_controls);
+  optional_assign<float>(node, "statistics_max_publishing_rate", statistics_max_publishing_rate);
+  optional_assign<std::unordered_map<std::string, size_t>>(
+    node, "repeat_transient_local_messages", repeat_transient_local_messages);
+  optional_assign<uint32_t>(node, "repeat_all_transient_local_depth",
+    repeat_all_transient_local_depth);
   return true;
 }
 

@@ -63,6 +63,14 @@ public:
           }
         }
       }
+
+      if (!filter_.actions_interfaces.empty()) {
+        for (const auto & filter_action : filter_.actions_interfaces) {
+          if (!messages_[num_read_]->topic_name.compare(filter_action)) {
+            return true;
+          }
+        }
+      }
       num_read_++;
     }
     return false;
@@ -126,6 +134,11 @@ public:
         callbacks.read_split_callback,
         rosbag2_cpp::bag_events::BagEvent::READ_SPLIT);
     }
+  }
+
+  bool has_callback_for_event(rosbag2_cpp::bag_events::BagEvent event) const override
+  {
+    return callback_manager_.has_callback_for_event(event);
   }
 
   void prepare(

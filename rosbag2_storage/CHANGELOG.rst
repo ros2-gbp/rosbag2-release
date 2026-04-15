@@ -2,38 +2,50 @@
 Changelog for package rosbag2_storage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.26.10 (2026-04-07)
---------------------
-
-0.26.9 (2025-08-11)
+0.33.1 (2026-04-14)
 -------------------
 
-0.26.8 (2025-07-10)
--------------------
-* Bugfix: Undefined behavior in the `rosbag2_storage` and `rosbag2_storage_sqlite3` packages (`#1997 <https://github.com/ros2/rosbag2/issues/1997>`_) (`#1999 <https://github.com/ros2/rosbag2/issues/1999>`_)
-* [jazzy] Use DDS queue depth for subscriptions as a maximum value across publishers (backport `#1960 <https://github.com/ros2/rosbag2/issues/1960>`_) (`#1980 <https://github.com/ros2/rosbag2/issues/1980>`_)
-* Contributors: Michael Orlov <morlovmr@gmail.com>
+* Add `TransientLocalMessagesCache` and `RecordOptions` for repeating transient-local topics (`#2385 <https://github.com/ros2/rosbag2/issues/2385>`_)
+* Implement delayed and time-based recorder and player services, adding new bag split modes (`#2330 <https://github.com/ros2/rosbag2/issues/2330>`_)
+* Implement circular logging by split count (`--max-bag-files`) (`#2218 <https://github.com/ros2/rosbag2/issues/2218>`_)
+* Improve ``ros2 bag convert`` performance for fragment cutting and add ``--input-options`` (`#2325 <https://github.com/ros2/rosbag2/issues/2325>`_)
+* Add `--max-cache-duration` option for time-bounded snapshots (`#2289 <https://github.com/ros2/rosbag2/issues/2289>`_)
+* Throw ``YAML::Exception`` during conversion if the data type mismatches (`#2262 <https://github.com/ros2/rosbag2/issues/2262>`_)
+* Fix decoder and encode mismatch in YAML deserialization (`#2277 <https://github.com/ros2/rosbag2/issues/2277>`_)
+* Incorporate upstream minor fixes from Apex.AI (`#2240 <https://github.com/ros2/rosbag2/issues/2240>`_)
+* Fix memory leak on ``make_empty_serialized_message()`` (`#2253 <https://github.com/ros2/rosbag2/issues/2253>`_)
+* Fix CMAKE deprecation (`#2067 <https://github.com/ros2/rosbag2/issues/2067>`_)
+* Introduce new ``BaseWriteInterface`` methods ``write_messages`` and ``write_message`` to provide operation status, deprecating old write APIs (`#2030 <https://github.com/ros2/rosbag2/issues/2030>`_)
+* Fix undefined behavior in the ``rosbag2_storage`` and ``rosbag2_storage_sqlite3`` packages (`#1997 <https://github.com/ros2/rosbag2/issues/1997>`_)
 
-0.26.7 (2025-04-22)
+* Contributors: Luke Sy, Michael Orlov, Tomoya Fujita, Tony Najjar, carlos-apex, mosfet80
+
+0.33.0 (2025-04-25)
+-------------------
+* Use DDS queue depth for subscriptions as a maximum value across publishers (`#1960 <https://github.com/ros2/rosbag2/issues/1960>`_)
+* Contributors: Michael Orlov
+
+0.32.0 (2025-04-18)
+-------------------
+* Add message sequence number to the messages write API (`#1961 <https://github.com/ros2/rosbag2/issues/1961>`_)
+* Add actions replay feature (`#1955 <https://github.com/ros2/rosbag2/issues/1955>`_)
+* Contributors: Barry Xu, Michael Orlov
+
+0.31.0 (2025-02-02)
+-------------------
+* Add more logging info to storage and reader/writer open operations (`#1881 <https://github.com/ros2/rosbag2/issues/1881>`_)
+* Contributors: Michael Orlov
+
+0.30.0 (2024-11-26)
 -------------------
 
-0.26.6 (2024-12-18)
--------------------
-* Add more logging info to storage and reader/writer open operations (`#1881 <https://github.com/ros2/rosbag2/issues/1881>`_) (`#1882 <https://github.com/ros2/rosbag2/issues/1882>`_)
-  (cherry picked from commit 0823be2723e04715baacf99625b844cb88f58c21)
-  Co-authored-by: Michael Orlov <michael.orlov@apex.ai>
-* Contributors: Marco A. Gutierrez, mergify[bot]
-
-0.26.5 (2024-09-06)
+0.29.0 (2024-09-03)
 -------------------
 
-0.26.4 (2024-06-27)
+0.28.0 (2024-06-17)
 -------------------
 
-0.26.3 (2024-05-15)
--------------------
-
-0.26.2 (2024-04-24)
+0.27.0 (2024-04-30)
 -------------------
 
 0.26.1 (2024-04-17)

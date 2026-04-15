@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.20)
 project(rosbag2_examples_cpp)
 
 # Default to C99
@@ -19,14 +19,16 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rosbag2_compression REQUIRED)
 find_package(rosbag2_cpp REQUIRED)
+find_package(rosbag2_transport REQUIRED)
 find_package(example_interfaces REQUIRED)
 
 add_executable(simple_bag_recorder src/simple_bag_recorder.cpp)
 target_link_libraries(simple_bag_recorder
   rclcpp::rclcpp
   rosbag2_cpp::rosbag2_cpp
-  ${example_interfaces_TARGETS}
+  example_interfaces::example_interfaces
 )
 
 install(TARGETS
@@ -34,11 +36,48 @@ install(TARGETS
   DESTINATION lib/${PROJECT_NAME}
 )
 
+add_executable(compressed_bag_recorder src/compressed_bag_recorder.cpp)
+target_link_libraries(compressed_bag_recorder
+  rclcpp::rclcpp
+  rosbag2_cpp::rosbag2_cpp
+  rosbag2_compression::rosbag2_compression
+  example_interfaces::example_interfaces
+)
+
+install(TARGETS
+  compressed_bag_recorder
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+add_executable(compressed_bag_rewriter src/compressed_bag_rewriter.cpp)
+target_link_libraries(compressed_bag_rewriter
+  rosbag2_transport::rosbag2_transport
+  example_interfaces::example_interfaces
+)
+
+install(TARGETS
+  compressed_bag_rewriter
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+add_executable(simple_bag_reader src/simple_bag_reader.cpp)
+target_link_libraries(simple_bag_reader
+  rclcpp::rclcpp
+  rosbag2_cpp::rosbag2_cpp
+  rosbag2_transport::rosbag2_transport
+  example_interfaces::example_interfaces
+)
+
+install(TARGETS
+  simple_bag_reader
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 add_executable(data_generator_node src/data_generator_node.cpp)
 target_link_libraries(data_generator_node
   rclcpp::rclcpp
   rosbag2_cpp::rosbag2_cpp
-  ${example_interfaces_TARGETS}
+  example_interfaces::example_interfaces
 )
 
 install(TARGETS
@@ -50,7 +89,7 @@ add_executable(data_generator_executable src/data_generator_executable.cpp)
 target_link_libraries(data_generator_executable
   rclcpp::rclcpp
   rosbag2_cpp::rosbag2_cpp
-  ${example_interfaces_TARGETS}
+  example_interfaces::example_interfaces
 )
 
 install(TARGETS
