@@ -39,10 +39,25 @@ public:
   // A value of 0 indicates that bagfile splitting will not be used.
   uint64_t max_bagfile_duration = 0;
 
-  // The cache size indiciates how many messages can maximally be hold in cache
-  // before these being written to disk.
-  // A value of 0 disables caching and every write happens directly to disk.
+  // Maximum number of bag files to retain before deleting the oldest.
+  // A value of 0 disables deletion (unlimited files).
+  // This feature is only available when the bag split is active.
+  // Requires --max-bag-size or --max-bag-duration to be set or usage of the bag split via
+  // direct recorder API or service calls.
+  uint64_t max_bag_files = 0;
+
+  // The cache size. Indicates how many messages can maximally be held in cache before these being
+  // written to disk. Works together with max_cache_duration bound if set.
+  // A value of 0 disables size-based caching and every write happens directly to disk if
+  // max_cache_duration is also set to 0.
   uint64_t max_cache_size = 0;
+
+  // Maximum cache duration in seconds. Used for time-limited buffering (applies to both snapshot
+  // mode and regular caching). A value of 0 indicates that buffering will be limited by the
+  // max_cache_size only. When greater than 0, the cache buffer maintains messages within
+  // this time window and drops newer messages if cache overflow happened.
+  // Works together with max_cache_size bound if set.
+  uint32_t max_cache_duration = 0;
 
   // Preset storage configuration. Preset settings can be overriden with
   // corresponding settings specified through storage_config_uri file
@@ -56,7 +71,9 @@ public:
   // Defaults to disabled.
   bool snapshot_mode = false;
 
-  // Start and end time for cutting
+  // Start and end time for cutting. Used in the writers to limit the range of stored messages.
+  // As well as in the "ros2 bag convert" CLI aka "bag_rewrite" utility to limit the range of the
+  // reading and writing messages.
   int64_t start_time_ns = -1;
   int64_t end_time_ns = -1;
 
