@@ -38,7 +38,7 @@ TEST_F(RecordIntegrationTestFixture, record_all_without_discovery_ignores_later_
   string_message->string_value = "Hello World";
 
   rosbag2_transport::RecordOptions record_options =
-  {true, false, false, true, {}, {}, {}, {}, {}, {}, {}, {}, "rmw_format", 100ms};
+  {true, false, false, true, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, "rmw_format", 100ms};
   auto recorder = std::make_shared<rosbag2_transport::Recorder>(
     std::move(writer_), storage_options_, record_options);
   recorder->record();
@@ -57,7 +57,7 @@ TEST_F(RecordIntegrationTestFixture, record_all_without_discovery_ignores_later_
   constexpr size_t expected_messages = 0;
   rosbag2_test_common::wait_until_condition(
     [ =, &mock_writer]() {
-      return mock_writer.get_messages().size() > expected_messages;
+      return mock_writer.get_number_of_recorded_messages() > expected_messages;
     },
     std::chrono::seconds(2));
   // We can't EXPECT anything here, since there may be some messages from rosout
