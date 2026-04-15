@@ -32,6 +32,7 @@
 #include "rosbag2_interfaces/srv/resume.hpp"
 #include "rosbag2_interfaces/srv/stop.hpp"
 #include "rosbag2_interfaces/srv/toggle_paused.hpp"
+#include "rosbag2_test_common/wait_for.hpp"
 #include "rosbag2_transport/player.hpp"
 #include "test_msgs/msg/basic_types.hpp"
 #include "test_msgs/message_fixtures.hpp"
@@ -94,6 +95,13 @@ public:
       [this]() {
         exec_.spin();
       });
+
+    // Wait for the executor to start spinning in the newly spawned thread to avoid race conditions
+    if (!wait_until_condition([this]() {return exec_.is_spinning();}, std::chrono::seconds(5))) {
+      std::cerr << "Failed to start spinning nodes: '" <<
+        player_->get_name() << ", " << client_node_->get_name() << "'" << std::endl;
+      throw std::runtime_error("Failed to start spinning nodes");
+    }
 
     // Make sure all expected services are present before starting any test
     ASSERT_TRUE(cli_resume_->wait_for_service(service_wait_timeout_));
@@ -419,38 +427,47 @@ TEST_F(PlaySrvsTest, stop_in_pause) {
   ASSERT_TRUE(player_->is_paused());
   // Make sure that player reached out main play loop
   player_->wait_for_playback_to_start();
-  service_call_stop();
+  Stop::Response::SharedPtr stop_response = service_call_stop();
+  ASSERT_EQ(stop_response->return_code, 0);
   // playback shall successfully finish after "Stop" without rclcpp::shutdown()
   player_->wait_for_playback_to_finish();
   expect_messages(false);
 }
 
 TEST_F(PlaySrvsTest, stop_in_active_play) {
-  auto calls = 0;
-  std::mutex m;
-  std::condition_variable cv;
+  auto num_calls = 0;
+  std::mutex calls_counter_update_mutex;
+  std::condition_variable calls_counter_update_cv;
   ASSERT_TRUE(player_->is_paused());
 
   const auto callback = [&](std::shared_ptr<rosbag2_storage::SerializedBagMessage>) {
-      std::unique_lock<std::mutex> lk{m};
-      ++calls;
+      std::unique_lock<std::mutex> lk{calls_counter_update_mutex};
+      ++num_calls;
       lk.unlock();
-      cv.notify_one();
+      calls_counter_update_cv.notify_one();
       std::this_thread::sleep_for(50ms);
     };
   const auto pre_callback_handle = player_->add_on_play_message_pre_callback(callback);
   ASSERT_NE(pre_callback_handle, rosbag2_transport::Player::invalid_callback_handle);
 
-  player_->wait_for_playback_to_start();
+  player_->wait_for_playback_to_start(10s);
   ASSERT_TRUE(player_->is_paused());
 
-  std::unique_lock<std::mutex> lk{m};
+  // Lock calls_counter_update_mutex to avoid missing the first message published after resume
+  std::unique_lock<std::mutex> lk{calls_counter_update_mutex};
   player_->resume();
   ASSERT_FALSE(player_->is_paused());
   // Wait until first message is going to be published in active playback mode
-  ASSERT_TRUE(cv.wait_for(lk, 2s, [&] {return calls == 1;}));
-  service_call_stop();
+  ASSERT_TRUE(calls_counter_update_cv.wait_for(lk, 2s, [&] {return num_calls == 1;}));
+  // Unlock calls_counter_update_mutex before calling stop() to avoid deadlock in the callback
+  // if we happened to call stop() after the next message started being processed in the callback
+  lk.unlock();
+  // Now call stop() while player is in active playback mode
+  Stop::Response::SharedPtr stop_response = service_call_stop();
+  ASSERT_EQ(stop_response->return_code, 0);
   // playback shall successfully finish after "Stop" without rclcpp::shutdown()
-  player_->wait_for_playback_to_finish();
-  ASSERT_EQ(calls, 1);
+  player_->wait_for_playback_to_finish(10s);
+  // The second stop() call after playback has already stopped shall return return_code = 1
+  stop_response = service_call_stop();
+  ASSERT_EQ(stop_response->return_code, 1);
 }
