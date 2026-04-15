@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.20)
 project(rosbag2_test_common)
 
 # Default to C99
@@ -36,7 +36,7 @@ target_link_libraries(${PROJECT_NAME} INTERFACE
   rclcpp::rclcpp
   rclcpp_action::rclcpp_action
   rcutils::rcutils
-  ${test_msgs_TARGETS}
+  test_msgs::test_msgs
 )
 
 install(
