@@ -1,0 +1,12 @@
+Source: ros-lyrical-rosbag2-storage-mcap
+Section: misc
+Priority: optional
+Maintainer: Foxglove <ros-tooling@foxglove.dev>
+Build-Depends: debhelper (>= 9.0.0), ros-lyrical-ament-cmake, ros-lyrical-ament-cmake-clang-format <!nocheck>, ros-lyrical-ament-cmake-gmock <!nocheck>, ros-lyrical-ament-cmake-python, ros-lyrical-ament-index-cpp, ros-lyrical-ament-lint-auto <!nocheck>, ros-lyrical-ament-lint-common <!nocheck>, ros-lyrical-mcap-vendor, ros-lyrical-pluginlib, ros-lyrical-rcutils, ros-lyrical-rosbag2-storage, ros-lyrical-rosbag2-test-common <!nocheck>, ros-lyrical-std-msgs <!nocheck>, ros-lyrical-ros-workspace
+Homepage: https://index.ros.org/p/rosbag2_storage_mcap/#lyrical
+Standards-Version: 3.9.2
+
+Package: ros-lyrical-rosbag2-storage-mcap
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-lyrical-ament-index-cpp, ros-lyrical-mcap-vendor, ros-lyrical-pluginlib, ros-lyrical-rcutils, ros-lyrical-rosbag2-storage, ros-lyrical-ros-workspace
+Description: rosbag2 storage plugin using the MCAP file format
