@@ -1,1 +1,1 @@
-{"base": "f48d52d13cc5", "parent": "debian/rolling/rosbag2_storage_default_plugins", "previous": "93568c165d55", "trim": "", "trimbase": ""}
+{"base": "5b628b5f2621", "parent": "debian/lyrical/rosbag2_storage_default_plugins", "previous": "b81a98db4fe3", "trim": "", "trimbase": ""}
