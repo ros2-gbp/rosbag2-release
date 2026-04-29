@@ -1,0 +1,12 @@
+Source: ros-lyrical-rosbag2-cpp
+Section: misc
+Priority: optional
+Maintainer: Michael Orlov <michael.orlov@apex.ai>
+Build-Depends: debhelper (>= 9.0.0), ros-lyrical-ament-cmake, ros-lyrical-ament-cmake-gmock <!nocheck>, ros-lyrical-ament-index-cpp, ros-lyrical-ament-lint-auto <!nocheck>, ros-lyrical-ament-lint-common <!nocheck>, ros-lyrical-pluginlib, ros-lyrical-rclcpp, ros-lyrical-rcpputils, ros-lyrical-rcutils, ros-lyrical-rmw, ros-lyrical-rmw-implementation, ros-lyrical-rmw-implementation-cmake <!nocheck>, ros-lyrical-rosbag2-storage, ros-lyrical-rosbag2-storage-default-plugins <!nocheck>, ros-lyrical-rosbag2-test-common <!nocheck>, ros-lyrical-rosbag2-test-msgdefs <!nocheck>, ros-lyrical-rosidl-runtime-c, ros-lyrical-rosidl-runtime-cpp, ros-lyrical-rosidl-typesupport-cpp, ros-lyrical-rosidl-typesupport-introspection-cpp, ros-lyrical-std-msgs <!nocheck>, ros-lyrical-test-msgs <!nocheck>, ros-lyrical-ros-workspace
+Homepage: https://index.ros.org/p/rosbag2_cpp/#lyrical
+Standards-Version: 3.9.2
+
+Package: ros-lyrical-rosbag2-cpp
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-lyrical-ament-index-cpp, ros-lyrical-pluginlib, ros-lyrical-rclcpp, ros-lyrical-rcpputils, ros-lyrical-rcutils, ros-lyrical-rmw, ros-lyrical-rmw-implementation, ros-lyrical-rosbag2-storage, ros-lyrical-rosidl-runtime-c, ros-lyrical-rosidl-runtime-cpp, ros-lyrical-rosidl-typesupport-cpp, ros-lyrical-rosidl-typesupport-introspection-cpp, ros-lyrical-ros-workspace
+Description: C++ ROSBag2 client library
