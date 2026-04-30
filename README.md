@@ -1,3 +1,48 @@
+## rosbag2 (lyrical) - 0.33.2-1
+
+The packages in the `rosbag2` repository were released into the `lyrical` distro by running `/usr/local/google/home/sloretz/projects/lyrical/env3/bin/bloom-release rosbag2 -r lyrical -t lyrical` on `Thu, 30 Apr 2026 17:35:11 -0000`
+
+These packages were released:
+- `lz4_cmake_module`
+- `mcap_vendor`
+- `ros2bag`
+- `rosbag2`
+- `rosbag2_compression`
+- `rosbag2_compression_zstd`
+- `rosbag2_cpp`
+- `rosbag2_examples_cpp`
+- `rosbag2_examples_py`
+- `rosbag2_interfaces`
+- `rosbag2_performance_benchmarking`
+- `rosbag2_performance_benchmarking_msgs`
+- `rosbag2_py`
+- `rosbag2_storage`
+- `rosbag2_storage_default_plugins`
+- `rosbag2_storage_mcap`
+- `rosbag2_storage_sqlite3`
+- `rosbag2_test_common`
+- `rosbag2_test_msgdefs`
+- `rosbag2_tests`
+- `rosbag2_transport`
+- `zstd_cmake_module`
+
+Version of package(s) in repository `rosbag2`:
+
+- upstream repository: https://github.com/ros2/rosbag2.git
+- release repository: https://github.com/ros2-gbp/rosbag2-release.git
+- rosdistro version: `0.33.1-3`
+- old version: `0.33.1-3`
+- new version: `0.33.2-1`
+
+Versions of tools used:
+
+- bloom version: `0.14.2`
+- catkin_pkg version: `1.1.0`
+- rosdep version: `0.26.0`
+- rosdistro version: `1.0.1`
+- vcstools version: `0.1.42`
+
+
 ## rosbag2 (rolling) - 0.33.1-1
 
 The packages in the `rosbag2` repository were released into the `rolling` distro by running `/usr/local/google/home/sloretz/projects/lyrical/env3/bin/bloom-release rosbag2 --rosdistro rolling --track rolling` on `Wed, 15 Apr 2026 01:09:14 -0000`
