@@ -2,6 +2,11 @@
 Changelog for package rosbag2_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.33.2 (2026-04-30)
+-------------------
+* Removed clang warning (`#2404 <https://github.com/ros2/rosbag2/issues/2404>`_)
+* Contributors: Alejandro Hernández Cordero
+
 0.33.1 (2026-04-14)
 -------------------
 
