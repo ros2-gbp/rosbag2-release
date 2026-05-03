@@ -1,1 +1,1 @@
-{"base": "afef0dfc563f", "parent": "release/rolling/rosbag2_storage_sqlite3/0.33.1-2", "previous": "e47ccb0de5b7", "trim": "", "trimbase": ""}
+{"base": "0caff1e3f", "parent": "release/rolling/rosbag2_storage_sqlite3", "previous": "72df8224c", "trim": "", "trimbase": ""}
