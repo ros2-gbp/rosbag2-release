@@ -1,1 +1,1 @@
-{"base": "c61c418da963", "parent": "release/rolling/rosbag2_storage_mcap/0.33.1-2", "previous": "d9128f8778c2", "trim": "", "trimbase": ""}
+{"base": "342f188eb", "parent": "release/rolling/rosbag2_storage_mcap", "previous": "bd2109a90", "trim": "", "trimbase": ""}
