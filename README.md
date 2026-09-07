@@ -1,3 +1,45 @@
+## rosbag2 (humble) - 0.15.17-1
+
+The packages in the `rosbag2` repository were released into the `humble` distro by running `/usr/bin/bloom-release --rosdistro humble rosbag2` on `Mon, 07 Sep 2026 23:55:33 -0000`
+
+These packages were released:
+- `mcap_vendor`
+- `ros2bag`
+- `rosbag2`
+- `rosbag2_compression`
+- `rosbag2_compression_zstd`
+- `rosbag2_cpp`
+- `rosbag2_interfaces`
+- `rosbag2_performance_benchmarking`
+- `rosbag2_py`
+- `rosbag2_storage`
+- `rosbag2_storage_default_plugins`
+- `rosbag2_storage_mcap`
+- `rosbag2_storage_mcap_testdata`
+- `rosbag2_test_common`
+- `rosbag2_tests`
+- `rosbag2_transport`
+- `shared_queues_vendor`
+- `sqlite3_vendor`
+- `zstd_vendor`
+
+Version of package(s) in repository `rosbag2`:
+
+- upstream repository: https://github.com/ros2/rosbag2.git
+- release repository: https://github.com/ros2-gbp/rosbag2-release.git
+- rosdistro version: `0.15.16-1`
+- old version: `0.15.16-1`
+- new version: `0.15.17-1`
+
+Versions of tools used:
+
+- bloom version: `0.14.3`
+- catkin_pkg version: `1.1.0`
+- rosdep version: `0.26.0`
+- rosdistro version: `1.0.1`
+- vcstools version: `0.1.42`
+
+
 ## rosbag2 (jazzy) - 0.26.11-1
 
 The packages in the `rosbag2` repository were released into the `jazzy` distro by running `/usr/bin/bloom-release --track jazzy --rosdistro jazzy rosbag2` on `Wed, 03 Jun 2026 07:47:08 -0000`
