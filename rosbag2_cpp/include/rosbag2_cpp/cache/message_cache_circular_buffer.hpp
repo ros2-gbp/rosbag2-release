@@ -54,12 +54,8 @@ public:
   explicit MessageCacheCircularBuffer(size_t max_cache_size);
 
   /**
-  * \brief Pushes a SerializedBagMessage into the cache buffer.
-  * \details If buffer size has some space left, we push the message regardless of its size,
-  * but if this results in exceeding buffer size, we begin dropping old messages.
-  * \param msg SerializedBagMessage to add to the buffer.
-  * \return True if message was successfully pushed. Returns false if msg is null or if msg size
-  * exceeds max buffer size.
+  * If buffer size has some space left, we push the message regardless of its size,
+  *  but if this results in exceeding buffer size, we begin dropping old messages.
   */
   bool push(CacheBufferInterface::buffer_element_t msg) override;
 
