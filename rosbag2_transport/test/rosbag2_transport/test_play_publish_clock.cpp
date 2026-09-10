@@ -14,14 +14,21 @@
 
 #include <gmock/gmock.h>
 
+#include <algorithm>
+#include <atomic>
+#include <chrono>
 #include <memory>
+#include <thread>
 #include <utility>
 #include <vector>
 
+#include <rclcpp/executors.hpp>
+#include "rcpputils/scope_exit.hpp"
 #include "rosbag2_transport/player.hpp"
 #include "rosgraph_msgs/msg/clock.hpp"
 #include "test_msgs/message_fixtures.hpp"
 
+#include "mock_player.hpp"
 #include "rosbag2_play_test_fixture.hpp"
 
 using namespace ::testing;  // NOLINT
@@ -37,18 +44,11 @@ rcutils_duration_value_t period_for_frequency(double frequency)
 class ClockPublishFixture : public RosBag2PlayTestFixture
 {
 public:
-  ClockPublishFixture()
-  : RosBag2PlayTestFixture()
-  {
-    sub_->add_subscription<rosgraph_msgs::msg::Clock>(
-      "/clock", expected_clock_messages_, rclcpp::ClockQoS());
-  }
-
   void run_test()
   {
     // Fake bag setup
     auto topic_types = std::vector<rosbag2_storage::TopicMetadata>{
-      {"topic1", "test_msgs/BasicTypes", "", ""},
+      {1u, "topic1", "test_msgs/BasicTypes", "", {}, ""},
     };
 
     std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages;
@@ -64,18 +64,26 @@ public:
     prepared_mock_reader->prepare(messages, topic_types);
     auto reader = std::make_unique<rosbag2_cpp::Reader>(std::move(prepared_mock_reader));
 
-    auto await_received_messages = sub_->spin_subscriptions();
+    auto player = std::make_shared<MockPlayer>(std::move(reader), storage_options_, play_options_);
 
-    auto player = std::make_shared<rosbag2_transport::Player>(
-      std::move(
-        reader), storage_options_, play_options_);
     rclcpp::executors::SingleThreadedExecutor exec;
     exec.add_node(player);
     auto spin_thread = std::thread(
       [&exec]() {
         exec.spin();
       });
+
+    sub_->add_subscription<test_msgs::msg::BasicTypes>("/topic1", messages.size());
+    sub_->add_subscription<rosgraph_msgs::msg::Clock>(
+      "/clock", expected_clock_messages_, rclcpp::ClockQoS());
+
+    ASSERT_TRUE(
+      sub_->spin_and_wait_for_matched(player->get_list_of_publishers(), std::chrono::seconds(30)));
+
+    auto await_received_messages = sub_->spin_subscriptions();
+
     player->play();
+    player->wait_for_playback_to_finish();
 
     await_received_messages.get();
     exec.cancel();
@@ -83,21 +91,23 @@ public:
 
     // Check that we got enough messages
     auto received_clock = sub_->get_received_messages<rosgraph_msgs::msg::Clock>("/clock");
-    EXPECT_THAT(received_clock, SizeIs(Ge(expected_clock_messages_)));
+    ASSERT_THAT(received_clock, SizeIs(Ge(expected_clock_messages_)));
 
-    // Check time deltas between messages
-    const auto expect_clock_delta =
-      period_for_frequency(play_options_.clock_publish_frequency) * play_options_.rate;
-    const auto allowed_error = static_cast<rcutils_duration_value_t>(
-      expect_clock_delta * error_tolerance_);
-    // On Windows, publishing seems to take time to "warm up", ignore the first couple messages
-    const auto start_message = 2;
-    for (size_t i = start_message; i < expected_clock_messages_ - 1; i++) {
-      auto current = rclcpp::Time(received_clock[i]->clock).nanoseconds();
-      auto next = rclcpp::Time(received_clock[i + 1]->clock).nanoseconds();
-      auto delta = next - current;
-      auto error = std::abs(delta - expect_clock_delta);
-      EXPECT_LE(error, allowed_error) << "Message was too far from next: " << i;
+    if (play_options_.clock_publish_frequency > 0.f) {
+      // Only check time deltas between messages when publishing at fixed rate
+      const auto expect_clock_delta =
+        period_for_frequency(play_options_.clock_publish_frequency) * play_options_.rate;
+      const auto allowed_error = static_cast<rcutils_duration_value_t>(
+        expect_clock_delta * error_tolerance_);
+      // On Windows, publishing seems to take time to "warm up", ignore the first couple messages
+      const auto start_message = 2;
+      for (size_t i = start_message; i < expected_clock_messages_ - 1; i++) {
+        auto current = rclcpp::Time(received_clock[i]->clock).nanoseconds();
+        auto next = rclcpp::Time(received_clock[i + 1]->clock).nanoseconds();
+        auto delta = next - current;
+        auto error = std::abs(delta - expect_clock_delta);
+        EXPECT_LE(error, allowed_error) << "Message was too far from next: " << i;
+      }
     }
   }
 
@@ -123,5 +133,91 @@ TEST_F(ClockPublishFixture, clock_respects_playback_rate)
   play_options_.clock_publish_frequency = 20;
   play_options_.rate = 0.5;
   messages_to_play_ = 5;
+  run_test();
+}
+
+TEST_F(ClockPublishFixture, clock_stops_after_playback_and_restarts_on_next_play)
+{
+  constexpr double clock_publish_frequency = 20.0;
+  const auto clock_publish_period = std::chrono::milliseconds(50);
+
+  auto topic_types = std::vector<rosbag2_storage::TopicMetadata>{
+    {1u, "topic1", "test_msgs/BasicTypes", "", {}, ""},
+  };
+
+  std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages;
+  for (size_t i = 0; i < messages_to_play_; i++) {
+    auto message = get_messages_basic_types()[0];
+    message->int32_value = static_cast<int32_t>(i);
+    messages.push_back(
+      serialize_test_message("topic1", milliseconds_between_messages_ * i, message));
+  }
+
+  auto prepared_mock_reader = std::make_unique<MockSequentialReader>();
+  prepared_mock_reader->prepare(messages, topic_types);
+  auto reader = std::make_unique<rosbag2_cpp::Reader>(std::move(prepared_mock_reader));
+
+  play_options_.clock_publish_frequency = clock_publish_frequency;
+  play_options_.playback_duration = rclcpp::Duration(0, 250000000);
+  auto player = std::make_shared<MockPlayer>(std::move(reader), storage_options_, play_options_);
+
+  std::atomic<size_t> received_clock_messages{0};
+  auto clock_subscriber = std::make_shared<rclcpp::Node>("clock_after_playback_subscriber");
+  auto clock_subscription = clock_subscriber->create_subscription<rosgraph_msgs::msg::Clock>(
+    "/clock", rclcpp::ClockQoS(),
+    [&received_clock_messages](rosgraph_msgs::msg::Clock::ConstSharedPtr) {
+      received_clock_messages.fetch_add(1, std::memory_order_relaxed);
+    });
+
+  auto publishers = player->get_list_of_publishers();
+  auto clock_publisher = std::find_if(
+    publishers.begin(), publishers.end(),
+    [](const auto * publisher) {return publisher->get_topic_name() == std::string("/clock");});
+  ASSERT_NE(clock_publisher, publishers.end());
+
+  rclcpp::executors::SingleThreadedExecutor exec;
+  exec.add_node(player);
+  exec.add_node(clock_subscriber);
+  auto spin_thread = std::thread([&exec]() {exec.spin();});
+  auto cleanup_spin_thread = rcpputils::make_scope_exit([&]() {
+        exec.cancel();
+        if (spin_thread.joinable()) {
+          spin_thread.join();
+        }
+    });
+
+  const auto discovery_deadline = std::chrono::steady_clock::now() + std::chrono::seconds(30);
+  while ((*clock_publisher)->get_subscription_count() == 0 &&
+    std::chrono::steady_clock::now() < discovery_deadline)
+  {
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
+  const bool clock_subscription_matched = (*clock_publisher)->get_subscription_count() > 0;
+  ASSERT_TRUE(clock_subscription_matched);
+
+  ASSERT_TRUE(player->play());
+  ASSERT_TRUE(player->wait_for_playback_to_finish(std::chrono::seconds(30)));
+
+  // Allow an in-flight timer callback or DDS sample to arrive before taking the snapshot.
+  std::this_thread::sleep_for(clock_publish_period * 2);
+  const auto clock_messages_after_playback =
+    received_clock_messages.load(std::memory_order_relaxed);
+  EXPECT_GT(clock_messages_after_playback, 0u);
+
+  std::this_thread::sleep_for(clock_publish_period * 5);
+  EXPECT_EQ(
+    received_clock_messages.load(std::memory_order_relaxed),
+    clock_messages_after_playback);
+
+  ASSERT_TRUE(player->play());
+  ASSERT_TRUE(player->wait_for_playback_to_finish(std::chrono::seconds(30)));
+  EXPECT_GT(
+    received_clock_messages.load(std::memory_order_relaxed),
+    clock_messages_after_playback);
+}
+
+TEST_F(ClockPublishFixture, clock_is_published_from_topic_trigger)
+{
+  play_options_.clock_publish_on_topic_publish = true;
   run_test();
 }

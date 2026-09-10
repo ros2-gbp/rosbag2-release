@@ -2,55 +2,92 @@
 Changelog for package mcap_vendor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.15.17 (2026-09-06)
---------------------
-
-0.15.16 (2025-12-23)
---------------------
-
-0.15.15 (2025-07-16)
---------------------
-
-0.15.14 (2025-03-25)
---------------------
-
-0.15.13 (2024-11-25)
---------------------
-
-0.15.12 (2024-07-28)
---------------------
-
-0.15.11 (2024-05-20)
---------------------
-
-0.15.10 (2024-05-17)
---------------------
-
-0.15.9 (2024-01-24)
+0.33.4 (2026-09-08)
 -------------------
 
-0.15.8 (2023-09-19)
+0.33.3 (2026-05-12)
 -------------------
 
-0.15.7 (2023-07-18)
+0.33.2 (2026-04-30)
 -------------------
 
-0.15.6 (2023-06-05)
+0.33.1 (2026-04-14)
 -------------------
 
-0.15.5 (2023-04-25)
--------------------
-* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_) (`#1224 <https://github.com/ros2/rosbag2/issues/1224>`_)
-* Contributors: mergify[bot]
+* Update mcap dependency to version 2.1.3 (`#2355 <https://github.com/ros2/rosbag2/issues/2355>`_)
+* Remove lz4 vendor package (`#2165 <https://github.com/ros2/rosbag2/issues/2165>`_)
+* Replace ``zstd_vendor`` with ``zstd_cmake_module`` (`#2166 <https://github.com/ros2/rosbag2/issues/2166>`_)
+* Fix CMAKE deprecation (`#2067 <https://github.com/ros2/rosbag2/issues/2067>`_)
+* Backport missing ``cstdint`` include (`#2008 <https://github.com/ros2/rosbag2/issues/2008>`_)
 
-0.15.4 (2023-01-10)
+* Contributors: Alejandro Hernández Cordero, Chris Lalancette, David Anthony, mosfet80
+
+0.33.0 (2025-04-25)
 -------------------
-* [backport humble `#1208 <https://github.com/ros2/rosbag2/issues/1208>`_] Fixes policy CMP0135 warning for CMake >= 3.24 for mcap_vendor (`#1227 <https://github.com/ros2/rosbag2/issues/1227>`_)
-* mcap_vendor: only install public headers (backport `#1207 <https://github.com/ros2/rosbag2/issues/1207>`_) (`#1214 <https://github.com/ros2/rosbag2/issues/1214>`_)
-* rosbag2_storage_mcap: fix rosbag2_cpp tests (`#1205 <https://github.com/ros2/rosbag2/issues/1205>`_)
-* Use mcap tarball rather than git clone (`#1200 <https://github.com/ros2/rosbag2/issues/1200>`_)
-* [Humble backport] rosbag2_storage_mcap: merge into rosbag2 repo (`#1163 <https://github.com/ros2/rosbag2/issues/1163>`_) (`#1189 <https://github.com/ros2/rosbag2/issues/1189>`_)
-* Contributors: Michael Carroll, james-rms, mergify[bot]
+
+0.32.0 (2025-04-18)
+-------------------
+
+0.31.0 (2025-02-02)
+-------------------
+
+0.30.0 (2024-11-26)
+-------------------
+
+0.29.0 (2024-09-03)
+-------------------
+* Update mcap (`#1774 <https://github.com/ros2/rosbag2/issues/1774>`_)
+  Update mcap cpp to last version
+* Contributors: mosfet80
+
+0.28.0 (2024-06-17)
+-------------------
+* Update mcap-releases-cpp- into CMakeLists.txt (`#1612 <https://github.com/ros2/rosbag2/issues/1612>`_)
+* Contributors: mosfet80
+
+0.27.0 (2024-04-30)
+-------------------
+
+0.26.1 (2024-04-17)
+-------------------
+
+0.26.0 (2024-04-16)
+-------------------
+* Switch to using ament_vendor_package for lz4. (`#1583 <https://github.com/ros2/rosbag2/issues/1583>`_)
+* Contributors: Chris Lalancette
+
+0.25.0 (2024-03-27)
+-------------------
+* Switch to target_link_libraries everywhere. (`#1504 <https://github.com/ros2/rosbag2/issues/1504>`_)
+* Contributors: Chris Lalancette
+
+0.24.0 (2023-07-11)
+-------------------
+* Update mcap to v1.1.0 (`#1361 <https://github.com/ros2/rosbag2/issues/1361>`_)
+* Contributors: Emerson Knapp
+
+0.23.0 (2023-04-28)
+-------------------
+
+0.22.0 (2023-04-18)
+-------------------
+
+0.21.0 (2023-04-12)
+-------------------
+
+0.20.0 (2023-02-14)
+-------------------
+
+0.19.0 (2023-01-13)
+-------------------
+* mcap_vendor: add readme with versioning procedure (`#1230 <https://github.com/ros2/rosbag2/issues/1230>`_)
+* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_)
+* mcap_vendor: only install public headers (`#1207 <https://github.com/ros2/rosbag2/issues/1207>`_)
+* Fixes policy CMP0135 warning for CMake >= 3.24 for mcap_vendor (`#1208 <https://github.com/ros2/rosbag2/issues/1208>`_)
+* mcap_vendor: download MCAP source via tarball (`#1204 <https://github.com/ros2/rosbag2/issues/1204>`_)
+* rosbag2_cpp: test more than one storage plugin (`#1196 <https://github.com/ros2/rosbag2/issues/1196>`_)
+* rosbag2_storage_mcap: merge into rosbag2 repo (`#1163 <https://github.com/ros2/rosbag2/issues/1163>`_)
+* Contributors: Cristóbal Arroyo, Michael Orlov, james-rms
 
 0.6.0 (2022-11-28)
 ------------------

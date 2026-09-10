@@ -52,7 +52,7 @@ class BaseReaderInterface;
 /**
  * The Reader allows opening and reading messages of a bag.
  */
-class ROSBAG2_CPP_PUBLIC Reader final
+class ROSBAG2_CPP_PUBLIC Reader
 {
 public:
   explicit Reader(
@@ -98,6 +98,18 @@ public:
    * Closing the reader instance.
    */
   void close();
+
+  /**
+   * Set the read order for continued iteration of messages, without changing the current
+   * read head timestamp.
+   *
+   * \param read_order Sorting criterion and direction to read messages in
+   * \throws runtime_error if the Reader is not open.
+   * \return true if the requested read order has been successfully set.
+   * \note Calling set_read_order(order) concurrently with has_next(), seek(t), has_next_file()
+   * or load_next_file() will cause undefined behavior.
+   */
+  bool set_read_order(const rosbag2_storage::ReadOrder & read_order);
 
   /**
    * Ask whether the underlying bagfile contains at least one more message.
@@ -158,6 +170,14 @@ public:
   std::vector<rosbag2_storage::TopicMetadata> get_all_topics_and_types() const;
 
   /**
+   * Ask bagfile for all message definitions that were recorded.
+   *
+   * \param[out] vector of message definitions to fill. Existing data will be overwritten.
+   * \throws runtime_error if the Reader is not open.
+   */
+  void get_all_message_definitions(std::vector<rosbag2_storage::MessageDefinition> & definitions);
+
+  /**
    * Set filters to adhere to during reading.
    *
    * \param storage_filter Filter to apply to reading
@@ -185,6 +205,12 @@ public:
    * \param callbacks the structure containing the callback to add for each event.
    */
   void add_event_callbacks(bag_events::ReaderEventCallbacks & callbacks);
+
+  /**
+   * \brief Check if a callback is registered for the given event.
+   * \return True if there is any callback registered for the event, false otherwise.
+   */
+  [[nodiscard]] bool has_callback_for_event(bag_events::BagEvent event) const;
 
 private:
   std::unique_ptr<reader_interfaces::BaseReaderInterface> reader_impl_;

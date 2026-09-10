@@ -46,6 +46,18 @@ void TestPlugin::open(
   std::cout << "config file uri: " << storage_options.storage_config_uri << ".\n";
 }
 
+void TestPlugin::update_metadata(const rosbag2_storage::BagMetadata & metadata)
+{
+  std::cout << "Set metadata" << std::endl;
+  (void)metadata;
+}
+
+bool TestPlugin::set_read_order(const rosbag2_storage::ReadOrder & order)
+{
+  std::cout << "Set read order " << order.sort_by << " " << order.reverse << std::endl;
+  return true;
+}
+
 bool TestPlugin::has_next()
 {
   return true;
@@ -57,9 +69,12 @@ std::shared_ptr<rosbag2_storage::SerializedBagMessage> TestPlugin::read_next()
   return std::shared_ptr<rosbag2_storage::SerializedBagMessage>();
 }
 
-void TestPlugin::create_topic(const rosbag2_storage::TopicMetadata & topic)
+void TestPlugin::create_topic(
+  const rosbag2_storage::TopicMetadata & topic,
+  const rosbag2_storage::MessageDefinition & message_definition)
 {
-  std::cout << "Created topic with name =" << topic.name << " and type =" << topic.type << ".\n";
+  std::cout << "Created topic with name =" << topic.name << ", type =" << topic.type <<
+    "and message definition encoding " << message_definition.encoding << ".\n";
 }
 
 void TestPlugin::remove_topic(const rosbag2_storage::TopicMetadata & topic)
@@ -80,11 +95,30 @@ void TestPlugin::write(
   std::cout << "\nwriting multiple\n";
 }
 
+bool TestPlugin::write_message(
+  const std::shared_ptr<const rosbag2_storage::SerializedBagMessage> msg)
+{
+  (void) msg;
+  std::cout << "\nwriting message\n";
+  return true;
+}
+
+std::vector<size_t>
+TestPlugin::write_messages(const rosbag2_storage::SerializedBagMessages & messages)
+{
+  (void)messages;
+  std::cout << "\nwriting multiple messages\n";
+  std::vector<size_t> ret_value;
+  return ret_value;
+}
+
 std::vector<rosbag2_storage::TopicMetadata> TestPlugin::get_all_topics_and_types()
 {
   std::cout << "\nreading topics and types\n";
   return std::vector<rosbag2_storage::TopicMetadata>();
 }
+
+void TestPlugin::get_all_message_definitions(std::vector<rosbag2_storage::MessageDefinition> &) {}
 
 rosbag2_storage::BagMetadata TestPlugin::get_metadata()
 {

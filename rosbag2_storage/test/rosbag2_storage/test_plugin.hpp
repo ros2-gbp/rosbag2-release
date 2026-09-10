@@ -33,9 +33,15 @@ public:
     const rosbag2_storage::StorageOptions & storage_options,
     rosbag2_storage::storage_interfaces::IOFlag flag) override;
 
-  void create_topic(const rosbag2_storage::TopicMetadata & topic) override;
+  void update_metadata(const rosbag2_storage::BagMetadata & metadata) override;
+
+  void create_topic(
+    const rosbag2_storage::TopicMetadata & topic,
+    const rosbag2_storage::MessageDefinition & message_definition) override;
 
   void remove_topic(const rosbag2_storage::TopicMetadata & topic) override;
+
+  bool set_read_order(const rosbag2_storage::ReadOrder &) override;
 
   bool has_next() override;
 
@@ -43,10 +49,18 @@ public:
 
   void write(std::shared_ptr<const rosbag2_storage::SerializedBagMessage> msg) override;
 
-  void write(const std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>> & msg)
-  override;
+  void write(
+    const std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>> & msg) override;
+
+  bool write_message(std::shared_ptr<const rosbag2_storage::SerializedBagMessage> msg) override;
+
+  std::vector<size_t>
+  write_messages(const rosbag2_storage::SerializedBagMessages & messages) override;
 
   std::vector<rosbag2_storage::TopicMetadata> get_all_topics_and_types() override;
+
+  void get_all_message_definitions(
+    std::vector<rosbag2_storage::MessageDefinition> & definitions) override;
 
   rosbag2_storage::BagMetadata get_metadata() override;
 

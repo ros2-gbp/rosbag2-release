@@ -2,99 +2,284 @@
 Changelog for package rosbag2_transport
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.15.17 (2026-09-06)
---------------------
-* [humble] Add missing "RecordOptions" fields to the encode/decode functions (backport `#2334 <https://github.com/ros2/rosbag2/issues/2334>`_) (`#2339 <https://github.com/ros2/rosbag2/issues/2339>`_)
+0.33.4 (2026-09-08)
+-------------------
+* Enhance action status topic handling and filtering logic (`#2470 <https://github.com/ros2/rosbag2/issues/2470>`_) (`#2489 <https://github.com/ros2/rosbag2/issues/2489>`_)
+* Stop fixed-frequency /clock publication after playback (`#2482 <https://github.com/ros2/rosbag2/issues/2482>`_) (`#2488 <https://github.com/ros2/rosbag2/issues/2488>`_)
+* Fix missing lib : Add iomanip lib (`#2480 <https://github.com/ros2/rosbag2/issues/2480>`_) (`#2486 <https://github.com/ros2/rosbag2/issues/2486>`_)
+* Added missing header (`#2464 <https://github.com/ros2/rosbag2/issues/2464>`_) (`#2466 <https://github.com/ros2/rosbag2/issues/2466>`_)
+* Address flakiness in RecordSrvsSimTimeTest fixture (`#2426 <https://github.com/ros2/rosbag2/issues/2426>`_) (`#2429 <https://github.com/ros2/rosbag2/issues/2429>`_)
+* [lyrical] Address RHEL uncrustify warning. (backport `#2432 <https://github.com/ros2/rosbag2/issues/2432>`_) (`#2433 <https://github.com/ros2/rosbag2/issues/2433>`_)
 * Contributors: mergify[bot]
 
-0.15.16 (2025-12-23)
---------------------
-* [humble] Bugfix for incorrect MCAPStorage::seek(timestamp) when timestamp is current (backport `#2157 <https://github.com/ros2/rosbag2/issues/2157>`_) (`#2161 <https://github.com/ros2/rosbag2/issues/2161>`_)
-* [humble] rosbag2_transport: parametrize test_rewrite (backport `#1206 <https://github.com/ros2/rosbag2/issues/1206>`_) (`#2162 <https://github.com/ros2/rosbag2/issues/2162>`_)
+0.33.3 (2026-05-12)
+-------------------
+* Apply /bigobj to all MSVC builds in rosbag2_transport (`#2424 <https://github.com/ros2/rosbag2/issues/2424>`_) (`#2428 <https://github.com/ros2/rosbag2/issues/2428>`_)
 * Contributors: mergify[bot]
 
-0.15.15 (2025-07-16)
---------------------
-* [humble] Bugfix: `ros2 bag convert` dropping messages with compression mode message (backport `#1975 <https://github.com/ros2/rosbag2/issues/1975>`_) (`#2012 <https://github.com/ros2/rosbag2/issues/2012>`_)
-* Contributors: mergify[bot]
-
-0.15.14 (2025-03-25)
---------------------
-
-0.15.13 (2024-11-25)
---------------------
-* [humble] Allow unknown types in bag rewrite (backport `#1812 <https://github.com/ros2/rosbag2/issues/1812>`_) (`#1819 <https://github.com/ros2/rosbag2/issues/1819>`_)
-* Contributors: mergify[bot]
-
-0.15.12 (2024-07-28)
---------------------
-* [humble] Bugfix for bag_split event callbacks called to early with file compression (backport `#1643 <https://github.com/ros2/rosbag2/issues/1643>`_) (`#1733 <https://github.com/ros2/rosbag2/issues/1733>`_)
-* [humble] rosbag2_cpp: test more than one storage plugin (backport `#1196 <https://github.com/ros2/rosbag2/issues/1196>`_) (`#1721 <https://github.com/ros2/rosbag2/issues/1721>`_)
-* [humble] Remove explicit sqlite3 from code (backport `#1166 <https://github.com/ros2/rosbag2/issues/1166>`_) (`#1723 <https://github.com/ros2/rosbag2/issues/1723>`_)
-* Contributors: mergify[bot]
-
-0.15.11 (2024-05-20)
---------------------
-
-0.15.10 (2024-05-17)
---------------------
-* Add /bigobj to MSVC compiles. (`#1571 <https://github.com/ros2/rosbag2/issues/1571>`_)
-* Contributors: Chris Lalancette
-
-0.15.9 (2024-01-24)
+0.33.2 (2026-04-30)
 -------------------
-* [humble] Give proper log message for `--start-paused` (backport `#1537 <https://github.com/ros2/rosbag2/issues/1537>`_) (`#1541 <https://github.com/ros2/rosbag2/issues/1541>`_)
-* [humble] `Recording stopped` prints only once. (backport `#1530 <https://github.com/ros2/rosbag2/issues/1530>`_) (`#1535 <https://github.com/ros2/rosbag2/issues/1535>`_)
-* [humble] Bugfix for incorrect playback rate changes when pressing buttons (backport `#1513 <https://github.com/ros2/rosbag2/issues/1513>`_) (`#1515 <https://github.com/ros2/rosbag2/issues/1515>`_)
-* Contributors: Michael Orlov <michael.orlov@apex.ai>, Christoph Froehlich <christoph.froehlich@ait.ac.at>, Tomoya Fujita <Tomoya.Fujita@sony.com>
-0.15.8 (2023-09-19)
--------------------
-* Don't warn for unknown types if topics are not selected (`#1466 <https://github.com/ros2/rosbag2/issues/1466>`_) (`#1469 <https://github.com/ros2/rosbag2/issues/1469>`_)
-* Fix the build with rmw_fastrtps_dynamic. (`#1416 <https://github.com/ros2/rosbag2/issues/1416>`_) (`#1439 <https://github.com/ros2/rosbag2/issues/1439>`_)
-* Contributors: mergify[bot]
+* fix: Fixed compile errors in rosbag2_transport for MSVC 2022 and C++20 (`#2407 <https://github.com/ros2/rosbag2/issues/2407>`_)
+* Fix QoS overrides ignored when topic name has no leading slash (`#2394 <https://github.com/ros2/rosbag2/issues/2394>`_)
+* Contributors: Janosch Machowinski, Sahil Lakhmani
 
-0.15.7 (2023-07-18)
--------------------
-* [humble] Fix for possible freeze in Recorder::stop() (backport `#1381 <https://github.com/ros2/rosbag2/issues/1381>`_) (`#1388 <https://github.com/ros2/rosbag2/issues/1388>`_)
-* [humble] Fix for rosbag2_transport::Recorder failures due to the unhandled exceptions (backport `#1382 <https://github.com/ros2/rosbag2/issues/1382>`_) (`#1403 <https://github.com/ros2/rosbag2/issues/1403>`_)
-* [humble] When using sim time, wait for /clock before beginning recording (backport `#1378 <https://github.com/ros2/rosbag2/issues/1378>`_) (`#1392 <https://github.com/ros2/rosbag2/issues/1392>`_)
-* Add recorder stop() API (backport `#1300 <https://github.com/ros2/rosbag2/issues/1300>`_) (`#1396 <https://github.com/ros2/rosbag2/issues/1396>`_)
-* Contributors: Michael Orlov, mergify[bot], zeal-up
-
-0.15.6 (2023-06-05)
--------------------
-* [Humble] Bugfix for parameters not passing to recorder's node from child component (backport `#1360 <https://github.com/ros2/rosbag2/issues/1360>`_) (`#1368 <https://github.com/ros2/rosbag2/issues/1368>`_)
-* Fix memory issue when multiple writers with message compression_mode required (`#1331 <https://github.com/ros2/rosbag2/issues/1331>`_)
-* Print "Hidden topics are not recorded" only once. (`#1225 <https://github.com/ros2/rosbag2/issues/1225>`_) (`#1323 <https://github.com/ros2/rosbag2/issues/1323>`_)
-* Contributors: zeal-up, Michael Orlov, Patrick Roncagliolo, rshanor
-
-0.15.5 (2023-04-25)
--------------------
-* [humble] Redesign record_services tests to make them more deterministic (`#1122 <https://github.com/ros2/rosbag2/issues/1122>`_) (`#1142 <https://github.com/ros2/rosbag2/issues/1142>`_)
-* Use RMW methods to initialize endpoint info instead of brace initializer to guard against upcoming struct change (`#1257 <https://github.com/ros2/rosbag2/issues/1257>`_) (`#1275 <https://github.com/ros2/rosbag2/issues/1275>`_)
-* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_) (`#1224 <https://github.com/ros2/rosbag2/issues/1224>`_)
-* Contributors: mergify[bot]
-
-0.15.4 (2023-01-10)
+0.33.1 (2026-04-14)
 -------------------
 
-0.15.3 (2022-11-07)
--------------------
-* Mark `test_play_services` as xfail for FastRTPS and CycloneDDS (`#1091 <https://github.com/ros2/rosbag2/issues/1091>`_) (`#1136 <https://github.com/ros2/rosbag2/issues/1136>`_)
-* Fix hangout in rosbag2 player and recorder when pressing `CTRL+C` (`#1081 <https://github.com/ros2/rosbag2/issues/1081>`_) (`#1085 <https://github.com/ros2/rosbag2/issues/1085>`_)
-* make writer and option variables private instead of protected (`#1097 <https://github.com/ros2/rosbag2/issues/1097>`_)
-* Revert "[humble] Backport. Added support for filtering topics via regular expressions (`#1034 <https://github.com/ros2/rosbag2/issues/1034>`_)- (`#1039 <https://github.com/ros2/rosbag2/issues/1039>`_)" (`#1069 <https://github.com/ros2/rosbag2/issues/1069>`_)
-* Notification of significant events during bag recording and playback (`#908 <https://github.com/ros2/rosbag2/issues/908>`_) (`#1037 <https://github.com/ros2/rosbag2/issues/1037>`_)
-* Backport. Add use_sim_time option to record verb (`#1017 <https://github.com/ros2/rosbag2/issues/1017>`_)
-* Fix for rosbag2::Player freeze when ctrl+c in pause mode (`#1002 <https://github.com/ros2/rosbag2/issues/1002>`_) (`#1016 <https://github.com/ros2/rosbag2/issues/1016>`_)
-* Make unpublished topics unrecorded by default (`#968 <https://github.com/ros2/rosbag2/issues/968>`_) (`#1008 <https://github.com/ros2/rosbag2/issues/1008>`_)
-* Contributors: Bernardo Taveira, Esteve Fernandez, Geoffrey Biggs, Keisuke Shima, Michael Orlov, Sean Kelly, mergify[bot]
+* Refactor transient-local topic detection and logging in RecorderImpl (`#2395 <https://github.com/ros2/rosbag2/issues/2395>`_)
+* Fix race condition in ``RecordSrvsSimTimeTest`` by waiting for clock subscriber (`#2396 <https://github.com/ros2/rosbag2/issues/2396>`_)
+* Add ``--repeat-all-transient-local`` flag for automatic transient-local topic detection (`#2391 <https://github.com/ros2/rosbag2/issues/2391>`_)
+* Repeat transient-local topics: Recorder, CLI, and Python bindings (`#2387 <https://github.com/ros2/rosbag2/issues/2387>`_)
+* Implement ``transient-local topic`` repetition for Writer API and split/snapshot integration (`#2386 <https://github.com/ros2/rosbag2/issues/2386>`_)
+* Add `TransientLocalMessagesCache` and `RecordOptions` for repeating transient-local topics (`#2385 <https://github.com/ros2/rosbag2/issues/2385>`_)
+* Use new ROSIDL aggregate CMake target (`#2384 <https://github.com/ros2/rosbag2/issues/2384>`_)
+* Address flakiness in the ``rosbag2_transport::test_record_services`` tests (`#2368 <https://github.com/ros2/rosbag2/issues/2368>`_)
+* Add support for time based Resume service (`#2357 <https://github.com/ros2/rosbag2/issues/2357>`_)
+* Address race condition in the ``wait_for_playback_to_start()`` function (`#2344 <https://github.com/ros2/rosbag2/issues/2344>`_)
+* Add ``set_on_start_recording_callback()`` to set the callback for when recording starts (`#2340 <https://github.com/ros2/rosbag2/issues/2340>`_)
+* Remove unnecessary dependencies on ``yaml_cpp_vendor`` (`#2353 <https://github.com/ros2/rosbag2/issues/2353>`_)
+* Allow pause/resume service calls while not in recording (`#2349 <https://github.com/ros2/rosbag2/issues/2349>`_)
+* Implement delayed and time-based recorder and player services, adding new bag split modes (`#2330 <https://github.com/ros2/rosbag2/issues/2330>`_)
+* Update Rosbag2 filename format to ``index+name+timestamp`` (`#2265 <https://github.com/ros2/rosbag2/issues/2265>`_)
+* Address a possible deadlock in ``seek(timestamp)`` (`#2345 <https://github.com/ros2/rosbag2/issues/2345>`_)
+* Add missing fields to ``RecordOptions`` YAML encode/decode functions and include a compile-time safeguard (`#2334 <https://github.com/ros2/rosbag2/issues/2334>`_)
+* Implement circular logging by split count (`--max-bag-files`) (`#2218 <https://github.com/ros2/rosbag2/issues/2218>`_)
+* Improve ``ros2 bag convert`` performance for fragment cutting and add ``--input-options`` (`#2325 <https://github.com/ros2/rosbag2/issues/2325>`_)
+* Add static topics feature for recorder (`#2319 <https://github.com/ros2/rosbag2/issues/2319>`_)
+* Add `--max-cache-duration` option for time-bounded snapshots (`#2289 <https://github.com/ros2/rosbag2/issues/2289>`_)
+* Fix the flaky ``can_record_again_after_stop`` test (`#2313 <https://github.com/ros2/rosbag2/issues/2313>`_)
+* Add error return code to the `~/stop` service request (`#2312 <https://github.com/ros2/rosbag2/issues/2312>`_)
+* Add Record, Stop, StartDiscovery, StopDiscovery, and IsDiscoveryRunning services for Recorder (`#2248 <https://github.com/ros2/rosbag2/issues/2248>`_)
+* Use QoS override settings for inner Rosbag2 publishing topics (`#2286 <https://github.com/ros2/rosbag2/issues/2286>`_)
+* Fix decoder and encode mismatch in YAML deserialization (`#2277 <https://github.com/ros2/rosbag2/issues/2277>`_)
+* Incorporate upstream minor fixes from Apex.AI (`#2240 <https://github.com/ros2/rosbag2/issues/2240>`_)
+* Fix macOS build: Disable thread-safety annotations in ``locked_priority_queue.hpp`` (`#2245 <https://github.com/ros2/rosbag2/issues/2245>`_)
+* Fix C++ Recorder failure when stop() then record() are called with the same bag name (`#2224 <https://github.com/ros2/rosbag2/issues/2224>`_)
+* Add a direct API for ``rosbag2_transport::Recorder`` (`#2221 <https://github.com/ros2/rosbag2/issues/2221>`_)
+* Add ``input_serialization_format`` and ``output_serialization_format`` to ``RecordOptions``, deprecating ``rmw_serialization_format`` (`#2215 <https://github.com/ros2/rosbag2/issues/2215>`_)
+* Enable RMW communication isolation in rosbag2_transport tests (`#2190 <https://github.com/ros2/rosbag2/issues/2190>`_)
+* Add topic name and type delimiter for hash map keys to avoid collisions (`#2210 <https://github.com/ros2/rosbag2/issues/2210>`_)
+* Add cache for ``TopicFilter`` to avoid performance burden on discovery (`#1486 <https://github.com/ros2/rosbag2/issues/1486>`_)
+* Address recorder test flakiness by increasing cache size (`#2203 <https://github.com/ros2/rosbag2/issues/2203>`_)
+* Reduce CPU overhead in Rosbag2 recorder discovery by improving discovery logic (`#2201 <https://github.com/ros2/rosbag2/issues/2201>`_)
+* Fix data races in ``PlayerProgressBar`` using atomic variables (`#2194 <https://github.com/ros2/rosbag2/issues/2194>`_)
+* Fix data races in tests with ``MockSequentialWriter`` (`#2192 <https://github.com/ros2/rosbag2/issues/2192>`_)
+* Player now respects original message order for same timestamps (`#2172 <https://github.com/ros2/rosbag2/issues/2172>`_)
+* Return player storage options by value in ``get_storage_options()`` to avoid dangling reference (`#2181 <https://github.com/ros2/rosbag2/issues/2181>`_)
+* Fix player not playing when ``read_ahead_queue_size`` equals 1 (`#2174 <https://github.com/ros2/rosbag2/issues/2174>`_)
+* Fix multiple race conditions and a deadlock in the player (`#2171 <https://github.com/ros2/rosbag2/issues/2171>`_)
+* Fix multibag replay stagnation and improve playback performance by managing chronological message order with ``ReadersManager`` (`#2158 <https://github.com/ros2/rosbag2/issues/2158>`_)
+* Fix MCAPStorage::seek(time) to advance when timestamp matches current time (`#2157 <https://github.com/ros2/rosbag2/issues/2157>`_)
+* Publish messages lost statistics to 'events/messages_lost' topic (`#2150 <https://github.com/ros2/rosbag2/issues/2150>`_)
+* Add ``RecorderEventNotifier`` class (`#2144 <https://github.com/ros2/rosbag2/issues/2144>`_)
+* Resolve deadlock during multibag replay and update ``wait_for_playback_to_start`` (`#2143 <https://github.com/ros2/rosbag2/issues/2143>`_)
+* Use ``rclcpp typesupport helpers`` in ``rosbag2_cpp`` (`#2017 <https://github.com/ros2/rosbag2/issues/2017>`_)
+* Fix callback not called for MESSAGES_LOST event (`#2105 <https://github.com/ros2/rosbag2/issues/2105>`_)
+* Add public API for player's starting time and playback duration (`#2095 <https://github.com/ros2/rosbag2/issues/2095>`_)
+* Fix CMAKE deprecation (`#2067 <https://github.com/ros2/rosbag2/issues/2067>`_)
+* Fix deadlocks in Rosbag2 player when calling stop API (`#2057 <https://github.com/ros2/rosbag2/issues/2057>`_)
+* Add message loss statistics callbacks and logging (`#2039 <https://github.com/ros2/rosbag2/issues/2039>`_)
+* Skip flaky `can_record_again_after_stop` test (`#2031 <https://github.com/ros2/rosbag2/issues/2031>`_)
+* Fix ``cout`` output when progress bar is disabled (`#2024 <https://github.com/ros2/rosbag2/issues/2024>`_)
+* Improve message publishing timing by avoiding sporadic wakeups and fixing incorrect intervals on player start (`#2025 <https://github.com/ros2/rosbag2/issues/2025>`_)
+* Fix ``playing_respects_delay`` test flakiness (`#2016 <https://github.com/ros2/rosbag2/issues/2016>`_)
+* Address test flakiness by waiting for executor spin (`#2001 <https://github.com/ros2/rosbag2/issues/2001>`_)
+* Avoid sending non-existent cancel requests (`#2005 <https://github.com/ros2/rosbag2/issues/2005>`_)
 
-0.15.2 (2022-05-11)
+* Contributors: Barry Xu, Chris Lalancette, Daisuke Sato, Dhruv Patel, Emerson Knapp, Luke Sy, Michael Orlov, Scott K Logan, Shane Loretz, Tomoya Fujita, Tony Najjar, baranbologur, carlos-apex, mosfet80
+
+0.33.0 (2025-04-25)
 -------------------
+* Fix a maybe-uninitialized warning in player_action_client.cpp (`#1969 <https://github.com/ros2/rosbag2/issues/1969>`_)
+* Upstream quality changes from Apex.AI part-2 (`#1924 <https://github.com/ros2/rosbag2/issues/1924>`_)
+* Bugfix: `ros2 bag convert` dropping messages with compression mode message (`#1975 <https://github.com/ros2/rosbag2/issues/1975>`_)
+* Use DDS queue depth for subscriptions as a maximum value across publishers (`#1960 <https://github.com/ros2/rosbag2/issues/1960>`_)
+* Contributors: DangitBen, Michael Carroll, Michael Orlov, Christophe Bedard
+
+0.32.0 (2025-04-18)
+-------------------
+* Add actions replay feature (`#1955 <https://github.com/ros2/rosbag2/issues/1955>`_)
+* Implement actions recording and displaying information about recorded actions features (`#1939 <https://github.com/ros2/rosbag2/issues/1939>`_)
+* Set environment variables to run tests with `rmw_zenoh_cpp` with multicast discovery (`#1946 <https://github.com/ros2/rosbag2/issues/1946>`_)
+* Initialize filter with namespaced updated topics and services.  (rolling) (`#1944 <https://github.com/ros2/rosbag2/issues/1944>`_)
+* Fix: QoS incompatibilities are not expected with rmw_zenoh_cpp (`#1936 <https://github.com/ros2/rosbag2/issues/1936>`_)
+* Address windows warnings in the progress bar class (`#1927 <https://github.com/ros2/rosbag2/issues/1927>`_)
+* Don't delete existing subscription if failed to create a new one (`#1923 <https://github.com/ros2/rosbag2/issues/1923>`_)
+* Progress bar for ros2 bag play (`#1836 <https://github.com/ros2/rosbag2/issues/1836>`_)
+* Upstream quality changes from Apex.AI part 1 (`#1903 <https://github.com/ros2/rosbag2/issues/1903>`_)
+* Contributors: Alejandro Hernández Cordero, Barry Xu, Michael Orlov, Nicola Loi, Roderick Taylor, Yuyuan Yuan
+
+0.31.0 (2025-02-02)
+-------------------
+* Use tmpfs in rosbag2 temporary_directory_fixture (`#1901 <https://github.com/ros2/rosbag2/issues/1901>`_)
+* Bugfix: Recorder discovery does not restart after being stopped (`#1894 <https://github.com/ros2/rosbag2/issues/1894>`_)
+* Bugfix. Event publisher not starting for second run after stop (`#1888 <https://github.com/ros2/rosbag2/issues/1888>`_)
+* Add support for replaying based on publication timestamp (`#1876 <https://github.com/ros2/rosbag2/issues/1876>`_)
+* Publish clock after delay is over and disable delay on next loops (`#1861 <https://github.com/ros2/rosbag2/issues/1861>`_)
+* Add PlayerClock::wakeup() to interrupt sleeping (`#1869 <https://github.com/ros2/rosbag2/issues/1869>`_)
+* Add debug information for flaky can_record_again_after_stop test (`#1871 <https://github.com/ros2/rosbag2/issues/1871>`_)
+* Support replaying multiple bags (`#1848 <https://github.com/ros2/rosbag2/issues/1848>`_)
+* Contributors: Christophe Bedard, Michael Orlov, Nicola Loi, Øystein Sture
+
+0.30.0 (2024-11-26)
+-------------------
+* Reintroduce `Don't warn for unknown types if topics are not selected` (`#1825 <https://github.com/ros2/rosbag2/issues/1825>`_)
+* Allow unknown types in bag rewrite (`#1812 <https://github.com/ros2/rosbag2/issues/1812>`_)
+* Improve the reliability of rosbag2 tests (`#1796 <https://github.com/ros2/rosbag2/issues/1796>`_)
+* Contributors: Alejandro Hernández Cordero, Chris Lalancette, Michael Orlov, Ramon Wijnands, Roman
+
+0.29.0 (2024-09-03)
+-------------------
+* Removed warnings (`#1794 <https://github.com/ros2/rosbag2/issues/1794>`_)
+* Small cleanups to the rosbag2 tests. (`#1792 <https://github.com/ros2/rosbag2/issues/1792>`_)
+* Add cli option compression-threads-priority (`#1768 <https://github.com/ros2/rosbag2/issues/1768>`_)
+* [WIP] Remove rcpputils::fs dependencies in rosbag2 packages (`#1740 <https://github.com/ros2/rosbag2/issues/1740>`_)
+* Bugfix for bag_split event callbacks called to early with file compression (`#1643 <https://github.com/ros2/rosbag2/issues/1643>`_)
+* Contributors: Alejandro Hernández Cordero, Chris Lalancette, Michael Orlov, Roman
+
+0.28.0 (2024-06-17)
+-------------------
+* Bugfix for issue where unable to create composable nodes with compression (`#1679 <https://github.com/ros2/rosbag2/issues/1679>`_)
+* Add support for "all" and "exclude" in RecordOptions YAML decoder (`#1664 <https://github.com/ros2/rosbag2/issues/1664>`_)
+* Add unit tests to cover message's send and received timestamps during recording (`#1641 <https://github.com/ros2/rosbag2/issues/1641>`_)
+* Contributors: Michael Orlov
+
+0.27.0 (2024-04-30)
+-------------------
+* Removed warnings - unqualified-std-cast-call (`#1618 <https://github.com/ros2/rosbag2/issues/1618>`_)
+* Contributors: Alejandro Hernández Cordero
+
+0.26.1 (2024-04-17)
+-------------------
+
+0.26.0 (2024-04-16)
+-------------------
+* Add node name to the Read(Write)SplitEvent message (`#1609 <https://github.com/ros2/rosbag2/issues/1609>`_)
+* Add option to disable recorder keyboard controls (`#1607 <https://github.com/ros2/rosbag2/issues/1607>`_)
+* Support service 2/2 --- rosbag2 service play (`#1481 <https://github.com/ros2/rosbag2/issues/1481>`_)
+* Use middleware send and receive timestamps from message_info during recording (`#1531 <https://github.com/ros2/rosbag2/issues/1531>`_)
+* Update to use yaml-cpp version 0.8.0. (`#1605 <https://github.com/ros2/rosbag2/issues/1605>`_)
+* Gracefully handle SIGINT and SIGTERM signals for play and burst CLI (`#1557 <https://github.com/ros2/rosbag2/issues/1557>`_)
+* Added exclude-topic-types to record (`#1582 <https://github.com/ros2/rosbag2/issues/1582>`_)
+* Contributors: Alejandro Hernández Cordero, Barry Xu, Bernd Pfrommer, Chris Lalancette, Michael Orlov, jmachowinski
+
+0.25.0 (2024-03-27)
+-------------------
+* Use std::filesystem instead of rcpputils::fs (`#1576 <https://github.com/ros2/rosbag2/issues/1576>`_)
+* Add transactional state mutex for RecorderImpl class. (`#1547 <https://github.com/ros2/rosbag2/issues/1547>`_)
+* Overhaul in the rosbag2_transport::TopicFilter class and relevant tests (`#1585 <https://github.com/ros2/rosbag2/issues/1585>`_)
+* Filter topic by type  (`#1577 <https://github.com/ros2/rosbag2/issues/1577>`_)
+* fix: use size_t instead of uint64_t in play_options YAML converter (`#1575 <https://github.com/ros2/rosbag2/issues/1575>`_)
+* Make some changes for newer versions of uncrustify. (`#1578 <https://github.com/ros2/rosbag2/issues/1578>`_)
+* Add topic_id returned by storage to the TopicMetadata (`#1538 <https://github.com/ros2/rosbag2/issues/1538>`_)
+* Workaround for flaky test_play_services running with fastrtps (`#1556 <https://github.com/ros2/rosbag2/issues/1556>`_)
+* Add proper message for --start-paused (`#1537 <https://github.com/ros2/rosbag2/issues/1537>`_)
+* `Recording stopped` prints only once. (`#1530 <https://github.com/ros2/rosbag2/issues/1530>`_)
+* Cleanup the rosbag2_transport tests (`#1518 <https://github.com/ros2/rosbag2/issues/1518>`_)
+* Implement service recording and display info about recorded services (`#1480 <https://github.com/ros2/rosbag2/issues/1480>`_)
+* Add option to set compression threads priority (`#1457 <https://github.com/ros2/rosbag2/issues/1457>`_)
+* Bugfix for incorrect playback rate changes when pressing buttons (`#1513 <https://github.com/ros2/rosbag2/issues/1513>`_)
+* Make Player and Recorder Composable (`#902 <https://github.com/ros2/rosbag2/issues/902>`_) (`#1419 <https://github.com/ros2/rosbag2/issues/1419>`_)
+* Clang fixes for the latest PlayerImpl code. (`#1507 <https://github.com/ros2/rosbag2/issues/1507>`_)
+* Make `rosbag2_transport::Player::play()` run in a separate thread (`#1503 <https://github.com/ros2/rosbag2/issues/1503>`_)
+* Switch to target_link_libraries everywhere. (`#1504 <https://github.com/ros2/rosbag2/issues/1504>`_)
+* Use enum values for offered_qos_profiles in code and string names in serialized metadata (`#1476 <https://github.com/ros2/rosbag2/issues/1476>`_)
+* Redesign Player class with PIMPL idiom (`#1447 <https://github.com/ros2/rosbag2/issues/1447>`_)
+* Don't warn for unknown types if topics are not selected (`#1466 <https://github.com/ros2/rosbag2/issues/1466>`_)
+* Remove unused concurrentqueue implementation. (`#1465 <https://github.com/ros2/rosbag2/issues/1465>`_)
+* Fix uninitialized value pointed out by clang static analysis. (`#1440 <https://github.com/ros2/rosbag2/issues/1440>`_)
+* Fix the build with rmw_fastrtps_dynamic. (`#1416 <https://github.com/ros2/rosbag2/issues/1416>`_)
+* Contributors: Alejandro Hernández Cordero, Barry Xu, Chris Lalancette, Christoph Fröhlich, Daisuke Nishimatsu, Michael Orlov, Patrick Roncagliolo, Roman Sokolkov, Tomoya Fujita, jmachowinski
+
+0.24.0 (2023-07-11)
+-------------------
+* Fix for rosbag2_transport::Recorder failures due to the unhandled exceptions (`#1382 <https://github.com/ros2/rosbag2/issues/1382>`_)
+* When using sim time, wait for /clock before beginning recording (`#1378 <https://github.com/ros2/rosbag2/issues/1378>`_)
+* Fix for possible freeze in Recorder::stop() (`#1381 <https://github.com/ros2/rosbag2/issues/1381>`_)
+* Revert "Don't record sim-time messages before first /clock (`#1354 <https://github.com/ros2/rosbag2/issues/1354>`_)" (`#1377 <https://github.com/ros2/rosbag2/issues/1377>`_)
+* Don't record sim-time messages before first /clock (`#1354 <https://github.com/ros2/rosbag2/issues/1354>`_)
+* Fix a clang warning about uninitialized variable. (`#1370 <https://github.com/ros2/rosbag2/issues/1370>`_)
+* [bugfix] for parameters not passing to recorder's node from child component (`#1360 <https://github.com/ros2/rosbag2/issues/1360>`_)
+* Change subscriptions from GenericSubscripton to SubscriptionBase (`#1337 <https://github.com/ros2/rosbag2/issues/1337>`_)
+* Add recorder stop() API (`#1300 <https://github.com/ros2/rosbag2/issues/1300>`_)
+* Contributors: Chris Lalancette, Emerson Knapp, Michael Orlov, Patrick Roncagliolo
+
+0.23.0 (2023-04-28)
+-------------------
+
+0.22.0 (2023-04-18)
+-------------------
+* Read message definitions from input files in bag_rewrite (`#1295 <https://github.com/ros2/rosbag2/issues/1295>`_)
+* Add message definition read API (`#1292 <https://github.com/ros2/rosbag2/issues/1292>`_)
+* Move rosbag2_transport::Recorder implementation to pimpl (`#1291 <https://github.com/ros2/rosbag2/issues/1291>`_)
+* rosbag2_storage: add type description hash to topic metadata (`#1272 <https://github.com/ros2/rosbag2/issues/1272>`_)
+* Contributors: Emerson Knapp, Michael Orlov, james-rms
+
+0.21.0 (2023-04-12)
+-------------------
+* rosbag2_cpp: move local message definition source out of MCAP plugin (`#1265 <https://github.com/ros2/rosbag2/issues/1265>`_)
+* Use RMW methods to initialize endpoint info instead of brace initializer to guard against upcoming struct change (`#1257 <https://github.com/ros2/rosbag2/issues/1257>`_)
+* Update rosbag2 to C++17. (`#1238 <https://github.com/ros2/rosbag2/issues/1238>`_)
+* Use target_link_libraries instead of ament_target_dependencies (`#1202 <https://github.com/ros2/rosbag2/issues/1202>`_)
+* Contributors: Chris Lalancette, Daisuke Nishimatsu, Emerson Knapp, Michael Orlov, james-rms
+
+0.20.0 (2023-02-14)
+-------------------
+
+0.19.0 (2023-01-13)
+-------------------
+* Print "Hidden topics are not recorded" only once. (`#1225 <https://github.com/ros2/rosbag2/issues/1225>`_)
+* rosbag2_storage: set MCAP as default plugin (`#1160 <https://github.com/ros2/rosbag2/issues/1160>`_)
+* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_)
+* rosbag2_transport: parametrize test_rewrite (`#1206 <https://github.com/ros2/rosbag2/issues/1206>`_)
+* rosbag2_cpp: test more than one storage plugin (`#1196 <https://github.com/ros2/rosbag2/issues/1196>`_)
+* Replace language for "db3"/"db"/"database" (`#1194 <https://github.com/ros2/rosbag2/issues/1194>`_)
+* set_read_order: return success (`#1177 <https://github.com/ros2/rosbag2/issues/1177>`_)
+* Remove explicit sqlite3 from code (`#1166 <https://github.com/ros2/rosbag2/issues/1166>`_)
+* Contributors: Emerson Knapp, Michael Orlov, james-rms, rshanor
+
+0.18.0 (2022-11-15)
+-------------------
+* Add pause and resume service calls for rosbag2 recorder (`#1131 <https://github.com/ros2/rosbag2/issues/1131>`_)
+* Redesign record_services tests to make them more deterministic (`#1122 <https://github.com/ros2/rosbag2/issues/1122>`_)
+* Add SplitBagfile recording service. (`#1115 <https://github.com/ros2/rosbag2/issues/1115>`_)
+* Reverse read order API and sqlite storage implementation (`#1083 <https://github.com/ros2/rosbag2/issues/1083>`_)
+* make recorder node composable by inheritance (`#1093 <https://github.com/ros2/rosbag2/issues/1093>`_)
+* Mark `test_play_services` as xfail for FastRTPS and CycloneDDS (`#1091 <https://github.com/ros2/rosbag2/issues/1091>`_)
+* fixed typo (`#1057 <https://github.com/ros2/rosbag2/issues/1057>`_)
+* Fix hangout in rosbag2 player and recorder when pressing `CTRL+C` (`#1081 <https://github.com/ros2/rosbag2/issues/1081>`_)
+* Added support for excluding topics via regular expressions (`#1046 <https://github.com/ros2/rosbag2/issues/1046>`_)
+* Contributors: Bernardo Taveira, Cristóbal Arroyo, DensoADAS, Emerson Knapp, Esteve Fernandez, Michael Orlov, rshanor
+
+0.17.0 (2022-07-30)
+-------------------
+* Use a single variable for evaluating the filter regex (`#1053 <https://github.com/ros2/rosbag2/issues/1053>`_)
+* Add additional mode of publishing sim time updates triggered by replayed messages (`#1050 <https://github.com/ros2/rosbag2/issues/1050>`_)
+* Speed optimization: Preparing copyless publish/subscribing by using const message for writing (`#1010 <https://github.com/ros2/rosbag2/issues/1010>`_)
+* Renamed --topics-regex to --regex and -e in Player class to be consistent with Recorder (`#1045 <https://github.com/ros2/rosbag2/issues/1045>`_)
+* Refactor play until and duration tests (`#1024 <https://github.com/ros2/rosbag2/issues/1024>`_)
+* Added support for filtering topics via regular expressions on Playback (`#1034 <https://github.com/ros2/rosbag2/issues/1034>`_)
+* Adds stop operation for rosbag2::Player (`#1007 <https://github.com/ros2/rosbag2/issues/1007>`_)
+* Fix incorrect boundary check for `playback_duration` and `play_until_timestamp` (`#1032 <https://github.com/ros2/rosbag2/issues/1032>`_)
+* Split up the include of rclcpp.hpp (`#1027 <https://github.com/ros2/rosbag2/issues/1027>`_)
+* Notification of significant events during bag recording and playback (`#908 <https://github.com/ros2/rosbag2/issues/908>`_)
+* Adds play until timestamp functionality (`#1005 <https://github.com/ros2/rosbag2/issues/1005>`_)
+* Add CLI verb for burst mode of playback (`#980 <https://github.com/ros2/rosbag2/issues/980>`_)
+* Add on play message callbacks to the `rosbag2::Player` class (`#1004 <https://github.com/ros2/rosbag2/issues/1004>`_)
+* Add play-for specified number of seconds functionality (`#960 <https://github.com/ros2/rosbag2/issues/960>`_)
+* Reduce message spam when topics to be recorded do not exist (`#1018 <https://github.com/ros2/rosbag2/issues/1018>`_)
+* Address flakiness in record_all_with_sim_time test (`#1014 <https://github.com/ros2/rosbag2/issues/1014>`_)
+* Add debug instrumentation for `test_play_services` (`#1013 <https://github.com/ros2/rosbag2/issues/1013>`_)
+* Fix for rosbag2::Player freeze when pressing ctrl+c in pause mode (`#1002 <https://github.com/ros2/rosbag2/issues/1002>`_)
+* Contributors: Agustin Alba Chicar, Brian, Chris Lalancette, DensoADAS, Joshua Hampp, Esteve Fernandez, Geoffrey Biggs, Jorge Perez, Michael Orlov, kylemarcey, Misha Shalem, Tony Peng
+
+0.16.0 (2022-05-11)
+-------------------
+* Add the /bigobj flag to Windows Debug builds. (`#1009 <https://github.com/ros2/rosbag2/issues/1009>`_)
+* Make unpublished topics unrecorded by default (`#968 <https://github.com/ros2/rosbag2/issues/968>`_)
 * Make peek_next_message_from_queue return a SharedPtr. (`#993 <https://github.com/ros2/rosbag2/issues/993>`_)
 * Change the topic names in test_record.cpp (`#988 <https://github.com/ros2/rosbag2/issues/988>`_)
-* Contributors: Chris Lalancette
+* Contributors: Chris Lalancette, Michael Orlov, Sean Kelly
 
 0.15.1 (2022-04-06)
 -------------------

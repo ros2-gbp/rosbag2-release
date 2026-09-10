@@ -2,60 +2,117 @@
 Changelog for package rosbag2_test_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.15.17 (2026-09-06)
---------------------
-
-0.15.16 (2025-12-23)
---------------------
-
-0.15.15 (2025-07-16)
---------------------
-
-0.15.14 (2025-03-25)
---------------------
-
-0.15.13 (2024-11-25)
---------------------
-
-0.15.12 (2024-07-28)
---------------------
-* [humble] rosbag2_cpp: test more than one storage plugin (backport `#1196 <https://github.com/ros2/rosbag2/issues/1196>`_) (`#1721 <https://github.com/ros2/rosbag2/issues/1721>`_)
-* Contributors: mergify[bot]
-
-0.15.11 (2024-05-20)
---------------------
-
-0.15.10 (2024-05-17)
---------------------
-
-0.15.9 (2024-01-24)
+0.33.4 (2026-09-08)
 -------------------
 
-0.15.8 (2023-09-19)
+0.33.3 (2026-05-12)
 -------------------
 
-0.15.7 (2023-07-18)
+0.33.2 (2026-04-30)
 -------------------
-
-0.15.6 (2023-06-05)
--------------------
-* Add extra checks in execute_and_wait_until_completion(..) (`#1346 <https://github.com/ros2/rosbag2/issues/1346>`_) (`#1357 <https://github.com/ros2/rosbag2/issues/1357>`_)
+* Reduce flakiness in rosbag2 recorder end-to-end tests (`#2370 <https://github.com/ros2/rosbag2/issues/2370>`_)
 * Contributors: Michael Orlov
 
-0.15.5 (2023-04-25)
--------------------
-* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_) (`#1224 <https://github.com/ros2/rosbag2/issues/1224>`_)
-* Contributors: mergify[bot]
-
-0.15.4 (2023-01-10)
+0.33.1 (2026-04-14)
 -------------------
 
-0.15.3 (2022-11-07)
--------------------
-* Fix for ros2 bag play exit with non-zero code on SIGINT (`#1126 <https://github.com/ros2/rosbag2/issues/1126>`_) (`#1147 <https://github.com/ros2/rosbag2/issues/1147>`_)
-* Contributors: mergify[bot]
+* Use new ROSIDL aggregate CMake target (`#2384 <https://github.com/ros2/rosbag2/issues/2384>`_)
+* Update Rosbag2 filename format to ``index+name+timestamp`` (`#2265 <https://github.com/ros2/rosbag2/issues/2265>`_)
+* Update subscription callback signatures (`#2225 <https://github.com/ros2/rosbag2/issues/2225>`_)
+* Fix CMAKE deprecation (`#2067 <https://github.com/ros2/rosbag2/issues/2067>`_)
+* Address test flakiness by waiting for executor spin (`#2001 <https://github.com/ros2/rosbag2/issues/2001>`_)
 
-0.15.2 (2022-05-11)
+* Contributors: Daisuke Sato, Emerson Knapp, Michael Orlov, mini-1235, mosfet80
+
+0.33.0 (2025-04-25)
+-------------------
+* Upstream quality changes from Apex.AI part-2 (`#1924 <https://github.com/ros2/rosbag2/issues/1924>`_)
+* Use DDS queue depth for subscriptions as a maximum value across publishers (`#1960 <https://github.com/ros2/rosbag2/issues/1960>`_)
+* Contributors: Michael Orlov, Christophe Bedard
+
+0.32.0 (2025-04-18)
+-------------------
+* Add actions replay feature (`#1955 <https://github.com/ros2/rosbag2/issues/1955>`_)
+* Implement actions recording and displaying information about recorded actions features (`#1939 <https://github.com/ros2/rosbag2/issues/1939>`_)
+* Upstream quality changes from Apex.AI part 1 (`#1903 <https://github.com/ros2/rosbag2/issues/1903>`_)
+* Contributors: Barry Xu, Michael Orlov
+
+0.31.0 (2025-02-02)
+-------------------
+* Use tmpfs in rosbag2 temporary_directory_fixture (`#1901 <https://github.com/ros2/rosbag2/issues/1901>`_)
+* Add debug information for flaky can_record_again_after_stop test (`#1871 <https://github.com/ros2/rosbag2/issues/1871>`_)
+* Contributors: Michael Orlov
+
+0.30.0 (2024-11-26)
+-------------------
+* Remove use of python_cmake_module (`#1570 <https://github.com/ros2/rosbag2/issues/1570>`_)
+* Improve the reliability of rosbag2 tests (`#1796 <https://github.com/ros2/rosbag2/issues/1796>`_)
+* Contributors: Alejandro Hernández Cordero, Chris Lalancette, Michael Orlov
+
+0.29.0 (2024-09-03)
+-------------------
+* Small cleanups to the rosbag2 tests. (`#1792 <https://github.com/ros2/rosbag2/issues/1792>`_)
+* [WIP] Remove rcpputils::fs dependencies in rosbag2 packages (`#1740 <https://github.com/ros2/rosbag2/issues/1740>`_)
+* Contributors: Chris Lalancette, Michael Orlov
+
+0.28.0 (2024-06-17)
+-------------------
+
+0.27.0 (2024-04-30)
+-------------------
+
+0.26.1 (2024-04-17)
+-------------------
+
+0.26.0 (2024-04-16)
+-------------------
+* Support service 2/2 --- rosbag2 service play (`#1481 <https://github.com/ros2/rosbag2/issues/1481>`_)
+* Contributors: Barry Xu
+
+0.25.0 (2024-03-27)
+-------------------
+* Make some changes for newer versions of uncrustify. (`#1578 <https://github.com/ros2/rosbag2/issues/1578>`_)
+* Implement service recording and display info about recorded services (`#1480 <https://github.com/ros2/rosbag2/issues/1480>`_)
+* Contributors: Barry Xu, Chris Lalancette
+
+0.24.0 (2023-07-11)
+-------------------
+* Add extra checks in execute_and_wait_until_completion(..) (`#1346 <https://github.com/ros2/rosbag2/issues/1346>`_)
+* Address flakiness in rosbag2_play_end_to_end tests (`#1297 <https://github.com/ros2/rosbag2/issues/1297>`_)
+* Contributors: Michael Orlov
+
+0.23.0 (2023-04-28)
+-------------------
+
+0.22.0 (2023-04-18)
+-------------------
+
+0.21.0 (2023-04-12)
+-------------------
+* Update rosbag2 to C++17. (`#1238 <https://github.com/ros2/rosbag2/issues/1238>`_)
+* Use target_link_libraries instead of ament_target_dependencies (`#1202 <https://github.com/ros2/rosbag2/issues/1202>`_)
+* Contributors: Chris Lalancette, Daisuke Nishimatsu, Michael Orlov
+
+0.20.0 (2023-02-14)
+-------------------
+
+0.19.0 (2023-01-13)
+-------------------
+* Add Michael Orlov as maintainer in rosbag2 packages (`#1215 <https://github.com/ros2/rosbag2/issues/1215>`_)
+* rosbag2_py: parametrize tests across storage plugins (`#1203 <https://github.com/ros2/rosbag2/issues/1203>`_)
+* Contributors: Michael Orlov, james-rms
+
+0.18.0 (2022-11-15)
+-------------------
+* Fix for ros2 bag play exit with non-zero code on SIGINT (`#1126 <https://github.com/ros2/rosbag2/issues/1126>`_)
+* Contributors: Michael Orlov
+
+0.17.0 (2022-07-30)
+-------------------
+* Split up the include of rclcpp.hpp (`#1027 <https://github.com/ros2/rosbag2/issues/1027>`_)
+* Contributors: Chris Lalancette
+
+0.16.0 (2022-05-11)
 -------------------
 
 0.15.1 (2022-04-06)

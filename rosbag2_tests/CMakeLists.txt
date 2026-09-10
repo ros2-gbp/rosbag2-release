@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.20)
 project(rosbag2_tests)
 
 add_definitions(-D_SRC_RESOURCES_DIR_PATH="${CMAKE_CURRENT_SOURCE_DIR}/resources")
@@ -8,9 +8,10 @@ if(NOT CMAKE_C_STANDARD)
   set(CMAKE_C_STANDARD 99)
 endif()
 
-# Default to C++14
+# Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
 endif()
 
 # Windows supplies macros for min and max by default. We should only use min and max from stl
@@ -27,6 +28,7 @@ find_package(ament_index_cpp REQUIRED)
 
 if(BUILD_TESTING)
   find_package(ament_cmake_gmock REQUIRED)
+  find_package(ament_cmake_ros REQUIRED)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
@@ -34,84 +36,114 @@ if(BUILD_TESTING)
   find_package(rcpputils REQUIRED)
   find_package(rosbag2_compression REQUIRED)
   find_package(rosbag2_cpp REQUIRED)
+  find_package(rosbag2_interfaces REQUIRED)
   find_package(rosbag2_storage REQUIRED)
   find_package(rosbag2_storage_default_plugins REQUIRED)
   find_package(rosbag2_test_common REQUIRED)
   find_package(std_msgs REQUIRED)
   find_package(test_msgs REQUIRED)
 
-  ament_add_gmock(test_rosbag2_record_end_to_end
+  ament_add_ros_isolated_gmock(test_rosbag2_record_end_to_end
     test/rosbag2_tests/test_rosbag2_record_end_to_end.cpp
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    TIMEOUT 180)
   if(TARGET test_rosbag2_record_end_to_end)
-    ament_target_dependencies(test_rosbag2_record_end_to_end
-      rclcpp
-      rosbag2_compression
-      rosbag2_compression_zstd
-      rosbag2_storage
-      rosbag2_storage_default_plugins
-      rosbag2_test_common
-      test_msgs)
+    target_link_libraries(test_rosbag2_record_end_to_end
+      rclcpp::rclcpp
+      rosbag2_compression::rosbag2_compression
+      rosbag2_compression_zstd::rosbag2_compression_zstd
+      rosbag2_storage::rosbag2_storage
+      rosbag2_test_common::rosbag2_test_common
+      test_msgs::test_msgs
+    )
     ament_add_test_label(test_rosbag2_record_end_to_end xfail)
   endif()
 
-  ament_add_gmock(test_rosbag2_play_end_to_end
+  ament_add_ros_isolated_gmock(test_rosbag2_play_end_to_end
     test/rosbag2_tests/test_rosbag2_play_end_to_end.cpp
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
   if(TARGET test_rosbag2_play_end_to_end)
-    ament_target_dependencies(test_rosbag2_play_end_to_end
-      rclcpp
-      rosbag2_storage
-      rosbag2_storage_default_plugins
-      rosbag2_test_common
-      test_msgs)
-    ament_add_test_label(test_rosbag2_play_end_to_end xfail)
+    target_link_libraries(test_rosbag2_play_end_to_end
+      rclcpp::rclcpp
+      rosbag2_interfaces::rosbag2_interfaces
+      rosbag2_storage::rosbag2_storage
+      rosbag2_test_common::rosbag2_test_common
+      test_msgs::test_msgs
+    )
+    if(WIN32)
+        ament_add_test_label(test_rosbag2_play_end_to_end xfail)
+    endif()
   endif()
 
   ament_add_gmock(test_rosbag2_info_end_to_end
     test/rosbag2_tests/test_rosbag2_info_end_to_end.cpp
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
   if(TARGET test_rosbag2_info_end_to_end)
-    ament_target_dependencies(test_rosbag2_info_end_to_end
-      rosbag2_storage
-      rosbag2_test_common)
-    ament_add_test_label(test_rosbag2_info_end_to_end xfail)
+    target_link_libraries(test_rosbag2_info_end_to_end
+      rosbag2_storage::rosbag2_storage
+      rosbag2_test_common::rosbag2_test_common
+    )
   endif()
 
   ament_add_gmock(test_converter
     test/rosbag2_tests/test_converter.cpp
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
   if(TARGET test_converter)
-    ament_target_dependencies(test_converter
-      rosbag2_cpp
-      rosbag2_test_common
-      test_msgs)
+    target_link_libraries(test_converter
+      rosbag2_cpp::rosbag2_cpp
+      rosbag2_test_common::rosbag2_test_common
+      test_msgs::test_msgs
+    )
   endif()
 
   ament_add_gmock(test_reindex
     test/rosbag2_tests/test_reindexer.cpp)
   if(TARGET test_reindex)
-    ament_target_dependencies(test_reindex
-      rclcpp
-      rosbag2_cpp
-      rosbag2_storage
-      rosbag2_storage_default_plugins
-      rosbag2_test_common)
+    target_link_libraries(test_reindex
+      rclcpp::rclcpp
+      rosbag2_cpp::rosbag2_cpp
+      rosbag2_storage::rosbag2_storage
+      rosbag2_test_common::rosbag2_test_common
+      std_msgs::std_msgs
+    )
   endif()
-
 
   ament_add_gmock(test_rosbag2_cpp_api
     test/rosbag2_tests/test_rosbag2_cpp_api.cpp
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
   if(TARGET test_rosbag2_cpp_api)
-    ament_target_dependencies(test_rosbag2_cpp_api
-      rclcpp
-      rosbag2_cpp
-      rosbag2_storage
-      rosbag2_storage_default_plugins
-      rosbag2_test_common
-      test_msgs)
+    target_link_libraries(test_rosbag2_cpp_api
+      rclcpp::rclcpp
+      rosbag2_cpp::rosbag2_cpp
+      rosbag2_storage::rosbag2_storage
+      rosbag2_test_common::rosbag2_test_common
+      test_msgs::test_msgs
+    )
   endif()
+
+  ament_add_ros_isolated_gmock(test_rosbag2_cpp_get_service_info
+    test/rosbag2_tests/test_rosbag2_cpp_get_service_info.cpp
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+  if(TARGET test_rosbag2_cpp_get_service_info)
+    target_link_libraries(test_rosbag2_cpp_get_service_info
+      rosbag2_cpp::rosbag2_cpp
+      rosbag2_storage::rosbag2_storage
+      rosbag2_test_common::rosbag2_test_common
+      rosbag2_transport::rosbag2_transport
+      test_msgs::test_msgs
+    )
+  endif()
+
+  ament_add_gmock(test_rosbag2_storage_api
+    test/rosbag2_tests/test_rosbag2_storage_api.cpp)
+  if(TARGET test_rosbag2_storage_api)
+    target_link_libraries(test_rosbag2_storage_api
+      rosbag2_storage::rosbag2_storage
+      rosbag2_test_common::rosbag2_test_common
+      std_msgs::std_msgs
+    )
+  endif()
+
 endif()
 
 ament_package()

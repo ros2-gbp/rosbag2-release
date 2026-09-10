@@ -22,20 +22,110 @@
 
 #include "mock_player.hpp"
 #include "rosbag2_play_test_fixture.hpp"
+#include "test_msgs/action/fibonacci.hpp"
 #include "test_msgs/message_fixtures.hpp"
 #include "test_msgs/msg/arrays.hpp"
 #include "test_msgs/msg/basic_types.hpp"
+#include "test_msgs/srv/basic_types.hpp"
 
 using namespace ::testing;  // NOLINT
 using namespace rosbag2_transport;  // NOLINT
 using namespace rosbag2_test_common;  // NOLINT
+using namespace std::chrono_literals;  // NOLINT
+
+namespace
+{
+static inline std::vector<test_msgs::srv::BasicTypes_Event::SharedPtr>
+get_service_event_message_basic_types()
+{
+  std::vector<test_msgs::srv::BasicTypes_Event::SharedPtr> messages;
+
+  {
+    auto msg = std::make_shared<test_msgs::srv::BasicTypes_Event>();
+    msg->info.event_type = service_msgs::msg::ServiceEventInfo::REQUEST_RECEIVED;
+    test_msgs::srv::BasicTypes_Request request;
+    request.int32_value = 123;
+    request.int64_value = 456;
+    msg->request.emplace_back(request);
+    messages.push_back(msg);
+  }
+
+  {
+    auto msg = std::make_shared<test_msgs::srv::BasicTypes_Event>();
+    msg->info.event_type = service_msgs::msg::ServiceEventInfo::REQUEST_RECEIVED;
+    test_msgs::srv::BasicTypes_Request request;
+    request.int32_value = 456;
+    request.int64_value = 789;
+    msg->request.emplace_back(request);
+    messages.push_back(msg);
+  }
+
+  return messages;
+}
+
+// SendGoal Service Event
+static inline std::vector<test_msgs::action::Fibonacci_SendGoal_Event::SharedPtr>
+get_action_event_message_fibonacci_send_goal()
+{
+  std::vector<test_msgs::action::Fibonacci_SendGoal_Event::SharedPtr> messages;
+
+  {
+    auto msg = std::make_shared<test_msgs::action::Fibonacci_SendGoal_Event>();
+    msg->info.event_type = service_msgs::msg::ServiceEventInfo::REQUEST_RECEIVED;
+    test_msgs::action::Fibonacci_SendGoal_Request request;
+    request.goal_id.uuid = {1, 15, 147, 28, 42, 149, 174, 3, 0, 0, 0, 0, 0, 0, 20, 4};
+    request.goal.order = 10;
+    msg->request.emplace_back(request);
+    messages.push_back(msg);
+  }
+
+  {
+    auto msg = std::make_shared<test_msgs::action::Fibonacci_SendGoal_Event>();
+    msg->info.event_type = service_msgs::msg::ServiceEventInfo::REQUEST_RECEIVED;
+    test_msgs::action::Fibonacci_SendGoal_Request request;
+    request.goal_id.uuid = {1, 15, 147, 28, 42, 149, 174, 3, 0, 0, 0, 0, 0, 0, 20, 5};
+    request.goal.order = 20;
+    msg->request.emplace_back(request);
+    messages.push_back(msg);
+  }
+
+  return messages;
+}
+
+// GetResult Service Event
+static inline std::vector<test_msgs::action::Fibonacci_GetResult_Event::SharedPtr>
+get_action_event_message_fibonacci_get_result()
+{
+  std::vector<test_msgs::action::Fibonacci_GetResult_Event::SharedPtr> messages;
+
+  {
+    auto msg = std::make_shared<test_msgs::action::Fibonacci_GetResult_Event>();
+    msg->info.event_type = service_msgs::msg::ServiceEventInfo::REQUEST_RECEIVED;
+    test_msgs::action::Fibonacci_GetResult_Request request;
+    request.goal_id.uuid = {1, 15, 147, 28, 42, 149, 174, 3, 0, 0, 0, 0, 0, 0, 20, 4};
+    msg->request.emplace_back(request);
+    messages.push_back(msg);
+  }
+
+  {
+    auto msg = std::make_shared<test_msgs::action::Fibonacci_GetResult_Event>();
+    msg->info.event_type = service_msgs::msg::ServiceEventInfo::REQUEST_RECEIVED;
+    test_msgs::action::Fibonacci_GetResult_Request request;
+    request.goal_id.uuid = {1, 15, 147, 28, 42, 149, 174, 3, 0, 0, 0, 0, 0, 0, 20, 5};
+    msg->request.emplace_back(request);
+    messages.push_back(msg);
+  }
+
+  return messages;
+}
+}  // namespace
 
 TEST_F(RosBag2PlayTestFixture, burst_with_false_preconditions) {
   auto primitive_message = get_messages_basic_types()[0];
   primitive_message->int32_value = 42;
 
   auto topic_types = std::vector<rosbag2_storage::TopicMetadata>{
-    {"topic1", "test_msgs/BasicTypes", "", ""}};
+    {1u, "topic1", "test_msgs/BasicTypes", "", {}, ""}};
 
   std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages =
   {serialize_test_message("topic1", 2100, primitive_message)};
@@ -56,7 +146,7 @@ TEST_F(RosBag2PlayTestFixture, burst_bursts_requested_messages_without_delays) {
   primitive_message->int32_value = 42;
 
   auto topic_types = std::vector<rosbag2_storage::TopicMetadata>{
-    {"topic1", "test_msgs/BasicTypes", "", ""}};
+    {1u, "topic1", "test_msgs/BasicTypes", "", {}, ""}};
 
   std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages =
   {
@@ -83,7 +173,7 @@ TEST_F(RosBag2PlayTestFixture, burst_bursts_requested_messages_without_delays) {
   player->pause();
   ASSERT_TRUE(player->is_paused());
 
-  auto player_future = std::async(std::launch::async, [&player]() -> void {player->play();});
+  player->play();
   player->wait_for_playback_to_start();
 
   const size_t NUM_MESSAGES_TO_BURST = 4;
@@ -97,7 +187,8 @@ TEST_F(RosBag2PlayTestFixture, burst_bursts_requested_messages_without_delays) {
 
   ASSERT_TRUE(player->is_paused());
   player->resume();
-  player_future.get();
+  player->wait_for_playback_to_finish();
+
   await_received_messages.get();
 
   auto replayed_topic1 = sub_->get_received_messages<test_msgs::msg::BasicTypes>("/topic1");
@@ -109,7 +200,7 @@ TEST_F(RosBag2PlayTestFixture, burst_stops_at_end_of_file) {
   primitive_message->int32_value = 42;
 
   auto topic_types = std::vector<rosbag2_storage::TopicMetadata>{
-    {"topic1", "test_msgs/BasicTypes", "", ""}};
+    {1u, "topic1", "test_msgs/BasicTypes", "", {}, ""}};
 
   std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages =
   {
@@ -136,7 +227,7 @@ TEST_F(RosBag2PlayTestFixture, burst_stops_at_end_of_file) {
   player->pause();
   ASSERT_TRUE(player->is_paused());
 
-  auto player_future = std::async(std::launch::async, [&player]() -> void {player->play();});
+  player->play();
   player->wait_for_playback_to_start();
 
   ASSERT_TRUE(player->is_paused());
@@ -144,7 +235,7 @@ TEST_F(RosBag2PlayTestFixture, burst_stops_at_end_of_file) {
   ASSERT_EQ(played_messages, messages.size());
   ASSERT_TRUE(player->is_paused());
   player->resume();
-  player_future.get();
+  player->wait_for_playback_to_finish();
   await_received_messages.get();
 
   auto replayed_topic1 = sub_->get_received_messages<test_msgs::msg::BasicTypes>("/topic1");
@@ -156,7 +247,7 @@ TEST_F(RosBag2PlayTestFixture, burst_bursting_one_by_one_messages_with_the_same_
   primitive_message->int32_value = 42;
 
   auto topic_types = std::vector<rosbag2_storage::TopicMetadata>{
-    {"topic1", "test_msgs/BasicTypes", "", ""}};
+    {1u, "topic1", "test_msgs/BasicTypes", "", {}, ""}};
 
   std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages =
   {
@@ -183,7 +274,7 @@ TEST_F(RosBag2PlayTestFixture, burst_bursting_one_by_one_messages_with_the_same_
   player->pause();
   ASSERT_TRUE(player->is_paused());
 
-  auto player_future = std::async(std::launch::async, [&player]() -> void {player->play();});
+  player->play();
 
   ASSERT_TRUE(player->is_paused());
   ASSERT_EQ(player->burst(1), 1u);
@@ -197,7 +288,7 @@ TEST_F(RosBag2PlayTestFixture, burst_bursting_one_by_one_messages_with_the_same_
   ASSERT_EQ(played_messages, messages.size());
   ASSERT_TRUE(player->is_paused());
   player->resume();
-  player_future.get();
+  player->wait_for_playback_to_finish();
   await_received_messages.get();
 
   auto replayed_topic1 = sub_->get_received_messages<test_msgs::msg::BasicTypes>("/topic1");
@@ -209,7 +300,7 @@ TEST_F(RosBag2PlayTestFixture, play_respect_messages_timing_after_burst) {
   primitive_message->int32_value = 42;
 
   auto topic_types = std::vector<rosbag2_storage::TopicMetadata>{
-    {"topic1", "test_msgs/BasicTypes", "", ""}};
+    {1u, "topic1", "test_msgs/BasicTypes", "", {}, ""}};
 
   std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages =
   {
@@ -236,7 +327,7 @@ TEST_F(RosBag2PlayTestFixture, play_respect_messages_timing_after_burst) {
   player->pause();
   ASSERT_TRUE(player->is_paused());
 
-  auto player_future = std::async(std::launch::async, [&player]() -> void {player->play();});
+  player->play();
 
   const size_t EXPECTED_BURST_COUNT = 2;
   ASSERT_TRUE(player->is_paused());
@@ -244,11 +335,11 @@ TEST_F(RosBag2PlayTestFixture, play_respect_messages_timing_after_burst) {
   ASSERT_TRUE(player->is_paused());
   player->resume();
   auto start = std::chrono::steady_clock::now();
-  player_future.get();
+  player->wait_for_playback_to_finish();
   auto replay_time = std::chrono::steady_clock::now() - start;
 
   auto expected_replay_time =
-    std::chrono::nanoseconds(messages.back()->time_stamp - messages[1]->time_stamp);
+    std::chrono::nanoseconds(messages.back()->recv_timestamp - messages[1]->recv_timestamp);
   // Check for lower bound with some tolerance
   ASSERT_THAT(replay_time, Gt(expected_replay_time - std::chrono::milliseconds(50)));
   // Check for upper bound with some tolerance
@@ -264,7 +355,7 @@ TEST_F(RosBag2PlayTestFixture, player_can_resume_after_burst) {
   primitive_message->int32_value = 42;
 
   auto topic_types = std::vector<rosbag2_storage::TopicMetadata>{
-    {"topic1", "test_msgs/BasicTypes", "", ""}};
+    {1u, "topic1", "test_msgs/BasicTypes", "", {}, ""}};
 
   std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages =
   {
@@ -290,13 +381,13 @@ TEST_F(RosBag2PlayTestFixture, player_can_resume_after_burst) {
   player->pause();
   ASSERT_TRUE(player->is_paused());
 
-  auto player_future = std::async(std::launch::async, [&player]() -> void {player->play();});
+  player->play();
 
   ASSERT_TRUE(player->is_paused());
   ASSERT_EQ(player->burst(1), 1u);
   ASSERT_TRUE(player->is_paused());
   player->resume();
-  player_future.get();
+  player->wait_for_playback_to_finish();
   await_received_messages.get();
 
   auto replayed_topic1 = sub_->get_received_messages<test_msgs::msg::BasicTypes>("/topic1");
@@ -312,18 +403,18 @@ TEST_F(RosBag2PlayTestFixture, burst_bursting_only_filtered_topics) {
   complex_message1->bool_values = {{true, false, true}};
 
   auto topic_types = std::vector<rosbag2_storage::TopicMetadata>{
-    {"topic1", "test_msgs/BasicTypes", "", ""},
-    {"topic2", "test_msgs/Arrays", "", ""},
+    {1u, "/topic1", "test_msgs/BasicTypes", "", {}, ""},
+    {2u, "/topic2", "test_msgs/Arrays", "", {}, ""},
   };
 
   std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages =
   {
-    serialize_test_message("topic1", 500, primitive_message1),
-    serialize_test_message("topic1", 700, primitive_message1),
-    serialize_test_message("topic1", 900, primitive_message1),
-    serialize_test_message("topic2", 550, complex_message1),
-    serialize_test_message("topic2", 750, complex_message1),
-    serialize_test_message("topic2", 950, complex_message1)
+    serialize_test_message("/topic1", 500, primitive_message1),
+    serialize_test_message("/topic1", 700, primitive_message1),
+    serialize_test_message("/topic1", 900, primitive_message1),
+    serialize_test_message("/topic2", 550, complex_message1),
+    serialize_test_message("/topic2", 750, complex_message1),
+    serialize_test_message("/topic2", 950, complex_message1)
   };
 
   // Filter allows /topic2, blocks /topic1
@@ -346,7 +437,7 @@ TEST_F(RosBag2PlayTestFixture, burst_bursting_only_filtered_topics) {
   player->pause();
   ASSERT_TRUE(player->is_paused());
 
-  auto player_future = std::async(std::launch::async, [&player]() -> void {player->play();});
+  player->play();
   ASSERT_TRUE(player->is_paused());
 
   const size_t EXPECTED_BURST_COUNT = 3;
@@ -354,7 +445,7 @@ TEST_F(RosBag2PlayTestFixture, burst_bursting_only_filtered_topics) {
 
   ASSERT_TRUE(player->is_paused());
   player->resume();
-  player_future.get();
+  player->wait_for_playback_to_finish();
   await_received_messages.get();
 
   auto replayed_topic1 = sub_->get_received_messages<test_msgs::msg::BasicTypes>("/topic1");
@@ -364,4 +455,175 @@ TEST_F(RosBag2PlayTestFixture, burst_bursting_only_filtered_topics) {
   auto replayed_topic2 = sub_->get_received_messages<test_msgs::msg::Arrays>("/topic2");
   // All we care is that any messages arrived
   EXPECT_THAT(replayed_topic2, SizeIs(Eq(EXPECTED_BURST_COUNT)));
+}
+
+TEST_F(RosBag2PlayTestFixture, burst_bursting_only_filtered_services) {
+  if (std::string(rmw_get_implementation_identifier()).find("rmw_connextdds") !=
+    std::string::npos)
+  {
+    GTEST_SKIP() << "Skipping. The test is know to be flaky on the rmw_connextdds.";
+  }
+  const std::string service_name1 = "/test_service1";
+  const std::string service_name2 = "/test_service2";
+  const std::string service_event_name1 = service_name1 + "/_service_event";
+  const std::string service_event_name2 = service_name2 + "/_service_event";
+
+  auto services_types = std::vector<rosbag2_storage::TopicMetadata>{
+    {1u, service_event_name1, "test_msgs/srv/BasicTypes_Event", "", {}, ""},
+    {2u, service_event_name2, "test_msgs/srv/BasicTypes_Event", "", {}, ""},
+  };
+  std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages =
+  {
+    serialize_test_message(service_event_name1, 500, get_service_event_message_basic_types()[0]),
+    serialize_test_message(service_event_name2, 600, get_service_event_message_basic_types()[0]),
+    serialize_test_message(service_event_name1, 400, get_service_event_message_basic_types()[1]),
+    serialize_test_message(service_event_name2, 500, get_service_event_message_basic_types()[1])
+  };
+
+  std::vector<std::shared_ptr<test_msgs::srv::BasicTypes::Request>> service1_receive_requests;
+  std::vector<std::shared_ptr<test_msgs::srv::BasicTypes::Request>> service2_receive_requests;
+
+  srv_->setup_service<test_msgs::srv::BasicTypes>(service_name1, service1_receive_requests);
+  srv_->setup_service<test_msgs::srv::BasicTypes>(service_name2, service2_receive_requests);
+
+  srv_->run_services();
+
+  // Filter allows test_service2, blocks test_service1
+  play_options_.services_to_filter = {service_event_name2};
+  play_options_.publish_service_requests = true;
+  auto prepared_mock_reader = std::make_unique<MockSequentialReader>();
+  prepared_mock_reader->prepare(messages, services_types);
+  auto reader = std::make_unique<rosbag2_cpp::Reader>(std::move(prepared_mock_reader));
+  auto player = std::make_shared<MockPlayer>(std::move(reader), storage_options_, play_options_);
+
+  player->pause();
+  ASSERT_TRUE(player->is_paused());
+
+  // Check services are ready
+  ASSERT_TRUE(srv_->all_services_ready());
+
+  rclcpp::executors::SingleThreadedExecutor exec;
+  exec.add_node(player);
+  auto spin_thread = std::thread([&exec]() {exec.spin();});
+  player->play();
+
+  const size_t EXPECTED_BURST_COUNT = 2;
+  ASSERT_EQ(player->burst(EXPECTED_BURST_COUNT), EXPECTED_BURST_COUNT);
+
+  ASSERT_TRUE(player->is_paused());
+  player->resume();
+
+  player->wait_for_playback_to_finish();
+  EXPECT_TRUE(player->wait_for_sent_service_requests_to_finish("", 2s));
+
+  exec.cancel();
+  spin_thread.join();
+
+  EXPECT_EQ(service1_receive_requests.size(), 0);
+  EXPECT_EQ(service2_receive_requests.size(), 2);
+}
+
+TEST_F(RosBag2PlayTestFixture, burst_bursting_only_filtered_actions) {
+  const std::string action_name1 = "/test_action1";
+  const std::string action_name2 = "/test_action2";
+
+  size_t action1_request_count = 0;
+  size_t action1_cancel_count = 0;
+  action_server_->setup_action<test_msgs::action::Fibonacci>(
+    action_name1, action1_request_count, action1_cancel_count);
+
+  size_t action2_request_count = 0;
+  size_t action2_cancel_count = 0;
+  action_server_->setup_action<test_msgs::action::Fibonacci>(
+    action_name2, action2_request_count, action2_cancel_count);
+
+  action_server_->run_action_servers();
+
+  const std::vector<std::string> service_event_name1 = {
+    action_name1 + "/_action/send_goal/_service_event",
+    action_name1 + "/_action/get_result/_service_event",
+    action_name1 + "/_action/cancel/_service_event",
+    action_name1 + "/_action/feedback",
+    action_name1 + "/_action/status"
+  };
+  const std::vector<std::string> service_event_name2 = {
+    action_name2 + "/_action/send_goal/_service_event",
+    action_name2 + "/_action/get_result/_service_event",
+    action_name2 + "/_action/cancel/_service_event",
+    action_name2 + "/_action/feedback",
+    action_name2 + "/_action/status"
+  };
+
+  auto actions_types = std::vector<rosbag2_storage::TopicMetadata>{
+    {1u, service_event_name1[0], "test_msgs/action/Fibonacci_SendGoal_Event", "", {}, ""},
+    {2u, service_event_name1[1], "test_msgs/action/Fibonacci_GetResult_Event", "", {}, ""},
+    {3u, service_event_name2[0], "test_msgs/action/Fibonacci_SendGoal_Event", "", {}, ""},
+    {4u, service_event_name2[1], "test_msgs/action/Fibonacci_GetResult_Event", "", {}, ""}
+  };
+
+  std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages =
+  {
+    serialize_test_message(
+      service_event_name1[0], 500, get_action_event_message_fibonacci_send_goal()[0]),
+    serialize_test_message(
+      service_event_name2[0], 600, get_action_event_message_fibonacci_send_goal()[1]),
+    serialize_test_message(
+      service_event_name2[1], 700, get_action_event_message_fibonacci_get_result()[1]),
+    serialize_test_message(
+      service_event_name1[1], 800, get_action_event_message_fibonacci_get_result()[0])
+  };
+
+  // Filter allows action2, blocks action1
+  play_options_.actions_to_filter = {action_name2};
+  play_options_.send_actions_as_client = true;
+  auto prepared_mock_reader = std::make_unique<MockSequentialReader>();
+  prepared_mock_reader->prepare(messages, actions_types);
+  auto reader = std::make_unique<rosbag2_cpp::Reader>(std::move(prepared_mock_reader));
+  auto player = std::make_shared<MockPlayer>(std::move(reader), storage_options_, play_options_);
+
+  player->pause();
+  ASSERT_TRUE(player->is_paused());
+
+  // Check action servers are ready
+  ASSERT_TRUE(action_server_->all_action_servers_ready());
+
+  rclcpp::executors::SingleThreadedExecutor exec;
+  exec.add_node(player);
+  auto spin_thread = std::thread([&exec]() {exec.spin();});
+  player->play();
+
+  const size_t EXPECTED_BURST_COUNT = 2;
+  ASSERT_EQ(player->burst(EXPECTED_BURST_COUNT), EXPECTED_BURST_COUNT);
+
+  ASSERT_TRUE(player->is_paused());
+  player->resume();
+
+  player->wait_for_playback_to_finish();
+
+  // Wait for getting the result response from action server
+  std::this_thread::sleep_for(1s);
+
+  exec.cancel();
+  spin_thread.join();
+
+  EXPECT_EQ(action1_request_count, 0);
+  EXPECT_EQ(action1_cancel_count, 0);
+  EXPECT_EQ(action2_request_count, 1);
+  EXPECT_EQ(action2_cancel_count, 0);
+
+  // Check if only one action client was created.
+  auto action_client_list = player->get_list_of_action_clients();
+  ASSERT_THAT(action_client_list, SizeIs(1));
+
+  // There is no direct interface to confirm that rosbag2 received the get_result response.
+  // Here, the logic of handling actions in rosbag2 is used to make this determination. If
+  // the action server receives a goal, the corresponding goal_handle in rosbag will be cleared
+  // in two scenarios: one is after a cancel request is sent, and the other is when the get_result
+  // is received.
+  // In this testcase, the cancel request is not sent, so the goal_handle should be cleared after
+  // the get_result is received.
+  EXPECT_TRUE(
+    player->goal_handle_complete(
+      action_name2,
+      get_action_event_message_fibonacci_send_goal()[1]->request[0].goal_id.uuid));
 }

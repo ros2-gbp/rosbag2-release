@@ -15,6 +15,7 @@
 #ifndef ROSBAG2_TRANSPORT__MOCK_SEQUENTIAL_WRITER_HPP_
 #define ROSBAG2_TRANSPORT__MOCK_SEQUENTIAL_WRITER_HPP_
 
+#include <atomic>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -30,20 +31,45 @@ public:
     const rosbag2_storage::StorageOptions & storage_options,
     const rosbag2_cpp::ConverterOptions & converter_options) override
   {
-    snapshot_mode_ = storage_options.snapshot_mode;
-    (void) storage_options;
+    storage_options_ = storage_options;
     (void) converter_options;
-    writer_close_called_ = false;
+    writer_close_called_.store(false);
   }
 
   void close() override
   {
-    writer_close_called_ = true;
+    writer_close_called_.store(true);
   }
 
   void create_topic(const rosbag2_storage::TopicMetadata & topic_with_type) override
   {
-    topics_.emplace(topic_with_type.name, topic_with_type);
+    auto message_definition = rosbag2_storage::MessageDefinition::empty_message_definition_for(
+      topic_with_type.type);
+    topics_.emplace(topic_with_type.name, std::make_pair(topic_with_type, message_definition));
+  }
+
+  void create_topic(
+    const rosbag2_storage::TopicMetadata & topic_with_type,
+    const rosbag2_storage::MessageDefinition & message_definition) override
+  {
+    topics_.emplace(topic_with_type.name, std::make_pair(topic_with_type, message_definition));
+  }
+
+  void create_transient_local_topic(
+    const rosbag2_storage::TopicMetadata & topic_with_type,
+    size_t num_last_messages) override
+  {
+    transient_local_topic_depths_[topic_with_type.name] = num_last_messages;
+    create_topic(topic_with_type);
+  }
+
+  void create_transient_local_topic(
+    const rosbag2_storage::TopicMetadata & topic_with_type,
+    size_t num_last_messages,
+    const rosbag2_storage::MessageDefinition & message_definition) override
+  {
+    transient_local_topic_depths_[topic_with_type.name] = num_last_messages;
+    create_topic(topic_with_type, message_definition);
   }
 
   void remove_topic(const rosbag2_storage::TopicMetadata & topic_with_type) override
@@ -51,9 +77,10 @@ public:
     (void) topic_with_type;
   }
 
-  void write(std::shared_ptr<rosbag2_storage::SerializedBagMessage> message) override
+  void write(std::shared_ptr<const rosbag2_storage::SerializedBagMessage> message) override
   {
-    if (!snapshot_mode_) {
+    std::lock_guard<std::mutex> lock(messages_mutex_);
+    if (!storage_options_.snapshot_mode) {
       messages_.push_back(message);
     } else {
       snapshot_buffer_.push_back(message);
@@ -67,12 +94,13 @@ public:
 
   bool take_snapshot() override
   {
+    std::lock_guard<std::mutex> lock(messages_mutex_);
     std::swap(snapshot_buffer_, messages_);
     snapshot_buffer_.clear();
     return true;
   }
 
-  void split_bagfile()
+  void split_bagfile() override
   {
     auto info = std::make_shared<rosbag2_cpp::bag_events::BagSplitInfo>();
     info->closed_file = "BagFile" + std::to_string(file_number_);
@@ -92,22 +120,64 @@ public:
     }
   }
 
-  const std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> & get_messages()
+  bool has_callback_for_event(rosbag2_cpp::bag_events::BagEvent event) const override
   {
-    return messages_;
+    return callback_manager_.has_callback_for_event(event);
   }
 
-  const std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> & get_snapshot_buffer()
+  size_t get_number_of_recorded_messages() const
   {
-    return snapshot_buffer_;
+    std::lock_guard<std::mutex> lock(messages_mutex_);
+    return messages_.size();
   }
 
-  const std::unordered_map<std::string, size_t> & messages_per_topic()
+  std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>> get_messages()
   {
-    return messages_per_topic_;
+    std::lock_guard<std::mutex> lock(messages_mutex_);
+    auto copy_of_messages = messages_;
+    return copy_of_messages;
   }
 
-  const std::unordered_map<std::string, rosbag2_storage::TopicMetadata> & get_topics()
+  size_t get_snapshot_buffer_size() const
+  {
+    std::lock_guard<std::mutex> lock(messages_mutex_);
+    return snapshot_buffer_.size();
+  }
+
+  std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>> get_snapshot_buffer()
+  {
+    std::lock_guard<std::mutex> lock(messages_mutex_);
+    auto copy_of_snapshot_buffer = snapshot_buffer_;
+    return copy_of_snapshot_buffer;
+  }
+
+  std::unordered_map<std::string, size_t> messages_per_topic()
+  {
+    std::lock_guard<std::mutex> lock(messages_mutex_);
+    auto copy_of_messages_per_topic = messages_per_topic_;
+    return copy_of_messages_per_topic;
+  }
+
+  std::unordered_map<std::string, size_t> transient_local_topic_depths() const
+  {
+    std::lock_guard<std::mutex> lock(messages_mutex_);
+    auto copy_of_transient_local_topic_depths = transient_local_topic_depths_;
+    return copy_of_transient_local_topic_depths;
+  }
+
+  size_t get_messages_per_topic(const std::string & topic_name) const
+  {
+    std::lock_guard<std::mutex> lock(messages_mutex_);
+    if (messages_per_topic_.find(topic_name) != messages_per_topic_.end()) {
+      return messages_per_topic_.at(topic_name);
+    }
+    return 0;
+  }
+
+  std::unordered_map<
+    std::string,
+    std::pair<rosbag2_storage::TopicMetadata, rosbag2_storage::MessageDefinition>
+  > get_topics()
   {
     return topics_;
   }
@@ -124,20 +194,30 @@ public:
 
   bool closed_was_called() const
   {
-    return writer_close_called_;
+    return writer_close_called_.load();
+  }
+
+  rosbag2_storage::StorageOptions get_storage_options() const
+  {
+    return storage_options_;
   }
 
 private:
-  std::unordered_map<std::string, rosbag2_storage::TopicMetadata> topics_;
-  std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> messages_;
-  std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>> snapshot_buffer_;
+  std::unordered_map<
+    std::string,
+    std::pair<rosbag2_storage::TopicMetadata, rosbag2_storage::MessageDefinition>
+  > topics_;
+  std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>> messages_;
+  std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>> snapshot_buffer_;
   std::unordered_map<std::string, size_t> messages_per_topic_;
+  std::unordered_map<std::string, size_t> transient_local_topic_depths_;
   size_t messages_per_file_ = 0;
-  bool snapshot_mode_ = false;
+  mutable std::mutex messages_mutex_;
   rosbag2_cpp::bag_events::EventCallbackManager callback_manager_;
   size_t file_number_ = 0;
   size_t max_messages_per_file_ = 0;
-  bool writer_close_called_{false};
+  std::atomic<bool> writer_close_called_{false};
+  rosbag2_storage::StorageOptions storage_options_;
 };
 
 #endif  // ROSBAG2_TRANSPORT__MOCK_SEQUENTIAL_WRITER_HPP_
