@@ -14,6 +14,7 @@
 
 #include <gmock/gmock.h>
 
+#include <algorithm>
 #include <atomic>
 #include <memory>
 #include <string>
@@ -23,9 +24,19 @@
 
 #include "rcutils/time.h"
 
-#include "rclcpp/rclcpp.hpp"
+#include "rclcpp/client.hpp"
+#include "rclcpp/clock.hpp"
+#include "rclcpp/duration.hpp"
+#include "rclcpp/executors/single_threaded_executor.hpp"
+#include "rclcpp/future_return_code.hpp"
+#include "rclcpp/node.hpp"
+#include "rclcpp/parameter.hpp"
+#include "rclcpp/publisher.hpp"
+#include "rclcpp/time.hpp"
+#include "rclcpp/utilities.hpp"
 #include "rosgraph_msgs/msg/clock.hpp"
 
+#include "rosbag2_interfaces/srv/get_subscribed_topics.hpp"
 #include "rosbag2_interfaces/srv/is_discovery_running.hpp"
 #include "rosbag2_interfaces/srv/is_paused.hpp"
 #include "rosbag2_interfaces/srv/pause.hpp"
@@ -66,6 +77,7 @@ struct type_has_return_code<T, std::void_t<decltype(std::declval<T &>().return_c
 class RecordSrvsTest : public RecordIntegrationTestFixture
 {
 public:
+  using GetSubscribedTopics = rosbag2_interfaces::srv::GetSubscribedTopics;
   using IsDiscoveryRunning = rosbag2_interfaces::srv::IsDiscoveryRunning;
   using IsPaused = rosbag2_interfaces::srv::IsPaused;
   using Pause = rosbag2_interfaces::srv::Pause;
@@ -123,6 +135,8 @@ public:
     recorder_->record();
 
     const std::string ns = "/" + recorder_name_;
+    cli_get_subscribed_topics_ = client_node_->create_client<GetSubscribedTopics>(
+      ns + "/get_subscribed_topics");
     cli_is_discovery_running_ = client_node_->create_client<IsDiscoveryRunning>(
       ns + "/is_discovery_running");
     cli_is_paused_ = client_node_->create_client<IsPaused>(ns + "/is_paused");
@@ -175,6 +189,7 @@ public:
     if (snapshot_mode_) {
       ASSERT_TRUE(cli_snapshot_->wait_for_service(service_wait_timeout_));
     }
+    ASSERT_TRUE(cli_get_subscribed_topics_->wait_for_service(service_wait_timeout_));
     ASSERT_TRUE(cli_is_discovery_running_->wait_for_service(service_wait_timeout_));
     ASSERT_TRUE(cli_is_paused_->wait_for_service(service_wait_timeout_));
     ASSERT_TRUE(cli_pause_->wait_for_service(service_wait_timeout_));
@@ -277,6 +292,7 @@ public:
 
   // Service clients
   rclcpp::Node::SharedPtr client_node_;
+  rclcpp::Client<GetSubscribedTopics>::SharedPtr cli_get_subscribed_topics_;
   rclcpp::Client<IsDiscoveryRunning>::SharedPtr cli_is_discovery_running_;
   rclcpp::Client<IsPaused>::SharedPtr cli_is_paused_;
   rclcpp::Client<Pause>::SharedPtr cli_pause_;
@@ -319,6 +335,39 @@ protected:
       true /*use_sim_time*/, {kTestTopic, kSplitOtherTopic})
   {}
 };
+
+TEST_F(RecordSrvsTest, get_subscribed_topics_reports_active_topics)
+{
+  rosbag2_test_common::PublicationManager pub_manager;
+  auto string_message = get_messages_strings()[1];
+  pub_manager.setup_publisher(test_topic_, string_message, 3);
+  ASSERT_TRUE(pub_manager.wait_for_matched(test_topic_.c_str()));
+  pub_manager.run_publishers();
+
+  auto response = std::make_shared<GetSubscribedTopics::Response>();
+  ASSERT_TRUE(
+    successful_service_request<GetSubscribedTopics>(cli_get_subscribed_topics_, response)
+  );
+  EXPECT_THAT(response->topics, Contains(test_topic_));
+  EXPECT_EQ(recorder_->get_subscribed_topics(), response->topics);
+}
+
+TEST_F(RecordSrvsTest, get_subscribed_topics_empty_when_not_recording)
+{
+  rosbag2_test_common::PublicationManager pub_manager;
+  auto string_message = get_messages_strings()[1];
+  pub_manager.setup_publisher(test_topic_, string_message, 3);
+  ASSERT_TRUE(pub_manager.wait_for_matched(test_topic_.c_str()));
+  pub_manager.run_publishers();
+
+  recorder_->stop();
+  auto response = std::make_shared<GetSubscribedTopics::Response>();
+  ASSERT_TRUE(
+    successful_service_request<GetSubscribedTopics>(cli_get_subscribed_topics_, response)
+  );
+  EXPECT_THAT(response->topics, IsEmpty());
+  EXPECT_EQ(recorder_->get_subscribed_topics(), response->topics);
+}
 
 class RecordSrvsDiscoveryTest : public RecordSrvsTest
 {

@@ -2,26 +2,29 @@
 Changelog for package rosbag2_transport
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.33.4 (2026-09-08)
+0.35.0 (2026-09-12)
 -------------------
-* Enhance action status topic handling and filtering logic (`#2470 <https://github.com/ros2/rosbag2/issues/2470>`_) (`#2489 <https://github.com/ros2/rosbag2/issues/2489>`_)
-* Stop fixed-frequency /clock publication after playback (`#2482 <https://github.com/ros2/rosbag2/issues/2482>`_) (`#2488 <https://github.com/ros2/rosbag2/issues/2488>`_)
-* Fix missing lib : Add iomanip lib (`#2480 <https://github.com/ros2/rosbag2/issues/2480>`_) (`#2486 <https://github.com/ros2/rosbag2/issues/2486>`_)
-* Added missing header (`#2464 <https://github.com/ros2/rosbag2/issues/2464>`_) (`#2466 <https://github.com/ros2/rosbag2/issues/2466>`_)
-* Address flakiness in RecordSrvsSimTimeTest fixture (`#2426 <https://github.com/ros2/rosbag2/issues/2426>`_) (`#2429 <https://github.com/ros2/rosbag2/issues/2429>`_)
-* [lyrical] Address RHEL uncrustify warning. (backport `#2432 <https://github.com/ros2/rosbag2/issues/2432>`_) (`#2433 <https://github.com/ros2/rosbag2/issues/2433>`_)
-* Contributors: mergify[bot]
+* Support playing bags with topics in mixed serialization formats. (`#2476 <https://github.com/ros2/rosbag2/issues/2476>`_)
+* More granular includes (`#2487 <https://github.com/ros2/rosbag2/issues/2487>`_)
+* Enhance action status topic handling and filtering logic (`#2470 <https://github.com/ros2/rosbag2/issues/2470>`_)
+* Stop fixed-frequency /clock publication after playback (`#2482 <https://github.com/ros2/rosbag2/issues/2482>`_)
+* Granular rclcpp/rclcpp.hpp (`#2483 <https://github.com/ros2/rosbag2/issues/2483>`_)
+* Fix missing lib : Add iomanip lib (`#2480 <https://github.com/ros2/rosbag2/issues/2480>`_)
+* Make the topic filter match the first message. (`#2468 <https://github.com/ros2/rosbag2/issues/2468>`_)
+* Added missing header (`#2464 <https://github.com/ros2/rosbag2/issues/2464>`_)
+* use C++ 20 in default. (`#2447 <https://github.com/ros2/rosbag2/issues/2447>`_)
+* Initialize topic endpoint info in rosbag2 test (`#2446 <https://github.com/ros2/rosbag2/issues/2446>`_)
+* Address flakiness in RecordSrvsSimTimeTest fixture (`#2426 <https://github.com/ros2/rosbag2/issues/2426>`_)
+* Apply /bigobj to all MSVC builds in rosbag2_transport (`#2424 <https://github.com/ros2/rosbag2/issues/2424>`_)
+* Add "GetSubscribedTopics" recorder service request (`#2374 <https://github.com/ros2/rosbag2/issues/2374>`_)
+* Contributors: Alejandro Hernández Cordero, CY Chen, Chris Lalancette, Michael Carroll, Michael Orlov, Tomoya Fujita, Tony Najjar, ktyang, mosfet80
 
-0.33.3 (2026-05-12)
+0.34.0 (2026-05-01)
 -------------------
-* Apply /bigobj to all MSVC builds in rosbag2_transport (`#2424 <https://github.com/ros2/rosbag2/issues/2424>`_) (`#2428 <https://github.com/ros2/rosbag2/issues/2428>`_)
-* Contributors: mergify[bot]
+* Fixed compile errors in rosbag2_transport for MSVC 2022 and C++20 (`#2407 <https://github.com/ros2/rosbag2/issues/2407>`_)
+* Fix failure in overriding QoS when topic name has no leading slash (`#2394 <https://github.com/ros2/rosbag2/issues/2394>`_)
 
-0.33.2 (2026-04-30)
--------------------
-* fix: Fixed compile errors in rosbag2_transport for MSVC 2022 and C++20 (`#2407 <https://github.com/ros2/rosbag2/issues/2407>`_)
-* Fix QoS overrides ignored when topic name has no leading slash (`#2394 <https://github.com/ros2/rosbag2/issues/2394>`_)
-* Contributors: Janosch Machowinski, Sahil Lakhmani
+* Contributors: Janosch Machowinski, Sahil Lakhmani, Michael Orlov
 
 0.33.1 (2026-04-14)
 -------------------

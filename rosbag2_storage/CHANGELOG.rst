@@ -2,13 +2,14 @@
 Changelog for package rosbag2_storage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.33.4 (2026-09-08)
+0.35.0 (2026-09-12)
 -------------------
+* Support playing bags with topics in mixed serialization formats. (`#2476 <https://github.com/ros2/rosbag2/issues/2476>`_)
+* Cleanup the tests (`#2469 <https://github.com/ros2/rosbag2/issues/2469>`_)
+* use C++ 20 in default. (`#2447 <https://github.com/ros2/rosbag2/issues/2447>`_)
+* Contributors: Chris Lalancette, Tomoya Fujita
 
-0.33.3 (2026-05-12)
--------------------
-
-0.33.2 (2026-04-30)
+0.34.0 (2026-05-01)
 -------------------
 
 0.33.1 (2026-04-14)

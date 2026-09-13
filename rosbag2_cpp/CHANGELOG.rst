@@ -2,20 +2,21 @@
 Changelog for package rosbag2_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.33.4 (2026-09-08)
+0.35.0 (2026-09-12)
 -------------------
-* Enhance action status topic handling and filtering logic (`#2470 <https://github.com/ros2/rosbag2/issues/2470>`_) (`#2489 <https://github.com/ros2/rosbag2/issues/2489>`_)
-* docs: fix Reader usage examples (`#2455 <https://github.com/ros2/rosbag2/issues/2455>`_) (`#2456 <https://github.com/ros2/rosbag2/issues/2456>`_)
-* [lyrical] Address RHEL uncrustify warning. (backport `#2432 <https://github.com/ros2/rosbag2/issues/2432>`_) (`#2433 <https://github.com/ros2/rosbag2/issues/2433>`_)
-* Contributors: mergify[bot]
+* Support playing bags with topics in mixed serialization formats. (`#2476 <https://github.com/ros2/rosbag2/issues/2476>`_)
+* Enhance action status topic handling and filtering logic (`#2470 <https://github.com/ros2/rosbag2/issues/2470>`_)
+* Cleanup the tests (`#2469 <https://github.com/ros2/rosbag2/issues/2469>`_)
+* docs: fix Reader usage examples (`#2455 <https://github.com/ros2/rosbag2/issues/2455>`_)
+* use C++ 20 in default. (`#2447 <https://github.com/ros2/rosbag2/issues/2447>`_)
+* address RHEL uncrustify warning. (`#2432 <https://github.com/ros2/rosbag2/issues/2432>`_)
+* Contributors: Chris Lalancette, Jakub Gawlik, Tomoya Fujita, Tony Najjar
 
-0.33.3 (2026-05-12)
+0.34.0 (2026-05-01)
 -------------------
+* Address clang warnings in file deletion logging in sequential_writer.cpp (`#2404 <https://github.com/ros2/rosbag2/issues/2404>`_)
 
-0.33.2 (2026-04-30)
--------------------
-* Removed clang warning (`#2404 <https://github.com/ros2/rosbag2/issues/2404>`_)
-* Contributors: Alejandro Hernández Cordero
+* Contributors: Alejandro Hernández Cordero, Michael Orlov
 
 0.33.1 (2026-04-14)
 -------------------
