@@ -15,6 +15,8 @@
 #ifndef ROSBAG2_TRANSPORT__READERS_MANAGER_IMPL_HPP_
 #define ROSBAG2_TRANSPORT__READERS_MANAGER_IMPL_HPP_
 
+#include <algorithm>
+#include <iterator>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -46,14 +48,10 @@ public:
     if (readers_with_options_.empty()) {
       throw std::invalid_argument("At least one reader with storage options must be provided.");
     }
-    next_messages_cache_.reserve(readers_with_options_.size());
     earliest_timestamp_ = std::numeric_limits<rcutils_time_point_value_t>::max();
     latest_timestamp_ = std::numeric_limits<rcutils_time_point_value_t>::min();
     for (auto & [reader, options] : readers_with_options_) {
       reader->open(options, {rmw_get_serialization_format(), rmw_get_serialization_format()});
-      if (reader->has_next()) {
-        next_messages_cache_.emplace_back(reader->read_next());
-      }
       // Find the earliest starting time
       const auto metadata = reader->get_metadata();
       const auto metadata_starting_time = std::chrono::duration_cast<std::chrono::nanoseconds>(
@@ -85,6 +83,15 @@ public:
   [[nodiscard]] bool has_next() const
   {
     rcpputils::unique_lock lk(reader_mutex_);
+    if (!next_messages_cache_initialized_) {
+      // Nothing has been consumed yet, so defer to the readers instead of filling the cache.
+      // This keeps this method from modifying any members.
+      return std::any_of(
+        readers_with_options_.cbegin(), readers_with_options_.cend(),
+        [](const auto & reader_with_options) {
+          return reader_with_options.first->has_next();
+        });
+    }
     return !std::all_of(
       next_messages_cache_.cbegin(),
       next_messages_cache_.cend(),
@@ -102,6 +109,9 @@ public:
     // queue, because that would require pushing all messages from all readers into the queue,
     // while this way we only keep one message per reader in memory at any time.
     rcpputils::unique_lock lk(reader_mutex_);
+    if (!next_messages_cache_initialized_) {
+      fill_next_messages_cache();
+    }
     std::shared_ptr<rosbag2_storage::SerializedBagMessage> earliest_msg = nullptr;
     size_t earliest_msg_index = 0;
     for (size_t i = 0; i < next_messages_cache_.size(); i++) {
@@ -131,17 +141,7 @@ public:
     for (auto & [reader, _] : readers_with_options_) {
       reader->seek(timestamp);
     }
-    // Clear and refill the next_messages_cache_
-    next_messages_cache_.clear();
-    next_messages_cache_.resize(readers_with_options_.size(), nullptr);
-    size_t i = 0;
-    for (const auto & [reader, _] : readers_with_options_) {
-      // Refill the next_messages_cache_
-      if (reader->has_next()) {
-        next_messages_cache_[i] = reader->read_next();
-      }
-      i++;
-    }
+    fill_next_messages_cache();
   }
 
   [[nodiscard]] rcutils_time_point_value_t get_earliest_timestamp() const
@@ -175,6 +175,19 @@ public:
     return all_topics_and_types;
   }
 
+  [[nodiscard]] std::vector<rosbag2_storage::TopicMetadata> get_undeliverable_topics() const
+  {
+    std::vector<rosbag2_storage::TopicMetadata> undeliverable_topics{};
+    rcpputils::unique_lock lk(reader_mutex_);
+    for (const auto & [reader, _] : readers_with_options_) {
+      auto reader_undeliverable_topics = reader->get_undeliverable_topics();
+      undeliverable_topics.insert(undeliverable_topics.end(),
+                                  std::make_move_iterator(reader_undeliverable_topics.begin()),
+                                  std::make_move_iterator(reader_undeliverable_topics.end()));
+    }
+    return undeliverable_topics;
+  }
+
   void add_event_callbacks(rosbag2_cpp::bag_events::ReaderEventCallbacks & callbacks)
   {
     rcpputils::unique_lock lk(reader_mutex_);
@@ -184,6 +197,27 @@ public:
   }
 
 private:
+  /// \brief Discard any cached messages and cache the next message from each reader.
+  /// \details The cache is filled lazily on first consumption rather than at construction time,
+  /// so that a filter set via set_filter() before the first read is applied to every message,
+  /// including the first one from each reader.
+  /// \note Shall be called with the reader_mutex_ held. The element at index i always
+  /// corresponds to the reader at index i in readers_with_options_; readers with no messages
+  /// get a nullptr placeholder.
+  void fill_next_messages_cache()
+  {
+    next_messages_cache_.clear();
+    next_messages_cache_.resize(readers_with_options_.size(), nullptr);
+    size_t i = 0;
+    for (const auto & [reader, _] : readers_with_options_) {
+      if (reader->has_next()) {
+        next_messages_cache_[i] = reader->read_next();
+      }
+      i++;
+    }
+    next_messages_cache_initialized_ = true;
+  }
+
   mutable std::mutex reader_mutex_;
 
   std::vector<reader_storage_options_pair_t>
@@ -191,6 +225,8 @@ private:
 
   std::vector<std::shared_ptr<rosbag2_storage::SerializedBagMessage>>
   next_messages_cache_ RCPPUTILS_TSA_GUARDED_BY(reader_mutex_);
+
+  bool next_messages_cache_initialized_ RCPPUTILS_TSA_GUARDED_BY(reader_mutex_) = false;
 
   rcutils_time_point_value_t earliest_timestamp_{0};
   rcutils_time_point_value_t latest_timestamp_{0};
