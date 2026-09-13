@@ -67,7 +67,7 @@ This auto-discovery of new topics can be disabled by given the command line argu
 To record a set of predefined topics, one can specify them on the command line explicitly.
 
 ```
-$ ros2 bag record <topic1> <topic2> … <topicN>
+$ ros2 bag record --topics <topic1> <topic2> … <topicN>
 ```
 
 Press `Ctrl+C` to stop the recording.
@@ -252,6 +252,8 @@ The Rosbag2 recorder provides the following services for remote control, which c
   * Start topic discovery to automatically find and subscribe to new topics. Has no effect if discovery is already running or if the recorder is not in recording state.
 * `~/stop_discovery [rosbag2_interfaces/srv/StopDiscovery]`
   * Stop topic discovery. Existing subscriptions will be maintained, but new topics will not be discovered automatically.
+* `~/get_subscribed_topics [rosbag2_interfaces/srv/GetSubscribedTopics]`
+  * Returns the list of fully qualified names of topics currently subscribed by the recorder.
 
 These services enable full remote control of the recording process, allowing you to start and stop recording sessions, manage topic discovery, and control the recording state without restarting the recorder node.
 
@@ -397,6 +399,10 @@ Options:
   It prevents mixing external log messages with the progress bar string. Default to 2.
 
 For more options, run with `--help`.
+
+#### Publishing simulation time
+
+When fixed-frequency `/clock` publication is enabled with `--clock` or the `play.clock_publish_frequency` node parameter, `/clock` is published only while a playback session is active. If the Player node remains alive after playback finishes or is stopped, clock publication stops. Starting another playback session restarts it. Pausing playback does not end the session; fixed-frequency updates continue with the paused time.
 
 #### Playback action messages as action client
 
