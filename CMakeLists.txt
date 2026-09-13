@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 project(rosbag2_interfaces)
 
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD 20)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
 endif()
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -20,6 +20,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/MessagesLostEvent.msg"
   "srv/Burst.srv"
   "srv/GetRate.srv"
+  "srv/GetSubscribedTopics.srv"
   "srv/IsDiscoveryRunning.srv"
   "srv/IsPaused.srv"
   "srv/Pause.srv"
