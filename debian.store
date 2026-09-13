@@ -1,1 +1,1 @@
-{"base": "bb6314fb1", "parent": "debian/rolling/zstd_cmake_module", "previous": "bed235230", "trim": "", "trimbase": ""}
+{"base": "c673b16ba", "parent": "debian/rolling/zstd_cmake_module", "previous": "9592cb2bb", "trim": "", "trimbase": ""}
